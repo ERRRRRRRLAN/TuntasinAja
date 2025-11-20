@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  threads       Thread[]
+  comments      Comment[]
+  userStatuses  UserStatus[]
+  histories     History[]
+
+  @@map("users")
+}
+
+model Thread {
+  id          String    @id @default(cuid())
+  title       String    @map("judul_mapel")
+  authorId    String    @map("user_id_pembuat")
+  date        DateTime  @default(now())
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  userStatuses UserStatus[]
+  histories   History[]
+
+  @@unique([title, date])
+  @@map("threads")
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  threadId    String    @map("thread_id")
+  authorId    String    @map("user_id_pembuat")
+  content     String    @map("isi_tugas")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  userStatuses UserStatus[]
+
+  @@map("comments")
+}
+
+model UserStatus {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  commentId   String?   @map("comment_id")
+  threadId    String?   @map("thread_id")
+  isCompleted Boolean   @default(false) @map("status_selesai")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment     Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  thread      Thread?   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@unique([userId, threadId])
+  @@map("user_statuses")
+}
+
+model History {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  threadId      String    @map("thread_id")
+  completedDate DateTime  @default(now()) @map("tanggal_selesai")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread        Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, threadId])
+  @@map("histories")
+}
+
