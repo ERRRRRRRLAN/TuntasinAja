@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import FeedPage from '@/components/pages/FeedPage'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   try {
     const session = await getServerSession(authOptions)
