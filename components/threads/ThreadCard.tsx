@@ -143,83 +143,87 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       onClick={handleCardClick}
       style={{ cursor: 'pointer' }}
     >
-      <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-        {session && (
-          <input
-            type="checkbox"
-            checked={isCompleted}
-            onChange={() => {}}
-            onClick={handleCheckboxClick}
-            className="thread-checkbox"
-            style={{
-              width: '20px',
-              height: '20px',
-              cursor: 'pointer',
-              marginTop: '0.25rem',
-              accentColor: 'var(--primary)',
-              flexShrink: 0
-            }}
-          />
-        )}
-        <div style={{ flex: 1, position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <h3 
-              className="thread-title"
+      <div className="thread-card-content">
+        <div className="thread-card-header">
+          {session && (
+            <input
+              type="checkbox"
+              checked={isCompleted}
+              onChange={() => {}}
+              onClick={handleCheckboxClick}
+              className="thread-checkbox"
               style={{
-                textDecoration: isCompleted ? 'line-through' : 'none',
-                color: isCompleted ? 'var(--text-light)' : 'var(--text)',
-                flex: 1,
-                margin: 0
+                width: '20px',
+                height: '20px',
+                cursor: 'pointer',
+                accentColor: 'var(--primary)',
+                flexShrink: 0
               }}
+            />
+          )}
+          <h3 
+            className="thread-title"
+            style={{
+              textDecoration: isCompleted ? 'line-through' : 'none',
+              color: isCompleted ? 'var(--text-light)' : 'var(--text)',
+              flex: 1,
+              margin: 0,
+              lineHeight: 1.4
+            }}
+          >
+            {thread.title}
+          </h3>
+        </div>
+        
+        {isAdmin && (
+          <div className="thread-card-admin-actions">
+            <button
+              onClick={handleDeleteThread}
+              className="thread-delete-btn"
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                padding: '0.5rem 0.75rem',
+                cursor: 'pointer',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.375rem',
+                width: '100%',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#dc2626'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#ef4444'
+              }}
+              title="Hapus PR (Admin)"
             >
-              {thread.title}
-            </h3>
-            {isAdmin && (
-              <button
-                onClick={handleDeleteThread}
-                className="thread-delete-btn"
-                style={{
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  padding: '0.375rem 0.625rem',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  flexShrink: 0,
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#dc2626'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#ef4444'
-                }}
-                title="Hapus PR (Admin)"
-              >
-                <TrashIcon size={14} />
-                <span className="delete-btn-text">Hapus</span>
-              </button>
-            )}
+              <TrashIcon size={16} />
+              <span>Hapus PR</span>
+            </button>
           </div>
-          <div className="thread-meta">
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <UserIcon size={14} />
-              {thread.author.name}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <CalendarIcon size={14} />
-              {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <MessageIcon size={14} />
-              {thread._count.comments} komentar
-            </span>
-          </div>
+        )}
+        
+        <div className="thread-meta">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <UserIcon size={16} />
+            <span>{thread.author.name}</span>
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <CalendarIcon size={16} />
+            <span>{format(new Date(thread.date), 'd MMM yyyy', { locale: id })}</span>
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <MessageIcon size={16} />
+            <span>{thread._count.comments} komentar</span>
+          </span>
+        </div>
 
           {thread.comments.length > 0 && (
             <div className="thread-comments-preview">

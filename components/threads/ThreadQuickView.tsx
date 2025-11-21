@@ -228,24 +228,88 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           />
         )}
         <div className="quickview-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', width: '100%' }}>
-            <h2 className="thread-detail-title" style={{ flex: 1, margin: 0 }}>
-              {session && (
-                <input
-                  type="checkbox"
-                  checked={isThreadCompleted}
-                  onChange={() => {}}
-                  onClick={handleThreadCheckboxClick}
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    cursor: 'pointer',
-                    accentColor: 'var(--primary)',
-                    flexShrink: 0,
-                    marginRight: '0.5rem'
-                  }}
-                />
-              )}
+          <div className="quickview-header-top">
+            <button
+              onClick={handleCloseQuickView}
+              className="quickview-close-btn"
+              style={{
+                background: 'var(--bg-secondary)',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text)',
+                padding: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '0.5rem',
+                minWidth: '40px',
+                minHeight: '40px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-tertiary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+              }}
+              aria-label="Tutup"
+            >
+              <XCloseIcon size={20} />
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setShowDeleteThreadDialog(true)}
+                className="quickview-delete-btn"
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'background 0.2s',
+                  minHeight: '40px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444'
+                }}
+                title="Hapus PR (Admin)"
+              >
+                <TrashIcon size={18} />
+                <span>Hapus</span>
+              </button>
+            )}
+          </div>
+          
+          <div className="quickview-title-section">
+            {session && (
+              <input
+                type="checkbox"
+                checked={isThreadCompleted}
+                onChange={() => {}}
+                onClick={handleThreadCheckboxClick}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  cursor: 'pointer',
+                  accentColor: 'var(--primary)',
+                  flexShrink: 0
+                }}
+              />
+            )}
+            <h2 className="thread-detail-title" style={{ 
+              margin: 0,
+              flex: 1,
+              lineHeight: 1.4
+            }}>
               <span style={{
                 textDecoration: isThreadCompleted ? 'line-through' : 'none',
                 color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
@@ -254,68 +318,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 {thread.title}
               </span>
             </h2>
-            <div className="quickview-header-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
-              {isAdmin && (
-                <button
-                  onClick={() => setShowDeleteThreadDialog(true)}
-                  className="quickview-delete-btn"
-                  style={{
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.375rem',
-                    padding: '0.5rem 0.75rem',
-                    cursor: 'pointer',
-                    fontSize: '0.8125rem',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.375rem',
-                    transition: 'background 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#dc2626'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#ef4444'
-                  }}
-                  title="Hapus PR (Admin)"
-                >
-                  <TrashIcon size={16} />
-                  <span className="delete-btn-text">Hapus</span>
-                </button>
-              )}
-              <button
-                onClick={handleCloseQuickView}
-                className="quickview-close-btn"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-light)',
-                  padding: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'color 0.2s',
-                  minWidth: '40px',
-                  minHeight: '40px',
-                  borderRadius: '0.375rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--text)'
-                  e.currentTarget.style.background = 'var(--bg-secondary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-light)'
-                  e.currentTarget.style.background = 'none'
-                }}
-                aria-label="Tutup"
-              >
-                <XCloseIcon size={24} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -399,23 +401,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         }}
                       />
                     )}
-                    <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'flex-start', 
-                        gap: '0.5rem',
-                        marginBottom: '0.5rem'
+                    <div className="comment-content" style={{ flex: 1 }}>
+                      <div style={{
+                        textDecoration: isCommentCompleted ? 'line-through' : 'none',
+                        color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                        marginBottom: '0.75rem',
+                        wordBreak: 'break-word',
+                        lineHeight: 1.6
                       }}>
-                        <div style={{
-                          textDecoration: isCommentCompleted ? 'line-through' : 'none',
-                          color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
-                          flex: 1,
-                          wordBreak: 'break-word'
-                        }}>
-                          {comment.content}
-                        </div>
-                        {isAdmin && (
+                        {comment.content}
+                      </div>
+                      {isAdmin && (
+                        <div className="comment-admin-actions">
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
                             className="comment-delete-btn"
@@ -424,15 +421,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               color: 'white',
                               border: 'none',
                               borderRadius: '0.375rem',
-                              padding: '0.375rem 0.625rem',
+                              padding: '0.5rem 0.75rem',
                               cursor: 'pointer',
-                              fontSize: '0.75rem',
+                              fontSize: '0.8125rem',
                               fontWeight: 600,
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '0.25rem',
-                              flexShrink: 0,
-                              transition: 'background 0.2s'
+                              justifyContent: 'center',
+                              gap: '0.375rem',
+                              width: '100%',
+                              transition: 'background 0.2s',
+                              minHeight: '36px'
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.background = '#dc2626'
@@ -442,11 +441,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             }}
                             title="Hapus Komentar (Admin)"
                           >
-                            <TrashIcon size={14} />
-                            <span className="delete-btn-text">Hapus</span>
+                            <TrashIcon size={16} />
+                            <span>Hapus Komentar</span>
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <div className="comment-footer">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <UserIcon size={12} />
