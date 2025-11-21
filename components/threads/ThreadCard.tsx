@@ -61,7 +61,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       utils.history.getUserHistory.invalidate()
       setShowConfirmDialog(false)
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       console.error('Error toggling thread:', error)
       alert('Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
