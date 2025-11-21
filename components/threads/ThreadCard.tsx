@@ -58,10 +58,17 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const threadStatus = statuses?.find((s) => s.threadId === thread.id && !s.commentId)
   const isCompleted = threadStatus?.isCompleted || false
 
-  // Calculate time remaining until auto-delete (1 day from createdAt)
+  // Calculate time remaining until auto-delete (1 day from when thread was checked)
+  // Timer only shows when thread is completed
   useEffect(() => {
+    if (!isCompleted || !threadStatus?.updatedAt) {
+      setTimeRemaining('')
+      return
+    }
+
     const calculateTimeRemaining = () => {
-      const deleteDate = addDays(new Date(thread.createdAt), 1)
+      // Timer is calculated from when thread was checked (updatedAt) + 1 day
+      const deleteDate = addDays(new Date(threadStatus.updatedAt), 1)
       const now = new Date()
       const diffMs = deleteDate.getTime() - now.getTime()
 
@@ -86,7 +93,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
 
     return () => clearInterval(interval)
-  }, [thread.createdAt])
+  }, [isCompleted, threadStatus?.updatedAt])
 
   // Toggle thread completion
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
@@ -295,16 +302,18 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <MessageIcon size={16} />
             <span>{thread._count.comments} komentar</span>
           </span>
-          <span style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.375rem',
-            color: 'var(--text-light)',
-            fontSize: '0.875rem'
-          }}>
-            <ClockIcon size={16} />
-            <span>Auto-hapus: {timeRemaining}</span>
-          </span>
+          {isCompleted && timeRemaining && (
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.375rem',
+              color: 'var(--text-light)',
+              fontSize: '0.875rem'
+            }}>
+              <ClockIcon size={16} />
+              <span>Auto-hapus: {timeRemaining}</span>
+            </span>
+          )}
         </div>
 
         {thread.comments.length > 0 && (

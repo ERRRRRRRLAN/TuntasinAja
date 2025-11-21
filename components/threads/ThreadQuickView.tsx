@@ -51,12 +51,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const threadStatus = statuses?.find((s) => s.threadId === threadId && !s.commentId)
   const isThreadCompleted = threadStatus?.isCompleted || false
 
-  // Calculate time remaining until auto-delete (1 day from createdAt)
+  // Calculate time remaining until auto-delete (1 day from when thread was checked)
+  // Timer only shows when thread is completed
   useEffect(() => {
-    if (!thread) return
+    if (!isThreadCompleted || !threadStatus?.updatedAt) {
+      setTimeRemaining('')
+      return
+    }
 
     const calculateTimeRemaining = () => {
-      const deleteDate = addDays(new Date(thread.createdAt), 1)
+      // Timer is calculated from when thread was checked (updatedAt) + 1 day
+      const deleteDate = addDays(new Date(threadStatus.updatedAt), 1)
       const now = new Date()
       const diffMs = deleteDate.getTime() - now.getTime()
 
@@ -81,7 +86,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
 
     return () => clearInterval(interval)
-  }, [thread])
+  }, [isThreadCompleted, threadStatus?.updatedAt])
 
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
@@ -378,15 +383,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             <MessageIcon size={14} />
             {thread.comments.length} komentar
           </span>
-          <span style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.25rem',
-            color: 'var(--text-light)'
-          }}>
-            <ClockIcon size={14} />
-            Auto-hapus: {timeRemaining}
-          </span>
+          {isThreadCompleted && timeRemaining && (
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              color: 'var(--text-light)'
+            }}>
+              <ClockIcon size={14} />
+              Auto-hapus: {timeRemaining}
+            </span>
+          )}
         </div>
 
         <div className="comments-section">
