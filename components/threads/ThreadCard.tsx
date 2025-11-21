@@ -7,7 +7,6 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { toast } from '@/components/ui/ToastContainer'
 
 interface ThreadCardProps {
   thread: {
