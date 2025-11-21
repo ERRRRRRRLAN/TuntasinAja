@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, publicProcedure } from '../trpc'
+import { createTRPCRouter, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
@@ -98,5 +98,48 @@ export const authRouter = createTRPCRouter({
 
     return { isAdmin: user?.isAdmin || false }
   }),
+
+  // Create user (Admin only)
+  createUser: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(3),
+        email: z.string().email(),
+        password: z.string().min(6),
+        isAdmin: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: input.email },
+      })
+
+      if (existingUser) {
+        throw new Error('Email sudah terdaftar')
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(input.password, 10)
+
+      // Create user
+      const user = await prisma.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          passwordHash,
+          isAdmin: input.isAdmin || false,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          createdAt: true,
+        },
+      })
+
+      return user
+    }),
 })
 
