@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
+import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon } from '@/components/ui/Icons'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -18,9 +18,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const { data: session } = useSession()
   const [commentContent, setCommentContent] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState<string | null>(null)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+  const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Reset confirm dialog when quickview is closed or threadId changes
   useEffect(() => {
@@ -49,6 +51,38 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const threadStatus = statuses?.find((s) => s.threadId === threadId && !s.commentId)
   const isThreadCompleted = threadStatus?.isCompleted || false
 
+  // Calculate time remaining until auto-delete (1 day from createdAt)
+  useEffect(() => {
+    if (!thread) return
+
+    const calculateTimeRemaining = () => {
+      const deleteDate = addDays(new Date(thread.createdAt), 1)
+      const now = new Date()
+      const diffMs = deleteDate.getTime() - now.getTime()
+
+      if (diffMs <= 0) {
+        setTimeRemaining('Akan terhapus segera')
+        return
+      }
+
+      const hours = differenceInHours(deleteDate, now)
+      const minutes = differenceInMinutes(deleteDate, now) % 60
+
+      if (hours > 0) {
+        setTimeRemaining(`${hours}j ${minutes}m lagi`)
+      } else if (minutes > 0) {
+        setTimeRemaining(`${minutes}m lagi`)
+      } else {
+        setTimeRemaining('Akan terhapus segera')
+      }
+    }
+
+    calculateTimeRemaining()
+    const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [thread])
+
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
       setShowConfirmDialog(false)
@@ -75,17 +109,22 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleThreadCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (session && isQuickViewOpen) {
-      // If unchecking, no confirmation needed
+      // If unchecking, show confirmation dialog about timer reset
       if (isThreadCompleted) {
-        toggleThread.mutate({
-          threadId,
-          isCompleted: false,
-        })
+        setShowUncheckDialog(true)
       } else {
         // If checking, show confirmation dialog (only if quickview is open)
         setShowConfirmDialog(true)
       }
     }
+  }
+
+  const handleConfirmUncheck = () => {
+    setShowUncheckDialog(false)
+    toggleThread.mutate({
+      threadId,
+      isCompleted: false,
+    })
   }
 
   const handleCloseQuickView = () => {

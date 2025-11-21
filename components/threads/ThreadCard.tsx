@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { format } from 'date-fns'
+import { useState, useEffect } from 'react'
+import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, ClockIcon } from '@/components/ui/Icons'
 
 interface ThreadCardProps {
   thread: {
@@ -36,7 +36,9 @@ interface ThreadCardProps {
 export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const { data: session } = useSession()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Get thread status
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -54,6 +56,36 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const threadStatus = statuses?.find((s) => s.threadId === thread.id && !s.commentId)
   const isCompleted = threadStatus?.isCompleted || false
+
+  // Calculate time remaining until auto-delete (1 day from createdAt)
+  useEffect(() => {
+    const calculateTimeRemaining = () => {
+      const deleteDate = addDays(new Date(thread.createdAt), 1)
+      const now = new Date()
+      const diffMs = deleteDate.getTime() - now.getTime()
+
+      if (diffMs <= 0) {
+        setTimeRemaining('Akan terhapus segera')
+        return
+      }
+
+      const hours = differenceInHours(deleteDate, now)
+      const minutes = differenceInMinutes(deleteDate, now) % 60
+
+      if (hours > 0) {
+        setTimeRemaining(`${hours}j ${minutes}m lagi`)
+      } else if (minutes > 0) {
+        setTimeRemaining(`${minutes}m lagi`)
+      } else {
+        setTimeRemaining('Akan terhapus segera')
+      }
+    }
+
+    calculateTimeRemaining()
+    const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [thread.createdAt])
 
   // Toggle thread completion
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
@@ -82,17 +114,22 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (session) {
-      // If unchecking, no confirmation needed
+      // If unchecking, show confirmation dialog about timer reset
       if (isCompleted) {
-        toggleThread.mutate({
-          threadId: thread.id,
-          isCompleted: false,
-        })
+        setShowUncheckDialog(true)
       } else {
         // If checking, show confirmation dialog
         setShowConfirmDialog(true)
       }
     }
+  }
+
+  const handleConfirmUncheck = () => {
+    setShowUncheckDialog(false)
+    toggleThread.mutate({
+      threadId: thread.id,
+      isCompleted: false,
+    })
   }
 
   const handleConfirmThread = () => {
@@ -286,6 +323,15 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
         cancelText="Batal"
         onConfirm={handleConfirmThread}
         onCancel={() => setShowConfirmDialog(false)}
+      />
+      <ConfirmDialog
+        isOpen={showUncheckDialog}
+        title="Uncentang PR?"
+        message={`Apakah Anda yakin ingin menguncentang PR "${thread.title}"? Jika Anda mencentang lagi nanti, timer auto-hapus akan direset ke 1 hari lagi dari waktu centang tersebut.`}
+        confirmText="Ya, Uncentang"
+        cancelText="Batal"
+        onConfirm={handleConfirmUncheck}
+        onCancel={() => setShowUncheckDialog(false)}
       />
       <ConfirmDialog
         isOpen={showDeleteDialog}
