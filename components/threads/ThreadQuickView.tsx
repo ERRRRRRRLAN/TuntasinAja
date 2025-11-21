@@ -50,7 +50,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: () => {
       utils.userStatus.getThreadStatuses.invalidate({ threadId })
-      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getById.invalidate()
       utils.history.getUserHistory.invalidate()
       setShowConfirmDialog(false)
     },
@@ -96,7 +96,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
     onSuccess: () => {
       utils.userStatus.getThreadStatuses.invalidate({ threadId })
-      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getById.invalidate()
       utils.history.getUserHistory.invalidate()
     },
     onError: (error: any) => {
@@ -108,7 +108,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const addComment = trpc.thread.addComment.useMutation({
     onSuccess: () => {
       setCommentContent('')
-      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getById.invalidate()
       utils.thread.getAll.invalidate()
     },
   })
@@ -126,6 +126,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   // Delete thread (Admin only)
   const deleteThread = trpc.thread.delete.useMutation({
     onSuccess: () => {
+      utils.thread.getById.invalidate()
       utils.thread.getAll.invalidate()
       setShowDeleteThreadDialog(false)
       onClose()
@@ -140,7 +141,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   // Delete comment (Admin only)
   const deleteComment = trpc.thread.deleteComment.useMutation({
     onSuccess: () => {
-      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getById.invalidate()
       utils.thread.getAll.invalidate()
       setShowDeleteCommentDialog(null)
     },
