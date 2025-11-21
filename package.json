@@ -15,7 +15,8 @@
     "type-check": "tsc --noEmit",
     "generate:secret": "node scripts/generate-secret.js",
     "create:admin": "node scripts/create-admin.js",
-    "verify:admin": "node scripts/verify-admin.js"
+    "verify:admin": "node scripts/verify-admin.js",
+    "migrate:history": "node scripts/migrate-history-denormalization.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
