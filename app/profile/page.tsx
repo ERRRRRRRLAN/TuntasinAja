@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
 
 export default function ProfilePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
   
   const { data: profile } = trpc.auth.getProfile.useQuery(
@@ -21,7 +23,31 @@ export default function ProfilePage() {
   })
   const isAdmin = adminCheck?.isAdmin || false
 
-  if (!session) {
+  // Redirect jika belum login
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
+    }
+  }, [status, router])
+
+  // Show loading jika sedang check session
+  if (status === 'loading') {
+    return (
+      <>
+        <Header />
+        <main className="main-content">
+          <div className="container">
+            <div className="card" style={{ textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  // Don't render jika belum login (will redirect)
+  if (status === 'unauthenticated' || !session) {
     return null
   }
 

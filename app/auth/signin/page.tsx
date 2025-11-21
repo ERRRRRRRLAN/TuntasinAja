@@ -1,16 +1,45 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 
 export default function SignInPage() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Redirect jika sudah login
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/')
+      router.refresh()
+    }
+  }, [status, session, router])
+
+  // Show loading jika sedang check session
+  if (status === 'loading') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#e8f0f5',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
+      </div>
+    )
+  }
+
+  // Don't render form if already authenticated (will redirect)
+  if (status === 'authenticated') {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

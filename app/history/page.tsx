@@ -1,14 +1,28 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 
 export default function HistoryPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  
   const { data: histories, isLoading } = trpc.history.getUserHistory.useQuery(undefined, {
     refetchInterval: 5000, // Auto refresh every 5 seconds
+    enabled: !!session, // Only fetch if session exists
   })
+
+  // Redirect jika belum login
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
+    }
+  }, [status, router])
 
   const utils = trpc.useUtils()
 
@@ -53,6 +67,27 @@ export default function HistoryPage() {
     if (confirm('Apakah Anda yakin ingin menghapus history ini?')) {
       deleteHistory.mutate({ historyId })
     }
+  }
+
+  // Show loading jika sedang check session
+  if (status === 'loading') {
+    return (
+      <>
+        <Header />
+        <main className="main-content">
+          <div className="container">
+            <div className="card" style={{ textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  // Don't render jika belum login (will redirect)
+  if (status === 'unauthenticated' || !session) {
+    return null
   }
 
   return (
