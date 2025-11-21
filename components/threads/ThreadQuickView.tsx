@@ -490,6 +490,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             <TrashIcon size={16} />
                             <span>Hapus Komentar</span>
                           </button>
+                        </div>
+                      )}
                       <div className="comment-footer">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <UserIcon size={12} />
