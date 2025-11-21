@@ -6,6 +6,8 @@ import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { toast } from '@/components/ui/ToastContainer'
+import { toast } from '@/components/ui/ToastContainer'
 
 interface ThreadCardProps {
   thread: {
@@ -63,7 +65,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
-      alert('Gagal mengubah status thread. Silakan coba lagi.')
+      toast.error('Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
     },
   })
@@ -108,7 +110,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     },
     onError: (error: any) => {
       console.error('Error deleting thread:', error)
-      alert('Gagal menghapus thread. Silakan coba lagi.')
+      toast.error('Gagal menghapus thread. Silakan coba lagi.')
       setShowDeleteDialog(false)
     },
   })
@@ -257,7 +259,7 @@ function CommentItem({
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      alert('Gagal mengubah status komentar. Silakan coba lagi.')
+      toast.error('Gagal mengubah status komentar. Silakan coba lagi.')
     },
   })
 
@@ -280,7 +282,7 @@ function CommentItem({
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
-      alert('Gagal menghapus komentar. Silakan coba lagi.')
+      toast.error('Gagal menghapus komentar. Silakan coba lagi.')
       setShowDeleteDialog(false)
     },
   })

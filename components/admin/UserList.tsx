@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { toast } from '@/components/ui/ToastContainer'
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -25,7 +26,7 @@ export default function UserList() {
     },
     onError: (error: any) => {
       console.error('Error deleting user:', error)
-      alert(error.message || 'Gagal menghapus user. Silakan coba lagi.')
+      toast.error(error.message || 'Gagal menghapus user. Silakan coba lagi.')
       setDeleteUserId(null)
       setDeleteUserName('')
       setDeleteUserEmail('')

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/components/ui/ToastContainer'
 
 const MATA_PELAJARAN = [
   'Matematika',
@@ -37,11 +38,12 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   const createThread = trpc.thread.create.useMutation({
     onSuccess: (data) => {
       if (data.type === 'comment') {
-        alert(
-          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`
+        toast.info(
+          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`,
+          5000
         )
       } else {
-        alert('PR berhasil dibuat!')
+        toast.success('PR berhasil dibuat!')
       }
       router.refresh()
       setTitle('')
@@ -49,14 +51,14 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
       onSuccess?.()
     },
     onError: (error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title) {
-      alert('Pilih mata pelajaran terlebih dahulu!')
+      toast.warning('Pilih mata pelajaran terlebih dahulu!')
       return
     }
     createThread.mutate({ title, comment: comment || undefined })

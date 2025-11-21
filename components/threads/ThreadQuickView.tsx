@@ -6,6 +6,7 @@ import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
+import { toast } from '@/components/ui/ToastContainer'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -56,7 +57,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
-      alert('Gagal mengubah status thread. Silakan coba lagi.')
+      toast.error('Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
     },
   })
@@ -101,7 +102,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      alert('Gagal mengubah status komentar. Silakan coba lagi.')
+      toast.error('Gagal mengubah status komentar. Silakan coba lagi.')
     },
   })
 
@@ -133,7 +134,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error deleting thread:', error)
-      alert('Gagal menghapus thread. Silakan coba lagi.')
+      toast.error('Gagal menghapus thread. Silakan coba lagi.')
       setShowDeleteThreadDialog(false)
     },
   })
@@ -147,7 +148,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
-      alert('Gagal menghapus komentar. Silakan coba lagi.')
+      toast.error('Gagal menghapus komentar. Silakan coba lagi.')
       setShowDeleteCommentDialog(null)
     },
   })

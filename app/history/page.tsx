@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 export default function HistoryPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [deleteHistoryId, setDeleteHistoryId] = useState<string | null>(null)
   
   const { data: histories, isLoading } = trpc.history.getUserHistory.useQuery(undefined, {
     refetchInterval: 5000, // Auto refresh every 5 seconds
@@ -29,6 +31,7 @@ export default function HistoryPage() {
   const deleteHistory = trpc.history.deleteHistory.useMutation({
     onSuccess: () => {
       utils.history.getUserHistory.invalidate()
+      setDeleteHistoryId(null)
     },
   })
 
@@ -64,8 +67,12 @@ export default function HistoryPage() {
   }
 
   const handleDeleteHistory = (historyId: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus history ini?')) {
-      deleteHistory.mutate({ historyId })
+    setDeleteHistoryId(historyId)
+  }
+
+  const handleConfirmDelete = () => {
+    if (deleteHistoryId) {
+      deleteHistory.mutate({ historyId: deleteHistoryId })
     }
   }
 
@@ -155,6 +162,22 @@ export default function HistoryPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog
+        isOpen={deleteHistoryId !== null}
+        title="Hapus History?"
+        message="Apakah Anda yakin ingin menghapus history ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText={deleteHistory.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
+        cancelText="Batal"
+        danger={true}
+        disabled={deleteHistory.isLoading}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          if (!deleteHistory.isLoading) {
+            setDeleteHistoryId(null)
+          }
+        }}
+      />
     </>
   )
 }
