@@ -225,24 +225,23 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </span>
         </div>
 
-          {thread.comments.length > 0 && (
-            <div className="thread-comments-preview">
-              {thread.comments.slice(0, 2).map((comment) => (
-                <CommentItem 
-                  key={comment.id} 
-                  comment={comment} 
-                  threadId={thread.id}
-                  statuses={statuses || []}
-                />
-              ))}
-              {thread.comments.length > 2 && (
-                <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
-                  + {thread.comments.length - 2} komentar lainnya
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+        {thread.comments.length > 0 && (
+          <div className="thread-comments-preview">
+            {thread.comments.slice(0, 2).map((comment) => (
+              <CommentItem 
+                key={comment.id} 
+                comment={comment} 
+                threadId={thread.id}
+                statuses={statuses || []}
+              />
+            ))}
+            {thread.comments.length > 2 && (
+              <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                + {thread.comments.length - 2} komentar lainnya
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <ConfirmDialog
