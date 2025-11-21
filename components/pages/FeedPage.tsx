@@ -6,7 +6,8 @@ import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
 import CreateThreadForm from '@/components/threads/CreateThreadForm'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
-import { PlusIcon, SearchIcon, FilterIcon, XIconSmall } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
+import ComboBox from '@/components/ui/ComboBox'
 
 export default function FeedPage() {
   const [showForm, setShowForm] = useState(false)
@@ -18,12 +19,6 @@ export default function FeedPage() {
     refetchOnWindowFocus: true, // Refetch when user returns to tab
   })
 
-  // Get unique subjects (mata pelajaran) from threads
-  const subjects = useMemo(() => {
-    if (!threads) return []
-    const uniqueSubjects = Array.from(new Set(threads.map(thread => thread.title)))
-    return uniqueSubjects.sort()
-  }, [threads])
 
   // Filter and search threads
   const filteredThreads = useMemo(() => {
@@ -153,65 +148,16 @@ export default function FeedPage() {
               </div>
             </div>
 
-            {/* Filter Dropdown */}
+            {/* Filter ComboBox */}
             <div style={{ 
-              minWidth: '180px',
-              position: 'relative'
+              minWidth: '220px',
+              maxWidth: '300px'
             }}>
-              <div style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <FilterIcon 
-                  size={18} 
-                  style={{ 
-                    position: 'absolute',
-                    left: '0.75rem',
-                    color: 'var(--text-light)',
-                    pointerEvents: 'none',
-                    zIndex: 1
-                  }} 
-                />
-                <select
-                  value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.75rem 0.625rem 2.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '0.5rem',
-                    background: 'var(--card)',
-                    color: 'var(--text)',
-                    fontSize: '0.875rem',
-                    outline: 'none',
-                    cursor: 'pointer',
-                    appearance: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--primary)'
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                  }}
-                >
-                  <option value="all">Semua Mata Pelajaran</option>
-                  {subjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </select>
-                <div style={{
-                  position: 'absolute',
-                  right: '0.75rem',
-                  pointerEvents: 'none',
-                  color: 'var(--text-light)'
-                }}>
-                  ▼
-                </div>
-              </div>
+              <ComboBox
+                value={selectedSubject}
+                onChange={setSelectedSubject}
+                placeholder="Pilih Mata Pelajaran"
+              />
             </div>
           </div>
 
