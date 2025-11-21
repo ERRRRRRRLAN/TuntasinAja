@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc'
+import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 
 export const threadRouter = createTRPCRouter({
