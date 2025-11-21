@@ -218,6 +218,38 @@ export const threadRouter = createTRPCRouter({
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
+      // Get thread data before deletion to preserve in history
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.id },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      })
+
+      if (!thread) {
+        throw new Error('Thread not found')
+      }
+
+      // Update all histories related to this thread with denormalized data
+      // This ensures history remains even after thread is deleted
+      await prisma.history.updateMany({
+        where: {
+          threadId: input.id,
+        },
+        data: {
+          threadTitle: thread.title,
+          threadAuthorId: thread.author.id,
+          threadAuthorName: thread.author.name,
+          // threadId will be set to null by onDelete: SetNull
+        },
+      })
+
+      // Delete the thread (histories will remain with threadId = null)
       await prisma.thread.delete({
         where: { id: input.id },
       })
