@@ -16,6 +16,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const { data: session } = useSession()
   const [commentContent, setCommentContent] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
+  const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState<string | null>(null)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
 
   // Reset confirm dialog when quickview is closed or threadId changes
@@ -33,6 +35,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     { threadId },
     { enabled: !!session }
   )
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
 
   const utils = trpc.useUtils()
 
@@ -115,6 +123,34 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     }
   }
 
+  // Delete thread (Admin only)
+  const deleteThread = trpc.thread.delete.useMutation({
+    onSuccess: () => {
+      utils.thread.getAll.invalidate()
+      setShowDeleteThreadDialog(false)
+      onClose()
+    },
+    onError: (error) => {
+      console.error('Error deleting thread:', error)
+      alert('Gagal menghapus thread. Silakan coba lagi.')
+      setShowDeleteThreadDialog(false)
+    },
+  })
+
+  // Delete comment (Admin only)
+  const deleteComment = trpc.thread.deleteComment.useMutation({
+    onSuccess: () => {
+      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getAll.invalidate()
+      setShowDeleteCommentDialog(null)
+    },
+    onError: (error) => {
+      console.error('Error deleting comment:', error)
+      alert('Gagal menghapus komentar. Silakan coba lagi.')
+      setShowDeleteCommentDialog(null)
+    },
+  })
+
   if (isLoading) {
     return (
       <div className="quickview-overlay" onClick={onClose}>
@@ -169,20 +205,40 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               {thread.title}
             </span>
           </h2>
-          <button
-            onClick={handleCloseQuickView}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              color: 'var(--text-light)',
-              padding: '0.5rem',
-              lineHeight: 1
-            }}
-          >
-            ×
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {isAdmin && (
+              <button
+                onClick={() => setShowDeleteThreadDialog(true)}
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.5rem 1rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 'bold'
+                }}
+                title="Hapus Thread (Admin)"
+              >
+                🗑️ Hapus Thread
+              </button>
+            )}
+            <button
+              onClick={handleCloseQuickView}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: 'var(--text-light)',
+                padding: '0.5rem',
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div className="thread-detail-meta">
@@ -232,7 +288,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 const isCommentCompleted = commentStatus?.isCompleted || false
 
                 return (
-                  <div key={comment.id} className="comment-card">
+                  <div key={comment.id} className="comment-card" style={{ position: 'relative' }}>
                     {session && (
                       <input
                         type="checkbox"
@@ -257,6 +313,27 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                       />
                     )}
                     <div className="comment-content" style={{ flex: 1 }}>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setShowDeleteCommentDialog(comment.id)}
+                          style={{
+                            position: 'absolute',
+                            top: '0.5rem',
+                            right: '0.5rem',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.25rem 0.5rem',
+                            cursor: 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}
+                          title="Hapus Komentar (Admin)"
+                        >
+                          🗑️ Hapus
+                        </button>
+                      )}
                       <div style={{
                         textDecoration: isCommentCompleted ? 'line-through' : 'none',
                         color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
@@ -275,6 +352,30 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             )}
           </div>
         </div>
+        <QuickViewConfirmDialog
+          isOpen={showDeleteThreadDialog}
+          title="Hapus Thread?"
+          message={`Apakah Anda yakin ingin menghapus thread "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
+          confirmText="Ya, Hapus"
+          cancelText="Batal"
+          onConfirm={() => deleteThread.mutate({ id: threadId })}
+          onCancel={() => setShowDeleteThreadDialog(false)}
+        />
+        {showDeleteCommentDialog && (
+          <QuickViewConfirmDialog
+            isOpen={!!showDeleteCommentDialog}
+            title="Hapus Komentar?"
+            message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+            confirmText="Ya, Hapus"
+            cancelText="Batal"
+            onConfirm={() => {
+              if (showDeleteCommentDialog) {
+                deleteComment.mutate({ id: showDeleteCommentDialog })
+              }
+            }}
+            onCancel={() => setShowDeleteCommentDialog(null)}
+          />
+        )}
       </div>
     </div>
   )

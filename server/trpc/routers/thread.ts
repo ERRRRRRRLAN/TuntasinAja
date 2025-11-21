@@ -213,5 +213,27 @@ export const threadRouter = createTRPCRouter({
 
       return comment
     }),
+
+  // Delete thread (Admin only)
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await prisma.thread.delete({
+        where: { id: input.id },
+      })
+
+      return { success: true }
+    }),
+
+  // Delete comment (Admin only)
+  deleteComment: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await prisma.comment.delete({
+        where: { id: input.id },
+      })
+
+      return { success: true }
+    }),
 })
 

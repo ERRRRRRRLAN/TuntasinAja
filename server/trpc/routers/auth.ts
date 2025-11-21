@@ -54,6 +54,7 @@ export const authRouter = createTRPCRouter({
           id: true,
           name: true,
           email: true,
+          isAdmin: true,
           _count: {
             select: {
               threads: true,
@@ -77,10 +78,25 @@ export const authRouter = createTRPCRouter({
         id: user.id,
         name: user.name,
         email: user.email,
+        isAdmin: user.isAdmin,
         threadsCount: user._count.threads,
         commentsCount: user._count.comments,
         completedCount,
       }
     }),
+
+  // Check if current user is admin
+  isAdmin: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { isAdmin: false }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { isAdmin: true },
+    })
+
+    return { isAdmin: user?.isAdmin || false }
+  }),
 })
 

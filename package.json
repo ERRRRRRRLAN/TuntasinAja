@@ -13,7 +13,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "type-check": "tsc --noEmit",
-    "generate:secret": "node scripts/generate-secret.js"
+    "generate:secret": "node scripts/generate-secret.js",
+    "create:admin": "node scripts/create-admin.js",
+    "verify:admin": "node scripts/verify-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

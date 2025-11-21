@@ -34,12 +34,19 @@ interface ThreadCardProps {
 export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const { data: session } = useSession()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   // Get thread status
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
     { threadId: thread.id },
     { enabled: !!session }
   )
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
 
   const utils = trpc.useUtils()
 
@@ -93,6 +100,30 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
+  // Delete thread (Admin only)
+  const deleteThread = trpc.thread.delete.useMutation({
+    onSuccess: () => {
+      utils.thread.getAll.invalidate()
+      setShowDeleteDialog(false)
+    },
+    onError: (error) => {
+      console.error('Error deleting thread:', error)
+      alert('Gagal menghapus thread. Silakan coba lagi.')
+      setShowDeleteDialog(false)
+    },
+  })
+
+  const handleDeleteThread = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isAdmin) {
+      setShowDeleteDialog(true)
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    deleteThread.mutate({ id: thread.id })
+  }
+
   return (
     <div 
       className="thread-card" 
@@ -117,7 +148,28 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             }}
           />
         )}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          {isAdmin && (
+            <button
+              onClick={handleDeleteThread}
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.25rem 0.5rem',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: 'bold'
+              }}
+              title="Hapus Thread (Admin)"
+            >
+              🗑️ Hapus
+            </button>
+          )}
           <h3 
             className="thread-title"
             style={{
@@ -162,6 +214,15 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
         onConfirm={handleConfirmThread}
         onCancel={() => setShowConfirmDialog(false)}
       />
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Hapus Thread?"
+        message={`Apakah Anda yakin ingin menghapus thread "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </div>
   )
 }
@@ -176,8 +237,15 @@ function CommentItem({
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
 }) {
   const { data: session } = useSession()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const commentStatus = statuses.find((s) => s.commentId === comment.id)
   const isCompleted = commentStatus?.isCompleted || false
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
 
   const utils = trpc.useUtils()
 
@@ -204,8 +272,32 @@ function CommentItem({
     }
   }
 
+  // Delete comment (Admin only)
+  const deleteComment = trpc.thread.deleteComment.useMutation({
+    onSuccess: () => {
+      utils.thread.getAll.invalidate()
+      setShowDeleteDialog(false)
+    },
+    onError: (error) => {
+      console.error('Error deleting comment:', error)
+      alert('Gagal menghapus komentar. Silakan coba lagi.')
+      setShowDeleteDialog(false)
+    },
+  })
+
+  const handleDeleteComment = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isAdmin) {
+      setShowDeleteDialog(true)
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    deleteComment.mutate({ id: comment.id })
+  }
+
   return (
-    <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
+    <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative' }}>
       {session && (
         <input
           type="checkbox"
@@ -224,6 +316,27 @@ function CommentItem({
         />
       )}
       <div className="comment-text" style={{ flex: 1 }}>
+        {isAdmin && (
+          <button
+            onClick={handleDeleteComment}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.125rem 0.375rem',
+              cursor: 'pointer',
+              fontSize: '0.625rem',
+              fontWeight: 'bold'
+            }}
+            title="Hapus Komentar (Admin)"
+          >
+            🗑️
+          </button>
+        )}
         <div style={{
           textDecoration: isCompleted ? 'line-through' : 'none',
           color: isCompleted ? 'var(--text-light)' : 'var(--text)'
@@ -232,6 +345,15 @@ function CommentItem({
         </div>
         <div className="comment-author">- {comment.author.name}</div>
       </div>
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Hapus Komentar?"
+        message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </div>
   )
 }

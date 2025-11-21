@@ -3,6 +3,7 @@ import superjson from 'superjson'
 import { ZodError } from 'zod'
 import { getToken } from 'next-auth/jwt'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
+import { prisma } from '@/lib/prisma'
 
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts
@@ -110,4 +111,33 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
 })
 
 export const protectedProcedure = t.procedure.use(isAuthenticated)
+
+const isAdmin = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
+
+  // Check if user is admin
+  const user = await prisma.user.findUnique({
+    where: { id: ctx.session.user.id },
+  })
+
+  // Type assertion needed until schema is pushed to database
+  const isAdmin = (user as any)?.isAdmin === true
+
+  if (!isAdmin) {
+    throw new TRPCError({ 
+      code: 'FORBIDDEN', 
+      message: 'Admin access required' 
+    })
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  })
+})
+
+export const adminProcedure = t.procedure.use(isAuthenticated).use(isAdmin)
 
