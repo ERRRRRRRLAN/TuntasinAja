@@ -2142,6 +2142,21 @@ body {
   gap: 0.375rem;
 }
 
+.comment-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.thread-card-header-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
 .comment-admin-actions {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
