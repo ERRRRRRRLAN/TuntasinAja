@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { BookIcon } from '@/components/ui/Icons'
 
 export default function Header() {
   const { data: session } = useSession()
@@ -64,8 +65,9 @@ export default function Header() {
   return (
     <header className="header">
       <div className="header-content">
-        <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)}>
-          📚 TuntasinAja
+        <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <BookIcon size={24} style={{ flexShrink: 0 }} />
+          <span>TuntasinAja</span>
         </Link>
         
         {/* Desktop Navigation */}

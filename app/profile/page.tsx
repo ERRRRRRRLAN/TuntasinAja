@@ -7,6 +7,7 @@ import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
 import UserList from '@/components/admin/UserList'
+import { UserIcon, CrownIcon } from '@/components/ui/Icons'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -60,7 +61,9 @@ export default function ProfilePage() {
         <div className="container">
           <div className="profile-card">
             <div className="profile-header">
-              <div className="profile-avatar">👤</div>
+              <div className="profile-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserIcon size={48} />
+              </div>
               <h2>{session.user.name}</h2>
               <p>{session.user.email}</p>
               {isAdmin && (
@@ -69,7 +72,8 @@ export default function ProfilePage() {
                   fontWeight: 600,
                   marginTop: '0.5rem'
                 }}>
-                  👑 Admin
+                  <CrownIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                  Admin
                 </p>
               )}
             </div>

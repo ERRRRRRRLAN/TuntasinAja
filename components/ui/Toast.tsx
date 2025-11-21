@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon, XCloseIcon } from './Icons'
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
@@ -36,10 +37,10 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
   if (!mounted) return null
 
   const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️',
+    success: <CheckIcon size={20} />,
+    error: <XIcon size={20} />,
+    warning: <AlertTriangleIcon size={20} />,
+    info: <InfoIcon size={20} />,
   }
 
   const colors = {
@@ -81,7 +82,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
       }}
       onClick={onClose}
     >
-      <span className="toast-icon" style={{ color: color.icon }}>
+      <span className="toast-icon" style={{ color: color.icon, display: 'flex', alignItems: 'center' }}>
         {icons[type]}
       </span>
       <span className="toast-message">{message}</span>
@@ -94,7 +95,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
         }}
         aria-label="Close"
       >
-        ✕
+        <XCloseIcon size={18} />
       </button>
     </div>
   )

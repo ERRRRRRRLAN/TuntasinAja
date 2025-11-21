@@ -7,6 +7,8 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon } from '@/components/ui/Icons'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -265,7 +267,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 }}
                 title="Hapus PR (Admin)"
               >
-                🗑️ Hapus PR
+                <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                Hapus PR
               </button>
             )}
             <button
@@ -273,22 +276,35 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: '1.5rem',
                 cursor: 'pointer',
                 color: 'var(--text-light)',
                 padding: '0.5rem',
-                lineHeight: 1
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'color 0.2s'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-light)'}
             >
-              ×
+              <XCloseIcon size={24} />
             </button>
           </div>
         </div>
 
         <div className="thread-detail-meta">
-          <span>👤 {thread.author.name}</span>
-          <span>📅 {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}</span>
-          <span>💬 {thread.comments.length} komentar</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <UserIcon size={14} />
+            {thread.author.name}
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <CalendarIcon size={14} />
+            {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <MessageIcon size={14} />
+            {thread.comments.length} komentar
+          </span>
         </div>
 
         <div className="comments-section">
@@ -375,7 +391,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           }}
                           title="Hapus Komentar (Admin)"
                         >
-                          🗑️ Hapus
+                          <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                          Hapus
                         </button>
                       )}
                       <div style={{
@@ -386,8 +403,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         {comment.content}
                       </div>
                       <div className="comment-footer">
-                        <span>👤 {comment.author.name}</span>
-                        <span>📅 {format(new Date(comment.createdAt), 'd MMM yyyy, HH:mm', { locale: id })}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <UserIcon size={12} />
+                          {comment.author.name}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <CalendarIcon size={12} />
+                          {format(new Date(comment.createdAt), 'd MMM yyyy, HH:mm', { locale: id })}
+                        </span>
                       </div>
                     </div>
                   </div>

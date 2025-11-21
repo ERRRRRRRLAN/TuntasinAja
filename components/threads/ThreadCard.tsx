@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon } from '@/components/ui/Icons'
 
 interface ThreadCardProps {
   thread: {
@@ -179,7 +180,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               }}
               title="Hapus PR (Admin)"
             >
-              🗑️ Hapus
+              <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+              Hapus
             </button>
           )}
           <h3 
@@ -192,9 +194,18 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             {thread.title}
           </h3>
           <div className="thread-meta">
-            <span>👤 {thread.author.name}</span>
-            <span>📅 {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}</span>
-            <span>💬 {thread._count.comments} komentar</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <UserIcon size={14} />
+              {thread.author.name}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <CalendarIcon size={14} />
+              {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <MessageIcon size={14} />
+              {thread._count.comments} komentar
+            </span>
           </div>
 
           {thread.comments.length > 0 && (
@@ -357,7 +368,7 @@ function CommentItem({
             }}
             title="Hapus Komentar (Admin)"
           >
-            🗑️
+            <TrashIcon size={12} />
           </button>
         )}
         <div style={{

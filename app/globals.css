@@ -1750,3 +1750,19 @@ body {
     font-size: 0.875rem;
   }
 }
+
+/* Icon Styles */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.thread-meta span,
+.comment-footer span,
+.history-item-date,
+.history-item-deletion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}

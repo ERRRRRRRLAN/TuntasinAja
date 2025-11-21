@@ -8,6 +8,7 @@ import Header from '@/components/layout/Header'
 import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { CheckIcon, ClockIcon, TrashIcon } from '@/components/ui/Icons'
 
 export default function HistoryPage() {
   const { data: session, status } = useSession()
@@ -129,17 +130,22 @@ export default function HistoryPage() {
                     <div className="history-item-header">
                       <h3 className="history-item-title">{history.thread.title}</h3>
                       <div className="history-item-meta">
-                        <span className="history-item-date">
-                          ✅ Selesai: {format(new Date(history.completedDate), 'd MMMM yyyy', { locale: id })}
+                        <span className="history-item-date" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                          <CheckIcon size={14} />
+                          Selesai: {format(new Date(history.completedDate), 'd MMMM yyyy', { locale: id })}
                         </span>
                         <span 
                           className="history-item-deletion"
                           style={{ 
                             color: deletionInfo.color,
-                            fontWeight: deletionInfo.urgent ? 600 : 400
+                            fontWeight: deletionInfo.urgent ? 600 : 400,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.375rem'
                           }}
                         >
-                          ⏰ {deletionInfo.text}
+                          <ClockIcon size={14} />
+                          {deletionInfo.text}
                         </span>
                       </div>
                     </div>
@@ -153,7 +159,12 @@ export default function HistoryPage() {
                       }}
                       disabled={deleteHistory.isLoading}
                     >
-                      {deleteHistory.isLoading ? 'Menghapus...' : '🗑️ Hapus History'}
+                      {deleteHistory.isLoading ? 'Menghapus...' : (
+                        <>
+                          <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                          Hapus History
+                        </>
+                      )}
                     </button>
                   </div>
                 )

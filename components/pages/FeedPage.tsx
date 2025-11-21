@@ -6,6 +6,7 @@ import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
 import CreateThreadForm from '@/components/threads/CreateThreadForm'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
+import { PlusIcon } from '@/components/ui/Icons'
 
 export default function FeedPage() {
   const [showForm, setShowForm] = useState(false)
@@ -31,7 +32,8 @@ export default function FeedPage() {
               onClick={() => setShowForm(!showForm)}
               className="btn btn-primary"
             >
-              + Buat PR Baru
+              <PlusIcon size={18} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+              Buat PR Baru
             </button>
           </div>
 

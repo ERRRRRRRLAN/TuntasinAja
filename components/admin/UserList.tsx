@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
+import { CrownIcon, TrashIcon } from '@/components/ui/Icons'
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -176,7 +177,8 @@ export default function UserList() {
                           fontSize: '0.75rem',
                           fontWeight: 600
                         }}>
-                          👑 Admin
+                          <CrownIcon size={12} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                          Admin
                         </span>
                       ) : (
                         <span style={{
@@ -235,7 +237,7 @@ export default function UserList() {
                             }
                           }}
                         >
-                          <span>🗑️</span>
+                          <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
                           <span>Hapus</span>
                         </button>
                       )}
