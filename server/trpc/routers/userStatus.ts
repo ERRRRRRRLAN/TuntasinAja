@@ -137,29 +137,39 @@ export const userStatusRouter = createTRPCRouter({
 
         // Move to history if all comments are completed and thread is completed
         if (allCompleted) {
-          await prisma.history.upsert({
+          // Find existing history (if threadId is not null)
+          const existingHistory = await prisma.history.findFirst({
             where: {
-              userId_threadId: {
-                userId: ctx.session.user.id,
-                threadId: input.threadId,
-              },
-            },
-            create: {
               userId: ctx.session.user.id,
               threadId: input.threadId,
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
-              completedDate: new Date(),
-            },
-            update: {
-              completedDate: new Date(),
-              // Update denormalized data in case thread info changed
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
             },
           })
+
+          if (existingHistory) {
+            // Update existing history
+            await prisma.history.update({
+              where: { id: existingHistory.id },
+              data: {
+                completedDate: new Date(),
+                // Update denormalized data in case thread info changed
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+              },
+            })
+          } else {
+            // Create new history
+            await prisma.history.create({
+              data: {
+                userId: ctx.session.user.id,
+                threadId: input.threadId,
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+                completedDate: new Date(),
+              },
+            })
+          }
         }
       }
 
@@ -273,56 +283,76 @@ export const userStatusRouter = createTRPCRouter({
 
           // After auto-checking thread, move to history immediately
           // because all comments are completed and thread is now completed
-          await prisma.history.upsert({
+          // Find existing history (if threadId is not null)
+          const existingHistory = await prisma.history.findFirst({
             where: {
-              userId_threadId: {
-                userId: ctx.session.user.id,
-                threadId: input.threadId,
-              },
-            },
-            create: {
               userId: ctx.session.user.id,
               threadId: input.threadId,
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
-              completedDate: new Date(),
-            },
-            update: {
-              completedDate: new Date(),
-              // Update denormalized data in case thread info changed
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
             },
           })
+
+          if (existingHistory) {
+            // Update existing history
+            await prisma.history.update({
+              where: { id: existingHistory.id },
+              data: {
+                completedDate: new Date(),
+                // Update denormalized data in case thread info changed
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+              },
+            })
+          } else {
+            // Create new history
+            await prisma.history.create({
+              data: {
+                userId: ctx.session.user.id,
+                threadId: input.threadId,
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+                completedDate: new Date(),
+              },
+            })
+          }
         } else if (allCommentsCompleted && threadCompleted) {
           // Move to history if:
           // 1. All comments are completed (or thread has no comments)
           // 2. Thread is also completed
-          await prisma.history.upsert({
+          // Find existing history (if threadId is not null)
+          const existingHistory = await prisma.history.findFirst({
             where: {
-              userId_threadId: {
-                userId: ctx.session.user.id,
-                threadId: input.threadId,
-              },
-            },
-            create: {
               userId: ctx.session.user.id,
               threadId: input.threadId,
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
-              completedDate: new Date(),
-            },
-            update: {
-              completedDate: new Date(),
-              // Update denormalized data in case thread info changed
-              threadTitle: thread.title,
-              threadAuthorId: thread.author.id,
-              threadAuthorName: thread.author.name,
             },
           })
+
+          if (existingHistory) {
+            // Update existing history
+            await prisma.history.update({
+              where: { id: existingHistory.id },
+              data: {
+                completedDate: new Date(),
+                // Update denormalized data in case thread info changed
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+              },
+            })
+          } else {
+            // Create new history
+            await prisma.history.create({
+              data: {
+                userId: ctx.session.user.id,
+                threadId: input.threadId,
+                threadTitle: thread.title,
+                threadAuthorId: thread.author.id,
+                threadAuthorName: thread.author.name,
+                completedDate: new Date(),
+              },
+            })
+          }
         } else {
           // Remove from history if thread or comments are unchecked
           await prisma.history.deleteMany({
