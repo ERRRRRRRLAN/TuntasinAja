@@ -90,6 +90,12 @@ export const userStatusRouter = createTRPCRouter({
         where: { id: input.threadId },
         include: {
           comments: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       })
 
