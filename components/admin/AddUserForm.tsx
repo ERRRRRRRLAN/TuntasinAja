@@ -14,6 +14,7 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
   const [isAdmin, setIsAdmin] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const utils = trpc.useUtils()
 
   const createUser = trpc.auth.createUser.useMutation({
     onSuccess: () => {
@@ -23,6 +24,8 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       setPassword('')
       setIsAdmin(false)
       setError('')
+      // Invalidate user list to refresh
+      utils.auth.getAllUsers.invalidate()
       if (onSuccess) {
         setTimeout(() => {
           onSuccess()

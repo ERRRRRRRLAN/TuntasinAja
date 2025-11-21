@@ -1103,3 +1103,65 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* User List Table Styles */
+.user-list-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-list-table th,
+.user-list-table td {
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.user-list-table th {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 0.875rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.user-list-table td {
+  border-bottom: 1px solid var(--border);
+}
+
+.user-list-table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .user-list-table {
+    font-size: 0.875rem;
+  }
+
+  .user-list-table th,
+  .user-list-table td {
+    padding: 0.5rem;
+  }
+
+  .user-list-table th:nth-child(4),
+  .user-list-table th:nth-child(5),
+  .user-list-table td:nth-child(4),
+  .user-list-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-list-table {
+    font-size: 0.8rem;
+  }
+
+  .user-list-table th,
+  .user-list-table td {
+    padding: 0.4rem;
+  }
+
+  .user-list-table th:nth-child(6),
+  .user-list-table td:nth-child(6) {
+    display: none;
+  }
+}

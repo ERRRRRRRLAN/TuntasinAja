@@ -141,5 +141,55 @@ export const authRouter = createTRPCRouter({
 
       return user
     }),
+
+  // Get all users (Admin only)
+  getAllUsers: adminProcedure.query(async () => {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isAdmin: true,
+        createdAt: true,
+        _count: {
+          select: {
+            threads: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return users
+  }),
+
+  // Delete user (Admin only)
+  deleteUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // Prevent admin from deleting themselves
+      if (input.userId === ctx.session?.user?.id) {
+        throw new Error('Tidak dapat menghapus akun sendiri')
+      }
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+      })
+
+      if (!user) {
+        throw new Error('User tidak ditemukan')
+      }
+
+      // Delete user (cascade will delete related threads, comments, etc.)
+      await prisma.user.delete({
+        where: { id: input.userId },
+      })
+
+      return { success: true }
+    }),
 })
 

@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
+import UserList from '@/components/admin/UserList'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
+  const utils = trpc.useUtils()
   
   const { data: profile } = trpc.auth.getProfile.useQuery(
     { userId: session?.user?.id || '' },
@@ -107,8 +109,20 @@ export default function ProfilePage() {
               </div>
 
               {showAddUser && (
-                <AddUserForm onSuccess={() => setShowAddUser(false)} />
+                <div style={{ marginBottom: '2rem' }}>
+                  <AddUserForm 
+                    onSuccess={() => {
+                      setShowAddUser(false)
+                      // Invalidate user list to refresh
+                      utils.auth.getAllUsers.invalidate()
+                    }} 
+                  />
+                </div>
               )}
+
+              <div style={{ marginTop: '2rem' }}>
+                <UserList />
+              </div>
             </div>
           )}
         </div>
