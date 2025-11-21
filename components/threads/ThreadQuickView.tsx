@@ -378,6 +378,15 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             <MessageIcon size={14} />
             {thread.comments.length} komentar
           </span>
+          <span style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.25rem',
+            color: 'var(--text-light)'
+          }}>
+            <ClockIcon size={14} />
+            Auto-hapus: {timeRemaining}
+          </span>
         </div>
 
         <div className="comments-section">
