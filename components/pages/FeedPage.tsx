@@ -1,20 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
 import CreateThreadForm from '@/components/threads/CreateThreadForm'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
-import { PlusIcon } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, FilterIcon, XIconSmall } from '@/components/ui/Icons'
 
 export default function FeedPage() {
   const [showForm, setShowForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const { data: threads, isLoading } = trpc.thread.getAll.useQuery(undefined, {
     refetchInterval: 3000, // Auto refresh every 3 seconds (faster)
     refetchOnWindowFocus: true, // Refetch when user returns to tab
   })
+
+  // Get unique subjects (mata pelajaran) from threads
+  const subjects = useMemo(() => {
+    if (!threads) return []
+    const uniqueSubjects = Array.from(new Set(threads.map(thread => thread.title)))
+    return uniqueSubjects.sort()
+  }, [threads])
+
+  // Filter and search threads
+  const filteredThreads = useMemo(() => {
+    if (!threads) return []
+
+    let filtered = threads
+
+    // Filter by subject (mata pelajaran)
+    if (selectedSubject !== 'all') {
+      filtered = filtered.filter(thread => thread.title === selectedSubject)
+    }
+
+    // Search by comment content
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      filtered = filtered.filter(thread => {
+        // Check if any comment content matches the search query
+        return thread.comments.some(comment => 
+          comment.content.toLowerCase().includes(query)
+        )
+      })
+    }
+
+    return filtered
+  }, [threads, selectedSubject, searchQuery])
 
   return (
     <>
@@ -37,6 +71,170 @@ export default function FeedPage() {
             </button>
           </div>
 
+          {/* Search and Filter Section */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '1rem', 
+            marginBottom: '1.5rem',
+            flexWrap: 'wrap',
+            alignItems: 'center'
+          }}>
+            {/* Search Input */}
+            <div style={{ 
+              flex: '1', 
+              minWidth: '200px',
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <SearchIcon 
+                  size={18} 
+                  style={{ 
+                    position: 'absolute',
+                    left: '0.75rem',
+                    color: 'var(--text-light)',
+                    pointerEvents: 'none'
+                  }} 
+                />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan isi komentar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.625rem 0.75rem 0.625rem 2.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.5rem',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '0.5rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-light)',
+                      borderRadius: '0.25rem',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--bg-secondary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none'
+                    }}
+                    aria-label="Clear search"
+                  >
+                    <XIconSmall size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filter Dropdown */}
+            <div style={{ 
+              minWidth: '180px',
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <FilterIcon 
+                  size={18} 
+                  style={{ 
+                    position: 'absolute',
+                    left: '0.75rem',
+                    color: 'var(--text-light)',
+                    pointerEvents: 'none',
+                    zIndex: 1
+                  }} 
+                />
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.625rem 0.75rem 0.625rem 2.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.5rem',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
+                >
+                  <option value="all">Semua Mata Pelajaran</option>
+                  {subjects.map((subject) => (
+                    <option key={subject} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+                <div style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  pointerEvents: 'none',
+                  color: 'var(--text-light)'
+                }}>
+                  ▼
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Results Count */}
+          {(searchQuery || selectedSubject !== 'all') && (
+            <div style={{
+              marginBottom: '1rem',
+              padding: '0.75rem 1rem',
+              background: 'var(--bg-secondary)',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              color: 'var(--text-light)'
+            }}>
+              Menampilkan {filteredThreads.length} dari {threads?.length || 0} PR
+              {searchQuery && (
+                <span> • Pencarian: "{searchQuery}"</span>
+              )}
+              {selectedSubject !== 'all' && (
+                <span> • Filter: {selectedSubject}</span>
+              )}
+            </div>
+          )}
+
           {showForm && (
             <div className="card">
               <CreateThreadForm onSuccess={() => setShowForm(false)} />
@@ -53,9 +251,17 @@ export default function FeedPage() {
                 Belum ada PR. Buat PR pertama Anda!
               </p>
             </div>
+          ) : filteredThreads.length === 0 ? (
+            <div className="card" style={{ textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-light)' }}>
+                {searchQuery || selectedSubject !== 'all' 
+                  ? 'Tidak ada PR yang sesuai dengan filter/pencarian Anda.' 
+                  : 'Belum ada PR. Buat PR pertama Anda!'}
+              </p>
+            </div>
           ) : (
             <div className="threads-container">
-              {threads.map((thread) => (
+              {filteredThreads.map((thread) => (
                 <ThreadCard 
                   key={thread.id} 
                   thread={thread}

@@ -1766,3 +1766,15 @@ body {
   align-items: center;
   gap: 0.25rem;
 }
+
+/* Search and Filter Styles */
+@media (max-width: 640px) {
+  .search-filter-container {
+    flex-direction: column;
+  }
+  
+  .search-filter-container > div {
+    width: 100%;
+    min-width: 100%;
+  }
+}
