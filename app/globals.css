@@ -327,33 +327,19 @@ body {
   }
 }
 
-/* Sign In Page - Modern & Clean Design */
+/* Sign In Page - Consistent with Dashboard Design */
 .signin-page-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
-}
-
-.signin-page-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
 }
 
 .signin-page-header {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
   padding: 1.25rem 0;
   position: relative;
   z-index: 1;
@@ -386,7 +372,7 @@ body {
   width: 24px;
   height: 24px;
   border-radius: 3px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
@@ -395,7 +381,7 @@ body {
 }
 
 .logo-paper-1 {
-  background: #10b981;
+  background: var(--success);
   top: 0;
   left: 0;
   z-index: 3;
@@ -403,7 +389,7 @@ body {
 }
 
 .logo-paper-2 {
-  background: #ef4444;
+  background: var(--danger);
   top: 4px;
   left: 8px;
   z-index: 2;
@@ -411,7 +397,7 @@ body {
 }
 
 .logo-paper-3 {
-  background: #3b82f6;
+  background: var(--primary);
   top: 8px;
   left: 16px;
   z-index: 1;
@@ -421,8 +407,7 @@ body {
 .signin-page-logo-text {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--primary);
 }
 
 .signin-page-main {
@@ -442,15 +427,11 @@ body {
 }
 
 .signin-page-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  background: var(--card);
   padding: 3rem;
-  border-radius: 1.5rem;
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
 }
 
 .signin-page-welcome {
@@ -461,14 +442,14 @@ body {
 .signin-page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text);
   margin-bottom: 0.5rem;
   line-height: 1.2;
 }
 
 .signin-page-subtitle {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--text-light);
   font-weight: 400;
 }
 
@@ -477,7 +458,7 @@ body {
   border: 1px solid #fecaca;
   color: #b91c1c;
   padding: 0.875rem 1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
   animation: shake 0.5s ease-in-out;
@@ -495,52 +476,53 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--text);
   font-size: 0.9rem;
 }
 
 .signin-form-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0.5rem;
   font-size: 1rem;
   font-family: inherit;
-  background: #ffffff;
+  background: var(--card);
+  color: var(--text);
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .signin-form-input::placeholder {
-  color: #94a3b8;
+  color: var(--text-light);
 }
 
 .signin-form-input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: var(--card);
 }
 
 .signin-form-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #f8fafc;
+  background: var(--bg);
 }
 
 .signin-form-button {
   width: 100%;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -561,8 +543,9 @@ body {
 }
 
 .signin-form-button:hover:not(:disabled) {
+  background: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.3);
 }
 
 .signin-form-button:active:not(:disabled) {

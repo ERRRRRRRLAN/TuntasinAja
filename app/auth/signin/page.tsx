@@ -30,7 +30,7 @@ export default function SignInPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ffffff',
+          color: 'var(--text-light)',
           fontSize: '1rem'
         }}>
           <p>Memuat...</p>
