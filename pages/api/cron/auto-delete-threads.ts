@@ -27,7 +27,8 @@ export default async function handler(
   }
 
   try {
-    const oneDayAgo = new Date()
+    const { getUTCDate } = await import('@/lib/date-utils')
+    const oneDayAgo = getUTCDate()
     oneDayAgo.setDate(oneDayAgo.getDate() - 1)
 
     // Find threads older than 1 day

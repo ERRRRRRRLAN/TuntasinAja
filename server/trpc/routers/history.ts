@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
+import { getUTCDate } from '@/lib/date-utils'
 
 export const historyRouter = createTRPCRouter({
   // Get user history
@@ -45,7 +46,7 @@ export const historyRouter = createTRPCRouter({
 
   // Clean old history (for cron job)
   cleanOldHistory: protectedProcedure.mutation(async () => {
-    const thirtyDaysAgo = new Date()
+    const thirtyDaysAgo = getUTCDate()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
     const result = await prisma.history.deleteMany({

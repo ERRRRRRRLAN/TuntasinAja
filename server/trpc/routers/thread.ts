@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
+import { getJakartaTodayAsUTC } from '@/lib/date-utils'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
@@ -92,8 +93,9 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // Get today's date in Jakarta timezone, converted to UTC for database
+      const today = getJakartaTodayAsUTC()
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
 
       // Check if thread with same title and date exists
       const existingThread = await prisma.thread.findFirst({
@@ -101,7 +103,7 @@ export const threadRouter = createTRPCRouter({
           title: input.title,
           date: {
             gte: today,
-            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+            lt: tomorrow,
           },
         },
         include: {

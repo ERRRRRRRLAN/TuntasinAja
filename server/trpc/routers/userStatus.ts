@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
+import { getUTCDate } from '@/lib/date-utils'
 
 export const userStatusRouter = createTRPCRouter({
   // Toggle thread completion
@@ -150,7 +151,7 @@ export const userStatusRouter = createTRPCRouter({
             await prisma.history.update({
               where: { id: existingHistory.id },
               data: {
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
                 // Update denormalized data in case thread info changed
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
@@ -166,7 +167,7 @@ export const userStatusRouter = createTRPCRouter({
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
                 threadAuthorName: thread.author.name,
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
               },
             })
           }
@@ -296,7 +297,7 @@ export const userStatusRouter = createTRPCRouter({
             await prisma.history.update({
               where: { id: existingHistory.id },
               data: {
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
                 // Update denormalized data in case thread info changed
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
@@ -312,7 +313,7 @@ export const userStatusRouter = createTRPCRouter({
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
                 threadAuthorName: thread.author.name,
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
               },
             })
           }
@@ -333,7 +334,7 @@ export const userStatusRouter = createTRPCRouter({
             await prisma.history.update({
               where: { id: existingHistory.id },
               data: {
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
                 // Update denormalized data in case thread info changed
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
@@ -349,7 +350,7 @@ export const userStatusRouter = createTRPCRouter({
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
                 threadAuthorName: thread.author.name,
-                completedDate: new Date(),
+                completedDate: getUTCDate(),
               },
             })
           }

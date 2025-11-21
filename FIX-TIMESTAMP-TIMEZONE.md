@@ -8,6 +8,21 @@ Timestamp di database tidak sesuai dengan waktu sekarang. Ini biasanya terjadi k
 
 ## Solusi
 
+### ⚠️ PENTING: Set Timezone di DATABASE_URL
+
+**Langkah pertama yang harus dilakukan**: Tambahkan timezone ke connection string di file `.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@host:port/database?schema=public&options=-c%20timezone%3DAsia/Jakarta"
+```
+
+Atau untuk UTC (disarankan untuk production):
+```env
+DATABASE_URL="postgresql://user:password@host:port/database?schema=public&options=-c%20timezone%3DUTC"
+```
+
+**Setelah mengubah DATABASE_URL, restart aplikasi Anda!**
+
 ### Opsi 1: Menggunakan Script SQL (Disarankan)
 
 1. **Buka Supabase SQL Editor**
