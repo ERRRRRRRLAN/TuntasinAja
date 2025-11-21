@@ -157,13 +157,13 @@ export default function ProfilePage() {
 
           {isAdmin && (
             <div style={{ marginTop: '2rem' }}>
-              <div style={{ 
+              <div className="admin-panel-header" style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 marginBottom: '1rem'
               }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>
                   Panel Admin
                 </h2>
                 <button

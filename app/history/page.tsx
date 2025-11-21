@@ -127,9 +127,9 @@ export default function HistoryPage() {
                 
                 return (
                   <div key={history.id} className="history-item">
-                    <div className="history-item-header">
-                      <h3 className="history-item-title">{history.thread.title}</h3>
-                      <div className="history-item-meta">
+                    <div className="history-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
+                      <h3 className="history-item-title" style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0, flex: 1 }}>{history.thread.title}</h3>
+                      <div className="history-item-meta" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <span className="history-item-date" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                           <CheckIcon size={14} />
                           Selesai: {format(new Date(history.completedDate), 'd MMMM yyyy', { locale: id })}
@@ -149,23 +149,25 @@ export default function HistoryPage() {
                         </span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteHistory(history.id)}
-                      className="btn btn-danger"
-                      style={{
-                        marginTop: '1rem',
-                        padding: '0.5rem 1rem',
-                        fontSize: '0.875rem'
-                      }}
-                      disabled={deleteHistory.isLoading}
-                    >
+                    <div className="history-item-actions" style={{ marginTop: '1rem' }}>
+                      <button
+                        onClick={() => handleDeleteHistory(history.id)}
+                        className="btn btn-danger"
+                        style={{
+                          width: '100%',
+                          padding: '0.5rem 1rem',
+                          fontSize: '0.875rem'
+                        }}
+                        disabled={deleteHistory.isLoading}
+                      >
                       {deleteHistory.isLoading ? 'Menghapus...' : (
                         <>
                           <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
                           Hapus History
                         </>
                       )}
-                    </button>
+                      </button>
+                    </div>
                   </div>
                 )
               })}

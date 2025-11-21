@@ -67,15 +67,15 @@ export default function FeedPage() {
           </div>
 
           {/* Search and Filter Section */}
-          <div style={{ 
+          <div className="search-filter-container" style={{ 
             display: 'flex', 
             gap: '1rem', 
             marginBottom: '1.5rem',
             flexWrap: 'wrap',
-            alignItems: 'center'
+            alignItems: 'stretch'
           }}>
             {/* Search Input */}
-            <div style={{ 
+            <div className="search-input-wrapper" style={{ 
               flex: '1', 
               minWidth: '200px',
               position: 'relative'
@@ -149,9 +149,10 @@ export default function FeedPage() {
             </div>
 
             {/* Filter ComboBox */}
-            <div style={{ 
+            <div className="filter-combobox-wrapper" style={{ 
               minWidth: '220px',
-              maxWidth: '300px'
+              maxWidth: '300px',
+              width: '100%'
             }}>
               <ComboBox
                 value={selectedSubject}
@@ -163,7 +164,7 @@ export default function FeedPage() {
 
           {/* Results Count */}
           {(searchQuery || selectedSubject !== 'all') && (
-            <div style={{
+            <div className="results-count" style={{
               marginBottom: '1rem',
               padding: '0.75rem 1rem',
               background: 'var(--bg-secondary)',

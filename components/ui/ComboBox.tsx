@@ -193,6 +193,7 @@ export default function ComboBox({
       {/* Dropdown */}
       {isOpen && (
         <div
+          className="combobox-dropdown"
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
