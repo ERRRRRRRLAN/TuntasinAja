@@ -36,10 +36,27 @@ export default function QuickViewConfirmDialog({
   if (!isOpen) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only cancel if clicking directly on the overlay, not on the content
     if (e.target === overlayRef.current) {
-      e.stopPropagation()
       onCancel()
     }
+  }
+
+  const handleContentClick = (e: React.MouseEvent) => {
+    // Prevent clicks inside content from bubbling to overlay
+    e.stopPropagation()
+  }
+
+  const handleConfirmClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onConfirm()
+  }
+
+  const handleCancelClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onCancel()
   }
 
   return (
@@ -47,36 +64,24 @@ export default function QuickViewConfirmDialog({
       ref={overlayRef}
       className="quickview-confirm-dialog-overlay"
       onClick={handleOverlayClick}
-      onMouseDown={(e) => e.stopPropagation()}
-      onMouseUp={(e) => e.stopPropagation()}
-      onMouseMove={(e) => e.stopPropagation()}
     >
       <div 
         className="quickview-confirm-dialog-content"
-        onClick={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseUp={(e) => e.stopPropagation()}
-        onMouseMove={(e) => e.stopPropagation()}
+        onClick={handleContentClick}
       >
         <h3 className="confirm-dialog-title">{title}</h3>
         <p className="confirm-dialog-message">{message}</p>
         <div className="confirm-dialog-actions">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onCancel()
-            }}
+            onClick={handleCancelClick}
             className="btn btn-secondary"
           >
             {cancelText}
           </button>
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onConfirm()
-            }}
+            onClick={handleConfirmClick}
             className="btn btn-primary"
           >
             {confirmText}

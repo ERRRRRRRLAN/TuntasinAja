@@ -2,15 +2,25 @@
 
 ## Environment Variables yang Harus Di-Set di Vercel
 
-Di Vercel Dashboard → Project Settings → Environment Variables, tambahkan:
+**PENTING:** Semua environment variables harus di-set di Vercel Dashboard → Project Settings → Environment Variables
 
 ### 1. DATABASE_URL
 ```
-postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres?schema=public
+postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true&schema=public
 ```
+**Untuk Supabase:**
+- Gunakan **Session Pooler** (port 6543), BUKAN direct connection (port 5432)
+- Format: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true&schema=public`
+- Ganti `[PROJECT-REF]` dengan project reference dari Supabase
 - Ganti `[PASSWORD]` dengan password database Anda
-- Ganti `[HOST]` dengan host database (misalnya dari Supabase)
-- Pastikan menggunakan connection pooler jika menggunakan Supabase
+- Ganti `[REGION]` dengan region (misalnya: ap-southeast-1)
+
+**Cara mendapatkan connection string:**
+1. Buka Supabase Dashboard → Project Settings → Database
+2. Scroll ke "Connection Pooling"
+3. Pilih "Session mode"
+4. Copy connection string
+5. Ganti `[YOUR-PASSWORD]` dengan password database Anda
 
 ### 2. NEXTAUTH_SECRET
 Generate random string (minimal 32 karakter):
@@ -18,6 +28,8 @@ Generate random string (minimal 32 karakter):
 openssl rand -base64 32
 ```
 Atau gunakan online generator: https://generate-secret.vercel.app/32
+
+**PENTING:** Secret ini HARUS sama untuk semua environment (Production, Preview, Development)
 
 ### 3. NEXTAUTH_URL
 URL production Anda:
@@ -28,6 +40,11 @@ Atau jika sudah punya custom domain:
 ```
 https://yourdomain.com
 ```
+
+**PENTING:** 
+- Jangan gunakan `localhost` untuk production
+- Pastikan URL sesuai dengan domain Vercel Anda
+- Jika menggunakan custom domain, gunakan custom domain tersebut
 
 ## Langkah Deployment
 

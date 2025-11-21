@@ -10,6 +10,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
+        retry: 1,
+      },
+      mutations: {
+        retry: 1,
       },
     },
   }))
@@ -17,7 +21,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider 
+          refetchInterval={5 * 60}
+          refetchOnWindowFocus={true}
+        >
+          {children}
+        </SessionProvider>
       </QueryClientProvider>
     </trpc.Provider>
   )

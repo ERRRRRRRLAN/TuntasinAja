@@ -12,7 +12,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:secret": "node scripts/generate-secret.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

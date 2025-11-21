@@ -16,27 +16,32 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email and password required')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          })
 
-        if (!user) {
-          throw new Error('Invalid email or password')
-        }
+          if (!user) {
+            throw new Error('Invalid email or password')
+          }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        )
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.passwordHash
+          )
 
-        if (!isValid) {
-          throw new Error('Invalid email or password')
-        }
+          if (!isValid) {
+            throw new Error('Invalid email or password')
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
+          throw error
         }
       },
     }),
@@ -46,7 +51,9 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -66,7 +73,23 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
+  // Ensure cookies work correctly
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production'
+        ? `__Secure-next-auth.session-token`
+        : `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? undefined : undefined,
+      },
+    },
+  },
 }
 
-export default NextAuth(authOptions)
+  export default NextAuth(authOptions)
 

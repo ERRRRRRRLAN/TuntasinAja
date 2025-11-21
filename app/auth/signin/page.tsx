@@ -23,15 +23,21 @@ export default function SignInPage() {
         email,
         password,
         redirect: false,
+        callbackUrl: '/',
       })
 
       if (result?.error) {
         setError('Email atau password salah!')
-      } else {
+      } else if (result?.ok) {
+        // Wait a bit to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 100))
         router.push('/')
         router.refresh()
+      } else {
+        setError('Terjadi kesalahan. Silakan coba lagi.')
       }
     } catch (err) {
+      console.error('Login error:', err)
       setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
       setIsLoading(false)

@@ -78,6 +78,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   }
 
   const handleConfirmThread = () => {
+    // Close dialog immediately for better UX
+    setShowConfirmDialog(false)
+    // Then execute the mutation
     toggleThread.mutate({
       threadId: thread.id,
       isCompleted: true,
