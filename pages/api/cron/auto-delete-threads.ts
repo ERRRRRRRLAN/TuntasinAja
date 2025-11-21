@@ -53,6 +53,7 @@ export default async function handler(
     // For each old thread, update histories to store thread data before deletion
     for (const thread of oldThreads) {
       // Update all histories related to this thread with denormalized data
+      // Set threadId to null explicitly to avoid unique constraint issues
       await prisma.history.updateMany({
         where: {
           threadId: thread.id,
@@ -61,7 +62,7 @@ export default async function handler(
           threadTitle: thread.title,
           threadAuthorId: thread.author.id,
           threadAuthorName: thread.author.name,
-          // threadId will be set to null by onDelete: SetNull
+          threadId: null, // Set to null explicitly before deleting thread
         },
       })
 

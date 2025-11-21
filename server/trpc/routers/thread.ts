@@ -236,6 +236,7 @@ export const threadRouter = createTRPCRouter({
       }
 
       // Update all histories related to this thread with denormalized data
+      // Set threadId to null explicitly to avoid unique constraint issues
       // This ensures history remains even after thread is deleted
       await prisma.history.updateMany({
         where: {
@@ -245,7 +246,7 @@ export const threadRouter = createTRPCRouter({
           threadTitle: thread.title,
           threadAuthorId: thread.author.id,
           threadAuthorName: thread.author.name,
-          // threadId will be set to null by onDelete: SetNull
+          threadId: null, // Set to null explicitly before deleting thread
         },
       })
 
