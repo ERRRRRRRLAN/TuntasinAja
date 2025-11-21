@@ -11,6 +11,8 @@ interface ConfirmDialogProps {
   cancelText?: string
   onConfirm: () => void
   onCancel: () => void
+  danger?: boolean // If true, use btn-danger instead of btn-primary
+  disabled?: boolean // If true, disable buttons and prevent closing
 }
 
 // ConfirmDialog untuk digunakan di luar quickview (full screen overlay)
@@ -22,6 +24,8 @@ export default function ConfirmDialog({
   cancelText = 'Batal',
   onConfirm,
   onCancel,
+  danger = false,
+  disabled = false,
 }: ConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -47,7 +51,8 @@ export default function ConfirmDialog({
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
-    if (e.target === overlayRef.current) {
+    // Don't allow closing if disabled (e.g., during loading)
+    if (e.target === overlayRef.current && !disabled) {
       onCancel()
     }
   }
@@ -86,13 +91,15 @@ export default function ConfirmDialog({
             type="button"
             onClick={handleCancelClick}
             className="btn btn-secondary"
+            disabled={disabled}
           >
             {cancelText}
           </button>
           <button
             type="button"
             onClick={handleConfirmClick}
-            className="btn btn-primary"
+            className={danger ? 'btn btn-danger' : 'btn btn-primary'}
+            disabled={disabled}
           >
             {confirmText}
           </button>

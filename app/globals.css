@@ -1148,6 +1148,15 @@ body {
   .user-list-table td:nth-child(5) {
     display: none;
   }
+
+  .user-list-table td button {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .user-list-table td button span:last-child {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1163,5 +1172,10 @@ body {
   .user-list-table th:nth-child(6),
   .user-list-table td:nth-child(6) {
     display: none;
+  }
+
+  .user-list-table td button {
+    padding: 0.25rem 0.375rem !important;
+    font-size: 0.7rem !important;
   }
 }

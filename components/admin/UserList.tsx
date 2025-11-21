@@ -5,78 +5,7 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-
-interface ConfirmDialogProps {
-  isOpen: boolean
-  userName: string
-  userEmail: string
-  onConfirm: () => void
-  onCancel: () => void
-  isLoading: boolean
-}
-
-function ConfirmDialog({ isOpen, userName, userEmail, onConfirm, onCancel, isLoading }: ConfirmDialogProps) {
-  if (!isOpen) return null
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-      onClick={onCancel}
-    >
-      <div
-        style={{
-          background: 'var(--bg)',
-          borderRadius: '0.75rem',
-          padding: '1.5rem',
-          maxWidth: '400px',
-          width: '90%',
-          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 600 }}>
-          Hapus User?
-        </h3>
-        <p style={{ marginBottom: '1.5rem', color: 'var(--text-light)', lineHeight: 1.6 }}>
-          Apakah Anda yakin ingin menghapus user <strong>{userName}</strong> ({userEmail})? 
-          Tindakan ini akan menghapus semua PR, komentar, dan data terkait user ini. 
-          Tindakan ini tidak dapat dibatalkan.
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <button
-            onClick={onCancel}
-            className="btn"
-            disabled={isLoading}
-            style={{
-              background: 'var(--bg-secondary)',
-              color: 'var(--text)',
-            }}
-          >
-            Batal
-          </button>
-          <button
-            onClick={onConfirm}
-            className="btn btn-danger"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Menghapus...' : 'Ya, Hapus'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -110,7 +39,7 @@ export default function UserList() {
   }
 
   const handleConfirmDelete = () => {
-    if (deleteUserId) {
+    if (deleteUserId && !deleteUser.isLoading) {
       deleteUser.mutate({ userId: deleteUserId })
     }
   }
@@ -273,18 +202,46 @@ export default function UserList() {
                     <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                       {!isCurrentUser && (
                         <button
-                          onClick={() => handleDeleteClick(user.id, user.name, user.email)}
-                          className="btn-icon btn-danger"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteClick(user.id, user.name, user.email)
+                          }}
                           title="Hapus User"
                           disabled={deleteUser.isLoading}
+                          style={{
+                            background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            padding: '0.5rem 0.75rem',
+                            cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            transition: 'all 0.2s',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            opacity: deleteUser.isLoading ? 0.6 : 1
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!deleteUser.isLoading) {
+                              e.currentTarget.style.background = '#b91c1c'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!deleteUser.isLoading) {
+                              e.currentTarget.style.background = '#dc2626'
+                            }
+                          }}
                         >
-                          🗑️
+                          <span>🗑️</span>
+                          <span>Hapus</span>
                         </button>
                       )}
                       {isCurrentUser && (
                         <span style={{ 
                           color: 'var(--text-light)', 
-                          fontSize: '0.75rem',
+                          fontSize: '0.875rem',
                           fontStyle: 'italic'
                         }}>
                           -
@@ -301,15 +258,20 @@ export default function UserList() {
 
       <ConfirmDialog
         isOpen={deleteUserId !== null}
-        userName={deleteUserName}
-        userEmail={deleteUserEmail}
+        title="Hapus User?"
+        message={`Apakah Anda yakin ingin menghapus user "${deleteUserName}" (${deleteUserEmail})? Tindakan ini akan menghapus semua PR, komentar, dan data terkait user ini. Tindakan ini tidak dapat dibatalkan.`}
+        confirmText={deleteUser.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
+        cancelText="Batal"
+        danger={true}
+        disabled={deleteUser.isLoading}
         onConfirm={handleConfirmDelete}
         onCancel={() => {
-          setDeleteUserId(null)
-          setDeleteUserName('')
-          setDeleteUserEmail('')
+          if (!deleteUser.isLoading) {
+            setDeleteUserId(null)
+            setDeleteUserName('')
+            setDeleteUserEmail('')
+          }
         }}
-        isLoading={deleteUser.isLoading}
       />
     </>
   )
