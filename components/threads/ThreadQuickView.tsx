@@ -406,21 +406,62 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         }}
                       />
                     )}
-                    <div className="comment-content" style={{ flex: 1 }}>
+                    <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
                       <div style={{
-                        textDecoration: isCommentCompleted ? 'line-through' : 'none',
-                        color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
-                        marginBottom: '0.75rem',
-                        wordBreak: 'break-word',
-                        lineHeight: 1.6
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '0.75rem',
+                        marginBottom: isAdmin ? '0.5rem' : '0'
                       }}>
-                        {comment.content}
+                        <div style={{
+                          textDecoration: isCommentCompleted ? 'line-through' : 'none',
+                          color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                          flex: 1,
+                          wordBreak: 'break-word',
+                          lineHeight: 1.6
+                        }}>
+                          {comment.content}
+                        </div>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setShowDeleteCommentDialog(comment.id)}
+                            className="comment-delete-btn comment-delete-btn-desktop"
+                            style={{
+                              background: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.375rem',
+                              padding: '0.375rem 0.625rem',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              transition: 'background 0.2s',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                              marginTop: '-0.25rem'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#dc2626'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#ef4444'
+                            }}
+                            title="Hapus Komentar (Admin)"
+                          >
+                            <TrashIcon size={14} />
+                            <span>Hapus</span>
+                          </button>
+                        )}
                       </div>
                       {isAdmin && (
                         <div className="comment-admin-actions">
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
-                            className="comment-delete-btn"
+                            className="comment-delete-btn comment-delete-btn-mobile"
                             style={{
                               background: '#ef4444',
                               color: 'white',
@@ -449,8 +490,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             <TrashIcon size={16} />
                             <span>Hapus Komentar</span>
                           </button>
-                        </div>
-                      )}
                       <div className="comment-footer">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <UserIcon size={12} />

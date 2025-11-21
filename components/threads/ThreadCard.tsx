@@ -161,25 +161,59 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               }}
             />
           )}
-          <h3 
-            className="thread-title"
-            style={{
-              textDecoration: isCompleted ? 'line-through' : 'none',
-              color: isCompleted ? 'var(--text-light)' : 'var(--text)',
-              flex: 1,
-              margin: 0,
-              lineHeight: 1.4
-            }}
-          >
-            {thread.title}
-          </h3>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <h3 
+              className="thread-title"
+              style={{
+                textDecoration: isCompleted ? 'line-through' : 'none',
+                color: isCompleted ? 'var(--text-light)' : 'var(--text)',
+                flex: 1,
+                margin: 0,
+                lineHeight: 1.4
+              }}
+            >
+              {thread.title}
+            </h3>
+            {isAdmin && (
+              <button
+                onClick={handleDeleteThread}
+                className="thread-delete-btn thread-delete-btn-desktop"
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  padding: '0.375rem 0.625rem',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  flexShrink: 0,
+                  transition: 'background 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444'
+                }}
+                title="Hapus PR (Admin)"
+              >
+                <TrashIcon size={14} />
+                <span className="delete-btn-text-desktop">Hapus</span>
+              </button>
+            )}
+          </div>
         </div>
         
         {isAdmin && (
           <div className="thread-card-admin-actions">
             <button
               onClick={handleDeleteThread}
-              className="thread-delete-btn"
+              className="thread-delete-btn thread-delete-btn-mobile"
               style={{
                 background: '#ef4444',
                 color: 'white',
