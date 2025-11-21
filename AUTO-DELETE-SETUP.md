@@ -42,13 +42,13 @@ Jika Anda menggunakan hosting lain atau ingin menjalankan cron job secara manual
 
 1. **Setup Environment Variable**:
    ```env
-   CRON_SECRET="your-secret-key-here"
+   CRON_SECRET="c0a3e12c039e1b72c1cda36a0376811e"
    ```
 
 2. **Call API Endpoint**:
    ```bash
-   curl -X POST https://your-domain.com/api/cron/auto-delete-threads \
-     -H "Authorization: Bearer your-secret-key-here"
+   curl -X POST https://tuntasinaja-livid.vercel.app/api/cron/auto-delete-threads \
+     -H "Authorization: Bearer c0a3e12c039e1b72c1cda36a0376811e"
    ```
 
 3. **Setup Cron Job** (Linux/Mac):
@@ -57,7 +57,7 @@ Jika Anda menggunakan hosting lain atau ingin menjalankan cron job secara manual
    crontab -e
    
    # Tambahkan baris berikut untuk menjalankan setiap hari jam 00:00
-   0 0 * * * curl -X POST https://your-domain.com/api/cron/auto-delete-threads -H "Authorization: Bearer your-secret-key-here"
+   0 0 * * * curl -X POST https://tuntasinaja-livid.vercel.app/api/cron/auto-delete-threads -H "Authorization: Bearer c0a3e12c039e1b72c1cda36a0376811e"
    ```
 
 ### External Cron Services
