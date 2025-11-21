@@ -14,6 +14,7 @@ interface ThreadCardProps {
     id: string
     title: string
     date: Date
+    createdAt: Date
     author: {
       id: string
       name: string
