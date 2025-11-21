@@ -26,9 +26,9 @@ export const trpcClient = trpc.createClient({
     httpBatchLink({
       url: `${getBaseUrl()}/api/trpc`,
       // Ensure cookies are sent with requests
-      fetch: (url: string, options?: RequestInit) => {
-        return fetch(url, {
-          ...options,
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        return fetch(input, {
+          ...init,
           credentials: 'include', // Important: include cookies
         })
       },
