@@ -35,8 +35,10 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
 
+  const utils = trpc.useUtils()
+
   const createThread = trpc.thread.create.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.type === 'comment') {
         toast.info(
           `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`,
@@ -45,9 +47,12 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
       } else {
         toast.success('PR berhasil dibuat!')
       }
-      router.refresh()
       setTitle('')
       setComment('')
+      // Invalidate and refetch immediately
+      await utils.thread.getAll.invalidate()
+      await utils.thread.getAll.refetch()
+      router.refresh()
       onSuccess?.()
     },
     onError: (error) => {

@@ -11,7 +11,8 @@ export default function FeedPage() {
   const [showForm, setShowForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const { data: threads, isLoading } = trpc.thread.getAll.useQuery(undefined, {
-    refetchInterval: 5000, // Auto refresh every 5 seconds
+    refetchInterval: 3000, // Auto refresh every 3 seconds (faster)
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   })
 
   return (

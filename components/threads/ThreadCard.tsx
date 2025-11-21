@@ -56,11 +56,20 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   // Toggle thread completion
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
-    onSuccess: () => {
-      utils.userStatus.getThreadStatuses.invalidate({ threadId: thread.id })
-      utils.thread.getAll.invalidate()
-      utils.history.getUserHistory.invalidate()
+    onSuccess: async () => {
       setShowConfirmDialog(false)
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId: thread.id }),
+        utils.thread.getAll.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId: thread.id }),
+        utils.thread.getAll.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
@@ -103,9 +112,11 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   // Delete thread (Admin only)
   const deleteThread = trpc.thread.delete.useMutation({
-    onSuccess: () => {
-      utils.thread.getAll.invalidate()
+    onSuccess: async () => {
       setShowDeleteDialog(false)
+      // Invalidate and refetch immediately
+      await utils.thread.getAll.invalidate()
+      await utils.thread.getAll.refetch()
     },
     onError: (error: any) => {
       console.error('Error deleting thread:', error)
@@ -251,10 +262,19 @@ function CommentItem({
   const utils = trpc.useUtils()
 
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
-    onSuccess: () => {
-      utils.userStatus.getThreadStatuses.invalidate({ threadId })
-      utils.thread.getAll.invalidate()
-      utils.history.getUserHistory.invalidate()
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId }),
+        utils.thread.getAll.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getAll.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
@@ -275,9 +295,11 @@ function CommentItem({
 
   // Delete comment (Admin only)
   const deleteComment = trpc.thread.deleteComment.useMutation({
-    onSuccess: () => {
-      utils.thread.getAll.invalidate()
+    onSuccess: async () => {
       setShowDeleteDialog(false)
+      // Invalidate and refetch immediately
+      await utils.thread.getAll.invalidate()
+      await utils.thread.getAll.refetch()
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)

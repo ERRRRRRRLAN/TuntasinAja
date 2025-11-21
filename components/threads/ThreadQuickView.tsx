@@ -49,11 +49,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const isThreadCompleted = threadStatus?.isCompleted || false
 
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
-    onSuccess: () => {
-      utils.userStatus.getThreadStatuses.invalidate({ threadId })
-      utils.thread.getById.invalidate()
-      utils.history.getUserHistory.invalidate()
+    onSuccess: async () => {
       setShowConfirmDialog(false)
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId }),
+        utils.thread.getById.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getById.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
@@ -95,10 +104,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   }
 
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
-    onSuccess: () => {
-      utils.userStatus.getThreadStatuses.invalidate({ threadId })
-      utils.thread.getById.invalidate()
-      utils.history.getUserHistory.invalidate()
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId }),
+        utils.thread.getById.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getById.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
@@ -107,10 +125,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   })
 
   const addComment = trpc.thread.addComment.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       setCommentContent('')
-      utils.thread.getById.invalidate()
-      utils.thread.getAll.invalidate()
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.thread.getById.invalidate(),
+        utils.thread.getAll.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(),
+      ])
     },
   })
 
@@ -126,10 +152,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   // Delete thread (Admin only)
   const deleteThread = trpc.thread.delete.useMutation({
-    onSuccess: () => {
-      utils.thread.getById.invalidate()
-      utils.thread.getAll.invalidate()
+    onSuccess: async () => {
       setShowDeleteThreadDialog(false)
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.thread.getById.invalidate(),
+        utils.thread.getAll.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(),
+      ])
       onClose()
     },
     onError: (error: any) => {
@@ -141,10 +175,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   // Delete comment (Admin only)
   const deleteComment = trpc.thread.deleteComment.useMutation({
-    onSuccess: () => {
-      utils.thread.getById.invalidate()
-      utils.thread.getAll.invalidate()
+    onSuccess: async () => {
       setShowDeleteCommentDialog(null)
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.thread.getById.invalidate(),
+        utils.thread.getAll.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(),
+      ])
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
