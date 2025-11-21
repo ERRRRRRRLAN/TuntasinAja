@@ -233,28 +233,33 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               onClick={handleCloseQuickView}
               className="quickview-close-btn"
               style={{
-                background: 'var(--bg-secondary)',
-                border: 'none',
+                background: 'var(--card)',
+                border: '2px solid var(--border)',
                 cursor: 'pointer',
                 color: 'var(--text)',
-                padding: '0.5rem',
+                padding: '0.625rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '0.5rem',
-                minWidth: '40px',
-                minHeight: '40px',
-                transition: 'all 0.2s'
+                minWidth: '44px',
+                minHeight: '44px',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-tertiary)'
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.color = 'var(--primary)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.background = 'var(--card)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text)'
               }}
               aria-label="Tutup"
             >
-              <XCloseIcon size={20} />
+              <XCloseIcon size={22} />
             </button>
             {isAdmin && (
               <button
@@ -265,15 +270,15 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.5rem',
-                  padding: '0.5rem 1rem',
+                  padding: '0.5rem 0.875rem',
                   cursor: 'pointer',
-                  fontSize: '0.875rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.375rem',
                   transition: 'background 0.2s',
-                  minHeight: '40px'
+                  minHeight: '44px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#dc2626'
@@ -283,7 +288,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 }}
                 title="Hapus PR (Admin)"
               >
-                <TrashIcon size={18} />
+                <TrashIcon size={16} />
                 <span>Hapus</span>
               </button>
             )}
