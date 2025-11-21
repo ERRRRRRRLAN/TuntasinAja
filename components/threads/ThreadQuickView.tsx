@@ -8,7 +8,6 @@ import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon } from '@/components/ui/Icons'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon } from '@/components/ui/Icons'
 
 interface ThreadQuickViewProps {
   threadId: string
