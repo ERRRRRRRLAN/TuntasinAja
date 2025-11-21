@@ -273,7 +273,7 @@ export const threadRouter = createTRPCRouter({
 
   // Auto-delete threads older than 1 day (for cron job)
   autoDeleteOldThreads: publicProcedure.mutation(async () => {
-    const oneDayAgo = new Date()
+    const oneDayAgo = getUTCDate()
     oneDayAgo.setDate(oneDayAgo.getDate() - 1)
 
     // Find threads older than 1 day
