@@ -61,7 +61,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       utils.history.getUserHistory.invalidate()
       setShowConfirmDialog(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error toggling thread:', error)
       alert('Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
@@ -106,7 +106,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       utils.thread.getAll.invalidate()
       setShowDeleteDialog(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error deleting thread:', error)
       alert('Gagal menghapus thread. Silakan coba lagi.')
       setShowDeleteDialog(false)
@@ -255,7 +255,7 @@ function CommentItem({
       utils.thread.getAll.invalidate()
       utils.history.getUserHistory.invalidate()
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error toggling comment:', error)
       alert('Gagal mengubah status komentar. Silakan coba lagi.')
     },
@@ -278,7 +278,7 @@ function CommentItem({
       utils.thread.getAll.invalidate()
       setShowDeleteDialog(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error deleting comment:', error)
       alert('Gagal menghapus komentar. Silakan coba lagi.')
       setShowDeleteDialog(false)

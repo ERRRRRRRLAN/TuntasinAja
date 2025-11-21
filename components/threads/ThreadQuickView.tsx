@@ -54,7 +54,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       utils.history.getUserHistory.invalidate()
       setShowConfirmDialog(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error toggling thread:', error)
       alert('Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
@@ -99,7 +99,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       utils.thread.getById.invalidate({ id: threadId })
       utils.history.getUserHistory.invalidate()
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error toggling comment:', error)
       alert('Gagal mengubah status komentar. Silakan coba lagi.')
     },
@@ -130,7 +130,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       setShowDeleteThreadDialog(false)
       onClose()
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error deleting thread:', error)
       alert('Gagal menghapus thread. Silakan coba lagi.')
       setShowDeleteThreadDialog(false)
@@ -144,7 +144,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       utils.thread.getAll.invalidate()
       setShowDeleteCommentDialog(null)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error deleting comment:', error)
       alert('Gagal menghapus komentar. Silakan coba lagi.')
       setShowDeleteCommentDialog(null)
