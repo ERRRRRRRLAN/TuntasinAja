@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
+import { BookIcon } from '@/components/ui/Icons'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -82,11 +83,7 @@ export default function SignInPage() {
       <header className="signin-page-header">
         <div className="signin-page-header-content">
           <div className="signin-page-logo">
-            <div className="signin-logo-icon-wrapper">
-              <div className="logo-paper logo-paper-1"></div>
-              <div className="logo-paper logo-paper-2"></div>
-              <div className="logo-paper logo-paper-3"></div>
-            </div>
+            <BookIcon size={24} style={{ flexShrink: 0 }} />
             <span className="signin-page-logo-text">TuntasinAja</span>
           </div>
         </div>
