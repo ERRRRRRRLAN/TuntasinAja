@@ -38,10 +38,10 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
     onSuccess: (data) => {
       if (data.type === 'comment') {
         alert(
-          `Thread "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`
+          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`
         )
       } else {
-        alert('Thread berhasil dibuat!')
+        alert('PR berhasil dibuat!')
       }
       router.refresh()
       setTitle('')
@@ -65,7 +65,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   return (
     <>
       <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 600 }}>
-        Buat Thread Baru
+        Buat PR Baru
       </h3>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -99,7 +99,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={createThread.isLoading}>
-            {createThread.isLoading ? 'Membuat...' : 'Buat Thread'}
+            {createThread.isLoading ? 'Membuat...' : 'Buat PR'}
           </button>
           <button type="button" onClick={onSuccess} className="btn btn-secondary">
             Batal

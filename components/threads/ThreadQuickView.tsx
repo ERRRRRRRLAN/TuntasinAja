@@ -157,7 +157,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       <div className="quickview-overlay" onClick={onClose}>
         <div className="quickview-content" onClick={(e) => e.stopPropagation()}>
           <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-light)' }}>Memuat thread...</p>
+            <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
           </div>
         </div>
       </div>
@@ -175,8 +175,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         {isQuickViewOpen && thread && (
           <QuickViewConfirmDialog
             isOpen={showConfirmDialog}
-            title="Centang Thread?"
-            message={`Apakah Anda yakin ingin mencentang thread "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
+            title="Centang PR?"
+            message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
             confirmText="Ya, Centang"
             cancelText="Batal"
             onConfirm={handleConfirmThread}
@@ -220,9 +220,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   fontSize: '0.875rem',
                   fontWeight: 'bold'
                 }}
-                title="Hapus Thread (Admin)"
+                title="Hapus PR (Admin)"
               >
-                🗑️ Hapus Thread
+                🗑️ Hapus PR
               </button>
             )}
             <button
@@ -355,8 +355,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         </div>
         <QuickViewConfirmDialog
           isOpen={showDeleteThreadDialog}
-          title="Hapus Thread?"
-          message={`Apakah Anda yakin ingin menghapus thread "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
+          title="Hapus PR?"
+          message={`Apakah Anda yakin ingin menghapus PR "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
           confirmText="Ya, Hapus"
           cancelText="Batal"
           onConfirm={() => deleteThread.mutate({ id: threadId })}

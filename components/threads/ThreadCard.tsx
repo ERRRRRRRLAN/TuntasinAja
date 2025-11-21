@@ -165,7 +165,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 fontSize: '0.75rem',
                 fontWeight: 'bold'
               }}
-              title="Hapus Thread (Admin)"
+              title="Hapus PR (Admin)"
             >
               🗑️ Hapus
             </button>
@@ -207,8 +207,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
       <ConfirmDialog
         isOpen={showConfirmDialog}
-        title="Centang Thread?"
-        message={`Apakah Anda yakin ingin mencentang thread "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
+        title="Centang PR?"
+        message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
         confirmText="Ya, Centang"
         cancelText="Batal"
         onConfirm={handleConfirmThread}
@@ -216,8 +216,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       />
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        title="Hapus Thread?"
-        message={`Apakah Anda yakin ingin menghapus thread "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        title="Hapus PR?"
+        message={`Apakah Anda yakin ingin menghapus PR "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmText="Ya, Hapus"
         cancelText="Batal"
         onConfirm={handleConfirmDelete}

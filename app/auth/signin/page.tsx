@@ -132,7 +132,7 @@ export default function SignInPage() {
               textDecoration: 'none',
               fontWeight: 500,
               fontSize: '0.95rem'
-            }}>Feed</a>
+            }}>Tugas</a>
             <a href="#" style={{
               color: '#475569',
               textDecoration: 'none',
@@ -430,7 +430,7 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
               textDecoration: 'none',
               fontWeight: 500,
               fontSize: '0.95rem'
-            }}>Feed</a>
+            }}>Tugas</a>
             <a href="#" style={{
               color: '#475569',
               textDecoration: 'none',

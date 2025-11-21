@@ -21,16 +21,16 @@ export default function FeedPage() {
         <div className="container">
           <div className="page-header">
             <div>
-              <h2>Feed Tugas</h2>
+              <h2>Tugas</h2>
               <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                Klik thread untuk melihat detail • Centang checkbox untuk menandai selesai
+                Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
               </p>
             </div>
             <button
               onClick={() => setShowForm(!showForm)}
               className="btn btn-primary"
             >
-              + Buat Thread Baru
+              + Buat PR Baru
             </button>
           </div>
 
@@ -42,12 +42,12 @@ export default function FeedPage() {
 
           {isLoading ? (
             <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>Memuat thread...</p>
+              <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
             </div>
           ) : !threads || threads.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p style={{ color: 'var(--text-light)' }}>
-                Belum ada thread. Buat thread pertama Anda!
+                Belum ada PR. Buat PR pertama Anda!
               </p>
             </div>
           ) : (

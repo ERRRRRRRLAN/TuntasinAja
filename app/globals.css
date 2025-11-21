@@ -742,16 +742,119 @@ body {
   color: var(--text-light);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive Design */
+/* Mobile First Approach */
+
+/* Small devices (phones, 640px and down) */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .nav {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav-link {
+    font-size: 0.875rem;
+  }
+
+  .btn-logout {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .main-content {
+    padding: 1rem 0;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
 
-  .auth-card {
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .thread-card {
+    padding: 1rem;
+  }
+
+  .thread-title {
+    font-size: 1.25rem;
+  }
+
+  .thread-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .quickview-overlay {
+    padding: 0.5rem;
+  }
+
+  .quickview-content {
+    padding: 1rem;
+    max-height: 95vh;
+    border-radius: 0.75rem;
+  }
+
+  .quickview-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .thread-detail-title {
+    font-size: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .thread-detail-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .comment-card {
+    padding: 0.75rem;
+  }
+
+  .profile-card {
     padding: 1.5rem;
+  }
+
+  .profile-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .signin-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .signin-title {
+    font-size: 1.5rem;
   }
 
   .form-actions {
@@ -762,18 +865,107 @@ body {
     width: 100%;
   }
 
-  .profile-stats {
-    grid-template-columns: 1fr;
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .confirm-dialog-content {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+}
+
+/* Medium devices (tablets, 768px and down) */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  .header-content {
+    padding: 1rem 1.25rem;
+  }
+
+  .main-content {
+    padding: 1.5rem 0;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .page-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .threads-container {
+    gap: 1rem;
   }
 
   .quickview-content {
     padding: 1.5rem;
-    max-height: 95vh;
+    max-height: 90vh;
   }
 
   .thread-detail-meta {
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .profile-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .signin-main {
+    padding: 2rem 1rem;
+  }
+}
+
+/* Large devices (desktops, 1024px and down) */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+  }
+
+  .header-content {
+    max-width: 100%;
+  }
+}
+
+/* Extra large devices (large desktops, 1280px and up) */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+/* Landscape orientation for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .quickview-content {
+    max-height: 98vh;
+    padding: 1rem;
+  }
+
+  .main-content {
+    padding: 1rem 0;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .thread-card {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .thread-checkbox,
+  .comment-checkbox {
+    width: 24px;
+    height: 24px;
   }
 }
 
