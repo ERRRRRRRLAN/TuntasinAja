@@ -551,6 +551,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             )}
           </div>
         </div>
+        {isQuickViewOpen && thread && (
+          <QuickViewConfirmDialog
+            isOpen={showUncheckDialog}
+            title="Uncentang PR?"
+            message={`Apakah Anda yakin ingin menguncentang PR "${thread.title}"? Jika Anda mencentang lagi nanti, timer auto-hapus akan direset ke 1 hari lagi dari waktu centang tersebut.`}
+            confirmText="Ya, Uncentang"
+            cancelText="Batal"
+            onConfirm={handleConfirmUncheck}
+            onCancel={() => setShowUncheckDialog(false)}
+          />
+        )}
         <QuickViewConfirmDialog
           isOpen={showDeleteThreadDialog}
           title="Hapus PR?"
