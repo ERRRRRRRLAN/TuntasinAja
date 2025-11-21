@@ -1947,6 +1947,7 @@ body {
   .quickview-header {
     padding: 2rem;
     gap: 1.25rem;
+    position: relative;
   }
   
   .quickview-header-top {
@@ -2060,6 +2061,7 @@ body {
   
   .quickview-header {
     padding: 2.5rem;
+    position: relative;
   }
   
   .thread-detail-title {
@@ -2118,7 +2120,6 @@ body {
 .comments-section {
   padding: 1.5rem;
   flex: 1;
-  overflow-y: auto;
 }
 
 .comments-section h3 {
