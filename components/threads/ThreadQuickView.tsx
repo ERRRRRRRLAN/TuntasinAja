@@ -228,66 +228,94 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           />
         )}
         <div className="quickview-header">
-          <h2 className="thread-detail-title">
-            {session && (
-              <input
-                type="checkbox"
-                checked={isThreadCompleted}
-                onChange={() => {}}
-                onClick={handleThreadCheckboxClick}
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  cursor: 'pointer',
-                  accentColor: 'var(--primary)'
-                }}
-              />
-            )}
-            <span style={{
-              textDecoration: isThreadCompleted ? 'line-through' : 'none',
-              color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)'
-            }}>
-              {thread.title}
-            </span>
-          </h2>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {isAdmin && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', width: '100%' }}>
+            <h2 className="thread-detail-title" style={{ flex: 1, margin: 0 }}>
+              {session && (
+                <input
+                  type="checkbox"
+                  checked={isThreadCompleted}
+                  onChange={() => {}}
+                  onClick={handleThreadCheckboxClick}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    cursor: 'pointer',
+                    accentColor: 'var(--primary)',
+                    flexShrink: 0,
+                    marginRight: '0.5rem'
+                  }}
+                />
+              )}
+              <span style={{
+                textDecoration: isThreadCompleted ? 'line-through' : 'none',
+                color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
+                wordBreak: 'break-word'
+              }}>
+                {thread.title}
+              </span>
+            </h2>
+            <div className="quickview-header-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowDeleteThreadDialog(true)}
+                  className="quickview-delete-btn"
+                  style={{
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                    transition: 'background 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#dc2626'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#ef4444'
+                  }}
+                  title="Hapus PR (Admin)"
+                >
+                  <TrashIcon size={16} />
+                  <span className="delete-btn-text">Hapus</span>
+                </button>
+              )}
               <button
-                onClick={() => setShowDeleteThreadDialog(true)}
+                onClick={handleCloseQuickView}
+                className="quickview-close-btn"
                 style={{
-                  background: '#ef4444',
-                  color: 'white',
+                  background: 'none',
                   border: 'none',
-                  borderRadius: '4px',
-                  padding: '0.5rem 1rem',
                   cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 'bold'
+                  color: 'var(--text-light)',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s',
+                  minWidth: '40px',
+                  minHeight: '40px',
+                  borderRadius: '0.375rem'
                 }}
-                title="Hapus PR (Admin)"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)'
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-light)'
+                  e.currentTarget.style.background = 'none'
+                }}
+                aria-label="Tutup"
               >
-                <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                Hapus PR
+                <XCloseIcon size={24} />
               </button>
-            )}
-            <button
-              onClick={handleCloseQuickView}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-light)',
-                padding: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-light)'}
-            >
-              <XCloseIcon size={24} />
-            </button>
+            </div>
           </div>
         </div>
 
@@ -371,35 +399,53 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         }}
                       />
                     )}
-                    <div className="comment-content" style={{ flex: 1 }}>
-                      {isAdmin && (
-                        <button
-                          onClick={() => setShowDeleteCommentDialog(comment.id)}
-                          style={{
-                            position: 'absolute',
-                            top: '0.5rem',
-                            right: '0.5rem',
-                            background: '#ef4444',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            padding: '0.25rem 0.5rem',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold'
-                          }}
-                          title="Hapus Komentar (Admin)"
-                        >
-                          <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                          Hapus
-                        </button>
-                      )}
-                      <div style={{
-                        textDecoration: isCommentCompleted ? 'line-through' : 'none',
-                        color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                    <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-start', 
+                        gap: '0.5rem',
                         marginBottom: '0.5rem'
                       }}>
-                        {comment.content}
+                        <div style={{
+                          textDecoration: isCommentCompleted ? 'line-through' : 'none',
+                          color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                          flex: 1,
+                          wordBreak: 'break-word'
+                        }}>
+                          {comment.content}
+                        </div>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setShowDeleteCommentDialog(comment.id)}
+                            className="comment-delete-btn"
+                            style={{
+                              background: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.375rem',
+                              padding: '0.375rem 0.625rem',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              flexShrink: 0,
+                              transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#dc2626'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#ef4444'
+                            }}
+                            title="Hapus Komentar (Admin)"
+                          >
+                            <TrashIcon size={14} />
+                            <span className="delete-btn-text">Hapus</span>
+                          </button>
+                        )}
                       </div>
                       <div className="comment-footer">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>

@@ -162,37 +162,50 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           />
         )}
         <div style={{ flex: 1, position: 'relative' }}>
-          {isAdmin && (
-            <button
-              onClick={handleDeleteThread}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <h3 
+              className="thread-title"
               style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '0.25rem 0.5rem',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 'bold'
+                textDecoration: isCompleted ? 'line-through' : 'none',
+                color: isCompleted ? 'var(--text-light)' : 'var(--text)',
+                flex: 1,
+                margin: 0
               }}
-              title="Hapus PR (Admin)"
             >
-              <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-              Hapus
-            </button>
-          )}
-          <h3 
-            className="thread-title"
-            style={{
-              textDecoration: isCompleted ? 'line-through' : 'none',
-              color: isCompleted ? 'var(--text-light)' : 'var(--text)'
-            }}
-          >
-            {thread.title}
-          </h3>
+              {thread.title}
+            </h3>
+            {isAdmin && (
+              <button
+                onClick={handleDeleteThread}
+                className="thread-delete-btn"
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  padding: '0.375rem 0.625rem',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  flexShrink: 0,
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444'
+                }}
+                title="Hapus PR (Admin)"
+              >
+                <TrashIcon size={14} />
+                <span className="delete-btn-text">Hapus</span>
+              </button>
+            )}
+          </div>
           <div className="thread-meta">
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <UserIcon size={14} />
