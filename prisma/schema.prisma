@@ -80,14 +80,16 @@ model UserStatus {
 model History {
   id            String    @id @default(cuid())
   userId        String    @map("user_id")
-  threadId      String    @map("thread_id")
+  threadId      String?   @map("thread_id") // Optional karena thread bisa dihapus
+  threadTitle   String    @map("thread_title") // Denormalisasi: simpan title thread
+  threadAuthorId String?  @map("thread_author_id") // Denormalisasi: simpan author ID
+  threadAuthorName String? @map("thread_author_name") // Denormalisasi: simpan author name
   completedDate DateTime  @default(now()) @map("tanggal_selesai")
   createdAt     DateTime  @default(now()) @map("created_at")
 
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  thread        Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread        Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull) // SetNull agar history tidak terhapus
 
   @@unique([userId, threadId])
   @@map("histories")
 }
-

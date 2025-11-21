@@ -124,11 +124,17 @@ export default function HistoryPage() {
             <div className="history-container">
               {histories.map((history) => {
                 const deletionInfo = getDeletionInfo(new Date(history.completedDate))
+                // Handle case where thread might be null (deleted) but we have denormalized data
+                const threadTitle = history.thread?.title || (history as any).threadTitle || 'Tugas yang sudah dihapus'
+                const threadAuthor = history.thread?.author || ((history as any).threadAuthorName ? {
+                  id: (history as any).threadAuthorId || '',
+                  name: (history as any).threadAuthorName || 'Unknown'
+                } : null)
                 
                 return (
                   <div key={history.id} className="history-item">
                     <div className="history-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
-                      <h3 className="history-item-title" style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0, flex: 1 }}>{history.thread.title}</h3>
+                      <h3 className="history-item-title" style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0, flex: 1 }}>{threadTitle}</h3>
                       <div className="history-item-meta" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <span className="history-item-date" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                           <CheckIcon size={14} />

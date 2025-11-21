@@ -141,10 +141,17 @@ export const userStatusRouter = createTRPCRouter({
             create: {
               userId: ctx.session.user.id,
               threadId: input.threadId,
+              threadTitle: thread.title,
+              threadAuthorId: thread.author.id,
+              threadAuthorName: thread.author.name,
               completedDate: new Date(),
             },
             update: {
               completedDate: new Date(),
+              // Update denormalized data in case thread info changed
+              threadTitle: thread.title,
+              threadAuthorId: thread.author.id,
+              threadAuthorName: thread.author.name,
             },
           })
         }

@@ -235,5 +235,56 @@ export const threadRouter = createTRPCRouter({
 
       return { success: true }
     }),
+
+  // Auto-delete threads older than 1 day (for cron job)
+  autoDeleteOldThreads: publicProcedure.mutation(async () => {
+    const oneDayAgo = new Date()
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+
+    // Find threads older than 1 day
+    const oldThreads = await prisma.thread.findMany({
+      where: {
+        createdAt: {
+          lt: oneDayAgo,
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        histories: true,
+      },
+    })
+
+    let deletedCount = 0
+
+    // For each old thread, update histories to store thread data before deletion
+    for (const thread of oldThreads) {
+      // Update all histories related to this thread with denormalized data
+      await prisma.history.updateMany({
+        where: {
+          threadId: thread.id,
+        },
+        data: {
+          threadTitle: thread.title,
+          threadAuthorId: thread.author.id,
+          threadAuthorName: thread.author.name,
+          // threadId will be set to null by onDelete: SetNull
+        },
+      })
+
+      // Delete the thread (histories will remain with threadId = null)
+      await prisma.thread.delete({
+        where: { id: thread.id },
+      })
+
+      deletedCount++
+    }
+
+    return { deleted: deletedCount }
+  }),
 })
 

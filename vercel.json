@@ -6,5 +6,11 @@
   "regions": ["sin1"],
   "env": {
     "PRISMA_GENERATE_DATAPROXY": "true"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/auto-delete-threads",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

@@ -26,7 +26,21 @@ export const historyRouter = createTRPCRouter({
       },
     })
 
-    return histories
+    // Transform histories to include denormalized data if thread is deleted
+    return histories.map((history) => ({
+      ...history,
+      // Use denormalized data if thread is null (deleted)
+      thread: history.thread || (history.threadTitle ? {
+        id: history.threadId || '',
+        title: history.threadTitle,
+        author: history.threadAuthorId && history.threadAuthorName
+          ? {
+              id: history.threadAuthorId,
+              name: history.threadAuthorName,
+            }
+          : null,
+      } : null),
+    }))
   }),
 
   // Clean old history (for cron job)
