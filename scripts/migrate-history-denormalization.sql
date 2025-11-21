@@ -22,14 +22,25 @@ WHERE h.thread_id = t.id
 ALTER TABLE histories ALTER COLUMN thread_id DROP NOT NULL;
 
 -- Drop unique constraint on (user_id, thread_id) to allow multiple histories with null thread_id
--- PostgreSQL allows multiple NULL values in unique constraints, but it's safer to handle this explicitly
--- We'll recreate the constraint to allow NULL values properly
-ALTER TABLE histories DROP CONSTRAINT IF EXISTS histories_user_id_thread_id_key;
+-- PostgreSQL allows multiple NULL values in unique constraints, but we need to handle this explicitly
+-- to ensure history is not deleted when thread is deleted
+DO $$ 
+BEGIN
+  -- Drop the unique constraint if it exists
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'histories_user_id_thread_id_key'
+  ) THEN
+    ALTER TABLE histories DROP CONSTRAINT histories_user_id_thread_id_key;
+  END IF;
+END $$;
 
 -- Create a partial unique index that allows multiple NULL thread_id values
 -- This ensures one history per user per thread (when thread_id is not null)
 -- but allows multiple histories with null thread_id for the same user
-CREATE UNIQUE INDEX IF NOT EXISTS histories_user_id_thread_id_unique 
+-- This is important because when thread is deleted, multiple users can have history with null thread_id
+DROP INDEX IF EXISTS histories_user_id_thread_id_unique;
+CREATE UNIQUE INDEX histories_user_id_thread_id_unique 
 ON histories(user_id, thread_id) 
 WHERE thread_id IS NOT NULL;
 
