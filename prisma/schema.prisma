@@ -90,6 +90,7 @@ model History {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   thread        Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull) // SetNull agar history tidak terhapus
 
-  @@unique([userId, threadId])
+  // Note: Unique constraint removed to allow multiple histories with null threadId
+  // Partial unique index is created via SQL migration to enforce uniqueness only when threadId is not null
   @@map("histories")
 }
