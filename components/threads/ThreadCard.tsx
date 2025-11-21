@@ -294,6 +294,16 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <MessageIcon size={16} />
             <span>{thread._count.comments} komentar</span>
           </span>
+          <span style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.375rem',
+            color: 'var(--text-light)',
+            fontSize: '0.875rem'
+          }}>
+            <ClockIcon size={16} />
+            <span>Auto-hapus: {timeRemaining}</span>
+          </span>
         </div>
 
         {thread.comments.length > 0 && (
