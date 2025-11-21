@@ -1,16 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useSession, signOut } from 'next-auth/react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { BookIcon } from '@/components/ui/Icons'
 
 export default function Header() {
   const { data: session } = useSession()
   const pathname = usePathname()
-  const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navLinks = [
@@ -18,27 +16,6 @@ export default function Header() {
     { href: '/history', label: 'History' },
     { href: '/profile', label: 'Profil' },
   ]
-
-  const handleLogout = async () => {
-    if (isLoggingOut) return
-    
-    setIsLoggingOut(true)
-    try {
-      await signOut({ 
-        redirect: false,
-        callbackUrl: '/auth/signin'
-      })
-      router.push('/auth/signin')
-      router.refresh()
-    } catch (error) {
-      console.error('Logout error:', error)
-      router.push('/auth/signin')
-      router.refresh()
-    } finally {
-      setIsLoggingOut(false)
-      setIsMobileMenuOpen(false)
-    }
-  }
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -84,17 +61,6 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-          <button 
-            onClick={handleLogout} 
-            className="btn-logout"
-            disabled={isLoggingOut}
-            style={{
-              opacity: isLoggingOut ? 0.6 : 1,
-              cursor: isLoggingOut ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
-          </button>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -127,13 +93,6 @@ export default function Header() {
             {link.label}
           </Link>
         ))}
-        <button 
-          onClick={handleLogout} 
-          className="mobile-btn-logout"
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? 'Logging out...' : 'Logout'}
-        </button>
       </nav>
     </header>
   )

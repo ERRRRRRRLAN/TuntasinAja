@@ -1,18 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
 import UserList from '@/components/admin/UserList'
-import { UserIcon, CrownIcon } from '@/components/ui/Icons'
+import { UserIcon, CrownIcon, LogOutIcon } from '@/components/ui/Icons'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const utils = trpc.useUtils()
   
   const { data: profile } = trpc.auth.getProfile.useQuery(
@@ -32,6 +33,26 @@ export default function ProfilePage() {
       router.push('/auth/signin')
     }
   }, [status, router])
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+    
+    setIsLoggingOut(true)
+    try {
+      await signOut({ 
+        redirect: false,
+        callbackUrl: '/auth/signin'
+      })
+      router.push('/auth/signin')
+      router.refresh()
+    } catch (error) {
+      console.error('Logout error:', error)
+      router.push('/auth/signin')
+      router.refresh()
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   // Show loading jika sedang check session
   if (status === 'loading') {
@@ -60,7 +81,48 @@ export default function ProfilePage() {
       <main className="main-content">
         <div className="container">
           <div className="profile-card">
-            <div className="profile-header">
+            <div className="profile-header" style={{ position: 'relative' }}>
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                style={{
+                  position: 'absolute',
+                  top: '0.5rem',
+                  right: '0.5rem',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '0.5rem',
+                  padding: '0.625rem',
+                  cursor: isLoggingOut ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  opacity: isLoggingOut ? 0.6 : 1,
+                  minWidth: '44px',
+                  minHeight: '44px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoggingOut) {
+                    e.currentTarget.style.background = 'var(--bg-tertiary)'
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                }}
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogOutIcon 
+                  size={20} 
+                  style={{ 
+                    color: 'var(--text)',
+                    transition: 'transform 0.2s'
+                  }} 
+                />
+              </button>
               <div className="profile-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <UserIcon size={48} />
               </div>
