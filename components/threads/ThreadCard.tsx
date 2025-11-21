@@ -161,7 +161,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               }}
             />
           )}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+          <div className="thread-card-header-content">
             <h3 
               className="thread-title"
               style={{

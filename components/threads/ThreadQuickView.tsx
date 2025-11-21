@@ -407,13 +407,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                       />
                     )}
                     <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '0.75rem',
-                        marginBottom: isAdmin ? '0.5rem' : '0'
-                      }}>
+                      <div className="comment-content-header">
                         <div style={{
                           textDecoration: isCommentCompleted ? 'line-through' : 'none',
                           color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
