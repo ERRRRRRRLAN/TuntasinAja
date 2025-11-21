@@ -16,7 +16,8 @@
     "generate:secret": "node scripts/generate-secret.js",
     "create:admin": "node scripts/create-admin.js",
     "verify:admin": "node scripts/verify-admin.js",
-    "migrate:history": "node scripts/migrate-history-denormalization.js"
+    "migrate:history": "node scripts/migrate-history-denormalization.js",
+    "fix:timezone": "node scripts/fix-timestamp-timezone.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
