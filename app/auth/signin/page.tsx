@@ -180,7 +180,8 @@ export default function SignInPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '3rem 1rem'
+        padding: '2rem 1rem',
+        minHeight: 'calc(100vh - 80px)'
       }}>
         <div style={{
           width: '100%',
@@ -188,7 +189,7 @@ export default function SignInPage() {
         }}>
           <div style={{
             background: '#ffffff',
-            padding: '3rem',
+            padding: '2.5rem',
             borderRadius: '1rem',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)'
           }}>
@@ -196,8 +197,9 @@ export default function SignInPage() {
               fontSize: '1.75rem',
               fontWeight: 700,
               color: '#0f172a',
-              marginBottom: '2rem',
-              textAlign: 'center'
+              marginBottom: '1.5rem',
+              textAlign: 'center',
+              lineHeight: '1.3'
             }}>Masuk ke TuntasinAja</h1>
             
             {error && (
@@ -228,16 +230,7 @@ export default function SignInPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #dc2626',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontFamily: 'inherit',
-                    background: '#ffffff',
-                    boxSizing: 'border-box'
-                  }}
+                  className="form-input"
                   required
                   disabled={isLoading}
                 />
@@ -256,16 +249,7 @@ export default function SignInPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #dc2626',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontFamily: 'inherit',
-                    background: '#ffffff',
-                    boxSizing: 'border-box'
-                  }}
+                  className="form-input"
                   required
                   disabled={isLoading}
                 />
@@ -273,17 +257,9 @@ export default function SignInPage() {
 
               <button
                 type="submit"
+                className="btn btn-primary"
                 style={{
                   width: '100%',
-                  padding: '0.875rem 1.5rem',
-                  background: '#6366f1',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '1rem',
-                  fontWeight: 500,
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  opacity: isLoading ? 0.6 : 1,
                   marginTop: '0.5rem'
                 }}
                 disabled={isLoading}
