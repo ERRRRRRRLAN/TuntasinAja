@@ -2,6 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
 
 // This API route can be called by Vercel Cron Jobs or external cron services
+// Auto-deletes threads that were COMPLETED more than 24 hours ago
+// Only deletes threads that are already completed (have history entry)
+// Threads that are not completed will remain in the database
+// History remains stored for 30 days (separate cleanup)
 // To set up Vercel Cron, add this to vercel.json:
 // {
 //   "crons": [{
@@ -31,35 +35,52 @@ export default async function handler(
     const oneDayAgo = getUTCDate()
     oneDayAgo.setDate(oneDayAgo.getDate() - 1)
 
-    // Find threads older than 1 day
-    const oldThreads = await prisma.thread.findMany({
+    // Find histories where thread was completed more than 24 hours ago
+    // Only delete threads that are already completed (have history with completedDate > 24 hours)
+    const oldHistories = await prisma.history.findMany({
       where: {
-        createdAt: {
-          lt: oneDayAgo,
+        completedDate: {
+          lt: oneDayAgo, // Completed more than 24 hours ago
+        },
+        threadId: {
+          not: null, // Only threads that still exist (not already deleted)
         },
       },
       include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        histories: true,
-        comments: {
-          select: {
-            id: true,
+        thread: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            comments: {
+              select: {
+                id: true,
+              },
+            },
           },
         },
       },
     })
 
     let deletedCount = 0
+    const processedThreadIds = new Set<string>()
 
-    // For each old thread, update histories to store thread data before deletion
-    for (const thread of oldThreads) {
+    // For each old history, delete the related thread (if not already processed)
+    for (const history of oldHistories) {
+      // Skip if thread doesn't exist or already processed
+      if (!history.thread || processedThreadIds.has(history.thread.id)) {
+        continue
+      }
+
+      const thread = history.thread
+      processedThreadIds.add(thread.id)
+
       // Update all histories related to this thread with denormalized data
       // Set threadId to null explicitly to avoid unique constraint issues
+      // This ensures history remains even after thread is deleted
       await prisma.history.updateMany({
         where: {
           threadId: thread.id,
@@ -75,7 +96,7 @@ export default async function handler(
       // Get comment IDs
       const commentIds = thread.comments?.map((c) => c.id) || []
 
-      // Delete UserStatus related to this thread (cascade should handle this, but we do it explicitly to be sure)
+      // Delete UserStatus related to this thread
       await prisma.userStatus.deleteMany({
         where: {
           threadId: thread.id,
@@ -94,7 +115,7 @@ export default async function handler(
       }
 
       // Delete the thread (histories will remain with threadId = null)
-      // Cascade delete should handle UserStatus, but we already deleted them explicitly above
+      // Comments will be deleted via cascade
       await prisma.thread.delete({
         where: { id: thread.id },
       })
@@ -105,7 +126,7 @@ export default async function handler(
     return res.status(200).json({
       success: true,
       deleted: deletedCount,
-      message: `Successfully deleted ${deletedCount} thread(s) older than 1 day`,
+      message: `Successfully deleted ${deletedCount} completed thread(s) older than 24 hours from completion date`,
     })
   } catch (error) {
     console.error('Error in auto-delete-threads cron:', error)
