@@ -44,7 +44,7 @@ export default async function handler(
           lt: twoMinutesAgo, // Completed more than 2 minutes ago
         },
         threadId: {
-          not: null, // Only threads that still exist (not already deleted)
+          not: null as any, // Only threads that still exist (not already deleted)
         },
       },
       include: {
@@ -79,23 +79,22 @@ export default async function handler(
       const thread = history.thread
       processedThreadIds.add(thread.id)
 
-      // Update all histories related to this thread with denormalized data
+      // Update all histories related to this thread
       // Set threadId to null explicitly to avoid unique constraint issues
       // This ensures history remains even after thread is deleted
+      // Note: Denormalized data (threadTitle, threadAuthorId, threadAuthorName) 
+      // should already be set when history was created
       await prisma.history.updateMany({
         where: {
           threadId: thread.id,
         },
         data: {
-          threadTitle: thread.title,
-          threadAuthorId: thread.author.id,
-          threadAuthorName: thread.author.name,
-          threadId: null, // Set to null explicitly before deleting thread
+          threadId: null as any, // Set to null explicitly before deleting thread
         },
       })
 
       // Get comment IDs
-      const commentIds = thread.comments?.map((c) => c.id) || []
+      const commentIds = thread.comments?.map((c: { id: string }) => c.id) || []
 
       // Delete UserStatus related to this thread
       await prisma.userStatus.deleteMany({
