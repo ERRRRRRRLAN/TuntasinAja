@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
 
 // This API route can be called by Vercel Cron Jobs or external cron services
-// Auto-deletes threads that were COMPLETED more than 24 hours ago
+// Auto-deletes threads that were COMPLETED more than 2 minutes ago (TESTING MODE)
 // Only deletes threads that are already completed (have history entry)
 // Threads that are not completed will remain in the database
 // History remains stored for 30 days (separate cleanup)
@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 // {
 //   "crons": [{
 //     "path": "/api/cron/auto-delete-threads",
-//     "schedule": "0 0 * * *" // Every day at midnight
+//     "schedule": "* * * * *" // Every minute (for testing)
 //   }]
 // }
 
@@ -32,15 +32,16 @@ export default async function handler(
 
   try {
     const { getUTCDate } = await import('@/lib/date-utils')
-    const oneDayAgo = getUTCDate()
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+    // TESTING MODE: 2 minutes instead of 24 hours
+    const twoMinutesAgo = getUTCDate()
+    twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
 
-    // Find histories where thread was completed more than 24 hours ago
-    // Only delete threads that are already completed (have history with completedDate > 24 hours)
+    // Find histories where thread was completed more than 2 minutes ago
+    // Only delete threads that are already completed (have history with completedDate > 2 minutes)
     const oldHistories = await prisma.history.findMany({
       where: {
         completedDate: {
-          lt: oneDayAgo, // Completed more than 24 hours ago
+          lt: twoMinutesAgo, // Completed more than 2 minutes ago
         },
         threadId: {
           not: null, // Only threads that still exist (not already deleted)
@@ -126,7 +127,7 @@ export default async function handler(
     return res.status(200).json({
       success: true,
       deleted: deletedCount,
-      message: `Successfully deleted ${deletedCount} completed thread(s) older than 24 hours from completion date`,
+      message: `Successfully deleted ${deletedCount} completed thread(s) older than 2 minutes from completion date`,
     })
   } catch (error) {
     console.error('Error in auto-delete-threads cron:', error)
