@@ -160,6 +160,7 @@ export const threadRouter = createTRPCRouter({
                 create: {
                   authorId: ctx.session.user.id,
                   content: input.comment,
+                  createdAt: now,
                 },
               }
             : undefined,
