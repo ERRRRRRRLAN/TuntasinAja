@@ -18,6 +18,7 @@ interface ThreadCardProps {
     author: {
       id: string
       name: string
+      kelas?: string | null
     }
     comments: Array<{
       id: string
@@ -25,6 +26,7 @@ interface ThreadCardProps {
       author: {
         id: string
         name: string
+        kelas?: string | null
       }
     }>
     _count: {
@@ -293,6 +295,19 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <UserIcon size={16} />
             <span>{thread.author.name}</span>
+            {thread.author.kelas && (
+              <span style={{
+                display: 'inline-block',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: 600
+              }}>
+                {thread.author.kelas}
+              </span>
+            )}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
@@ -371,7 +386,7 @@ function CommentItem({
   threadId,
   statuses 
 }: { 
-  comment: { id: string; content: string; author: { id: string; name: string } }
+  comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
 }) {
@@ -493,7 +508,22 @@ function CommentItem({
         }}>
           {comment.content}
         </div>
-        <div className="comment-author">- {comment.author.name}</div>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+          <span>- {comment.author.name}</span>
+          {comment.author.kelas && (
+            <span style={{
+              display: 'inline-block',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              background: 'var(--primary)',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}>
+              {comment.author.kelas}
+            </span>
+          )}
+        </div>
       </div>
       <ConfirmDialog
         isOpen={showDeleteDialog}

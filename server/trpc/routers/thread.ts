@@ -85,6 +85,7 @@ export const threadRouter = createTRPCRouter({
               id: true,
               name: true,
               email: true,
+              kelas: true,
             },
           },
           comments: {
@@ -93,6 +94,7 @@ export const threadRouter = createTRPCRouter({
                 select: {
                   id: true,
                   name: true,
+                  kelas: true,
                 },
               },
             },

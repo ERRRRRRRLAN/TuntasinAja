@@ -373,7 +373,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="thread-detail-meta">
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <UserIcon size={14} />
-            {thread.author.name}
+            <span>{(thread as any).author?.name || 'Unknown'}</span>
+            {(thread as any).author?.kelas && (
+              <span style={{
+                display: 'inline-block',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: 600
+              }}>
+                {(thread as any).author?.kelas}
+              </span>
+            )}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <CalendarIcon size={14} />
@@ -381,7 +394,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <MessageIcon size={14} />
-            {thread.comments.length} komentar
+            {(thread as any).comments?.length || 0} komentar
           </span>
           {isThreadCompleted && timeRemaining && (
             <span style={{ 
@@ -427,12 +440,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           )}
 
           <div className="comments-list">
-            {thread.comments.length === 0 ? (
+            {!((thread as any).comments?.length > 0) ? (
               <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '2rem' }}>
                 Belum ada komentar. Jadilah yang pertama!
               </p>
             ) : (
-              thread.comments.map((comment) => {
+              ((thread as any).comments || []).map((comment: any) => {
                 const commentStatus = statuses?.find((s) => s.commentId === comment.id)
                 const isCommentCompleted = commentStatus?.isCompleted || false
 
@@ -544,7 +557,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                       <div className="comment-footer">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <UserIcon size={12} />
-                          {comment.author.name}
+                          <span>{comment?.author?.name || 'Unknown'}</span>
+                          {comment?.author?.kelas && (
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '0.125rem 0.375rem',
+                              borderRadius: '0.25rem',
+                              background: 'var(--primary)',
+                              color: 'white',
+                              fontSize: '0.75rem',
+                              fontWeight: 600
+                            }}>
+                              {comment?.author?.kelas}
+                            </span>
+                          )}
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CalendarIcon size={12} />
