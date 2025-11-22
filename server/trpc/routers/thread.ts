@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
-import { getJakartaTodayAsUTC } from '@/lib/date-utils'
+import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
