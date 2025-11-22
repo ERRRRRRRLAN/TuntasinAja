@@ -349,7 +349,38 @@ export const threadRouter = createTRPCRouter({
         },
       })
 
+      // Get comment IDs before deleting thread
+      const threadWithComments = await prisma.thread.findUnique({
+        where: { id: thread.id },
+        select: {
+          comments: {
+            select: { id: true },
+          },
+        },
+      })
+
+      const commentIds = threadWithComments?.comments.map((c) => c.id) || []
+
+      // Delete UserStatus related to this thread (cascade should handle this, but we do it explicitly to be sure)
+      await prisma.userStatus.deleteMany({
+        where: {
+          threadId: thread.id,
+        },
+      })
+
+      // Delete UserStatus related to comments in this thread
+      if (commentIds.length > 0) {
+        await prisma.userStatus.deleteMany({
+          where: {
+            commentId: {
+              in: commentIds,
+            },
+          },
+        })
+      }
+
       // Delete the thread (histories will remain with threadId = null)
+      // Cascade delete should handle UserStatus, but we already deleted them explicitly above
       await prisma.thread.delete({
         where: { id: thread.id },
       })
