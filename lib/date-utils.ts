@@ -37,15 +37,19 @@ export function toJakartaTime(date: Date): Date {
 }
 
 /**
- * Get current timestamp in UTC (for database storage)
- * PostgreSQL stores timestamps in UTC, so we need to ensure we're sending UTC
- * JavaScript Date objects are already in UTC internally, but this function
- * ensures we're explicitly working with UTC
+ * Get current timestamp in Asia/Jakarta timezone (for database storage)
+ * When database timezone is set to Asia/Jakarta, we send time in Jakarta timezone
+ * This ensures the timestamp stored matches the local time
  */
 export function getUTCDate(): Date {
-  // JavaScript Date is already in UTC internally
-  // But we return it explicitly to make the intent clear
-  return new Date()
+  // Get current time in Jakarta timezone
+  // Since database is set to Asia/Jakarta, we send Jakarta time directly
+  const now = new Date()
+  // Convert to Jakarta time (UTC+7)
+  const jakartaOffset = 7 * 60 * 60 * 1000 // 7 hours in milliseconds
+  const utcTime = now.getTime() - (now.getTimezoneOffset() * 60 * 1000)
+  const jakartaTime = new Date(utcTime + jakartaOffset)
+  return jakartaTime
 }
 
 /**
