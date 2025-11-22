@@ -1,11 +1,13 @@
 # 🗑️ Setup Auto-Delete Tugas
 
+> ⚠️ **PENTING**: Fitur auto-delete threads telah **DINONAKTIFKAN** untuk memastikan tugas tetap tersimpan dan dapat dilihat oleh user di waktu yang akan datang. Lihat [AUTO-DELETE-DISABLED.md](./AUTO-DELETE-DISABLED.md) untuk detail.
+
 Dokumentasi untuk fitur auto-delete tugas setelah 1 hari dengan history tetap tersimpan selama 30 hari.
 
-## 📋 Fitur
+## 📋 Fitur (DISABLED)
 
-- **Auto-delete tugas**: Tugas (thread) akan otomatis terhapus setelah 1 hari dari tanggal dibuat
-- **History tetap tersimpan**: History tugas tetap tersimpan selama 30 hari meskipun tugas sudah dihapus
+- ~~**Auto-delete tugas**: Tugas (thread) akan otomatis terhapus setelah 1 hari dari tanggal dibuat~~ **DISABLED**
+- **History tetap tersimpan**: History tugas tetap tersimpan selama 30 hari
 - **Denormalisasi data**: Data thread (title, author) disimpan di history untuk memastikan history tetap bisa ditampilkan meskipun thread sudah dihapus
 
 ## 🔧 Setup Database
