@@ -94,7 +94,7 @@ export default function SignInPage() {
         <div className="signin-page-container">
           <div className="signin-page-card">
             <div className="signin-page-welcome">
-              <h1 className="signin-page-title">Tempat Berkumpul Tugas X RPL 1</h1>
+              <h1 className="signin-page-title">Kumpulan Tugas SMKN 6 Tangerang Selatan</h1>
               <p className="signin-page-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
             </div>
             
