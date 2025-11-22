@@ -9,6 +9,7 @@ export const threadRouter = createTRPCRouter({
     // Get user info if logged in
     let userKelas: string | null = null
     let isAdmin = false
+    let userId: string | null = null
 
     if (ctx.session?.user) {
       const user = await prisma.user.findUnique({
@@ -20,6 +21,7 @@ export const threadRouter = createTRPCRouter({
       })
       userKelas = user?.kelas || null
       isAdmin = user?.isAdmin || false
+      userId = ctx.session.user.id
     }
 
     // If user is admin, show all threads
@@ -70,9 +72,32 @@ export const threadRouter = createTRPCRouter({
       },
     })
 
-    // Threads that are completed will remain visible in dashboard
-    // They will be automatically deleted after 24 hours from completion date
-    // History will remain stored for 30 days
+    // Filter out threads that are already completed by this user (hide from dashboard)
+    // Thread remains in database until ALL users in the same kelas complete it
+    if (userId && !isAdmin) {
+      // Get all completed thread IDs from history for this user
+      const completedThreadIds = await prisma.history.findMany({
+        where: {
+          userId: userId,
+          threadId: {
+            not: null, // Only threads that still exist
+          },
+        },
+        select: {
+          threadId: true,
+        },
+      })
+
+      const completedIds = new Set(
+        completedThreadIds
+          .map((h) => h.threadId)
+          .filter((id): id is string => id !== null)
+      )
+
+      // Filter out completed threads for this user
+      return threads.filter((thread) => !completedIds.has(thread.id))
+    }
+
     return threads
   }),
 

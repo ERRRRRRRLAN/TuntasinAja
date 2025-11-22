@@ -36,54 +36,87 @@ export default async function handler(
     const twoMinutesAgo = getUTCDate()
     twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
 
-    // Find histories where thread was completed more than 2 minutes ago
-    // Only delete threads that are already completed (have history with completedDate > 2 minutes)
-    const oldHistories = await prisma.history.findMany({
+    // Find all threads that have at least one history entry older than 2 minutes
+    // We need to check if ALL users in the same kelas have completed the thread
+    const threadsWithOldHistories = await prisma.thread.findMany({
       where: {
-        completedDate: {
-          lt: twoMinutesAgo, // Completed more than 2 minutes ago
-        },
-        threadId: {
-          not: null as any, // Only threads that still exist (not already deleted)
+        histories: {
+          some: {
+            completedDate: {
+              lt: twoMinutesAgo, // At least one user completed more than 2 minutes ago
+            },
+          },
         },
       },
       include: {
-        thread: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            comments: {
-              select: {
-                id: true,
-              },
-            },
+        author: true,
+        comments: {
+          select: {
+            id: true,
+          },
+        },
+        histories: {
+          select: {
+            userId: true,
+            completedDate: true,
           },
         },
       },
     })
 
     let deletedCount = 0
-    const processedThreadIds = new Set<string>()
 
-    // For each old history, delete the related thread (if not already processed)
-    for (const history of oldHistories) {
-      // Skip if thread doesn't exist or already processed
-      if (!history.thread || processedThreadIds.has(history.thread.id)) {
+    // For each thread, check if ALL users in the same kelas have completed it
+    for (const thread of threadsWithOldHistories) {
+      // Get author with kelas (using type assertion because Prisma client may need regeneration)
+      const author = await prisma.user.findUnique({
+        where: { id: thread.authorId },
+        select: {
+          kelas: true,
+        } as any,
+      }) as { kelas: string | null } | null
+
+      // Skip if thread author has no kelas (admin or public thread)
+      if (!author || !author.kelas) {
         continue
       }
 
-      const thread = history.thread
-      processedThreadIds.add(thread.id)
+      // Get all users in the same kelas as thread author
+      const usersInSameKelas = await prisma.user.findMany({
+        where: {
+          kelas: author.kelas,
+          isAdmin: false, // Exclude admins
+        } as any,
+        select: {
+          id: true,
+        },
+      })
+
+      const userIdsInKelas = new Set(usersInSameKelas.map((u) => u.id))
+
+      // Get all users who have completed this thread (have history)
+      const completedUserIds = new Set(
+        thread.histories.map((h: { userId: string }) => h.userId)
+      )
+
+      // Check if ALL users in the same kelas have completed the thread
+      const allUsersCompleted = Array.from(userIdsInKelas).every((userId) =>
+        completedUserIds.has(userId)
+      )
+
+      // Also check if all completions are older than 2 minutes
+      const allCompletionsOld = thread.histories.every(
+        (h: { completedDate: Date }) => h.completedDate < twoMinutesAgo
+      )
+
+      // Only delete if ALL users in kelas have completed AND all completions are old enough
+      if (!allUsersCompleted || !allCompletionsOld) {
+        continue
+      }
 
       // Update all histories related to this thread
       // Set threadId to null explicitly to avoid unique constraint issues
       // This ensures history remains even after thread is deleted
-      // Note: Denormalized data (threadTitle, threadAuthorId, threadAuthorName) 
-      // should already be set when history was created
       await prisma.history.updateMany({
         where: {
           threadId: thread.id,
