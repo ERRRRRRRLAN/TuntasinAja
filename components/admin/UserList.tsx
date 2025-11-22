@@ -107,6 +107,15 @@ export default function UserList() {
                   color: 'var(--text-light)',
                   fontSize: '0.875rem'
                 }}>
+                  Kelas
+                </th>
+                <th style={{ 
+                  padding: '0.75rem', 
+                  textAlign: 'left', 
+                  fontWeight: 600,
+                  color: 'var(--text-light)',
+                  fontSize: '0.875rem'
+                }}>
                   PR
                 </th>
                 <th style={{ 
@@ -190,6 +199,25 @@ export default function UserList() {
                           fontSize: '0.75rem'
                         }}>
                           User
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.75rem', color: 'var(--text-light)' }}>
+                      {user.kelas ? (
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          background: 'var(--primary)',
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          fontWeight: 600
+                        }}>
+                          {user.kelas}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-light)', fontStyle: 'italic', fontSize: '0.875rem' }}>
+                          -
                         </span>
                       )}
                     </td>

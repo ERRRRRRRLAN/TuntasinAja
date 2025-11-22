@@ -114,6 +114,7 @@ export const authRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string().min(6),
         isAdmin: z.boolean().optional().default(false),
+        kelas: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -126,6 +127,11 @@ export const authRouter = createTRPCRouter({
         throw new Error('Email sudah terdaftar')
       }
 
+      // Validate kelas for non-admin users
+      if (!input.isAdmin && !input.kelas) {
+        throw new Error('Kelas harus diisi untuk user non-admin')
+      }
+
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10)
 
@@ -136,12 +142,14 @@ export const authRouter = createTRPCRouter({
           email: input.email,
           passwordHash,
           isAdmin: input.isAdmin || false,
+          kelas: input.isAdmin ? null : input.kelas || null,
         },
         select: {
           id: true,
           name: true,
           email: true,
           isAdmin: true,
+          kelas: true,
           createdAt: true,
         },
       })
@@ -157,6 +165,7 @@ export const authRouter = createTRPCRouter({
         name: true,
         email: true,
         isAdmin: true,
+        kelas: true,
         createdAt: true,
         _count: {
           select: {

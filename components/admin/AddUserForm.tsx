@@ -7,14 +7,34 @@ interface AddUserFormProps {
   onSuccess?: () => void
 }
 
+// Generate list of kelas options
+const generateKelasOptions = () => {
+  const kelasOptions: string[] = []
+  const tingkat = ['X', 'XI', 'XII']
+  const jurusan = ['RPL', 'TKJ', 'BC']
+  const nomor = ['1', '2']
+
+  tingkat.forEach((t) => {
+    jurusan.forEach((j) => {
+      nomor.forEach((n) => {
+        kelasOptions.push(`${t} ${j} ${n}`)
+      })
+    })
+  })
+
+  return kelasOptions
+}
+
 export default function AddUserForm({ onSuccess }: AddUserFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [kelas, setKelas] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const utils = trpc.useUtils()
+  const kelasOptions = generateKelasOptions()
 
   const createUser = trpc.auth.createUser.useMutation({
     onSuccess: () => {
@@ -23,6 +43,7 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       setEmail('')
       setPassword('')
       setIsAdmin(false)
+      setKelas('')
       setError('')
       // Invalidate user list to refresh
       utils.auth.getAllUsers.invalidate()
@@ -58,7 +79,12 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       return
     }
 
-    createUser.mutate({ name, email, password, isAdmin })
+    if (!isAdmin && !kelas) {
+      setError('Kelas harus dipilih untuk user non-admin!')
+      return
+    }
+
+    createUser.mutate({ name, email, password, isAdmin, kelas: isAdmin ? undefined : kelas })
   }
 
   return (
@@ -151,7 +177,12 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
             <input
               type="checkbox"
               checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
+              onChange={(e) => {
+                setIsAdmin(e.target.checked)
+                if (e.target.checked) {
+                  setKelas('')
+                }
+              }}
               disabled={createUser.isLoading}
               style={{
                 width: '18px',
@@ -163,6 +194,40 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
             <span>Buat sebagai Admin</span>
           </label>
         </div>
+
+        {!isAdmin && (
+          <div className="form-group">
+            <label htmlFor="adminKelas" className="form-label">
+              Kelas *
+            </label>
+            <select
+              id="adminKelas"
+              value={kelas}
+              onChange={(e) => setKelas(e.target.value)}
+              className="form-input"
+              required
+              disabled={createUser.isLoading}
+              style={{
+                width: '100%',
+                padding: '0.625rem 0.75rem',
+                border: '1px solid var(--border)',
+                borderRadius: '0.5rem',
+                background: 'var(--card)',
+                color: 'var(--text)',
+                fontSize: '0.875rem',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="">Pilih Kelas</option>
+              {kelasOptions.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <button
           type="submit"

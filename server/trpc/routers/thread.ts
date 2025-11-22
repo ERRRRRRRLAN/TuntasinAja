@@ -5,14 +5,44 @@ import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
-  getAll: publicProcedure.query(async () => {
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    // Get user info if logged in
+    let userKelas: string | null = null
+    let isAdmin = false
+
+    if (ctx.session?.user) {
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          kelas: true,
+          isAdmin: true,
+        },
+      })
+      userKelas = user?.kelas || null
+      isAdmin = user?.isAdmin || false
+    }
+
+    // If user is admin, show all threads
+    // If user is logged in with kelas, filter by kelas
+    // If user is not logged in, show all threads (public view)
     const threads = await prisma.thread.findMany({
+      where: isAdmin
+        ? undefined // Admin sees all
+        : userKelas
+        ? {
+            // Filter by kelas of thread author
+            author: {
+              kelas: userKelas,
+            },
+          }
+        : undefined, // Public sees all
       include: {
         author: {
           select: {
             id: true,
             name: true,
             email: true,
+            kelas: true,
           },
         },
         comments: {
@@ -21,6 +51,7 @@ export const threadRouter = createTRPCRouter({
               select: {
                 id: true,
                 name: true,
+                kelas: true,
               },
             },
           },
