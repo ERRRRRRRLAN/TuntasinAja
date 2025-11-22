@@ -1,23 +1,51 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
 import CreateThreadForm from '@/components/threads/CreateThreadForm'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
-import { PlusIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 
+// Generate list of kelas options
+const generateKelasOptions = () => {
+  const kelasOptions: string[] = []
+  const tingkat = ['X', 'XI', 'XII']
+  const jurusan = ['RPL', 'TKJ', 'BC']
+  const nomor = ['1', '2']
+
+  tingkat.forEach((t) => {
+    jurusan.forEach((j) => {
+      nomor.forEach((n) => {
+        kelasOptions.push(`${t} ${j} ${n}`)
+      })
+    })
+  })
+
+  return kelasOptions
+}
+
 export default function FeedPage() {
+  const { data: session } = useSession()
   const [showForm, setShowForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
+  const [selectedKelas, setSelectedKelas] = useState<string>('all')
   const { data: threads, isLoading } = trpc.thread.getAll.useQuery(undefined, {
     refetchInterval: 3000, // Auto refresh every 3 seconds (faster)
     refetchOnWindowFocus: true, // Refetch when user returns to tab
   })
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
+  const kelasOptions = generateKelasOptions()
 
 
   // Filter and search threads
@@ -29,6 +57,14 @@ export default function FeedPage() {
     // Filter by subject (mata pelajaran)
     if (selectedSubject !== 'all') {
       filtered = filtered.filter(thread => thread.title === selectedSubject)
+    }
+
+    // Filter by kelas (admin only)
+    if (isAdmin && selectedKelas !== 'all') {
+      filtered = filtered.filter(thread => {
+        const authorKelas = (thread.author as any)?.kelas
+        return authorKelas === selectedKelas
+      })
     }
 
     // Search by comment content
@@ -43,7 +79,7 @@ export default function FeedPage() {
     }
 
     return filtered
-  }, [threads, selectedSubject, searchQuery])
+  }, [threads, selectedSubject, selectedKelas, searchQuery, isAdmin])
 
   return (
     <>
@@ -148,7 +184,7 @@ export default function FeedPage() {
               </div>
             </div>
 
-            {/* Filter ComboBox */}
+            {/* Filter ComboBox - Mata Pelajaran */}
             <div className="filter-combobox-wrapper" style={{ 
               minWidth: '220px',
               maxWidth: '300px',
@@ -160,10 +196,32 @@ export default function FeedPage() {
                 placeholder="Pilih Mata Pelajaran"
               />
             </div>
+
+            {/* Filter ComboBox - Kelas (Admin only) */}
+            {isAdmin && (
+              <div className="filter-combobox-wrapper" style={{ 
+                minWidth: '180px',
+                maxWidth: '250px',
+                width: '100%'
+              }}>
+                <ComboBox
+                  value={selectedKelas}
+                  onChange={setSelectedKelas}
+                  placeholder="Pilih Kelas"
+                  options={kelasOptions}
+                  showAllOption={true}
+                  allValue="all"
+                  allLabel="Semua Kelas"
+                  searchPlaceholder="Cari kelas..."
+                  emptyMessage="Tidak ada kelas yang ditemukan"
+                  icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+                />
+              </div>
+            )}
           </div>
 
           {/* Results Count */}
-          {(searchQuery || selectedSubject !== 'all') && (
+          {(searchQuery || selectedSubject !== 'all' || (isAdmin && selectedKelas !== 'all')) && (
             <div className="results-count" style={{
               marginBottom: '1rem',
               padding: '0.75rem 1rem',
@@ -177,7 +235,10 @@ export default function FeedPage() {
                 <span> • Pencarian: "{searchQuery}"</span>
               )}
               {selectedSubject !== 'all' && (
-                <span> • Filter: {selectedSubject}</span>
+                <span> • Mata Pelajaran: {selectedSubject}</span>
+              )}
+              {isAdmin && selectedKelas !== 'all' && (
+                <span> • Kelas: {selectedKelas}</span>
               )}
             </div>
           )}
@@ -201,7 +262,7 @@ export default function FeedPage() {
           ) : filteredThreads.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p style={{ color: 'var(--text-light)' }}>
-                {searchQuery || selectedSubject !== 'all' 
+                {searchQuery || selectedSubject !== 'all' || (isAdmin && selectedKelas !== 'all')
                   ? 'Tidak ada PR yang sesuai dengan filter/pencarian Anda.' 
                   : 'Belum ada PR. Buat PR pertama Anda!'}
               </p>
