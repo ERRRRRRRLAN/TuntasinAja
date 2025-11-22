@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
+import ComboBox from '@/components/ui/ComboBox'
+import { BookIcon } from '@/components/ui/Icons'
 
 interface AddUserFormProps {
   onSuccess?: () => void
@@ -200,32 +202,16 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
             <label htmlFor="adminKelas" className="form-label">
               Kelas *
             </label>
-            <select
-              id="adminKelas"
+            <ComboBox
               value={kelas}
-              onChange={(e) => setKelas(e.target.value)}
-              className="form-input"
-              required
-              disabled={createUser.isLoading}
-              style={{
-                width: '100%',
-                padding: '0.625rem 0.75rem',
-                border: '1px solid var(--border)',
-                borderRadius: '0.5rem',
-                background: 'var(--card)',
-                color: 'var(--text)',
-                fontSize: '0.875rem',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="">Pilih Kelas</option>
-              {kelasOptions.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
+              onChange={setKelas}
+              placeholder="Pilih Kelas"
+              options={kelasOptions}
+              showAllOption={false}
+              searchPlaceholder="Cari kelas..."
+              emptyMessage="Tidak ada kelas yang ditemukan"
+              icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+            />
           </div>
         )}
 

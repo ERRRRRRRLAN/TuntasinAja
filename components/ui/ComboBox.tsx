@@ -29,13 +29,25 @@ interface ComboBoxProps {
   onChange: (value: string) => void
   placeholder?: string
   options?: string[]
+  showAllOption?: boolean
+  allValue?: string
+  allLabel?: string
+  searchPlaceholder?: string
+  icon?: React.ReactNode
+  emptyMessage?: string
 }
 
 export default function ComboBox({ 
   value, 
   onChange, 
   placeholder = 'Pilih Mata Pelajaran',
-  options = MATA_PELAJARAN
+  options = MATA_PELAJARAN,
+  showAllOption = true,
+  allValue = 'all',
+  allLabel = 'Semua Mata Pelajaran',
+  searchPlaceholder = 'Cari mata pelajaran...',
+  icon,
+  emptyMessage = 'Tidak ada mata pelajaran yang ditemukan'
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,7 +60,7 @@ export default function ComboBox({
   )
 
   // Get display value
-  const displayValue = value === 'all' ? 'Semua Mata Pelajaran' : value || placeholder
+  const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -95,7 +107,7 @@ export default function ComboBox({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onChange('all')
+    onChange(showAllOption ? allValue : '')
     setSearchQuery('')
   }
 
@@ -111,7 +123,7 @@ export default function ComboBox({
           border: '1px solid var(--border)',
           borderRadius: '0.5rem',
           background: 'var(--card)',
-          color: value === 'all' ? 'var(--text-light)' : 'var(--text)',
+          color: value === allValue && showAllOption ? 'var(--text-light)' : 'var(--text)',
           fontSize: '0.875rem',
           textAlign: 'left',
           cursor: 'pointer',
@@ -133,13 +145,15 @@ export default function ComboBox({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
-          <FilterIcon 
-            size={18} 
-            style={{ 
-              color: 'var(--text-light)',
-              flexShrink: 0
-            }} 
-          />
+          {icon || (
+            <FilterIcon 
+              size={18} 
+              style={{ 
+                color: 'var(--text-light)',
+                flexShrink: 0
+              }} 
+            />
+          )}
           <span style={{ 
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -149,7 +163,7 @@ export default function ComboBox({
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0 }}>
-          {value !== 'all' && value && (
+          {value !== allValue && value && (
             <button
               type="button"
               onClick={handleClear}
@@ -219,7 +233,7 @@ export default function ComboBox({
             <input
               ref={inputRef}
               type="text"
-              placeholder="Cari mata pelajaran..."
+              placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -248,40 +262,42 @@ export default function ComboBox({
             maxHeight: '250px'
           }}>
             {/* All Option */}
-            <button
-              type="button"
-              onClick={() => handleSelect('all')}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: 'none',
-                background: value === 'all' ? 'var(--bg-secondary)' : 'transparent',
-                color: value === 'all' ? 'var(--primary)' : 'var(--text)',
-                fontSize: '0.875rem',
-                textAlign: 'left',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                transition: 'background 0.15s',
-                fontWeight: value === 'all' ? 600 : 400
-              }}
-              onMouseEnter={(e) => {
-                if (value !== 'all') {
-                  e.currentTarget.style.background = 'var(--bg-secondary)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (value !== 'all') {
-                  e.currentTarget.style.background = 'transparent'
-                }
-              }}
-            >
-              <span>Semua Mata Pelajaran</span>
-              {value === 'all' && (
-                <CheckIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-              )}
-            </button>
+            {showAllOption && (
+              <button
+                type="button"
+                onClick={() => handleSelect(allValue)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: 'none',
+                  background: value === allValue ? 'var(--bg-secondary)' : 'transparent',
+                  color: value === allValue ? 'var(--primary)' : 'var(--text)',
+                  fontSize: '0.875rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'background 0.15s',
+                  fontWeight: value === allValue ? 600 : 400
+                }}
+                onMouseEnter={(e) => {
+                  if (value !== allValue) {
+                    e.currentTarget.style.background = 'var(--bg-secondary)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (value !== allValue) {
+                    e.currentTarget.style.background = 'transparent'
+                  }
+                }}
+              >
+                <span>{allLabel}</span>
+                {value === allValue && (
+                  <CheckIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                )}
+              </button>
+            )}
 
             {/* Filtered Options */}
             {filteredOptions.length > 0 ? (
@@ -304,7 +320,7 @@ export default function ComboBox({
                     justifyContent: 'space-between',
                     transition: 'background 0.15s',
                     fontWeight: value === option ? 600 : 400,
-                    borderTop: '1px solid var(--border)'
+                    borderTop: showAllOption || filteredOptions.indexOf(option) > 0 ? '1px solid var(--border)' : 'none'
                   }}
                   onMouseEnter={(e) => {
                     if (value !== option) {
@@ -330,7 +346,7 @@ export default function ComboBox({
                 color: 'var(--text-light)',
                 fontSize: '0.875rem'
               }}>
-                Tidak ada mata pelajaran yang ditemukan
+                {emptyMessage}
               </div>
             )}
           </div>
