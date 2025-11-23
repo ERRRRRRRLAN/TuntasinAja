@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import ToastContainer from '@/components/ui/ToastContainer'
+import PWARegister from '@/components/PWARegister'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest.json" type="application/manifest+json" />
         <meta name="theme-color" content="#6366f1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -45,6 +47,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <ToastContainer />
+          <PWARegister />
         </Providers>
       </body>
     </html>
