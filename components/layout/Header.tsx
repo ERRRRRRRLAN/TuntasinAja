@@ -95,31 +95,32 @@ export default function Header() {
           <span>TuntasinAja</span>
         </Link>
         
-        {/* Desktop Navigation */}
-        <nav className="nav nav-desktop">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="nav-link"
+        {/* Right side: Navigation + Profile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          {/* Desktop Navigation */}
+          <nav className="nav nav-desktop">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="nav-link"
+                style={{
+                  color: pathname === link.href ? 'var(--primary)' : 'var(--text-light)',
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Profile Dropdown */}
+          {session && (
+            <div
+              ref={profileDropdownRef}
               style={{
-                color: pathname === link.href ? 'var(--primary)' : 'var(--text-light)',
+                position: 'relative',
               }}
             >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Profile Dropdown */}
-        {session && (
-          <div
-            ref={profileDropdownRef}
-            style={{
-              position: 'relative',
-              marginLeft: 'auto',
-            }}
-          >
             <button
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               style={{
@@ -228,7 +229,8 @@ export default function Header() {
               </div>
             )}
           </div>
-        )}
+          )}
+        </div>
 
         {/* Mobile Menu Button */}
         <button
