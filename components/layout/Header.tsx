@@ -13,7 +13,8 @@ export default function Header() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-  const [isProfileVisible, setIsProfileVisible] = useState(false)
+  const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
+  const [isProfileAnimating, setIsProfileAnimating] = useState(false)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const profileContentRef = useRef<HTMLDivElement>(null)
 
@@ -48,28 +49,28 @@ export default function Header() {
     }
   }, [isMobileMenuOpen])
 
-  // Handle profile dropdown visibility
+  // Handle profile dropdown render and animation state
   useEffect(() => {
     if (isProfileDropdownOpen) {
-      // Small delay to ensure DOM is ready before showing
+      // Start rendering
+      setShouldRenderProfile(true)
+      setIsProfileAnimating(false)
+      // Small delay to ensure DOM is ready before animating
       requestAnimationFrame(() => {
-        setIsProfileVisible(true)
+        requestAnimationFrame(() => {
+          setIsProfileAnimating(true)
+        })
       })
-    }
-    // Note: Don't set isProfileVisible to false immediately when closing
-    // Let the transition complete first, then unmount via render condition
-  }, [isProfileDropdownOpen])
-
-  // Handle closing animation - set isProfileVisible to false after transition
-  useEffect(() => {
-    if (!isProfileDropdownOpen && isProfileVisible) {
-      // Start closing animation - isProfileVisible will control the transition
+    } else {
+      // Start closing animation
+      setIsProfileAnimating(false)
+      // Wait for transition to complete before unmounting
       const timer = setTimeout(() => {
-        setIsProfileVisible(false)
+        setShouldRenderProfile(false)
       }, 300) // Match transition duration
       return () => clearTimeout(timer)
     }
-  }, [isProfileDropdownOpen, isProfileVisible])
+  }, [isProfileDropdownOpen])
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -180,15 +181,9 @@ export default function Header() {
             </button>
 
             {/* Dropdown Panel */}
-            {(isProfileDropdownOpen || isProfileVisible) && (
+            {shouldRenderProfile && (
               <div
                 ref={profileContentRef}
-                onTransitionEnd={(e) => {
-                  // Only handle transition end for this element (not child elements)
-                  if (e.target === profileContentRef.current && !isProfileDropdownOpen && !isProfileVisible) {
-                    // Transition completed, dropdown can be safely unmounted
-                  }
-                }}
                 style={{
                   position: 'absolute',
                   top: 'calc(100% + 0.5rem)',
@@ -200,11 +195,11 @@ export default function Header() {
                   minWidth: '200px',
                   zIndex: 1000,
                   overflow: 'hidden',
-                  opacity: isProfileVisible ? 1 : 0,
-                  transform: isProfileVisible ? 'translateY(0)' : 'translateY(-10px)',
+                  opacity: isProfileAnimating ? 1 : 0,
+                  transform: isProfileAnimating ? 'translateY(0)' : 'translateY(-10px)',
                   transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
-                  pointerEvents: isProfileVisible ? 'auto' : 'none',
-                  visibility: isProfileVisible ? 'visible' : 'hidden'
+                  pointerEvents: isProfileAnimating ? 'auto' : 'none',
+                  visibility: shouldRenderProfile ? 'visible' : 'hidden'
                 }}
               >
                 <div style={{ padding: '0.5rem' }}>

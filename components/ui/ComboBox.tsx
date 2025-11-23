@@ -54,7 +54,8 @@ export default function ComboBox({
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   // Filter options based on search query
   const filteredOptions = options.filter(option =>
@@ -64,28 +65,28 @@ export default function ComboBox({
   // Get display value
   const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
 
-  // Handle visibility based on isOpen
+  // Handle render and animation state
   useEffect(() => {
     if (isOpen) {
-      // Small delay to ensure DOM is ready before showing
+      // Start rendering
+      setShouldRender(true)
+      setIsAnimating(false)
+      // Small delay to ensure DOM is ready before animating
       requestAnimationFrame(() => {
-        setIsVisible(true)
+        requestAnimationFrame(() => {
+          setIsAnimating(true)
+        })
       })
-    }
-    // Note: Don't set isVisible to false immediately when closing
-    // Let the transition complete first, then unmount via render condition
-  }, [isOpen])
-
-  // Handle closing animation - set isVisible to false after transition
-  useEffect(() => {
-    if (!isOpen && isVisible) {
-      // Start closing animation - isVisible will control the transition
+    } else {
+      // Start closing animation
+      setIsAnimating(false)
+      // Wait for transition to complete before unmounting
       const timer = setTimeout(() => {
-        setIsVisible(false)
+        setShouldRender(false)
       }, 200) // Match transition duration
       return () => clearTimeout(timer)
     }
-  }, [isOpen, isVisible])
+  }, [isOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -241,16 +242,10 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {(isOpen || isVisible) && (
+      {shouldRender && (
         <div
           ref={dropdownRef}
           className="combobox-dropdown"
-          onTransitionEnd={(e) => {
-            // Only handle transition end for this element (not child elements)
-            if (e.target === dropdownRef.current && !isOpen && !isVisible) {
-              // Transition completed, dropdown can be safely unmounted
-            }
-          }}
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
@@ -265,11 +260,11 @@ export default function ComboBox({
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(-10px)',
+            opacity: isAnimating ? 1 : 0,
+            transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
             transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
-            pointerEvents: isVisible ? 'auto' : 'none',
-            visibility: isVisible ? 'visible' : 'hidden'
+            pointerEvents: isAnimating ? 'auto' : 'none',
+            visibility: shouldRender ? 'visible' : 'hidden'
           }}
         >
           {/* Search Input */}
