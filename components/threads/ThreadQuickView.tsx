@@ -8,6 +8,7 @@ import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -348,18 +349,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           
           <div className="quickview-title-section" style={{ position: 'relative' }}>
             {session && (
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={isThreadCompleted}
-                onChange={() => {}}
                 onClick={handleThreadCheckboxClick}
-                style={{
-                  width: '22px',
-                  height: '22px',
-                  cursor: 'pointer',
-                  accentColor: 'var(--primary)',
-                  flexShrink: 0
-                }}
+                isLoading={toggleThread.isLoading}
+                disabled={toggleThread.isLoading}
+                size={28}
               />
             )}
             <h2 className="thread-detail-title" style={{ 
@@ -466,27 +461,23 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 return (
                   <div key={comment.id} className="comment-card" style={{ position: 'relative' }}>
                     {session && (
-                      <input
-                        type="checkbox"
-                        checked={isCommentCompleted}
-                        onChange={() => {}}
-                        onClick={() => {
-                          if (session) {
-                            toggleComment.mutate({
-                              threadId,
-                              commentId: comment.id,
-                              isCompleted: !isCommentCompleted,
-                            })
-                          }
-                        }}
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          cursor: 'pointer',
-                          marginTop: '0.25rem',
-                          accentColor: 'var(--primary)'
-                        }}
-                      />
+                      <div style={{ marginTop: '0.25rem' }}>
+                        <Checkbox
+                          checked={isCommentCompleted}
+                          onClick={() => {
+                            if (session && !toggleComment.isLoading) {
+                              toggleComment.mutate({
+                                threadId,
+                                commentId: comment.id,
+                                isCompleted: !isCommentCompleted,
+                              })
+                            }
+                          }}
+                          isLoading={toggleComment.isLoading}
+                          disabled={toggleComment.isLoading}
+                          size={24}
+                        />
+                      </div>
                     )}
                     <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
                       <div className="comment-content-header">

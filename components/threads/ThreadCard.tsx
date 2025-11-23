@@ -8,6 +8,7 @@ import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, ClockIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface ThreadCardProps {
   thread: {
@@ -193,19 +194,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       <div className="thread-card-content">
         <div className="thread-card-header">
           {session && (
-            <input
-              type="checkbox"
+            <Checkbox
               checked={isCompleted}
-              onChange={() => {}}
               onClick={handleCheckboxClick}
-              className="thread-checkbox"
-              style={{
-                width: '20px',
-                height: '20px',
-                cursor: 'pointer',
-                accentColor: 'var(--primary)',
-                flexShrink: 0
-              }}
+              isLoading={toggleThread.isLoading}
+              disabled={toggleThread.isLoading}
+              size={28}
             />
           )}
           <div className="thread-card-header-content" style={{ position: 'relative' }}>
@@ -474,21 +468,15 @@ function CommentItem({
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
       {session && (
-        <input
-          type="checkbox"
-          checked={isCompleted}
-          onChange={() => {}}
-          onClick={handleCheckboxClick}
-          className="comment-checkbox"
-          style={{
-            width: '18px',
-            height: '18px',
-            cursor: 'pointer',
-            marginTop: '0.25rem',
-            accentColor: 'var(--primary)',
-            flexShrink: 0
-          }}
-        />
+        <div style={{ marginTop: '0.25rem' }}>
+          <Checkbox
+            checked={isCompleted}
+            onClick={handleCheckboxClick}
+            isLoading={toggleComment.isLoading}
+            disabled={toggleComment.isLoading}
+            size={24}
+          />
+        </div>
       )}
       <div className="comment-text" style={{ flex: 1 }}>
         {isAdmin && (
