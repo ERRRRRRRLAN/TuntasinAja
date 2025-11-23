@@ -4,28 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
-import { XCloseIcon } from '@/components/ui/Icons'
-
-const MATA_PELAJARAN = [
-  'Matematika',
-  'Bahasa Indonesia',
-  'Bahasa Inggris',
-  'Fisika',
-  'Kimia',
-  'Biologi',
-  'Sejarah',
-  'Geografi',
-  'Ekonomi',
-  'Sosiologi',
-  'Pendidikan Agama',
-  'Pendidikan Kewarganegaraan',
-  'Seni Budaya',
-  'Pendidikan Jasmani',
-  'TIK',
-  'Bahasa Jawa',
-  'Bahasa Sunda',
-  'Prakarya',
-]
+import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
+import ComboBox from '@/components/ui/ComboBox'
 
 interface CreateThreadQuickViewProps {
   onClose: () => void
@@ -162,19 +142,15 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           <form onSubmit={handleSubmit} style={{ padding: '0' }}>
             <div className="form-group">
               <label htmlFor="threadTitle">Nama Mata Pelajaran *</label>
-              <select
-                id="threadTitle"
+              <ComboBox
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              >
-                <option value="">-- Pilih Mata Pelajaran --</option>
-                {MATA_PELAJARAN.map((mapel) => (
-                  <option key={mapel} value={mapel}>
-                    {mapel}
-                  </option>
-                ))}
-              </select>
+                onChange={setTitle}
+                placeholder="-- Pilih Mata Pelajaran --"
+                showAllOption={false}
+                searchPlaceholder="Cari mata pelajaran..."
+                emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+              />
               <small className="form-hint">Pilih mata pelajaran dari daftar</small>
             </div>
 

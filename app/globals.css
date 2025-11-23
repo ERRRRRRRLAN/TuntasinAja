@@ -1213,6 +1213,11 @@ body {
   }
 }
 
+/* ComboBox Dropdown Animations */
+.combobox-dropdown.closing {
+  animation: fadeOutUp 0.2s ease-out;
+}
+
 /* QuickView styles are defined below in Thread QuickView Responsive section */
 
 /* Responsive Design */

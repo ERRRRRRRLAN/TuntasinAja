@@ -191,7 +191,7 @@ export default function Header() {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   minWidth: '200px',
                   zIndex: 1000,
-                  animation: isProfileClosing ? 'slideOutDown 0.3s ease-out' : 'slideDown 0.3s ease-out',
+                  animation: isProfileClosing ? 'slideOutUp 0.3s ease-out' : 'slideDown 0.3s ease-out',
                   overflow: 'hidden',
                 }}
               >

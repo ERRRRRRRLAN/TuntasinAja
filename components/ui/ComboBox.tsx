@@ -50,9 +50,11 @@ export default function ComboBox({
   emptyMessage = 'Tidak ada mata pelajaran yang ditemukan'
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Filter options based on search query
   const filteredOptions = options.filter(option =>
@@ -66,12 +68,19 @@ export default function ComboBox({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-        setSearchQuery('')
+        // Start exit animation
+        setIsClosing(true)
+        const timer = setTimeout(() => {
+          setIsOpen(false)
+          setIsClosing(false)
+          setSearchQuery('')
+        }, 200) // Match animation duration
+        timeoutRef.current = timer
       }
     }
 
     if (isOpen) {
+      setIsClosing(false)
       document.addEventListener('mousedown', handleClickOutside)
       // Focus input when opened
       setTimeout(() => {
@@ -81,6 +90,9 @@ export default function ComboBox({
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
   }, [isOpen])
 
@@ -90,19 +102,36 @@ export default function ComboBox({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsOpen(false)
-        setSearchQuery('')
+        // Start exit animation
+        setIsClosing(true)
+        const timer = setTimeout(() => {
+          setIsOpen(false)
+          setIsClosing(false)
+          setSearchQuery('')
+        }, 200) // Match animation duration
+        timeoutRef.current = timer
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
   }, [isOpen])
 
   const handleSelect = (option: string) => {
     onChange(option)
-    setIsOpen(false)
-    setSearchQuery('')
+    // Start exit animation
+    setIsClosing(true)
+    const timer = setTimeout(() => {
+      setIsOpen(false)
+      setIsClosing(false)
+      setSearchQuery('')
+    }, 200) // Match animation duration
+    timeoutRef.current = timer
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -116,7 +145,21 @@ export default function ComboBox({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (isOpen) {
+            // Start exit animation
+            setIsClosing(true)
+            const timer = setTimeout(() => {
+              setIsOpen(false)
+              setIsClosing(false)
+              setSearchQuery('')
+            }, 200)
+            timeoutRef.current = timer
+          } else {
+            setIsOpen(true)
+            setIsClosing(false)
+          }
+        }}
         style={{
           width: '100%',
           padding: '0.625rem 0.75rem 0.625rem 2.5rem',
@@ -205,9 +248,9 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {isOpen && (
+      {(isOpen || isClosing) && (
         <div
-          className="combobox-dropdown"
+          className={`combobox-dropdown ${isClosing ? 'closing' : ''}`}
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
@@ -222,7 +265,7 @@ export default function ComboBox({
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            animation: 'fadeInUp 0.2s ease-out'
+            animation: isClosing ? 'fadeOutUp 0.2s ease-out' : 'fadeInUp 0.2s ease-out'
           }}
         >
           {/* Search Input */}
