@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
@@ -9,6 +9,7 @@ import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -28,6 +29,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
+  const handleCloseQuickView = useCallback(() => {
+    setShowConfirmDialog(false)
+    setIsQuickViewOpen(false)
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      document.body.style.overflow = ''
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
+
   // Reset confirm dialog when quickview is closed or threadId changes
   useEffect(() => {
     setIsQuickViewOpen(true)
@@ -35,6 +48,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     
     // Lock body scroll when quickview is open (mobile)
     document.body.style.overflow = 'hidden'
+    
+    // Push state untuk back handler
+    window.history.pushState({ quickview: true }, '')
     
     // Small delay to ensure DOM is ready before showing
     requestAnimationFrame(() => {
@@ -49,6 +65,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       document.body.style.overflow = ''
     }
   }, [threadId])
+
+  // Handle browser back button untuk quickview
+  useEffect(() => {
+    if (!isQuickViewOpen || !isVisible) return
+
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault()
+      handleCloseQuickView()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [isQuickViewOpen, isVisible, handleCloseQuickView])
 
   const { data: thread, isLoading } = trpc.thread.getById.useQuery({ id: threadId })
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -152,20 +181,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     })
   }
 
-  const handleCloseQuickView = () => {
-    setShowConfirmDialog(false)
-    setIsQuickViewOpen(false)
-    setIsVisible(false)
-    
-    // Wait for transition to complete before closing
-    const timer = setTimeout(() => {
-      document.body.style.overflow = ''
-      onClose()
-    }, 300) // Match transition duration
-    
-    return () => clearTimeout(timer)
-  }
-
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
     if (e.target === overlayRef.current && !isVisible) {
@@ -201,7 +216,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      toast.error('Gagal mengubah status komentar. Silakan coba lagi.')
+      toast.error('Gagal mengubah status sub tugas. Silakan coba lagi.')
     },
   })
 
@@ -271,7 +286,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
-      toast.error('Gagal menghapus komentar. Silakan coba lagi.')
+      toast.error('Gagal menghapus sub tugas. Silakan coba lagi.')
       setShowDeleteCommentDialog(null)
     },
   })
@@ -338,7 +353,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           <QuickViewConfirmDialog
             isOpen={showConfirmDialog}
             title="Centang PR?"
-            message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
+            message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua sub tugas di dalamnya akan otomatis tercentang.`}
             confirmText="Ya, Centang"
             cancelText="Batal"
             onConfirm={handleConfirmThread}
@@ -468,7 +483,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <MessageIcon size={14} />
-            {(thread as any).comments?.length || 0} komentar
+            {(thread as any).comments?.length || 0} sub tugas
           </span>
           {isThreadCompleted && timeRemaining && (
             <span style={{ 
@@ -484,13 +499,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         </div>
 
         <div className="comments-section">
-          <h3 style={{ marginBottom: '1.5rem' }}>Komentar</h3>
+          <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
           {session && (
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="form-group">
                 <label htmlFor="newComment" className="form-label">
-                  Tambah Komentar
+                  Tambah Sub Tugas
                 </label>
                 <textarea
                   id="newComment"
@@ -498,7 +513,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   onChange={(e) => setCommentContent(e.target.value)}
                   rows={3}
                   className="form-input"
-                  placeholder="Tulis komentar Anda..."
+                  placeholder="Tulis sub tugas Anda..."
                   required
                   disabled={addComment.isLoading}
                 />
@@ -508,7 +523,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 className="btn btn-primary"
                 disabled={addComment.isLoading || !commentContent.trim()}
               >
-                {addComment.isLoading ? 'Mengirim...' : 'Tambah Komentar'}
+                {addComment.isLoading ? 'Mengirim...' : 'Tambah Sub Tugas'}
               </button>
             </form>
           )}
@@ -516,7 +531,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           <div className="comments-list">
             {!((thread as any).comments?.length > 0) ? (
               <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '2rem' }}>
-                Belum ada komentar. Jadilah yang pertama!
+                Belum ada sub tugas. Jadilah yang pertama!
               </p>
             ) : (
               ((thread as any).comments || []).map((comment: any) => {
@@ -587,9 +602,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               e.currentTarget.style.background = '#ef4444'
                             }}
                             title={
-                              isAdmin ? "Hapus Komentar (Admin)" :
-                              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
-                              "Hapus Komentar Saya"
+                              isAdmin ? "Hapus Sub Tugas (Admin)" :
+                              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
+                              "Hapus Sub Tugas Saya"
                             }
                           >
                             <TrashIcon size={14} />
@@ -626,13 +641,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               e.currentTarget.style.background = '#ef4444'
                             }}
                             title={
-                              isAdmin ? "Hapus Komentar (Admin)" :
-                              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
-                              "Hapus Komentar Saya"
+                              isAdmin ? "Hapus Sub Tugas (Admin)" :
+                              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
+                              "Hapus Sub Tugas Saya"
                             }
                           >
                             <TrashIcon size={16} />
-                            <span>Hapus Komentar</span>
+                            <span>Hapus Sub Tugas</span>
                           </button>
                         </div>
                       )}
@@ -693,8 +708,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         {showDeleteCommentDialog && (
           <QuickViewConfirmDialog
             isOpen={!!showDeleteCommentDialog}
-            title="Hapus Komentar?"
-            message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+            title="Hapus Sub Tugas?"
+            message="Apakah Anda yakin ingin menghapus sub tugas ini? Tindakan ini tidak dapat dibatalkan."
             confirmText="Ya, Hapus"
             cancelText="Batal"
             onConfirm={() => {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -54,6 +55,9 @@ export default function ConfirmDialog({
       return () => clearTimeout(timer)
     }
   }, [isOpen])
+
+  // Handle browser back button
+  useBackHandler(isOpen && isVisible && !disabled, onCancel)
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)

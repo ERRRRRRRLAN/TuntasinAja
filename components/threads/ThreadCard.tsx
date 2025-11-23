@@ -323,7 +323,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
-            <span>{thread._count.comments} komentar</span>
+            <span>{thread._count.comments} sub tugas</span>
           </span>
           {isCompleted && timeRemaining && (
             <span style={{ 
@@ -352,7 +352,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             ))}
             {thread.comments.length > 2 && (
               <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
-                + {thread.comments.length - 2} komentar lainnya
+                + {thread.comments.length - 2} sub tugas lainnya
               </p>
             )}
           </div>
@@ -362,7 +362,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       <ConfirmDialog
         isOpen={showConfirmDialog}
         title="Centang PR?"
-        message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua komentar di dalamnya akan otomatis tercentang.`}
+        message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua sub tugas di dalamnya akan otomatis tercentang.`}
         confirmText="Ya, Centang"
         cancelText="Batal"
         onConfirm={handleConfirmThread}
@@ -436,7 +436,7 @@ function CommentItem({
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      toast.error('Gagal mengubah status komentar. Silakan coba lagi.')
+      toast.error('Gagal mengubah status sub tugas. Silakan coba lagi.')
     },
   })
 
@@ -461,7 +461,7 @@ function CommentItem({
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
-      toast.error('Gagal menghapus komentar. Silakan coba lagi.')
+      toast.error('Gagal menghapus sub tugas. Silakan coba lagi.')
       setShowDeleteDialog(false)
     },
   })
@@ -508,9 +508,9 @@ function CommentItem({
               fontWeight: 'bold'
             }}
             title={
-              isAdmin ? "Hapus Komentar (Admin)" :
-              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
-              "Hapus Komentar Saya"
+              isAdmin ? "Hapus Sub Tugas (Admin)" :
+              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
+              "Hapus Sub Tugas Saya"
             }
           >
             <TrashIcon size={12} />
@@ -543,8 +543,8 @@ function CommentItem({
       </div>
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        title="Hapus Komentar?"
-        message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+        title="Hapus Sub Tugas?"
+        message="Apakah Anda yakin ingin menghapus sub tugas ini? Tindakan ini tidak dapat dibatalkan."
         confirmText="Ya, Hapus"
         cancelText="Batal"
         onConfirm={handleConfirmDelete}

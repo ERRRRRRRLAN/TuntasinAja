@@ -57,13 +57,18 @@ export default function Checkbox({
           width: '100%',
           height: '100%',
           borderRadius: '50%',
-          border: `2px solid ${checked ? 'var(--primary)' : isHovered ? 'var(--primary)' : 'var(--border)'}`,
-          background: checked ? 'var(--primary)' : 'transparent',
+          border: `3px solid ${checked ? 'var(--primary)' : isHovered ? 'var(--primary)' : '#cbd5e1'}`,
+          background: checked ? 'var(--primary)' : '#ffffff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           transition: 'all 0.2s ease',
           position: 'relative',
+          boxShadow: checked 
+            ? '0 2px 4px rgba(99, 102, 241, 0.3)' 
+            : isHovered 
+            ? '0 2px 4px rgba(99, 102, 241, 0.2)' 
+            : '0 1px 2px rgba(0, 0, 0, 0.1)',
         }}
       >
         {isLoading ? (

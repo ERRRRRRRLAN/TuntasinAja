@@ -125,7 +125,7 @@ export default function UserList() {
                   color: 'var(--text-light)',
                   fontSize: '0.875rem'
                 }}>
-                  Komentar
+                  Sub Tugas
                 </th>
                 <th style={{ 
                   padding: '0.75rem', 
@@ -290,7 +290,7 @@ export default function UserList() {
       <ConfirmDialog
         isOpen={deleteUserId !== null}
         title="Hapus User?"
-        message={`Apakah Anda yakin ingin menghapus user "${deleteUserName}" (${deleteUserEmail})? Tindakan ini akan menghapus semua PR, komentar, dan data terkait user ini. Tindakan ini tidak dapat dibatalkan.`}
+        message={`Apakah Anda yakin ingin menghapus user "${deleteUserName}" (${deleteUserEmail})? Tindakan ini akan menghapus semua PR, sub tugas, dan data terkait user ini. Tindakan ini tidak dapat dibatalkan.`}
         confirmText={deleteUser.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
         cancelText="Batal"
         danger={true}

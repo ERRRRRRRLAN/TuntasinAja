@@ -27,7 +27,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
     if (duration > 0) {
       const timer = setTimeout(() => {
         setIsVisible(false)
-        setTimeout(onClose, 300) // Wait for fade out animation
+        setTimeout(onClose, 400) // Wait for slide out animation
       }, duration)
 
       return () => clearTimeout(timer)
@@ -79,6 +79,9 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
         background: color.bg,
         border: `1px solid ${color.border}`,
         color: color.text,
+        animation: isVisible 
+          ? 'toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+          : 'toastSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       }}
       onClick={onClose}
     >
@@ -91,7 +94,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
         onClick={(e) => {
           e.stopPropagation()
           setIsVisible(false)
-          setTimeout(onClose, 300)
+          setTimeout(onClose, 400)
         }}
         aria-label="Close"
       >

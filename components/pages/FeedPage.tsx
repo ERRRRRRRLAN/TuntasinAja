@@ -150,7 +150,7 @@ export default function FeedPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Cari berdasarkan isi komentar..."
+                  placeholder="Cari berdasarkan isi sub tugas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{

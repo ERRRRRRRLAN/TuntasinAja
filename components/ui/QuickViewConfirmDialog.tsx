@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface QuickViewConfirmDialogProps {
   isOpen: boolean
@@ -51,6 +52,9 @@ export default function QuickViewConfirmDialog({
       return () => clearTimeout(timer)
     }
   }, [isOpen])
+
+  // Handle browser back button
+  useBackHandler(isOpen && isVisible, onCancel)
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)

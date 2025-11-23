@@ -41,7 +41,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
     onSuccess: async (data) => {
       if (data.type === 'comment') {
         toast.info(
-          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai komentar.`,
+          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`,
           5000
         )
       } else {
@@ -94,7 +94,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="threadComment">Komentar Awal (Deskripsi Tugas)</label>
+          <label htmlFor="threadComment">Sub Tugas Awal (Deskripsi Tugas)</label>
           <textarea
             id="threadComment"
             value={comment}
