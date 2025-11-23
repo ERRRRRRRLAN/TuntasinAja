@@ -827,14 +827,6 @@ body {
   align-items: start;
   gap: 0.5rem;
   animation: fadeInUp 0.3s ease-out;
-  transition: background 0.2s ease;
-}
-
-.comment-item:hover {
-  background: var(--bg-secondary);
-  margin: 0 -0.75rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
 }
 
 .comment-item:last-child {
