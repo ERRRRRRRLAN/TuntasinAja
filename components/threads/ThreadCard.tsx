@@ -291,24 +291,27 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </div>
         )}
         
-        <div className="thread-meta">
+        <div className="thread-meta" style={{ position: 'relative', paddingRight: thread.author.kelas ? '80px' : '0' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <UserIcon size={16} />
             <span>{thread.author.name}</span>
-            {thread.author.kelas && (
-              <span style={{
-                display: 'inline-block',
-                padding: '0.125rem 0.375rem',
-                borderRadius: '0.25rem',
-                background: 'var(--primary)',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: 600
-              }}>
-                {thread.author.kelas}
-              </span>
-            )}
           </span>
+          {thread.author.kelas && (
+            <span style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              display: 'inline-block',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              background: 'var(--primary)',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}>
+              {thread.author.kelas}
+            </span>
+          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'd MMM yyyy', { locale: id })}</span>
@@ -462,7 +465,7 @@ function CommentItem({
   }
 
   return (
-    <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative' }}>
+    <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
       {session && (
         <input
           type="checkbox"
@@ -508,7 +511,7 @@ function CommentItem({
         }}>
           {comment.content}
         </div>
-        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative' }}>
           <span>- {comment.author.name}</span>
           {comment.author.kelas && (
             <span style={{
@@ -518,7 +521,8 @@ function CommentItem({
               background: 'var(--primary)',
               color: 'white',
               fontSize: '0.75rem',
-              fontWeight: 600
+              fontWeight: 600,
+              marginLeft: 'auto'
             }}>
               {comment.author.kelas}
             </span>

@@ -370,24 +370,27 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </div>
         </div>
 
-        <div className="thread-detail-meta">
+        <div className="thread-detail-meta" style={{ position: 'relative', paddingRight: (thread as any).author?.kelas ? '80px' : '0' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <UserIcon size={14} />
             <span>{(thread as any).author?.name || 'Unknown'}</span>
-            {(thread as any).author?.kelas && (
-              <span style={{
-                display: 'inline-block',
-                padding: '0.125rem 0.375rem',
-                borderRadius: '0.25rem',
-                background: 'var(--primary)',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: 600
-              }}>
-                {(thread as any).author?.kelas}
-              </span>
-            )}
           </span>
+          {(thread as any).author?.kelas && (
+            <span style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              display: 'inline-block',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              background: 'var(--primary)',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}>
+              {(thread as any).author?.kelas}
+            </span>
+          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <CalendarIcon size={14} />
             {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}
@@ -554,24 +557,27 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           </button>
                         </div>
                       )}
-                      <div className="comment-footer">
+                      <div className="comment-footer" style={{ position: 'relative' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <UserIcon size={12} />
                           <span>{comment?.author?.name || 'Unknown'}</span>
-                          {comment?.author?.kelas && (
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '0.125rem 0.375rem',
-                              borderRadius: '0.25rem',
-                              background: 'var(--primary)',
-                              color: 'white',
-                              fontSize: '0.75rem',
-                              fontWeight: 600
-                            }}>
-                              {comment?.author?.kelas}
-                            </span>
-                          )}
                         </span>
+                        {comment?.author?.kelas && (
+                          <span style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            display: 'inline-block',
+                            padding: '0.125rem 0.375rem',
+                            borderRadius: '0.25rem',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}>
+                            {comment?.author?.kelas}
+                          </span>
+                        )}
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CalendarIcon size={12} />
                           {format(new Date(comment.createdAt), 'd MMM yyyy, HH:mm', { locale: id })}
