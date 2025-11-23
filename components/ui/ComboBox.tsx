@@ -56,6 +56,15 @@ export default function ComboBox({
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
   // Filter options based on search query
   const filteredOptions = options.filter(option =>
     option.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,6 +75,8 @@ export default function ComboBox({
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    if (!isOpen || isClosing) return
+
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         // Start exit animation
@@ -79,26 +90,20 @@ export default function ComboBox({
       }
     }
 
-    if (isOpen) {
-      setIsClosing(false)
-      document.addEventListener('mousedown', handleClickOutside)
-      // Focus input when opened
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
-    }
+    document.addEventListener('mousedown', handleClickOutside)
+    // Focus input when opened
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
     }
-  }, [isOpen])
+  }, [isOpen, isClosing])
 
   // Handle keyboard navigation
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || isClosing) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -116,13 +121,11 @@ export default function ComboBox({
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
     }
-  }, [isOpen])
+  }, [isOpen, isClosing])
 
   const handleSelect = (option: string) => {
+    if (isClosing) return // Prevent selection during closing animation
     onChange(option)
     // Start exit animation
     setIsClosing(true)
@@ -146,6 +149,7 @@ export default function ComboBox({
       <button
         type="button"
         onClick={() => {
+          if (isClosing) return // Prevent toggle during closing animation
           if (isOpen) {
             // Start exit animation
             setIsClosing(true)
@@ -265,7 +269,8 @@ export default function ComboBox({
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            animation: isClosing ? 'fadeOutUp 0.2s ease-out' : 'fadeInUp 0.2s ease-out'
+            animation: isClosing ? 'fadeOutUp 0.2s ease-out' : 'fadeInUp 0.2s ease-out',
+            pointerEvents: isClosing ? 'none' : 'auto'
           }}
         >
           {/* Search Input */}
