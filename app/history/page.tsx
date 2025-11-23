@@ -9,6 +9,7 @@ import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { CheckIcon, ClockIcon, TrashIcon } from '@/components/ui/Icons'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function HistoryPage() {
   const { data: session, status } = useSession()
@@ -111,8 +112,9 @@ export default function HistoryPage() {
           </div>
 
           {isLoading ? (
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>Memuat history...</p>
+            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <LoadingSpinner size={32} />
+              <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>Memuat history...</p>
             </div>
           ) : !histories || histories.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>

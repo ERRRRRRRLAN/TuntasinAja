@@ -8,6 +8,7 @@ import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { CrownIcon, TrashIcon } from '@/components/ui/Icons'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -48,8 +49,9 @@ export default function UserList() {
 
   if (isLoading) {
     return (
-      <div className="card" style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-light)' }}>Memuat daftar users...</p>
+      <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+        <LoadingSpinner size={32} />
+        <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>Memuat daftar users...</p>
       </div>
     )
   }
@@ -265,8 +267,17 @@ export default function UserList() {
                             }
                           }}
                         >
-                          <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                          <span>Hapus</span>
+                          {deleteUser.isLoading ? (
+                            <>
+                              <LoadingSpinner size={14} color="white" style={{ marginRight: '0.25rem', display: 'inline-block' }} />
+                              <span>Menghapus...</span>
+                            </>
+                          ) : (
+                            <>
+                              <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                              <span>Hapus</span>
+                            </>
+                          )}
                         </button>
                       )}
                       {isCurrentUser && (

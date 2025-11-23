@@ -9,6 +9,7 @@ import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -262,8 +263,9 @@ export default function FeedPage() {
           )}
 
           {isLoading ? (
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
+            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <LoadingSpinner size={32} />
+              <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>Memuat PR...</p>
             </div>
           ) : !threads || threads.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>

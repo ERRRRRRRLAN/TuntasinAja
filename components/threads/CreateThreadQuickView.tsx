@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 interface CreateThreadQuickViewProps {
   onClose: () => void
@@ -192,12 +193,18 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 className="btn btn-primary" 
                 disabled={createThread.isLoading}
               >
-                {createThread.isLoading ? 'Membuat...' : 'Buat PR'}
+                {createThread.isLoading ? (
+                  <>
+                    <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                    Membuat...
+                  </>
+                ) : 'Buat PR'}
               </button>
               <button 
                 type="button" 
                 onClick={handleClose} 
                 className="btn btn-secondary"
+                disabled={createThread.isLoading}
               >
                 Batal
               </button>

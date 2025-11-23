@@ -12,6 +12,7 @@ interface QuickViewConfirmDialogProps {
   cancelText?: string
   onConfirm: () => void
   onCancel: () => void
+  disabled?: boolean
 }
 
 // QuickViewConfirmDialog untuk digunakan di dalam quickview (overlay di atas quickview content)
@@ -24,6 +25,7 @@ export default function QuickViewConfirmDialog({
   cancelText = 'Batal',
   onConfirm,
   onCancel,
+  disabled = false,
 }: QuickViewConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -83,7 +85,8 @@ export default function QuickViewConfirmDialog({
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
-    if (e.target === overlayRef.current) {
+    // Don't allow closing if disabled (e.g., during loading)
+    if (e.target === overlayRef.current && !disabled) {
       onCancel()
     }
   }
@@ -134,6 +137,7 @@ export default function QuickViewConfirmDialog({
             type="button"
             onClick={handleCancelClick}
             className="btn btn-secondary"
+            disabled={disabled}
           >
             {cancelText}
           </button>
@@ -141,6 +145,7 @@ export default function QuickViewConfirmDialog({
             type="button"
             onClick={handleConfirmClick}
             className="btn btn-primary"
+            disabled={disabled}
           >
             {confirmText}
           </button>

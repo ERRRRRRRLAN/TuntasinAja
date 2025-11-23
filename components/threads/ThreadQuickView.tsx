@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -416,38 +417,53 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   {(thread as any).author?.kelas}
                 </span>
               )}
-              {canDeleteThread && (
-                <button
-                  onClick={() => setShowDeleteThreadDialog(true)}
-                  className="quickview-delete-btn"
-                  style={{
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    padding: '0.5rem 0.875rem',
-                    cursor: 'pointer',
-                    fontSize: '0.8125rem',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.375rem',
-                    transition: 'background 0.2s',
-                    minHeight: '44px',
-                    flexShrink: 0
-                  }}
-                  onMouseEnter={(e) => {
+            {canDeleteThread && (
+              <button
+                onClick={() => setShowDeleteThreadDialog(true)}
+                className="quickview-delete-btn"
+                disabled={deleteThread.isLoading}
+                style={{
+                  background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  padding: '0.5rem 0.875rem',
+                  cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  transition: 'background 0.2s',
+                  minHeight: '44px',
+                  flexShrink: 0,
+                  opacity: deleteThread.isLoading ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!deleteThread.isLoading) {
                     e.currentTarget.style.background = '#dc2626'
-                  }}
-                  onMouseLeave={(e) => {
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!deleteThread.isLoading) {
                     e.currentTarget.style.background = '#ef4444'
-                  }}
-                  title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-                >
-                  <TrashIcon size={16} />
-                  <span>Hapus</span>
-                </button>
-              )}
+                  }
+                }}
+                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
+              >
+                {deleteThread.isLoading ? (
+                  <>
+                    <LoadingSpinner size={16} color="white" />
+                    <span>Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon size={16} />
+                    <span>Hapus</span>
+                  </>
+                )}
+              </button>
+            )}
             </div>
           </div>
           
@@ -532,7 +548,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 className="btn btn-primary"
                 disabled={addComment.isLoading || !commentContent.trim()}
               >
-                {addComment.isLoading ? 'Mengirim...' : 'Tambah Sub Tugas'}
+                {addComment.isLoading ? (
+                  <>
+                    <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                    Mengirim...
+                  </>
+                ) : 'Tambah Sub Tugas'}
               </button>
             </form>
           )}
@@ -587,13 +608,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
                             className="comment-delete-btn comment-delete-btn-desktop"
+                            disabled={deleteComment.isLoading}
                             style={{
-                              background: '#ef4444',
+                              background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
                               color: 'white',
                               border: 'none',
                               borderRadius: '0.375rem',
                               padding: '0.375rem 0.625rem',
-                              cursor: 'pointer',
+                              cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
                               fontSize: '0.75rem',
                               fontWeight: 600,
                               display: 'flex',
@@ -602,13 +624,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               transition: 'background 0.2s',
                               whiteSpace: 'nowrap',
                               flexShrink: 0,
-                              marginTop: '-0.25rem'
+                              marginTop: '-0.25rem',
+                              opacity: deleteComment.isLoading ? 0.7 : 1
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#dc2626'
+                              if (!deleteComment.isLoading) {
+                                e.currentTarget.style.background = '#dc2626'
+                              }
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = '#ef4444'
+                              if (!deleteComment.isLoading) {
+                                e.currentTarget.style.background = '#ef4444'
+                              }
                             }}
                             title={
                               isAdmin ? "Hapus Sub Tugas (Admin)" :
@@ -616,8 +643,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               "Hapus Sub Tugas Saya"
                             }
                           >
-                            <TrashIcon size={14} />
-                            <span>Hapus</span>
+                            {deleteComment.isLoading ? (
+                              <LoadingSpinner size={14} color="white" />
+                            ) : (
+                              <>
+                                <TrashIcon size={14} />
+                                <span>Hapus</span>
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
@@ -709,24 +742,38 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           isOpen={showDeleteThreadDialog}
           title="Hapus PR?"
           message={`Apakah Anda yakin ingin menghapus PR "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
-          confirmText="Ya, Hapus"
+          confirmText={deleteThread.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
           cancelText="Batal"
-          onConfirm={() => deleteThread.mutate({ id: threadId })}
-          onCancel={() => setShowDeleteThreadDialog(false)}
+          disabled={deleteThread.isLoading}
+          onConfirm={() => {
+            if (!deleteThread.isLoading) {
+              deleteThread.mutate({ id: threadId })
+            }
+          }}
+          onCancel={() => {
+            if (!deleteThread.isLoading) {
+              setShowDeleteThreadDialog(false)
+            }
+          }}
         />
         {showDeleteCommentDialog && (
           <QuickViewConfirmDialog
             isOpen={!!showDeleteCommentDialog}
             title="Hapus Sub Tugas?"
             message="Apakah Anda yakin ingin menghapus sub tugas ini? Tindakan ini tidak dapat dibatalkan."
-            confirmText="Ya, Hapus"
+            confirmText={deleteComment.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
             cancelText="Batal"
+            disabled={deleteComment.isLoading}
             onConfirm={() => {
-              if (showDeleteCommentDialog) {
+              if (showDeleteCommentDialog && !deleteComment.isLoading) {
                 deleteComment.mutate({ id: showDeleteCommentDialog })
               }
             }}
-            onCancel={() => setShowDeleteCommentDialog(null)}
+            onCancel={() => {
+              if (!deleteComment.isLoading) {
+                setShowDeleteCommentDialog(null)
+              }
+            }}
           />
         )}
       </div>

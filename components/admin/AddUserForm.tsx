@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComboBox from '@/components/ui/ComboBox'
 import { BookIcon } from '@/components/ui/Icons'
 
@@ -221,7 +222,12 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           disabled={createUser.isLoading}
           style={{ width: '100%' }}
         >
-          {createUser.isLoading ? 'Membuat...' : 'Tambah User'}
+          {createUser.isLoading ? (
+            <>
+              <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+              Membuat...
+            </>
+          ) : 'Tambah User'}
         </button>
       </form>
     </div>

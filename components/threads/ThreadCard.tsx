@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 interface ThreadCardProps {
   thread: {
@@ -242,13 +243,14 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               <button
                 onClick={handleDeleteThread}
                 className="thread-delete-btn thread-delete-btn-desktop"
+                disabled={deleteThread.isLoading}
                 style={{
-                  background: '#ef4444',
+                  background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.375rem',
                   padding: '0.375rem 0.625rem',
-                  cursor: 'pointer',
+                  cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   display: 'flex',
@@ -260,18 +262,29 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                   position: 'absolute',
                   right: 0,
                   top: 0,
-                  zIndex: 2
+                  zIndex: 2,
+                  opacity: deleteThread.isLoading ? 0.7 : 1
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#dc2626'
+                  if (!deleteThread.isLoading) {
+                    e.currentTarget.style.background = '#dc2626'
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#ef4444'
+                  if (!deleteThread.isLoading) {
+                    e.currentTarget.style.background = '#ef4444'
+                  }
                 }}
                 title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
               >
-                <TrashIcon size={14} />
-                <span className="delete-btn-text-desktop">Hapus</span>
+                {deleteThread.isLoading ? (
+                  <LoadingSpinner size={14} color="white" />
+                ) : (
+                  <>
+                    <TrashIcon size={14} />
+                    <span className="delete-btn-text-desktop">Hapus</span>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -282,13 +295,14 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <button
               onClick={handleDeleteThread}
               className="thread-delete-btn thread-delete-btn-mobile"
+              disabled={deleteThread.isLoading}
               style={{
-                background: '#ef4444',
+                background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
                 color: 'white',
                 border: 'none',
                 borderRadius: '0.375rem',
                 padding: '0.5rem 0.75rem',
-                cursor: 'pointer',
+                cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '0.8125rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -296,18 +310,32 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 justifyContent: 'center',
                 gap: '0.375rem',
                 width: '100%',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
+                opacity: deleteThread.isLoading ? 0.7 : 1
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#dc2626'
+                if (!deleteThread.isLoading) {
+                  e.currentTarget.style.background = '#dc2626'
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#ef4444'
+                if (!deleteThread.isLoading) {
+                  e.currentTarget.style.background = '#ef4444'
+                }
               }}
               title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
             >
-              <TrashIcon size={16} />
-              <span>Hapus PR</span>
+              {deleteThread.isLoading ? (
+                <>
+                  <LoadingSpinner size={16} color="white" />
+                  <span>Menghapus...</span>
+                </>
+              ) : (
+                <>
+                  <TrashIcon size={16} />
+                  <span>Hapus PR</span>
+                </>
+              )}
             </button>
           </div>
         )}
@@ -494,18 +522,23 @@ function CommentItem({
         {canDeleteComment && (
           <button
             onClick={handleDeleteComment}
+            disabled={deleteComment.isLoading}
             style={{
               position: 'absolute',
               top: 0,
               right: 0,
-              background: '#ef4444',
+              background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
               padding: '0.125rem 0.375rem',
-              cursor: 'pointer',
+              cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
               fontSize: '0.625rem',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              opacity: deleteComment.isLoading ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             title={
               isAdmin ? "Hapus Sub Tugas (Admin)" :
@@ -513,7 +546,11 @@ function CommentItem({
               "Hapus Sub Tugas Saya"
             }
           >
-            <TrashIcon size={12} />
+            {deleteComment.isLoading ? (
+              <LoadingSpinner size={10} color="white" />
+            ) : (
+              <TrashIcon size={12} />
+            )}
           </button>
         )}
         <div style={{

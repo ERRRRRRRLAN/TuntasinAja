@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/ToastContainer'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 const MATA_PELAJARAN = [
   'Matematika',
@@ -106,9 +107,14 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={createThread.isLoading}>
-            {createThread.isLoading ? 'Membuat...' : 'Buat PR'}
+            {createThread.isLoading ? (
+              <>
+                <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                Membuat...
+              </>
+            ) : 'Buat PR'}
           </button>
-          <button type="button" onClick={onSuccess} className="btn btn-secondary">
+          <button type="button" onClick={onSuccess} className="btn btn-secondary" disabled={createThread.isLoading}>
             Batal
           </button>
         </div>
