@@ -567,28 +567,28 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           </button>
                         </div>
                       )}
-                      <div className="comment-footer" style={{ position: 'relative' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <UserIcon size={12} />
-                          <span>{comment?.author?.name || 'Unknown'}</span>
-                        </span>
-                        {comment?.author?.kelas && (
-                          <span style={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            display: 'inline-block',
-                            padding: '0.125rem 0.375rem',
-                            borderRadius: '0.25rem',
-                            border: '1px solid var(--primary)',
-                            color: 'var(--primary)',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            background: 'transparent'
-                          }}>
-                            {comment?.author?.kelas}
+                      <div className="comment-footer">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <UserIcon size={12} />
+                            <span>{comment?.author?.name || 'Unknown'}</span>
                           </span>
-                        )}
+                          {comment?.author?.kelas && (
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '0.125rem 0.375rem',
+                              borderRadius: '0.25rem',
+                              border: '1px solid var(--primary)',
+                              color: 'var(--primary)',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              background: 'transparent',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {comment?.author?.kelas}
+                            </span>
+                          )}
+                        </div>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CalendarIcon size={12} />
                           {format(new Date(comment.createdAt), 'd MMM yyyy, HH:mm', { locale: id })}
