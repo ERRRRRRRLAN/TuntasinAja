@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface QuickViewConfirmDialogProps {
   isOpen: boolean
@@ -23,17 +23,35 @@ export default function QuickViewConfirmDialog({
   onCancel,
 }: QuickViewConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
+  const [isClosing, setIsClosing] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Prevent flicker by using pointer-events
   useEffect(() => {
-    if (isOpen && overlayRef.current) {
-      overlayRef.current.style.pointerEvents = 'auto'
-    } else if (overlayRef.current) {
-      overlayRef.current.style.pointerEvents = 'none'
+    if (isOpen) {
+      setIsClosing(false)
+      if (overlayRef.current) {
+        overlayRef.current.style.pointerEvents = 'auto'
+      }
+    } else {
+      // Start exit animation
+      setIsClosing(true)
+      if (overlayRef.current) {
+        overlayRef.current.style.pointerEvents = 'none'
+      }
+      const timer = setTimeout(() => {
+        setIsClosing(false)
+      }, 300) // Match animation duration
+      timeoutRef.current = timer
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
   }, [isOpen])
 
-  if (!isOpen) return null
+  if (!isOpen && !isClosing) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
@@ -62,11 +80,11 @@ export default function QuickViewConfirmDialog({
   return (
     <div 
       ref={overlayRef}
-      className="quickview-confirm-dialog-overlay"
+      className={`quickview-confirm-dialog-overlay ${isClosing ? 'closing' : ''}`}
       onClick={handleOverlayClick}
     >
       <div 
-        className="quickview-confirm-dialog-content"
+        className={`quickview-confirm-dialog-content ${isClosing ? 'closing' : ''}`}
         onClick={handleContentClick}
       >
         <h3 className="confirm-dialog-title">{title}</h3>

@@ -13,7 +13,9 @@ export default function Header() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [isProfileClosing, setIsProfileClosing] = useState(false)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
+  const profileTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -55,13 +57,25 @@ export default function Header() {
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(target)
       ) {
-        setIsProfileDropdownOpen(false)
+        // Start exit animation
+        setIsProfileClosing(true)
+        const timer = setTimeout(() => {
+          setIsProfileDropdownOpen(false)
+          setIsProfileClosing(false)
+        }, 300) // Match animation duration
+        profileTimeoutRef.current = timer
       }
     }
 
     if (isProfileDropdownOpen) {
+      setIsProfileClosing(false)
       document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
+      return () => {
+        document.removeEventListener('click', handleClickOutside)
+        if (profileTimeoutRef.current) {
+          clearTimeout(profileTimeoutRef.current)
+        }
+      }
     }
   }, [isProfileDropdownOpen])
 
@@ -123,7 +137,20 @@ export default function Header() {
               }}
             >
             <button
-              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              onClick={() => {
+                if (isProfileDropdownOpen) {
+                  // Start exit animation
+                  setIsProfileClosing(true)
+                  const timer = setTimeout(() => {
+                    setIsProfileDropdownOpen(false)
+                    setIsProfileClosing(false)
+                  }, 300)
+                  profileTimeoutRef.current = timer
+                } else {
+                  setIsProfileDropdownOpen(true)
+                  setIsProfileClosing(false)
+                }
+              }}
               className="profile-button"
               style={{
                 background: 'var(--bg-secondary)',
@@ -152,7 +179,7 @@ export default function Header() {
             </button>
 
             {/* Dropdown Panel */}
-            {isProfileDropdownOpen && (
+            {(isProfileDropdownOpen || isProfileClosing) && (
               <div
                 style={{
                   position: 'absolute',
@@ -164,7 +191,7 @@ export default function Header() {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   minWidth: '200px',
                   zIndex: 1000,
-                  animation: 'slideDown 0.3s ease-out',
+                  animation: isProfileClosing ? 'slideOutDown 0.3s ease-out' : 'slideDown 0.3s ease-out',
                   overflow: 'hidden',
                 }}
               >

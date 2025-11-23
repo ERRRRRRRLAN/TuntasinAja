@@ -186,6 +186,10 @@ body {
   animation: fadeInDown 0.3s ease-out;
 }
 
+.mobile-menu:not(.open) {
+  animation: fadeOutUp 0.3s ease-out;
+}
+
 .mobile-nav-link {
   padding: 0.75rem 1rem;
   color: var(--text);
@@ -1013,6 +1017,10 @@ body {
   animation: fadeIn 0.2s;
 }
 
+.quickview-overlay.closing {
+  animation: fadeOut 0.3s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1081,6 +1089,10 @@ body {
   flex-direction: column;
 }
 
+.quickview-content.closing {
+  animation: fadeOutDown 0.3s ease-out;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -1111,6 +1123,93 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Exit Animations */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }
 
@@ -1444,6 +1543,10 @@ body {
   will-change: opacity;
 }
 
+.confirm-dialog-overlay.closing {
+  animation: fadeOut 0.3s ease-out;
+}
+
 .confirm-dialog-content {
   background: var(--card);
   border-radius: 1rem;
@@ -1451,10 +1554,14 @@ body {
   max-width: 400px;
   width: 90%;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.3s;
+  animation: scaleIn 0.3s ease-out;
   pointer-events: auto;
   position: relative;
   z-index: 1;
+}
+
+.confirm-dialog-content.closing {
+  animation: scaleOut 0.3s ease-out;
 }
 
 .confirm-dialog-title {
@@ -1511,6 +1618,10 @@ body {
   will-change: opacity;
 }
 
+.quickview-confirm-dialog-overlay.closing {
+  animation: fadeOut 0.3s ease-out;
+}
+
 .quickview-confirm-dialog-content {
   background: var(--card);
   border-radius: 1rem;
@@ -1518,9 +1629,14 @@ body {
   max-width: 400px;
   width: 90%;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.3s;
+  animation: scaleIn 0.3s ease-out;
   pointer-events: auto;
   position: relative;
+}
+
+.quickview-confirm-dialog-content.closing {
+  animation: scaleOut 0.3s ease-out;
+}
   z-index: 1;
 }
 

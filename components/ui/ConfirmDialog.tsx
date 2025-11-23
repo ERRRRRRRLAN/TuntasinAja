@@ -29,20 +29,37 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     setMounted(true)
-    return () => setMounted(false)
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      setMounted(false)
+    }
   }, [])
 
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false)
       // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset'
+      // Start exit animation
+      setIsClosing(true)
+      const timer = setTimeout(() => {
+        setIsClosing(false)
+        document.body.style.overflow = 'unset'
+      }, 300) // Match animation duration
+      timeoutRef.current = timer
     }
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
@@ -77,11 +94,11 @@ export default function ConfirmDialog({
   const dialogContent = (
     <div 
       ref={overlayRef}
-      className="confirm-dialog-overlay"
+      className={`confirm-dialog-overlay ${isClosing ? 'closing' : ''}`}
       onClick={handleOverlayClick}
     >
       <div 
-        className="confirm-dialog-content"
+        className={`confirm-dialog-content ${isClosing ? 'closing' : ''}`}
         onClick={handleContentClick}
       >
         <h3 className="confirm-dialog-title">{title}</h3>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
@@ -35,6 +35,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
+  const [isClosing, setIsClosing] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const utils = trpc.useUtils()
 
@@ -70,9 +72,27 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   }, [])
 
   const handleClose = () => {
-    document.body.style.overflow = ''
-    onClose()
+    // Start exit animation
+    setIsClosing(true)
+    
+    // Wait for animation to complete before closing
+    const timer = setTimeout(() => {
+      setIsClosing(false)
+      document.body.style.overflow = ''
+      onClose()
+    }, 300) // Match animation duration
+    
+    timeoutRef.current = timer
   }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,8 +104,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   }
 
   return (
-    <div className="quickview-overlay" onClick={handleClose}>
-      <div className="quickview-content" onClick={(e) => e.stopPropagation()}>
+    <div className={`quickview-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
+      <div className={`quickview-content ${isClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="quickview-header">
           <div className="quickview-header-top">
             <button
