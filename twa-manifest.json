@@ -1,0 +1,50 @@
+{
+  "packageId": "com.tuntasinaja.app",
+  "host": "tuntasinaja-livid.vercel.app",
+  "name": "Tuntasin Aja",
+  "launcherName": "Tuntasin Aja",
+  "display": "standalone",
+  "themeColor": "#6366F1",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#F1F5F9",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://tuntasinaja-livid.vercel.app/icon-512x512.png",
+  "maskableIconUrl": "https://tuntasinaja-livid.vercel.app/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "D:\\proyek\\TuntasinAja\\android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://tuntasinaja-livid.vercel.app/manifest.json",
+  "fallbackType": "webview",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://tuntasinaja-livid.vercel.app/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [
+    "standalone",
+    "fullscreen"
+  ],
+  "appVersion": "1"
+}
