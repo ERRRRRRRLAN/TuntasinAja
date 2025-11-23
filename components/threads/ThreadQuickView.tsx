@@ -338,7 +338,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             )}
           </div>
           
-          <div className="quickview-title-section">
+          <div className="quickview-title-section" style={{ position: 'relative' }}>
             {session && (
               <input
                 type="checkbox"
@@ -357,7 +357,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             <h2 className="thread-detail-title" style={{ 
               margin: 0,
               flex: 1,
-              lineHeight: 1.4
+              lineHeight: 1.4,
+              paddingRight: (thread as any).author?.kelas ? '80px' : '0'
             }}>
               <span style={{
                 textDecoration: isThreadCompleted ? 'line-through' : 'none',
@@ -367,30 +368,31 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 {thread.title}
               </span>
             </h2>
+            {(thread as any).author?.kelas && (
+              <span style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                display: 'inline-block',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: 'transparent'
+              }}>
+                {(thread as any).author?.kelas}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="thread-detail-meta" style={{ position: 'relative', paddingRight: (thread as any).author?.kelas ? '80px' : '0' }}>
+        <div className="thread-detail-meta">
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <UserIcon size={14} />
             <span>{(thread as any).author?.name || 'Unknown'}</span>
           </span>
-          {(thread as any).author?.kelas && (
-            <span style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              display: 'inline-block',
-              padding: '0.125rem 0.375rem',
-              borderRadius: '0.25rem',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '0.75rem',
-              fontWeight: 600
-            }}>
-              {(thread as any).author?.kelas}
-            </span>
-          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <CalendarIcon size={14} />
             {format(new Date(thread.date), 'd MMMM yyyy', { locale: id })}
@@ -570,10 +572,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             display: 'inline-block',
                             padding: '0.125rem 0.375rem',
                             borderRadius: '0.25rem',
-                            background: 'var(--primary)',
-                            color: 'white',
+                            border: '1px solid var(--primary)',
+                            color: 'var(--primary)',
                             fontSize: '0.75rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            background: 'transparent'
                           }}>
                             {comment?.author?.kelas}
                           </span>

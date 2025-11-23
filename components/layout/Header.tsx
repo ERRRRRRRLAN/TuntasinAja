@@ -117,12 +117,14 @@ export default function Header() {
           {session && (
             <div
               ref={profileDropdownRef}
+              className="profile-dropdown-container"
               style={{
                 position: 'relative',
               }}
             >
             <button
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="profile-button"
               style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border)',
@@ -167,6 +169,28 @@ export default function Header() {
                 }}
               >
                 <div style={{ padding: '0.5rem' }}>
+                  {/* User Info */}
+                  <div style={{ 
+                    padding: '0.75rem 1rem', 
+                    borderBottom: '1px solid var(--border)',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      fontWeight: 600, 
+                      color: 'var(--text)',
+                      marginBottom: '0.25rem'
+                    }}>
+                      {session.user.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.75rem', 
+                      color: 'var(--text-light)'
+                    }}>
+                      {session.user.email}
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleLogout}
                     style={{

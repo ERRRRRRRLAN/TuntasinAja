@@ -208,7 +208,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               }}
             />
           )}
-          <div className="thread-card-header-content">
+          <div className="thread-card-header-content" style={{ position: 'relative' }}>
             <h3 
               className="thread-title"
               style={{
@@ -216,11 +216,29 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 color: isCompleted ? 'var(--text-light)' : 'var(--text)',
                 flex: 1,
                 margin: 0,
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                paddingRight: thread.author.kelas ? '80px' : '0'
               }}
             >
               {thread.title}
             </h3>
+            {thread.author.kelas && (
+              <span style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                display: 'inline-block',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: 'transparent'
+              }}>
+                {thread.author.kelas}
+              </span>
+            )}
             {isAdmin && (
               <button
                 onClick={handleDeleteThread}
@@ -291,27 +309,11 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </div>
         )}
         
-        <div className="thread-meta" style={{ position: 'relative', paddingRight: thread.author.kelas ? '80px' : '0' }}>
+        <div className="thread-meta">
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <UserIcon size={16} />
             <span>{thread.author.name}</span>
           </span>
-          {thread.author.kelas && (
-            <span style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              display: 'inline-block',
-              padding: '0.125rem 0.375rem',
-              borderRadius: '0.25rem',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '0.75rem',
-              fontWeight: 600
-            }}>
-              {thread.author.kelas}
-            </span>
-          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'd MMM yyyy', { locale: id })}</span>
@@ -518,11 +520,12 @@ function CommentItem({
               display: 'inline-block',
               padding: '0.125rem 0.375rem',
               borderRadius: '0.25rem',
-              background: 'var(--primary)',
-              color: 'white',
+              border: '1px solid var(--primary)',
+              color: 'var(--primary)',
               fontSize: '0.75rem',
               fontWeight: 600,
-              marginLeft: 'auto'
+              marginLeft: 'auto',
+              background: 'transparent'
             }}>
               {comment.author.kelas}
             </span>

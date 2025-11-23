@@ -1129,6 +1129,15 @@ body {
   .mobile-menu {
     display: flex;
   }
+
+  /* Profile button di mobile - sebelah kiri menu icon */
+  .header-content > div:has(.nav-desktop) {
+    display: none;
+  }
+
+  .profile-dropdown-container {
+    margin-right: 0.5rem;
+  }
 }
 
 @media (max-width: 640px) {
