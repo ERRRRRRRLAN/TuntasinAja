@@ -56,11 +56,8 @@ export default function Header() {
         setIsProfileVisible(true)
       })
     } else {
-      // Wait for transition to complete before hiding
-      const timer = setTimeout(() => {
-        setIsProfileVisible(false)
-      }, 300) // Match transition duration
-      return () => clearTimeout(timer)
+      // Start closing animation immediately
+      setIsProfileVisible(false)
     }
   }, [isProfileDropdownOpen])
 
@@ -173,9 +170,15 @@ export default function Header() {
             </button>
 
             {/* Dropdown Panel */}
-            {isProfileDropdownOpen && (
+            {(isProfileDropdownOpen || isProfileVisible) && (
               <div
                 ref={profileContentRef}
+                onTransitionEnd={(e) => {
+                  // Only handle transition end for this element (not child elements)
+                  if (e.target === profileContentRef.current && !isProfileDropdownOpen && !isProfileVisible) {
+                    // Transition completed, dropdown can be safely unmounted
+                  }
+                }}
                 style={{
                   position: 'absolute',
                   top: 'calc(100% + 0.5rem)',

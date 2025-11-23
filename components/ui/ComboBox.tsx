@@ -72,11 +72,8 @@ export default function ComboBox({
         setIsVisible(true)
       })
     } else {
-      // Wait for transition to complete before hiding
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-      }, 200) // Match transition duration
-      return () => clearTimeout(timer)
+      // Start closing animation immediately
+      setIsVisible(false)
     }
   }, [isOpen])
 
