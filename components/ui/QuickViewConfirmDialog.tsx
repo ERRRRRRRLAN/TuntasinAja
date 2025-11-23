@@ -53,8 +53,23 @@ export default function QuickViewConfirmDialog({
     }
   }, [isOpen])
 
-  // Handle browser back button
-  useBackHandler(isOpen && isVisible, onCancel)
+  // Handle browser back button - hanya aktif ketika dialog benar-benar visible
+  // Tambahkan delay kecil untuk memastikan dialog sudah fully rendered
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  
+  useEffect(() => {
+    if (isOpen && isVisible) {
+      // Delay kecil untuk memastikan dialog sudah fully rendered
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
+    }
+  }, [isOpen, isVisible])
+
+  useBackHandler(shouldHandleBack, onCancel)
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
