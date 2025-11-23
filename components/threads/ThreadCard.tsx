@@ -176,7 +176,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const handleDeleteThread = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (isAdmin) {
+    if (canDeleteThread) {
       setShowDeleteDialog(true)
     }
   }
@@ -211,7 +211,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 flex: 1,
                 margin: 0,
                 lineHeight: 1.4,
-                paddingRight: thread.author.kelas && isAdmin ? '160px' : thread.author.kelas ? '80px' : isAdmin ? '80px' : '0'
+                paddingRight: thread.author.kelas && canDeleteThread ? '160px' : thread.author.kelas ? '80px' : canDeleteThread ? '80px' : '0'
               }}
             >
               {thread.title}
@@ -219,7 +219,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             {thread.author.kelas && (
               <span style={{
                 position: 'absolute',
-                right: isAdmin ? '80px' : '0',
+                right: canDeleteThread ? '80px' : '0',
                 top: 0,
                 display: 'inline-block',
                 padding: '0.125rem 0.375rem',
@@ -234,7 +234,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 {thread.author.kelas}
               </span>
             )}
-            {isAdmin && (
+            {canDeleteThread && (
               <button
                 onClick={handleDeleteThread}
                 className="thread-delete-btn thread-delete-btn-desktop"
@@ -264,7 +264,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = '#ef4444'
                 }}
-                title="Hapus PR (Admin)"
+                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
               >
                 <TrashIcon size={14} />
                 <span className="delete-btn-text-desktop">Hapus</span>
@@ -273,7 +273,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </div>
         </div>
         
-        {isAdmin && (
+        {canDeleteThread && (
           <div className="thread-card-admin-actions">
             <button
               onClick={handleDeleteThread}
@@ -300,7 +300,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = '#ef4444'
               }}
-              title="Hapus PR (Admin)"
+              title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
             >
               <TrashIcon size={16} />
               <span>Hapus PR</span>
@@ -343,6 +343,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 comment={comment} 
                 threadId={thread.id}
                 statuses={statuses || []}
+                threadAuthorId={thread.author.id}
               />
             ))}
             {thread.comments.length > 2 && (
@@ -388,11 +389,13 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 function CommentItem({ 
   comment, 
   threadId,
-  statuses 
+  statuses,
+  threadAuthorId
 }: { 
   comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
+  threadAuthorId: string
 }) {
   const { data: session } = useSession()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -404,6 +407,11 @@ function CommentItem({
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
+  
+  // Check if user can delete this comment
+  const isCommentAuthor = session?.user?.id === comment.author.id
+  const isThreadAuthor = session?.user?.id === threadAuthorId
+  const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor
 
   const utils = trpc.useUtils()
 
@@ -456,7 +464,7 @@ function CommentItem({
 
   const handleDeleteComment = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (isAdmin) {
+    if (canDeleteComment) {
       setShowDeleteDialog(true)
     }
   }
@@ -479,7 +487,7 @@ function CommentItem({
         </div>
       )}
       <div className="comment-text" style={{ flex: 1 }}>
-        {isAdmin && (
+        {canDeleteComment && (
           <button
             onClick={handleDeleteComment}
             style={{
@@ -495,7 +503,11 @@ function CommentItem({
               fontSize: '0.625rem',
               fontWeight: 'bold'
             }}
-            title="Hapus Komentar (Admin)"
+            title={
+              isAdmin ? "Hapus Komentar (Admin)" :
+              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
+              "Hapus Komentar Saya"
+            }
           >
             <TrashIcon size={12} />
           </button>

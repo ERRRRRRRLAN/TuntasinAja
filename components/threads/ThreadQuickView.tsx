@@ -61,6 +61,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
+  
+  // Check if user is the author of this thread
+  const isThreadAuthor = session?.user?.id === (thread as any)?.author?.id
+  const canDeleteThread = isAdmin || isThreadAuthor
 
   const utils = trpc.useUtils()
 
@@ -375,7 +379,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             >
               <XCloseIcon size={22} />
             </button>
-            {isAdmin && (
+            {canDeleteThread && (
               <button
                 onClick={() => setShowDeleteThreadDialog(true)}
                 className="quickview-delete-btn"
@@ -400,7 +404,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = '#ef4444'
                 }}
-                title="Hapus PR (Admin)"
+                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
               >
                 <TrashIcon size={16} />
                 <span>Hapus</span>
@@ -422,7 +426,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               margin: 0,
               flex: 1,
               lineHeight: 1.4,
-              paddingRight: (thread as any).author?.kelas && isAdmin ? '160px' : ((thread as any).author?.kelas ? '80px' : '0')
+              paddingRight: (thread as any).author?.kelas && canDeleteThread ? '160px' : ((thread as any).author?.kelas ? '80px' : '0')
             }}>
               <span style={{
                 textDecoration: isThreadCompleted ? 'line-through' : 'none',
@@ -435,7 +439,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             {(thread as any).author?.kelas && (
               <span style={{
                 position: 'absolute',
-                right: isAdmin ? '70px' : '0',
+                right: canDeleteThread ? '70px' : '0',
                 top: 0,
                 display: 'inline-block',
                 padding: '0.125rem 0.375rem',
@@ -518,6 +522,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               ((thread as any).comments || []).map((comment: any) => {
                 const commentStatus = statuses?.find((s) => s.commentId === comment.id)
                 const isCommentCompleted = commentStatus?.isCompleted || false
+                
+                // Check if user can delete this comment
+                const isCommentAuthor = session?.user?.id === comment?.author?.id
+                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor
 
                 return (
                   <div key={comment.id} className="comment-card" style={{ position: 'relative' }}>
@@ -551,7 +559,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         }}>
                           {comment.content}
                         </div>
-                        {isAdmin && (
+                        {canDeleteComment && (
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
                             className="comment-delete-btn comment-delete-btn-desktop"
@@ -578,14 +586,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = '#ef4444'
                             }}
-                            title="Hapus Komentar (Admin)"
+                            title={
+                              isAdmin ? "Hapus Komentar (Admin)" :
+                              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
+                              "Hapus Komentar Saya"
+                            }
                           >
                             <TrashIcon size={14} />
                             <span>Hapus</span>
                           </button>
                         )}
                       </div>
-                      {isAdmin && (
+                      {canDeleteComment && (
                         <div className="comment-admin-actions">
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
@@ -613,7 +625,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = '#ef4444'
                             }}
-                            title="Hapus Komentar (Admin)"
+                            title={
+                              isAdmin ? "Hapus Komentar (Admin)" :
+                              isThreadAuthor ? "Hapus Komentar (Author Thread)" :
+                              "Hapus Komentar Saya"
+                            }
                           >
                             <TrashIcon size={16} />
                             <span>Hapus Komentar</span>

@@ -335,10 +335,10 @@ export const threadRouter = createTRPCRouter({
       return comment
     }),
 
-  // Delete thread (Admin only)
-  delete: adminProcedure
+  // Delete thread (Author only or Admin)
+  delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       // Get thread data before deletion to preserve in history
       const thread = await prisma.thread.findUnique({
         where: { id: input.id },
@@ -347,6 +347,7 @@ export const threadRouter = createTRPCRouter({
             select: {
               id: true,
               name: true,
+              isAdmin: true,
             },
           },
         },
@@ -354,6 +355,21 @@ export const threadRouter = createTRPCRouter({
 
       if (!thread) {
         throw new Error('Thread not found')
+      }
+
+      // Check if user is admin
+      const currentUser = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          isAdmin: true,
+        },
+      })
+
+      const isAdmin = currentUser?.isAdmin || false
+
+      // Only allow deletion if user is the author OR admin
+      if (thread.authorId !== ctx.session.user.id && !isAdmin) {
+        throw new Error('Anda tidak memiliki izin untuk menghapus thread ini')
       }
 
       // Update all histories related to this thread with denormalized data
@@ -379,10 +395,56 @@ export const threadRouter = createTRPCRouter({
       return { success: true }
     }),
 
-  // Delete comment (Admin only)
-  deleteComment: adminProcedure
+  // Delete comment (Author of comment OR author of thread OR Admin)
+  deleteComment: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Get comment with thread and authors info
+      const comment = await prisma.comment.findUnique({
+        where: { id: input.id },
+        include: {
+          author: {
+            select: {
+              id: true,
+            },
+          },
+          thread: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!comment) {
+        throw new Error('Comment not found')
+      }
+
+      // Check if user is admin
+      const currentUser = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          isAdmin: true,
+        },
+      })
+
+      const isAdmin = currentUser?.isAdmin || false
+
+      // Allow deletion if:
+      // 1. User is the author of the comment, OR
+      // 2. User is the author of the thread, OR
+      // 3. User is admin
+      const isCommentAuthor = comment.authorId === ctx.session.user.id
+      const isThreadAuthor = comment.thread.authorId === ctx.session.user.id
+
+      if (!isCommentAuthor && !isThreadAuthor && !isAdmin) {
+        throw new Error('Anda tidak memiliki izin untuk menghapus komentar ini')
+      }
+
       await prisma.comment.delete({
         where: { id: input.id },
       })
