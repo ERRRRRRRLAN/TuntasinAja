@@ -41,7 +41,8 @@ model Thread {
   userStatuses UserStatus[]
   histories   History[]
 
-  @@unique([title, date])
+  // Unique constraint removed to allow same title+date for different classes
+  // Duplicate prevention is now handled by application logic (checking kelas)
   @@map("threads")
 }
 
