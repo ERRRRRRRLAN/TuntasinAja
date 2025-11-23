@@ -71,15 +71,17 @@ export default function ComboBox({
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
-    } else if (isVisible) {
-      // Only start closing if currently visible
-      // Keep isVisible true during transition, then set to false after delay
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-      }, 200) // Match transition duration
-      return () => clearTimeout(timer)
+    } else {
+      // When closing, keep isVisible true to show closing animation
+      // Then set to false after transition completes
+      if (isVisible) {
+        const timer = setTimeout(() => {
+          setIsVisible(false)
+        }, 200) // Match transition duration
+        return () => clearTimeout(timer)
+      }
     }
-  }, [isOpen, isVisible])
+  }, [isOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
