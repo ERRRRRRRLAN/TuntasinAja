@@ -3,6 +3,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Remove tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+  -moz-tap-highlight-color: transparent;
 }
 
 :root {
@@ -30,6 +33,9 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Remove tap highlight and callout on mobile */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 /* Container */
@@ -661,6 +667,45 @@ body {
   cursor: pointer;
   font-weight: 500;
   padding: 0;
+}
+
+/* Remove tap highlight and outline for clickable elements on mobile */
+button,
+a,
+div[onClick],
+div[role="button"],
+.thread-card,
+.card,
+.btn,
+.nav-link,
+.mobile-nav-link,
+.thread-checkbox,
+.comment-checkbox,
+.custom-checkbox,
+input[type="checkbox"],
+input[type="button"],
+input[type="submit"],
+.fab-button,
+.quickview-close-btn,
+.thread-delete-btn,
+.comment-delete-btn,
+.quickview-delete-btn {
+  -webkit-tap-highlight-color: transparent !important;
+  -moz-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+  outline: none !important;
+}
+
+/* Allow text selection for input and textarea */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Buttons */
