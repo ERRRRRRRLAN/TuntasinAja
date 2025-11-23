@@ -415,6 +415,78 @@ export const userStatusRouter = createTRPCRouter({
       return allStatuses
     }),
 
+  // Get uncompleted comments count for current user
+  getUncompletedCount: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id
+
+    // Get all threads that are visible to this user (based on kelas)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        kelas: true,
+        isAdmin: true,
+      },
+    })
+
+    const userKelas = user?.kelas || null
+    const isAdmin = user?.isAdmin || false
+
+    // Get all threads visible to this user (same logic as thread.getAll)
+    const threads = await prisma.thread.findMany({
+      where: isAdmin
+        ? undefined // Admin sees all
+        : userKelas
+        ? {
+            author: {
+              kelas: userKelas,
+            },
+          }
+        : undefined,
+      select: {
+        id: true,
+        comments: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    })
+
+    // Get all comment IDs from visible threads
+    const allCommentIds = threads.flatMap((thread) =>
+      thread.comments.map((comment) => comment.id)
+    )
+
+    if (allCommentIds.length === 0) {
+      return { uncompletedCount: 0 }
+    }
+
+    // Get all completed comment statuses for this user
+    const completedStatuses = await prisma.userStatus.findMany({
+      where: {
+        userId: userId,
+        commentId: {
+          in: allCommentIds,
+        },
+        isCompleted: true,
+      },
+      select: {
+        commentId: true,
+      },
+    })
+
+    const completedCommentIds = new Set(
+      completedStatuses.map((s) => s.commentId).filter((id): id is string => id !== null)
+    )
+
+    // Count uncompleted comments (comments that exist but are not completed)
+    const uncompletedCount = allCommentIds.filter(
+      (commentId) => !completedCommentIds.has(commentId)
+    ).length
+
+    return { uncompletedCount }
+  }),
+
   // Cleanup orphaned UserStatus (for cron job)
   cleanupOrphanedStatuses: protectedProcedure.mutation(async () => {
     let deletedCount = 0

@@ -5,8 +5,8 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
-import CreateThreadForm from '@/components/threads/CreateThreadForm'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
+import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 
@@ -30,7 +30,7 @@ const generateKelasOptions = () => {
 
 export default function FeedPage() {
   const { data: session } = useSession()
-  const [showForm, setShowForm] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
@@ -40,12 +40,23 @@ export default function FeedPage() {
     refetchOnWindowFocus: true, // Refetch when user returns to tab
   })
 
+  // Get uncompleted comments count
+  const { data: uncompletedData } = trpc.userStatus.getUncompletedCount.useQuery(
+    undefined,
+    {
+      enabled: !!session,
+      refetchInterval: 3000, // Auto refresh every 3 seconds
+      refetchOnWindowFocus: true,
+    }
+  )
+
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
   const kelasOptions = generateKelasOptions()
+  const uncompletedCount = uncompletedData?.uncompletedCount || 0
 
 
   // Filter and search threads
@@ -91,15 +102,22 @@ export default function FeedPage() {
               <h2>Tugas</h2>
               <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                 Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
+                {session && uncompletedCount > 0 && (
+                  <span style={{ 
+                    display: 'inline-block',
+                    marginLeft: '0.5rem',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    {uncompletedCount} belum selesai
+                  </span>
+                )}
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="btn btn-primary"
-            >
-              <PlusIcon size={18} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
-              Buat PR Baru
-            </button>
           </div>
 
           {/* Search and Filter Section */}
@@ -243,12 +261,6 @@ export default function FeedPage() {
             </div>
           )}
 
-          {showForm && (
-            <div className="card">
-              <CreateThreadForm onSuccess={() => setShowForm(false)} />
-            </div>
-          )}
-
           {isLoading ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
@@ -286,6 +298,73 @@ export default function FeedPage() {
           threadId={selectedThreadId}
           onClose={() => setSelectedThreadId(null)}
         />
+      )}
+
+      {showCreateForm && (
+        <CreateThreadQuickView onClose={() => setShowCreateForm(false)} />
+      )}
+
+      {/* Floating Action Button */}
+      {session && (
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="fab-button"
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 999,
+            transition: 'all 0.3s ease',
+            padding: 0
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--primary-dark)'
+            e.currentTarget.style.transform = 'scale(1.1)'
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--primary)'
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
+          aria-label="Buat PR Baru"
+        >
+          <PlusIcon size={24} />
+          {uncompletedCount > 0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                background: '#ef4444',
+                color: 'white',
+                borderRadius: '50%',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                border: '2px solid white',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              {uncompletedCount > 99 ? '99+' : uncompletedCount}
+            </span>
+          )}
+        </button>
       )}
     </>
   )
