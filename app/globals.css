@@ -1590,18 +1590,17 @@ body {
 
 /* QuickView Confirm Dialog - Untuk di dalam quickview */
 .quickview-confirm-dialog-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5); /* Sama dengan quickview-overlay */
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000; /* Lebih tinggi dari quickview content tapi tetap di dalam quickview overlay */
+  z-index: 3000; /* Lebih tinggi dari quickview overlay (1000) dan content */
   backdrop-filter: blur(2px);
-  border-radius: 1rem;
   isolation: isolate; /* Create new stacking context to prevent flicker */
 }
 
