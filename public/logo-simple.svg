@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="#6366f1"/>
+  
+  <!-- Simple Checkmark -->
+  <g transform="translate(256, 256)">
+    <path d="M -50 -20 L -15 15 L 50 -40" 
+          stroke="#ffffff" 
+          stroke-width="28" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+  </g>
+</svg>
