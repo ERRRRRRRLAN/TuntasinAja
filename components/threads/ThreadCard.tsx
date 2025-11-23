@@ -217,7 +217,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 flex: 1,
                 margin: 0,
                 lineHeight: 1.4,
-                paddingRight: thread.author.kelas ? '80px' : '0'
+                paddingRight: thread.author.kelas && isAdmin ? '160px' : thread.author.kelas ? '80px' : isAdmin ? '80px' : '0'
               }}
             >
               {thread.title}
@@ -225,7 +225,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             {thread.author.kelas && (
               <span style={{
                 position: 'absolute',
-                right: 0,
+                right: isAdmin ? '80px' : '0',
                 top: 0,
                 display: 'inline-block',
                 padding: '0.125rem 0.375rem',
@@ -234,7 +234,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 color: 'var(--primary)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
-                background: 'transparent'
+                background: 'transparent',
+                zIndex: 1
               }}>
                 {thread.author.kelas}
               </span>
@@ -257,7 +258,11 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                   gap: '0.25rem',
                   flexShrink: 0,
                   transition: 'background 0.2s',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  zIndex: 2
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#dc2626'

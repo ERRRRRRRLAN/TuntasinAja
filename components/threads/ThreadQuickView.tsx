@@ -388,7 +388,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 color: 'var(--primary)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
-                background: 'transparent'
+                background: 'transparent',
+                zIndex: 1
               }}>
                 {(thread as any).author?.kelas}
               </span>
