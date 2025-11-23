@@ -231,10 +231,16 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {isOpen && (
+      {(isOpen || isVisible) && (
         <div
           ref={dropdownRef}
           className="combobox-dropdown"
+          onTransitionEnd={(e) => {
+            // Only handle transition end for this element (not child elements)
+            if (e.target === dropdownRef.current && !isOpen && !isVisible) {
+              // Transition completed, dropdown can be safely unmounted
+            }
+          }}
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
