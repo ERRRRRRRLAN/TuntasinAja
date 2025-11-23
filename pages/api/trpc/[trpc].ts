@@ -10,17 +10,24 @@ export default createNextApiHandler({
   onError: ({ path, error, ctx }) => {
     // Always log errors for debugging
     const cookieHeader = ctx?.req?.headers?.cookie || ''
-    console.error(
-      `❌ tRPC failed on ${path ?? '<no-path>'}: ${error.message}`,
-      error.code === 'UNAUTHORIZED' ? '(Session not found)' : '',
-      {
-        code: error.code,
-        hasSession: !!ctx?.session,
-        userId: ctx?.session?.user?.id,
-        hasCookie: !!cookieHeader,
-        cookiePreview: cookieHeader.substring(0, 50),
-      }
-    )
+    
+    // Log full error details
+    console.error(`❌ tRPC failed on ${path ?? '<no-path>'}:`, {
+      message: error.message,
+      code: error.code,
+      cause: error.cause,
+      stack: error.stack,
+      hasSession: !!ctx?.session,
+      userId: ctx?.session?.user?.id,
+      hasCookie: !!cookieHeader,
+      cookiePreview: cookieHeader.substring(0, 50),
+    })
+    
+    // Also log the original error message for quick reference
+    console.error(`   Error message: ${error.message}`)
+    if (error.cause) {
+      console.error(`   Error cause:`, error.cause)
+    }
   },
 })
 

@@ -162,119 +162,148 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Get user's kelas to filter threads by the same kelas
-      const currentUser = await prisma.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: {
-          kelas: true,
-        },
-      })
-
-      const userKelas = currentUser?.kelas
-
-      // Get today's date in Jakarta timezone, converted to UTC for database
-      // This ensures we only check threads created TODAY, not yesterday or tomorrow
-      const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
-      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
-
-      // Check if thread with same title exists ONLY for today's date AND same kelas
-      // This prevents bug where thread from different kelas is found
-      // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
-      const existingThread = await prisma.thread.findFirst({
-        where: {
-          title: input.title,
-          date: {
-            gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
-            lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+      try {
+        // Get user's kelas to filter threads by the same kelas
+        const currentUser = await prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
           },
-          // Only find threads from the same kelas
-          author: {
-            kelas: userKelas || undefined, // If user has no kelas, don't filter (shouldn't happen for normal users)
-          },
-        },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
+        })
+
+        const userKelas = currentUser?.kelas
+
+        // Get today's date in Jakarta timezone, converted to UTC for database
+        // This ensures we only check threads created TODAY, not yesterday or tomorrow
+        const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
+        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
+
+        // Check if thread with same title exists ONLY for today's date AND same kelas
+        // This prevents bug where thread from different kelas is found
+        // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
+        const existingThread = await prisma.thread.findFirst({
+          where: {
+            title: input.title,
+            date: {
+              gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
+              lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
             },
-          },
-        },
-      })
-
-      if (existingThread) {
-        // If comment provided, add as comment
-        if (input.comment) {
-          const comment = await prisma.comment.create({
-            data: {
-              threadId: existingThread.id,
-              authorId: ctx.session.user.id,
-              content: input.comment,
-            },
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
+            // Only find threads from the same kelas
+            // If userKelas is null, we still filter but it will only match threads from users with null kelas
+            author: userKelas
+              ? {
+                  kelas: userKelas,
+                }
+              : {
+                  kelas: null,
                 },
+          },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
-          })
+          },
+        })
 
-          return {
-            type: 'comment' as const,
-            thread: existingThread,
-            comment,
+        if (existingThread) {
+          // If comment provided, add as comment
+          if (input.comment) {
+            const comment = await prisma.comment.create({
+              data: {
+                threadId: existingThread.id,
+                authorId: ctx.session.user.id,
+                content: input.comment,
+              },
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            })
+
+            return {
+              type: 'comment' as const,
+              thread: existingThread,
+              comment,
+            }
           }
+
+          throw new Error('Thread already exists for today')
         }
 
-        throw new Error('Thread already exists for today')
-      }
-
-      // Create new thread
-      // Explicitly set createdAt to current time in Jakarta timezone
-      const now = getUTCDate()
-      const thread = await prisma.thread.create({
-        data: {
-          title: input.title,
-          authorId: ctx.session.user.id,
-          date: today,
-          createdAt: now,
-          comments: input.comment
-            ? {
-                create: {
-                  authorId: ctx.session.user.id,
-                  content: input.comment,
-                  createdAt: now,
-                },
-              }
-            : undefined,
-        },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
+        // Create new thread
+        // Explicitly set createdAt to current time in Jakarta timezone
+        const now = getUTCDate()
+        const thread = await prisma.thread.create({
+          data: {
+            title: input.title,
+            authorId: ctx.session.user.id,
+            date: today,
+            createdAt: now,
+            comments: input.comment
+              ? {
+                  create: {
+                    authorId: ctx.session.user.id,
+                    content: input.comment,
+                    createdAt: now,
+                  },
+                }
+              : undefined,
           },
-          comments: {
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            comments: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
           },
-        },
-      })
+        })
 
-      return {
-        type: 'thread' as const,
-        thread,
+        return {
+          type: 'thread' as const,
+          thread,
+        }
+      } catch (error: any) {
+        // Log detailed error for debugging
+        console.error('[thread.create] Error creating thread:', {
+          error: error.message,
+          code: error.code,
+          meta: error.meta,
+          cause: error.cause,
+          userId: ctx.session.user.id,
+          title: input.title,
+        })
+        
+        // If it's a unique constraint error, provide a more helpful message
+        if (error.code === 'P2002') {
+          throw new Error(
+            `Thread dengan mata pelajaran "${input.title}" sudah ada untuk hari ini. ` +
+            `Jika Anda dari kelas yang berbeda, pastikan constraint database sudah dihapus. ` +
+            `Error detail: ${error.meta?.target || 'unknown constraint'}`
+          )
+        }
+        
+        // Re-throw the error with original message
+        throw error
       }
     }),
 
