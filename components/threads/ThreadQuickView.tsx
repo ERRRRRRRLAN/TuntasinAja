@@ -37,7 +37,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     
     // Wait for transition to complete before closing
     setTimeout(() => {
-      document.body.style.overflow = ''
+      // Unlock body scroll - cleanup will be handled by useEffect
       onClose()
     }, 300) // Match transition duration
   }, [onClose])
@@ -48,7 +48,32 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     setShowConfirmDialog(false)
     
     // Lock body scroll when quickview is open (mobile)
+    // Save current scroll position
+    const scrollY = window.scrollY
     document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    
+    // Prevent scroll on touch devices
+    const preventScroll = (e: TouchEvent) => {
+      // Allow scroll only inside quickview content
+      const target = e.target as HTMLElement
+      if (!contentRef.current?.contains(target)) {
+        e.preventDefault()
+      }
+    }
+    
+    // Prevent scroll on wheel (for desktop)
+    const preventWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement
+      if (!contentRef.current?.contains(target)) {
+        e.preventDefault()
+      }
+    }
+    
+    document.addEventListener('touchmove', preventScroll, { passive: false })
+    document.addEventListener('wheel', preventWheel, { passive: false })
     
     // Push state untuk back handler
     window.history.pushState({ quickview: true }, '')
@@ -62,8 +87,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       setIsQuickViewOpen(false)
       setShowConfirmDialog(false)
       setIsVisible(false)
+      
       // Unlock body scroll when quickview is closed
+      document.removeEventListener('touchmove', preventScroll)
+      document.removeEventListener('wheel', preventWheel)
       document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      
+      // Restore scroll position
+      window.scrollTo(0, scrollY)
     }
   }, [threadId])
 
