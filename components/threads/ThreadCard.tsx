@@ -55,6 +55,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
+  
+  // Check if user is the author of this thread
+  const isThreadAuthor = session?.user?.id === thread.author.id
+  const canDeleteThread = isAdmin || isThreadAuthor
 
   const utils = trpc.useUtils()
 
