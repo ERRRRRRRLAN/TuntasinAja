@@ -20,12 +20,12 @@
     "path": "D:\\proyek\\TuntasinAja\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "2",
-  "appVersionCode": 2,
+  "appVersionName": "5",
+  "appVersionCode": 5,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://tuntasinaja-livid.vercel.app/manifest.json",
-  "fallbackType": "webview",
+  "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
     "enabled": false
@@ -46,5 +46,5 @@
     "standalone",
     "fullscreen"
   ],
-  "appVersion": "2"
+  "appVersion": "5"
 }
