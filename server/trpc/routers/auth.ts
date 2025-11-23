@@ -44,7 +44,7 @@ export const authRouter = createTRPCRouter({
       return user
     }),
 
-  // Get user profile
+  // Get user profile (simplified - no stats)
   getProfile: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
@@ -55,12 +55,6 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
-          _count: {
-            select: {
-              threads: true,
-              comments: true,
-            },
-          },
         },
       })
 
@@ -68,27 +62,11 @@ export const authRouter = createTRPCRouter({
         throw new Error('User not found')
       }
 
-      // Count completed tasks from userStatus, not from history
-      // This ensures the count doesn't decrease when history is deleted
-      // Only count thread statuses that are completed (not comment statuses)
-      const completedCount = await prisma.userStatus.count({
-        where: {
-          userId: input.userId,
-          threadId: {
-            not: null, // Only count thread completions, not comment completions
-          },
-          isCompleted: true,
-        },
-      })
-
       return {
         id: user.id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
-        threadsCount: user._count.threads,
-        commentsCount: user._count.comments,
-        completedCount,
       }
     }),
 
