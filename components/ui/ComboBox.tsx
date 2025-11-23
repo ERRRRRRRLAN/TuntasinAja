@@ -51,10 +51,10 @@ export default function ComboBox({
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
-  const [shouldRender, setShouldRender] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Cleanup timeout on unmount
@@ -74,21 +74,14 @@ export default function ComboBox({
   // Get display value
   const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
 
-  // Handle shouldRender state
-  useEffect(() => {
-    if (isOpen && !isClosing) {
-      setShouldRender(true)
-    } else if (isClosing) {
-      // Keep rendering during closing animation
-      setShouldRender(true)
-    } else {
-      // Only hide after closing animation completes
-      const timer = setTimeout(() => {
-        setShouldRender(false)
-      }, 50) // Small delay to ensure animation completes
-      return () => clearTimeout(timer)
+  // Handle animation end
+  const handleAnimationEnd = () => {
+    if (isClosing) {
+      setIsOpen(false)
+      setIsClosing(false)
+      setSearchQuery('')
     }
-  }, [isOpen, isClosing])
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -98,12 +91,6 @@ export default function ComboBox({
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         // Start exit animation
         setIsClosing(true)
-        const timer = setTimeout(() => {
-          setIsOpen(false)
-          setIsClosing(false)
-          setSearchQuery('')
-        }, 200) // Match animation duration
-        timeoutRef.current = timer
       }
     }
 
@@ -126,12 +113,6 @@ export default function ComboBox({
       if (e.key === 'Escape') {
         // Start exit animation
         setIsClosing(true)
-        const timer = setTimeout(() => {
-          setIsOpen(false)
-          setIsClosing(false)
-          setSearchQuery('')
-        }, 200) // Match animation duration
-        timeoutRef.current = timer
       }
     }
 
@@ -146,12 +127,6 @@ export default function ComboBox({
     onChange(option)
     // Start exit animation
     setIsClosing(true)
-    const timer = setTimeout(() => {
-      setIsOpen(false)
-      setIsClosing(false)
-      setSearchQuery('')
-    }, 200) // Match animation duration
-    timeoutRef.current = timer
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -170,16 +145,9 @@ export default function ComboBox({
           if (isOpen) {
             // Start exit animation
             setIsClosing(true)
-            const timer = setTimeout(() => {
-              setIsOpen(false)
-              setIsClosing(false)
-              setSearchQuery('')
-            }, 200)
-            timeoutRef.current = timer
           } else {
             setIsOpen(true)
             setIsClosing(false)
-            setShouldRender(true)
           }
         }}
         style={{
@@ -270,9 +238,11 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {shouldRender && (
+      {(isOpen || isClosing) && (
         <div
+          ref={dropdownRef}
           className={`combobox-dropdown ${isClosing ? 'closing' : ''}`}
+          onAnimationEnd={handleAnimationEnd}
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
