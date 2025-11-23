@@ -4,7 +4,7 @@
   "description": "Platform sosial berbasis thread untuk berbagi dan melacak tugas sekolah harian",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#f1f5f9",
   "theme_color": "#6366f1",
   "orientation": "portrait",
