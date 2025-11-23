@@ -163,16 +163,19 @@ export const threadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Get today's date in Jakarta timezone, converted to UTC for database
-      const today = getJakartaTodayAsUTC()
-      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      // This ensures we only check threads created TODAY, not yesterday or tomorrow
+      const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
 
-      // Check if thread with same title and date exists
+      // Check if thread with same title exists ONLY for today's date
+      // This prevents bug where thread from different date is found
+      // Example: Thread MTK on 21 Nov will NOT be found when creating thread on 22 Nov
       const existingThread = await prisma.thread.findFirst({
         where: {
           title: input.title,
           date: {
-            gte: today,
-            lt: tomorrow,
+            gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
+            lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
           },
         },
         include: {
