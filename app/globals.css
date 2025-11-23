@@ -2522,6 +2522,7 @@ body {
     align-items: flex-start;
     width: 100%;
     margin-top: 0.5rem;
+    position: relative;
   }
   
   .thread-detail-title {
@@ -2530,6 +2531,8 @@ body {
     word-wrap: break-word;
     overflow-wrap: break-word;
     font-weight: 600 !important;
+    position: relative;
+    width: 100%;
   }
   
   .thread-detail-title span {

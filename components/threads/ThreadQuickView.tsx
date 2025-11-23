@@ -385,7 +385,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               margin: 0,
               flex: 1,
               lineHeight: 1.4,
-              paddingRight: (thread as any).author?.kelas ? '80px' : '0'
+              paddingRight: (thread as any).author?.kelas && isAdmin ? '160px' : ((thread as any).author?.kelas ? '80px' : '0')
             }}>
               <span style={{
                 textDecoration: isThreadCompleted ? 'line-through' : 'none',
@@ -398,7 +398,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             {(thread as any).author?.kelas && (
               <span style={{
                 position: 'absolute',
-                right: 0,
+                right: isAdmin ? '70px' : '0',
                 top: 0,
                 display: 'inline-block',
                 padding: '0.125rem 0.375rem',
