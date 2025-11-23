@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
@@ -30,41 +30,92 @@ const generateKelasOptions = () => {
 }
 
 export default function FeedPage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [selectedKelas, setSelectedKelas] = useState<string>('all')
-  const { data: threads, isLoading } = trpc.thread.getAll.useQuery(undefined, {
+  const [isDataValidated, setIsDataValidated] = useState(false)
+  const [previousUserId, setPreviousUserId] = useState<string | null>(null)
+
+  // Get user data (kelas, isAdmin)
+  const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const userKelas = userData?.kelas || null
+  const isAdmin = userData?.isAdmin || false
+
+  // Get threads - invalidate cache when user changes
+  const utils = trpc.useUtils()
+  const { data: threads, isLoading, isFetching, isRefetching } = trpc.thread.getAll.useQuery(undefined, {
     refetchInterval: 3000, // Auto refresh every 3 seconds (faster)
     refetchOnWindowFocus: true, // Refetch when user returns to tab
+    enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0, // Don't cache data
   })
+
+  // Invalidate cache when user changes
+  useEffect(() => {
+    if (session?.user?.id && session.user.id !== previousUserId) {
+      // User changed - invalidate all queries
+      utils.thread.getAll.invalidate()
+      utils.userStatus.getUncompletedCount.invalidate()
+      setPreviousUserId(session.user.id)
+      setIsDataValidated(false)
+    }
+  }, [session?.user?.id, previousUserId, utils])
+
+  // Validate that displayed threads match user's kelas
+  useEffect(() => {
+    if (threads && userKelas !== undefined && !isAdmin) {
+      // Check if all threads match user's kelas
+      const allMatchKelas = threads.every(thread => {
+        const authorKelas = (thread.author as any)?.kelas
+        return authorKelas === userKelas
+      })
+      
+      if (allMatchKelas || threads.length === 0) {
+        setIsDataValidated(true)
+      } else {
+        // Data doesn't match - invalidate and refetch
+        setIsDataValidated(false)
+        utils.thread.getAll.invalidate()
+      }
+    } else if (isAdmin || !userKelas) {
+      // Admin or no kelas - always valid
+      setIsDataValidated(true)
+    }
+  }, [threads, userKelas, isAdmin, utils])
 
   // Get uncompleted comments count
   const { data: uncompletedData } = trpc.userStatus.getUncompletedCount.useQuery(
     undefined,
     {
-      enabled: !!session,
+      enabled: !!session && isDataValidated,
       refetchInterval: 3000, // Auto refresh every 3 seconds
       refetchOnWindowFocus: true,
     }
   )
 
-  // Check if user is admin
-  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
-    enabled: !!session,
-  })
-  const isAdmin = adminCheck?.isAdmin || false
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
 
 
   // Filter and search threads
   const filteredThreads = useMemo(() => {
-    if (!threads) return []
+    if (!threads || !isDataValidated) return []
 
     let filtered = threads
+
+    // Additional client-side validation: filter by user's kelas (non-admin only)
+    if (!isAdmin && userKelas) {
+      filtered = filtered.filter(thread => {
+        const authorKelas = (thread.author as any)?.kelas
+        return authorKelas === userKelas
+      })
+    }
 
     // Filter by subject (mata pelajaran)
     if (selectedSubject !== 'all') {
@@ -91,7 +142,7 @@ export default function FeedPage() {
     }
 
     return filtered
-  }, [threads, selectedSubject, selectedKelas, searchQuery, isAdmin])
+  }, [threads, selectedSubject, selectedKelas, searchQuery, isAdmin, userKelas, isDataValidated])
 
   return (
     <>
@@ -262,10 +313,12 @@ export default function FeedPage() {
             </div>
           )}
 
-          {isLoading ? (
+          {(isLoading || isFetching || isLoadingUserData || !isDataValidated) ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <LoadingSpinner size={32} />
-              <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>Memuat PR...</p>
+              <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
+                {isLoadingUserData ? 'Memuat data user...' : 'Memuat PR...'}
+              </p>
             </div>
           ) : !threads || threads.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>

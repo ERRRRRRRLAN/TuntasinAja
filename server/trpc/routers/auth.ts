@@ -84,6 +84,26 @@ export const authRouter = createTRPCRouter({
     return { isAdmin: user?.isAdmin || false }
   }),
 
+  // Get current user data (kelas, isAdmin)
+  getUserData: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { kelas: null, isAdmin: false }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { 
+        kelas: true,
+        isAdmin: true,
+      },
+    })
+
+    return { 
+      kelas: user?.kelas || null, 
+      isAdmin: user?.isAdmin || false 
+    }
+  }),
+
   // Create user (Admin only)
   createUser: adminProcedure
     .input(
