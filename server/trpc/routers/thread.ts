@@ -72,15 +72,15 @@ export const threadRouter = createTRPCRouter({
       },
     })
 
-    // Filter out threads that are already completed by this user AND completion date > 2 minutes
-    // Thread remains visible in dashboard for 2 minutes after completion
+    // Filter out threads that are already completed by this user AND completion date > 24 hours
+    // Thread remains visible in dashboard for 24 hours after completion
     // Thread remains in database until ALL users in the same kelas complete it
     if (userId && !isAdmin) {
       const { getUTCDate } = await import('@/lib/date-utils')
-      const twoMinutesAgo = getUTCDate()
-      twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
+      const oneDayAgo = getUTCDate()
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1)
 
-      // Get all completed thread IDs from history for this user where completion > 2 minutes
+      // Get all completed thread IDs from history for this user where completion > 24 hours
       const completedThreadIds = await prisma.history.findMany({
         where: {
           userId: userId,
@@ -88,7 +88,7 @@ export const threadRouter = createTRPCRouter({
             not: null, // Only threads that still exist
           },
           completedDate: {
-            lt: twoMinutesAgo, // Completed more than 2 minutes ago
+            lt: oneDayAgo, // Completed more than 24 hours ago
           },
         },
         select: {

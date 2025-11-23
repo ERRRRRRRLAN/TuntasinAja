@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
 
 // This API route can be called by Vercel Cron Jobs or external cron services
-// Auto-deletes threads that were COMPLETED more than 2 minutes ago (TESTING MODE)
+// Auto-deletes threads that were COMPLETED more than 24 hours ago
 // Only deletes threads that are already completed (have history entry)
 // Threads that are not completed will remain in the database
 // History remains stored for 30 days (separate cleanup)
@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 // {
 //   "crons": [{
 //     "path": "/api/cron/auto-delete-threads",
-//     "schedule": "* * * * *" // Every minute (for testing)
+//     "schedule": "0 0 * * *" // Every day at midnight
 //   }]
 // }
 
@@ -32,18 +32,17 @@ export default async function handler(
 
   try {
     const { getUTCDate } = await import('@/lib/date-utils')
-    // TESTING MODE: 2 minutes instead of 24 hours
-    const twoMinutesAgo = getUTCDate()
-    twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
+    const oneDayAgo = getUTCDate()
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
 
-    // Find all threads that have at least one history entry older than 2 minutes
+    // Find all threads that have at least one history entry older than 24 hours
     // We need to check if ALL users in the same kelas have completed the thread
     const threadsWithOldHistories = await prisma.thread.findMany({
       where: {
         histories: {
           some: {
             completedDate: {
-              lt: twoMinutesAgo, // At least one user completed more than 2 minutes ago
+              lt: oneDayAgo, // At least one user completed more than 24 hours ago
             },
           },
         },
@@ -104,9 +103,9 @@ export default async function handler(
         completedUserIds.has(userId)
       )
 
-      // Also check if all completions are older than 2 minutes
+      // Also check if all completions are older than 24 hours
       const allCompletionsOld = thread.histories.every(
-        (h: { completedDate: Date }) => h.completedDate < twoMinutesAgo
+        (h: { completedDate: Date }) => h.completedDate < oneDayAgo
       )
 
       // Only delete if ALL users in kelas have completed AND all completions are old enough
@@ -159,7 +158,7 @@ export default async function handler(
     return res.status(200).json({
       success: true,
       deleted: deletedCount,
-      message: `Successfully deleted ${deletedCount} completed thread(s) older than 2 minutes from completion date`,
+      message: `Successfully deleted ${deletedCount} completed thread(s) older than 24 hours from completion date`,
     })
   } catch (error) {
     console.error('Error in auto-delete-threads cron:', error)
