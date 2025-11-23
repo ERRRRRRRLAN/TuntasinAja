@@ -1214,9 +1214,7 @@ body {
 }
 
 /* ComboBox Dropdown - Using CSS transitions instead of animations for smoother experience */
-.combobox-dropdown {
-  /* Transitions are handled inline for better control */
-}
+/* Transitions are handled inline for better control */
 
 /* QuickView styles are defined below in Thread QuickView Responsive section */
 
