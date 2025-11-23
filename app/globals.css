@@ -1642,8 +1642,6 @@ body {
 .quickview-confirm-dialog-content.closing {
   animation: scaleOut 0.3s ease-out;
 }
-  z-index: 1;
-}
 
 /* User List Table Styles */
 .user-list-table {
