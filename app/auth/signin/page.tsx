@@ -82,8 +82,17 @@ export default function SignInPage() {
       {/* Simple Header - Only Logo and Title */}
       <header className="signin-page-header">
         <div className="signin-page-header-content">
-          <div className="signin-page-logo">
-            <BookIcon size={24} style={{ flexShrink: 0 }} />
+          <div className="signin-page-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <img 
+              src="/logo.svg" 
+              alt="TuntasinAja Logo" 
+              style={{ 
+                width: '32px', 
+                height: '32px', 
+                flexShrink: 0,
+                objectFit: 'contain'
+              }} 
+            />
             <span className="signin-page-logo-text">TuntasinAja</span>
           </div>
         </div>

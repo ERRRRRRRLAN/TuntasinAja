@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     title: 'TuntasinAja',
   },
   icons: {
-    icon: '/icon-192x192.png',
-    apple: '/icon-192x192.png',
+    icon: '/logo.svg',
+    apple: '/logo.svg',
   },
 }
 
@@ -38,7 +38,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="TuntasinAja" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
       </head>
       <body className={inter.className}>
         <Providers>

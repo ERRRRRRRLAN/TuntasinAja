@@ -127,8 +127,17 @@ export default function Header() {
   return (
     <header className="header" ref={headerRef}>
       <div className="header-content">
-        <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <BookIcon size={24} style={{ flexShrink: 0 }} />
+        <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <img 
+            src="/logo.svg" 
+            alt="TuntasinAja Logo" 
+            style={{ 
+              width: '32px', 
+              height: '32px', 
+              flexShrink: 0,
+              objectFit: 'contain'
+            }} 
+          />
           <span>TuntasinAja</span>
         </Link>
         
