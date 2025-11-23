@@ -1213,9 +1213,9 @@ body {
   }
 }
 
-/* ComboBox Dropdown Animations */
-.combobox-dropdown.closing {
-  animation: fadeOutUp 0.2s ease-out;
+/* ComboBox Dropdown - Using CSS transitions instead of animations for smoother experience */
+.combobox-dropdown {
+  /* Transitions are handled inline for better control */
 }
 
 /* QuickView styles are defined below in Thread QuickView Responsive section */

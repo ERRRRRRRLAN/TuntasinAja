@@ -50,21 +50,11 @@ export default function ComboBox({
   emptyMessage = 'Tidak ada mata pelajaran yang ditemukan'
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
+  const [isVisible, setIsVisible] = useState(false)
 
   // Filter options based on search query
   const filteredOptions = options.filter(option =>
@@ -74,45 +64,54 @@ export default function ComboBox({
   // Get display value
   const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
 
-  // Handle animation end
-  const handleAnimationEnd = () => {
-    if (isClosing) {
-      setIsOpen(false)
-      setIsClosing(false)
-      setSearchQuery('')
+  // Handle visibility based on isOpen
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure DOM is ready before showing
+      requestAnimationFrame(() => {
+        setIsVisible(true)
+      })
+    } else {
+      // Wait for transition to complete before hiding
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+      }, 200) // Match transition duration
+      return () => clearTimeout(timer)
     }
-  }
+  }, [isOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    if (!isOpen || isClosing) return
+    if (!isOpen) return
 
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Start exit animation
-        setIsClosing(true)
+        setIsOpen(false)
+        setSearchQuery('')
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     // Focus input when opened
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 100)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 50)
+    })
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen, isClosing])
+  }, [isOpen])
 
   // Handle keyboard navigation
   useEffect(() => {
-    if (!isOpen || isClosing) return
+    if (!isOpen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        // Start exit animation
-        setIsClosing(true)
+        setIsOpen(false)
+        setSearchQuery('')
       }
     }
 
@@ -120,13 +119,12 @@ export default function ComboBox({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, isClosing])
+  }, [isOpen])
 
   const handleSelect = (option: string) => {
-    if (isClosing) return // Prevent selection during closing animation
     onChange(option)
-    // Start exit animation
-    setIsClosing(true)
+    setIsOpen(false)
+    setSearchQuery('')
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -141,13 +139,11 @@ export default function ComboBox({
       <button
         type="button"
         onClick={() => {
-          if (isClosing) return // Prevent toggle during closing animation
           if (isOpen) {
-            // Start exit animation
-            setIsClosing(true)
+            setIsOpen(false)
+            setSearchQuery('')
           } else {
             setIsOpen(true)
-            setIsClosing(false)
           }
         }}
         style={{
@@ -238,11 +234,10 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {(isOpen || isClosing) && (
+      {isOpen && (
         <div
           ref={dropdownRef}
-          className={`combobox-dropdown ${isClosing ? 'closing' : ''}`}
-          onAnimationEnd={handleAnimationEnd}
+          className="combobox-dropdown"
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
@@ -257,8 +252,11 @@ export default function ComboBox({
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            animation: isClosing ? 'fadeOutUp 0.2s ease-out' : 'fadeInUp 0.2s ease-out',
-            pointerEvents: isClosing ? 'none' : 'auto'
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(-10px)',
+            transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
+            pointerEvents: isVisible ? 'auto' : 'none',
+            visibility: isVisible ? 'visible' : 'hidden'
           }}
         >
           {/* Search Input */}
