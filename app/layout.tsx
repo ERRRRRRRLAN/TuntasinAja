@@ -37,9 +37,13 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" type="application/manifest+json" />
         <meta name="theme-color" content="#6366f1" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="TuntasinAja" />
+        <meta name="application-name" content="TuntasinAja" />
+        <meta name="msapplication-TileColor" content="#6366f1" />
+        <meta name="msapplication-navbutton-color" content="#6366f1" />
         <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
         <script
