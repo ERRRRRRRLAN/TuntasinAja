@@ -183,11 +183,10 @@ body {
   max-height: 400px;
   padding: 1rem;
   opacity: 1;
-  animation: fadeInDown 0.3s ease-out;
 }
 
-.mobile-menu:not(.open) {
-  animation: fadeOutUp 0.3s ease-out;
+.mobile-menu {
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out;
 }
 
 .mobile-nav-link {
@@ -1539,15 +1538,8 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 3000; /* Lebih tinggi dari quickview (1000) dan header (100) */
-  animation: fadeIn 0.2s;
   backdrop-filter: blur(2px);
-  pointer-events: auto;
   isolation: isolate;
-  will-change: opacity;
-}
-
-.confirm-dialog-overlay.closing {
-  animation: fadeOut 0.3s ease-out;
 }
 
 .confirm-dialog-content {
@@ -1557,14 +1549,9 @@ body {
   max-width: 400px;
   width: 90%;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: scaleIn 0.3s ease-out;
   pointer-events: auto;
   position: relative;
   z-index: 1;
-}
-
-.confirm-dialog-content.closing {
-  animation: scaleOut 0.3s ease-out;
 }
 
 .confirm-dialog-title {
@@ -1613,16 +1600,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 2000; /* Lebih tinggi dari quickview content tapi tetap di dalam quickview overlay */
-  animation: fadeIn 0.2s;
   backdrop-filter: blur(2px);
   border-radius: 1rem;
-  pointer-events: auto;
   isolation: isolate; /* Create new stacking context to prevent flicker */
-  will-change: opacity;
-}
-
-.quickview-confirm-dialog-overlay.closing {
-  animation: fadeOut 0.3s ease-out;
 }
 
 .quickview-confirm-dialog-content {
@@ -1632,13 +1612,8 @@ body {
   max-width: 400px;
   width: 90%;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: scaleIn 0.3s ease-out;
   pointer-events: auto;
   position: relative;
-}
-
-.quickview-confirm-dialog-content.closing {
-  animation: scaleOut 0.3s ease-out;
 }
 
 /* User List Table Styles */

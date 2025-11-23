@@ -13,9 +13,9 @@ export default function Header() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-  const [isProfileClosing, setIsProfileClosing] = useState(false)
+  const [isProfileVisible, setIsProfileVisible] = useState(false)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
-  const profileTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const profileContentRef = useRef<HTMLDivElement>(null)
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -48,34 +48,39 @@ export default function Header() {
     }
   }, [isMobileMenuOpen])
 
+  // Handle profile dropdown visibility
+  useEffect(() => {
+    if (isProfileDropdownOpen) {
+      // Small delay to ensure DOM is ready before showing
+      requestAnimationFrame(() => {
+        setIsProfileVisible(true)
+      })
+    } else {
+      // Wait for transition to complete before hiding
+      const timer = setTimeout(() => {
+        setIsProfileVisible(false)
+      }, 300) // Match transition duration
+      return () => clearTimeout(timer)
+    }
+  }, [isProfileDropdownOpen])
+
   // Close profile dropdown when clicking outside
   useEffect(() => {
+    if (!isProfileDropdownOpen) return
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (
-        isProfileDropdownOpen &&
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(target)
       ) {
-        // Start exit animation
-        setIsProfileClosing(true)
-        const timer = setTimeout(() => {
-          setIsProfileDropdownOpen(false)
-          setIsProfileClosing(false)
-        }, 300) // Match animation duration
-        profileTimeoutRef.current = timer
+        setIsProfileDropdownOpen(false)
       }
     }
 
-    if (isProfileDropdownOpen) {
-      setIsProfileClosing(false)
-      document.addEventListener('click', handleClickOutside)
-      return () => {
-        document.removeEventListener('click', handleClickOutside)
-        if (profileTimeoutRef.current) {
-          clearTimeout(profileTimeoutRef.current)
-        }
-      }
+    document.addEventListener('click', handleClickOutside)
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
     }
   }, [isProfileDropdownOpen])
 
@@ -138,18 +143,7 @@ export default function Header() {
             >
             <button
               onClick={() => {
-                if (isProfileDropdownOpen) {
-                  // Start exit animation
-                  setIsProfileClosing(true)
-                  const timer = setTimeout(() => {
-                    setIsProfileDropdownOpen(false)
-                    setIsProfileClosing(false)
-                  }, 300)
-                  profileTimeoutRef.current = timer
-                } else {
-                  setIsProfileDropdownOpen(true)
-                  setIsProfileClosing(false)
-                }
+                setIsProfileDropdownOpen(!isProfileDropdownOpen)
               }}
               className="profile-button"
               style={{
@@ -179,8 +173,9 @@ export default function Header() {
             </button>
 
             {/* Dropdown Panel */}
-            {(isProfileDropdownOpen || isProfileClosing) && (
+            {isProfileDropdownOpen && (
               <div
+                ref={profileContentRef}
                 style={{
                   position: 'absolute',
                   top: 'calc(100% + 0.5rem)',
@@ -191,8 +186,12 @@ export default function Header() {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   minWidth: '200px',
                   zIndex: 1000,
-                  animation: isProfileClosing ? 'slideOutUp 0.3s ease-out' : 'slideDown 0.3s ease-out',
                   overflow: 'hidden',
+                  opacity: isProfileVisible ? 1 : 0,
+                  transform: isProfileVisible ? 'translateY(0)' : 'translateY(-10px)',
+                  transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+                  pointerEvents: isProfileVisible ? 'auto' : 'none',
+                  visibility: isProfileVisible ? 'visible' : 'hidden'
                 }}
               >
                 <div style={{ padding: '0.5rem' }}>

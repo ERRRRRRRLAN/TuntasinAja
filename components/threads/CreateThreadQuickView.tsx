@@ -15,8 +15,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  const [isClosing, setIsClosing] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const utils = trpc.useUtils()
 
@@ -46,33 +47,34 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   // Lock body scroll when quickview is open (mobile)
   useEffect(() => {
     document.body.style.overflow = 'hidden'
+    // Small delay to ensure DOM is ready before showing
+    requestAnimationFrame(() => {
+      setIsVisible(true)
+    })
     return () => {
       document.body.style.overflow = ''
     }
   }, [])
 
   const handleClose = () => {
-    // Start exit animation
-    setIsClosing(true)
+    setIsVisible(false)
     
-    // Wait for animation to complete before closing
+    // Wait for transition to complete before closing
     const timer = setTimeout(() => {
-      setIsClosing(false)
       document.body.style.overflow = ''
       onClose()
-    }, 300) // Match animation duration
+    }, 300) // Match transition duration
     
-    timeoutRef.current = timer
+    return () => clearTimeout(timer)
   }
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isVisible) {
+      document.body.style.overflow = ''
+      onClose()
     }
-  }, [])
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,8 +86,27 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   }
 
   return (
-    <div className={`quickview-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
-      <div className={`quickview-content ${isClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+    <div 
+      ref={overlayRef}
+      className="quickview-overlay" 
+      onClick={handleClose}
+      onTransitionEnd={handleTransitionEnd}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-out',
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
+    >
+      <div 
+        ref={contentRef}
+        className="quickview-content" 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+        }}
+      >
         <div className="quickview-header">
           <div className="quickview-header-top">
             <button

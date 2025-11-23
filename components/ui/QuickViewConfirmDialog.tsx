@@ -23,35 +23,32 @@ export default function QuickViewConfirmDialog({
   onCancel,
 }: QuickViewConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
-  const [isClosing, setIsClosing] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
 
-  // Prevent flicker by using pointer-events
   useEffect(() => {
     if (isOpen) {
-      setIsClosing(false)
-      if (overlayRef.current) {
-        overlayRef.current.style.pointerEvents = 'auto'
-      }
+      // Small delay to ensure DOM is ready before showing
+      requestAnimationFrame(() => {
+        setIsVisible(true)
+      })
     } else {
-      // Start exit animation
-      setIsClosing(true)
-      if (overlayRef.current) {
-        overlayRef.current.style.pointerEvents = 'none'
-      }
+      // Wait for transition to complete before hiding
       const timer = setTimeout(() => {
-        setIsClosing(false)
-      }, 300) // Match animation duration
-      timeoutRef.current = timer
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+        setIsVisible(false)
+      }, 300) // Match transition duration
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
-  if (!isOpen && !isClosing) return null
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isOpen) {
+      setIsVisible(false)
+    }
+  }
+
+  if (!isOpen && !isVisible) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
@@ -80,12 +77,24 @@ export default function QuickViewConfirmDialog({
   return (
     <div 
       ref={overlayRef}
-      className={`quickview-confirm-dialog-overlay ${isClosing ? 'closing' : ''}`}
+      className="quickview-confirm-dialog-overlay"
       onClick={handleOverlayClick}
+      onTransitionEnd={handleTransitionEnd}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-out',
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
     >
       <div 
-        className={`quickview-confirm-dialog-content ${isClosing ? 'closing' : ''}`}
+        ref={contentRef}
+        className="quickview-confirm-dialog-content"
         onClick={handleContentClick}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+        }}
       >
         <h3 className="confirm-dialog-title">{title}</h3>
         <p className="confirm-dialog-message">{message}</p>

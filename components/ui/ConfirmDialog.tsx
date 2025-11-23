@@ -28,41 +28,40 @@ export default function ConfirmDialog({
   disabled = false,
 }: ConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-      setMounted(false)
-    }
+    return () => setMounted(false)
   }, [])
 
   useEffect(() => {
     if (isOpen) {
-      setIsClosing(false)
       // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
+      // Small delay to ensure DOM is ready before showing
+      requestAnimationFrame(() => {
+        setIsVisible(true)
+      })
     } else {
-      // Start exit animation
-      setIsClosing(true)
+      // Wait for transition to complete before hiding
       const timer = setTimeout(() => {
-        setIsClosing(false)
+        setIsVisible(false)
         document.body.style.overflow = 'unset'
-      }, 300) // Match animation duration
-      timeoutRef.current = timer
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-      document.body.style.overflow = 'unset'
+      }, 300) // Match transition duration
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
+
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isOpen) {
+      setIsVisible(false)
+      document.body.style.overflow = 'unset'
+    }
+  }
 
   if (!isOpen || !mounted) return null
 
@@ -94,12 +93,24 @@ export default function ConfirmDialog({
   const dialogContent = (
     <div 
       ref={overlayRef}
-      className={`confirm-dialog-overlay ${isClosing ? 'closing' : ''}`}
+      className="confirm-dialog-overlay"
       onClick={handleOverlayClick}
+      onTransitionEnd={handleTransitionEnd}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-out',
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
     >
       <div 
-        className={`confirm-dialog-content ${isClosing ? 'closing' : ''}`}
+        ref={contentRef}
+        className="confirm-dialog-content"
         onClick={handleContentClick}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+        }}
       >
         <h3 className="confirm-dialog-title">{title}</h3>
         <p className="confirm-dialog-message">{message}</p>
@@ -127,3 +138,4 @@ export default function ConfirmDialog({
 
   return createPortal(dialogContent, document.body)
 }
+

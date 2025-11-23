@@ -23,26 +23,28 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState<string | null>(null)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
-  const [isClosing, setIsClosing] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   // Reset confirm dialog when quickview is closed or threadId changes
   useEffect(() => {
     setIsQuickViewOpen(true)
-    setIsClosing(false)
     setShowConfirmDialog(false)
     
     // Lock body scroll when quickview is open (mobile)
     document.body.style.overflow = 'hidden'
     
+    // Small delay to ensure DOM is ready before showing
+    requestAnimationFrame(() => {
+      setIsVisible(true)
+    })
+    
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
       setIsQuickViewOpen(false)
-      setIsClosing(false)
       setShowConfirmDialog(false)
+      setIsVisible(false)
       // Unlock body scroll when quickview is closed
       document.body.style.overflow = ''
     }
@@ -147,29 +149,26 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   }
 
   const handleCloseQuickView = () => {
-    // Start exit animation
-    setIsClosing(true)
     setShowConfirmDialog(false)
     setIsQuickViewOpen(false)
+    setIsVisible(false)
     
-    // Wait for animation to complete before closing
+    // Wait for transition to complete before closing
     const timer = setTimeout(() => {
-      setIsClosing(false)
       document.body.style.overflow = ''
       onClose()
-    }, 300) // Match animation duration
+    }, 300) // Match transition duration
     
-    timeoutRef.current = timer
+    return () => clearTimeout(timer)
   }
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isVisible) {
+      document.body.style.overflow = ''
+      onClose()
     }
-  }, [])
+  }
 
   const handleConfirmThread = () => {
     // Close dialog immediately for better UX
@@ -290,8 +289,28 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   }
 
   return (
-    <div className={`quickview-overlay ${isClosing ? 'closing' : ''}`} onClick={handleCloseQuickView}>
-      <div className={`quickview-content ${isClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+    <div 
+      ref={overlayRef}
+      className="quickview-overlay" 
+      onClick={handleCloseQuickView}
+      onTransitionEnd={handleTransitionEnd}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-out',
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
+    >
+      <div 
+        ref={contentRef}
+        className="quickview-content" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ 
+          position: 'relative',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+        }}
+      >
         {/* Only show QuickViewConfirmDialog when quickview is open and thread is loaded */}
         {isQuickViewOpen && thread && (
           <QuickViewConfirmDialog
