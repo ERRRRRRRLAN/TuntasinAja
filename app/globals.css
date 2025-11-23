@@ -2341,6 +2341,7 @@ body {
     margin: 0 !important;
     border-radius: 0 !important;
     padding: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
     box-shadow: none !important;
     display: flex !important;
     flex-direction: column !important;
@@ -2436,6 +2437,7 @@ body {
   /* Comments section - scrollable */
   .comments-section {
     padding: 1rem !important;
+    padding-bottom: 2rem !important;
     overflow-y: auto;
     flex: 1;
     -webkit-overflow-scrolling: touch;
@@ -2451,8 +2453,13 @@ body {
   .comment-card {
     padding: 1rem !important;
     margin-bottom: 1rem;
+    margin-bottom: 1.5rem !important;
     flex-direction: column;
     gap: 0.75rem;
+  }
+  
+  .comments-list {
+    padding-bottom: 1rem;
   }
   
   .comment-card input[type="checkbox"] {
