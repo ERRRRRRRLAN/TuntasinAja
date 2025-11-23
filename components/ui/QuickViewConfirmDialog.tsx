@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface QuickViewConfirmDialogProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface QuickViewConfirmDialogProps {
 }
 
 // QuickViewConfirmDialog untuk digunakan di dalam quickview (overlay di atas quickview content)
+// Menggunakan Portal agar benar-benar floating di tengah layar
 export default function QuickViewConfirmDialog({
   isOpen,
   title,
@@ -24,10 +26,18 @@ export default function QuickViewConfirmDialog({
 }: QuickViewConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  useEffect(() => {
     if (isOpen) {
+      // Prevent body scroll when dialog is open
+      document.body.style.overflow = 'hidden'
       // Small delay to ensure DOM is ready before showing
       requestAnimationFrame(() => {
         setIsVisible(true)
@@ -36,6 +46,7 @@ export default function QuickViewConfirmDialog({
       // Wait for transition to complete before hiding
       const timer = setTimeout(() => {
         setIsVisible(false)
+        document.body.style.overflow = 'unset'
       }, 300) // Match transition duration
       return () => clearTimeout(timer)
     }
@@ -45,10 +56,11 @@ export default function QuickViewConfirmDialog({
     // Only handle transition end for opacity (not child elements)
     if (e.target === overlayRef.current && !isOpen) {
       setIsVisible(false)
+      document.body.style.overflow = 'unset'
     }
   }
 
-  if (!isOpen && !isVisible) return null
+  if (!isOpen || !mounted) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
@@ -74,7 +86,7 @@ export default function QuickViewConfirmDialog({
     onCancel()
   }
 
-  return (
+  const dialogContent = (
     <div 
       ref={overlayRef}
       className="quickview-confirm-dialog-overlay"
@@ -117,5 +129,7 @@ export default function QuickViewConfirmDialog({
       </div>
     </div>
   )
+
+  return createPortal(dialogContent, document.body)
 }
 
