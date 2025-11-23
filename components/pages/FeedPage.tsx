@@ -38,6 +38,7 @@ export default function FeedPage() {
   const [selectedKelas, setSelectedKelas] = useState<string>('all')
   const [isDataValidated, setIsDataValidated] = useState(false)
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -49,21 +50,29 @@ export default function FeedPage() {
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
   const { data: threads, isLoading, isFetching, isRefetching } = trpc.thread.getAll.useQuery(undefined, {
-    refetchInterval: 3000, // Auto refresh every 3 seconds (faster)
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchInterval: 3000, // Auto refresh every 3 seconds (faster) - works in background
+    refetchOnWindowFocus: true, // Refetch when user returns to tab - works in background
     enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
     staleTime: 0, // Always consider data stale
     cacheTime: 0, // Don't cache data
   })
 
+  // Track initial load completion
+  useEffect(() => {
+    if (!isLoading && threads && isDataValidated) {
+      setIsInitialLoad(false)
+    }
+  }, [isLoading, threads, isDataValidated])
+
   // Invalidate cache when user changes
   useEffect(() => {
     if (session?.user?.id && session.user.id !== previousUserId) {
-      // User changed - invalidate all queries
+      // User changed - invalidate all queries and reset initial load
       utils.thread.getAll.invalidate()
       utils.userStatus.getUncompletedCount.invalidate()
       setPreviousUserId(session.user.id)
       setIsDataValidated(false)
+      setIsInitialLoad(true) // Reset initial load state when user changes
     }
   }, [session?.user?.id, previousUserId, utils])
 
@@ -78,8 +87,9 @@ export default function FeedPage() {
       
       if (allMatchKelas || threads.length === 0) {
         setIsDataValidated(true)
-      } else {
-        // Data doesn't match - invalidate and refetch
+      } else if (isInitialLoad) {
+        // Only invalidate on initial load if data doesn't match
+        // Background refresh will handle updates automatically
         setIsDataValidated(false)
         utils.thread.getAll.invalidate()
       }
@@ -87,7 +97,7 @@ export default function FeedPage() {
       // Admin or no kelas - always valid
       setIsDataValidated(true)
     }
-  }, [threads, userKelas, isAdmin, utils])
+  }, [threads, userKelas, isAdmin, utils, isInitialLoad])
 
   // Get uncompleted comments count
   const { data: uncompletedData } = trpc.userStatus.getUncompletedCount.useQuery(
@@ -313,7 +323,8 @@ export default function FeedPage() {
             </div>
           )}
 
-          {(isLoading || isFetching || isLoadingUserData || !isDataValidated) ? (
+          {/* Only show loading on initial load, not during background refresh */}
+          {(isLoading || isLoadingUserData || (isInitialLoad && !isDataValidated)) ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <LoadingSpinner size={32} />
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
