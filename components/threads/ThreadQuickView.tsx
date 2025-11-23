@@ -274,8 +274,26 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   if (isLoading) {
     return (
-      <div className={`quickview-overlay ${isClosing ? 'closing' : ''}`} onClick={handleCloseQuickView}>
-        <div className={`quickview-content ${isClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+      <div 
+        ref={overlayRef}
+        className="quickview-overlay" 
+        onClick={handleCloseQuickView}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
+          pointerEvents: isVisible ? 'auto' : 'none'
+        }}
+      >
+        <div 
+          ref={contentRef}
+          className="quickview-content" 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          }}
+        >
           <div className="card" style={{ textAlign: 'center' }}>
             <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
           </div>
