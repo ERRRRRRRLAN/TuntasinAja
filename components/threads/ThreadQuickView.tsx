@@ -28,9 +28,15 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   useEffect(() => {
     setIsQuickViewOpen(true)
     setShowConfirmDialog(false)
+    
+    // Lock body scroll when quickview is open (mobile)
+    document.body.style.overflow = 'hidden'
+    
     return () => {
       setIsQuickViewOpen(false)
       setShowConfirmDialog(false)
+      // Unlock body scroll when quickview is closed
+      document.body.style.overflow = ''
     }
   }, [threadId])
 
@@ -135,6 +141,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleCloseQuickView = () => {
     setShowConfirmDialog(false)
     setIsQuickViewOpen(false)
+    // Unlock body scroll
+    document.body.style.overflow = ''
     onClose()
   }
 
