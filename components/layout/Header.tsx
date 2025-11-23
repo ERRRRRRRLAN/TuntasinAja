@@ -55,17 +55,21 @@ export default function Header() {
       requestAnimationFrame(() => {
         setIsProfileVisible(true)
       })
-    } else {
-      // When closing, keep isProfileVisible true to show closing animation
-      // Then set to false after transition completes
-      if (isProfileVisible) {
-        const timer = setTimeout(() => {
-          setIsProfileVisible(false)
-        }, 300) // Match transition duration
-        return () => clearTimeout(timer)
-      }
     }
+    // Note: Don't set isProfileVisible to false immediately when closing
+    // Let the transition complete first, then unmount via render condition
   }, [isProfileDropdownOpen])
+
+  // Handle closing animation - set isProfileVisible to false after transition
+  useEffect(() => {
+    if (!isProfileDropdownOpen && isProfileVisible) {
+      // Start closing animation - isProfileVisible will control the transition
+      const timer = setTimeout(() => {
+        setIsProfileVisible(false)
+      }, 300) // Match transition duration
+      return () => clearTimeout(timer)
+    }
+  }, [isProfileDropdownOpen, isProfileVisible])
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
