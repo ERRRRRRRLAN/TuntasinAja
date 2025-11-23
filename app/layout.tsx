@@ -35,7 +35,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="manifest" href="/manifest.json" type="application/manifest+json" />
+        <link rel="manifest" href="/api/manifest.json" type="application/manifest+json" />
         <meta name="theme-color" content="#6366f1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
