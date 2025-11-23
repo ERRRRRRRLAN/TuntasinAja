@@ -100,19 +100,30 @@ export default function FeedPage() {
           <div className="page-header">
             <div>
               <h2>Tugas</h2>
-              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span>Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai</span>
                 {session && uncompletedCount > 0 && (
                   <span style={{ 
-                    display: 'inline-block',
-                    marginLeft: '0.5rem',
-                    padding: '0.125rem 0.5rem',
-                    borderRadius: '0.25rem',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    fontSize: '0.75rem',
-                    fontWeight: 600
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.5rem',
+                    background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                    border: '1.5px solid #f59e0b',
+                    color: '#92400e',
+                    fontSize: '0.8125rem',
+                    fontWeight: 700,
+                    boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)'
                   }}>
+                    <span style={{
+                      display: 'inline-block',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: '#f59e0b',
+                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }}></span>
                     {uncompletedCount} belum selesai
                   </span>
                 )}
