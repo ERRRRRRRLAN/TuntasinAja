@@ -162,20 +162,34 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Get user's kelas to filter threads by the same kelas
+      const currentUser = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          kelas: true,
+        },
+      })
+
+      const userKelas = currentUser?.kelas
+
       // Get today's date in Jakarta timezone, converted to UTC for database
       // This ensures we only check threads created TODAY, not yesterday or tomorrow
       const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
 
-      // Check if thread with same title exists ONLY for today's date
-      // This prevents bug where thread from different date is found
-      // Example: Thread MTK on 21 Nov will NOT be found when creating thread on 22 Nov
+      // Check if thread with same title exists ONLY for today's date AND same kelas
+      // This prevents bug where thread from different kelas is found
+      // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
       const existingThread = await prisma.thread.findFirst({
         where: {
           title: input.title,
           date: {
             gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
             lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+          },
+          // Only find threads from the same kelas
+          author: {
+            kelas: userKelas || undefined, // If user has no kelas, don't filter (shouldn't happen for normal users)
           },
         },
         include: {
