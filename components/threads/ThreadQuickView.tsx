@@ -549,10 +549,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 disabled={addComment.isLoading || !commentContent.trim()}
               >
                 {addComment.isLoading ? (
-                  <>
-                    <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <LoadingSpinner size={16} color="white" />
                     Mengirim...
-                  </>
+                  </span>
                 ) : 'Tambah Sub Tugas'}
               </button>
             </form>
