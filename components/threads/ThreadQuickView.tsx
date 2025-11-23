@@ -378,7 +378,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 minWidth: '44px',
                 minHeight: '44px',
                 transition: 'all 0.2s',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                flexShrink: 0
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'var(--bg-secondary)'
@@ -394,81 +395,89 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             >
               <XCloseIcon size={22} />
             </button>
-            {canDeleteThread && (
-              <button
-                onClick={() => setShowDeleteThreadDialog(true)}
-                className="quickview-delete-btn"
-                style={{
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  padding: '0.5rem 0.875rem',
-                  cursor: 'pointer',
-                  fontSize: '0.8125rem',
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              marginLeft: 'auto'
+            }}>
+              {(thread as any).author?.kelas && (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
-                  transition: 'background 0.2s',
-                  minHeight: '44px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#dc2626'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#ef4444'
-                }}
-                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-              >
-                <TrashIcon size={16} />
-                <span>Hapus</span>
-              </button>
-            )}
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {(thread as any).author?.kelas}
+                </span>
+              )}
+              {canDeleteThread && (
+                <button
+                  onClick={() => setShowDeleteThreadDialog(true)}
+                  className="quickview-delete-btn"
+                  style={{
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 0.875rem',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                    transition: 'background 0.2s',
+                    minHeight: '44px',
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#dc2626'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#ef4444'
+                  }}
+                  title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
+                >
+                  <TrashIcon size={16} />
+                  <span>Hapus</span>
+                </button>
+              )}
+            </div>
           </div>
           
-          <div className="quickview-title-section" style={{ position: 'relative' }}>
+          <div className="quickview-title-section">
             {session && (
-              <Checkbox
-                checked={isThreadCompleted}
-                onClick={handleThreadCheckboxClick}
-                isLoading={toggleThread.isLoading}
-                disabled={toggleThread.isLoading}
-                size={28}
-              />
+              <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
+                <Checkbox
+                  checked={isThreadCompleted}
+                  onClick={handleThreadCheckboxClick}
+                  isLoading={toggleThread.isLoading}
+                  disabled={toggleThread.isLoading}
+                  size={28}
+                />
+              </div>
             )}
             <h2 className="thread-detail-title" style={{ 
               margin: 0,
               flex: 1,
               lineHeight: 1.4,
-              paddingRight: (thread as any).author?.kelas && canDeleteThread ? '160px' : ((thread as any).author?.kelas ? '80px' : '0')
+              minWidth: 0
             }}>
               <span style={{
                 textDecoration: isThreadCompleted ? 'line-through' : 'none',
                 color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
-                wordBreak: 'break-word'
+                wordBreak: 'break-word',
+                display: 'block'
               }}>
                 {thread.title}
               </span>
             </h2>
-            {(thread as any).author?.kelas && (
-              <span style={{
-                position: 'absolute',
-                right: canDeleteThread ? '70px' : '0',
-                top: 0,
-                display: 'inline-block',
-                padding: '0.125rem 0.375rem',
-                borderRadius: '0.25rem',
-                border: '1px solid var(--primary)',
-                color: 'var(--primary)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                background: 'transparent',
-                zIndex: 1
-              }}>
-                {(thread as any).author?.kelas}
-              </span>
-            )}
           </div>
         </div>
 
