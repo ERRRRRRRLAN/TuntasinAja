@@ -1131,12 +1131,18 @@ body {
   }
 
   /* Profile button di mobile - sebelah kiri menu icon */
-  .header-content > div:has(.nav-desktop) {
+  .header-right-container .nav-desktop {
     display: none;
   }
 
+  /* Profile dan menu button di mobile - bersama di kanan */
+  .header-right-container {
+    gap: 0.75rem !important;
+    margin-left: auto;
+  }
+
   .profile-dropdown-container {
-    margin-right: 0.5rem;
+    margin-right: 0;
   }
 }
 

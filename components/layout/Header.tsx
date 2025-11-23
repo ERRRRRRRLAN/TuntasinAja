@@ -96,7 +96,7 @@ export default function Header() {
         </Link>
         
         {/* Right side: Navigation + Profile */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="header-right-container" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           {/* Desktop Navigation */}
           <nav className="nav nav-desktop">
             {navLinks.map((link) => (
@@ -254,20 +254,20 @@ export default function Header() {
             )}
           </div>
           )}
-        </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </button>
+          {/* Mobile Menu Button */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
