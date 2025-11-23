@@ -25,7 +25,7 @@
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://tuntasinaja-livid.vercel.app/manifest.json",
-  "fallbackType": "customtabs",
+  "fallbackType": "webview",
   "features": {},
   "alphaDependencies": {
     "enabled": false
@@ -44,8 +44,7 @@
   "launchHandlerClientMode": "",
   "displayOverride": [
     "standalone",
-    "fullscreen",
-    "minimal-ui"
+    "fullscreen"
   ],
   "appVersion": "2"
 }
