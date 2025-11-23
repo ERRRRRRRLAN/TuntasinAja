@@ -51,6 +51,7 @@ export default function ComboBox({
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -72,6 +73,22 @@ export default function ComboBox({
 
   // Get display value
   const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
+
+  // Handle shouldRender state
+  useEffect(() => {
+    if (isOpen && !isClosing) {
+      setShouldRender(true)
+    } else if (isClosing) {
+      // Keep rendering during closing animation
+      setShouldRender(true)
+    } else {
+      // Only hide after closing animation completes
+      const timer = setTimeout(() => {
+        setShouldRender(false)
+      }, 50) // Small delay to ensure animation completes
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, isClosing])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -162,6 +179,7 @@ export default function ComboBox({
           } else {
             setIsOpen(true)
             setIsClosing(false)
+            setShouldRender(true)
           }
         }}
         style={{
@@ -252,7 +270,7 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown */}
-      {(isOpen || isClosing) && (
+      {shouldRender && (
         <div
           className={`combobox-dropdown ${isClosing ? 'closing' : ''}`}
           style={{
