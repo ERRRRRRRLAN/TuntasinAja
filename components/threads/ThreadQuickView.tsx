@@ -427,14 +427,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.5rem',
-                  padding: '0.5rem 0.875rem',
+                  padding: '0.625rem',
                   cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: '0.8125rem',
-                  fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.375rem',
-                  transition: 'background 0.2s',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s, transform 0.2s',
+                  minWidth: '44px',
                   minHeight: '44px',
                   flexShrink: 0,
                   opacity: deleteThread.isLoading ? 0.7 : 1
@@ -442,25 +441,22 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 onMouseEnter={(e) => {
                   if (!deleteThread.isLoading) {
                     e.currentTarget.style.background = '#dc2626'
+                    e.currentTarget.style.transform = 'scale(1.05)'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!deleteThread.isLoading) {
                     e.currentTarget.style.background = '#ef4444'
+                    e.currentTarget.style.transform = 'scale(1)'
                   }
                 }}
                 title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
+                aria-label={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
               >
                 {deleteThread.isLoading ? (
-                  <>
-                    <LoadingSpinner size={16} color="white" />
-                    <span>Menghapus...</span>
-                  </>
+                  <LoadingSpinner size={20} color="white" />
                 ) : (
-                  <>
-                    <TrashIcon size={16} />
-                    <span>Hapus</span>
-                  </>
+                  <TrashIcon size={20} />
                 )}
               </button>
             )}
@@ -614,15 +610,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               color: 'white',
                               border: 'none',
                               borderRadius: '0.375rem',
-                              padding: '0.375rem 0.625rem',
+                              padding: '0.5rem',
                               cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '0.25rem',
-                              transition: 'background 0.2s',
-                              whiteSpace: 'nowrap',
+                              justifyContent: 'center',
+                              transition: 'background 0.2s, transform 0.2s',
+                              minWidth: '36px',
+                              minHeight: '36px',
                               flexShrink: 0,
                               marginTop: '-0.25rem',
                               opacity: deleteComment.isLoading ? 0.7 : 1
@@ -630,11 +625,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             onMouseEnter={(e) => {
                               if (!deleteComment.isLoading) {
                                 e.currentTarget.style.background = '#dc2626'
+                                e.currentTarget.style.transform = 'scale(1.1)'
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!deleteComment.isLoading) {
                                 e.currentTarget.style.background = '#ef4444'
+                                e.currentTarget.style.transform = 'scale(1)'
                               }
                             }}
                             title={
@@ -642,14 +639,16 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
                               "Hapus Sub Tugas Saya"
                             }
+                            aria-label={
+                              isAdmin ? "Hapus Sub Tugas (Admin)" :
+                              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
+                              "Hapus Sub Tugas Saya"
+                            }
                           >
                             {deleteComment.isLoading ? (
-                              <LoadingSpinner size={14} color="white" />
+                              <LoadingSpinner size={16} color="white" />
                             ) : (
-                              <>
-                                <TrashIcon size={14} />
-                                <span>Hapus</span>
-                              </>
+                              <TrashIcon size={18} />
                             )}
                           </button>
                         )}
@@ -659,37 +658,51 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           <button
                             onClick={() => setShowDeleteCommentDialog(comment.id)}
                             className="comment-delete-btn comment-delete-btn-mobile"
+                            disabled={deleteComment.isLoading}
                             style={{
-                              background: '#ef4444',
+                              background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
                               color: 'white',
                               border: 'none',
                               borderRadius: '0.375rem',
-                              padding: '0.5rem 0.75rem',
-                              cursor: 'pointer',
-                              fontSize: '0.8125rem',
-                              fontWeight: 600,
+                              padding: '0.625rem',
+                              cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '0.375rem',
-                              width: '100%',
-                              transition: 'background 0.2s',
-                              minHeight: '36px'
+                              transition: 'background 0.2s, transform 0.2s',
+                              minWidth: '44px',
+                              minHeight: '44px',
+                              width: 'auto',
+                              opacity: deleteComment.isLoading ? 0.7 : 1
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#dc2626'
+                              if (!deleteComment.isLoading) {
+                                e.currentTarget.style.background = '#dc2626'
+                                e.currentTarget.style.transform = 'scale(1.05)'
+                              }
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = '#ef4444'
+                              if (!deleteComment.isLoading) {
+                                e.currentTarget.style.background = '#ef4444'
+                                e.currentTarget.style.transform = 'scale(1)'
+                              }
                             }}
                             title={
                               isAdmin ? "Hapus Sub Tugas (Admin)" :
                               isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
                               "Hapus Sub Tugas Saya"
                             }
+                            aria-label={
+                              isAdmin ? "Hapus Sub Tugas (Admin)" :
+                              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
+                              "Hapus Sub Tugas Saya"
+                            }
                           >
-                            <TrashIcon size={16} />
-                            <span>Hapus Sub Tugas</span>
+                            {deleteComment.isLoading ? (
+                              <LoadingSpinner size={20} color="white" />
+                            ) : (
+                              <TrashIcon size={20} />
+                            )}
                           </button>
                         </div>
                       )}

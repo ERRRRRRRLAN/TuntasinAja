@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, ClockIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
@@ -42,7 +42,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const { data: session } = useSession()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Get thread status
@@ -56,10 +55,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
-  
-  // Check if user is the author of this thread
-  const isThreadAuthor = session?.user?.id === thread.author.id
-  const canDeleteThread = isAdmin || isThreadAuthor
 
   const utils = trpc.useUtils()
 
@@ -164,31 +159,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  // Delete thread (Admin only)
-  const deleteThread = trpc.thread.delete.useMutation({
-    onSuccess: async () => {
-      setShowDeleteDialog(false)
-      // Invalidate and refetch immediately
-      await utils.thread.getAll.invalidate()
-      await utils.thread.getAll.refetch()
-    },
-    onError: (error: any) => {
-      console.error('Error deleting thread:', error)
-      toast.error('Gagal menghapus thread. Silakan coba lagi.')
-      setShowDeleteDialog(false)
-    },
-  })
-
-  const handleDeleteThread = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (canDeleteThread) {
-      setShowDeleteDialog(true)
-    }
-  }
-
-  const handleConfirmDelete = () => {
-    deleteThread.mutate({ id: thread.id })
-  }
 
   return (
     <div 
@@ -216,7 +186,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 flex: 1,
                 margin: 0,
                 lineHeight: 1.4,
-                paddingRight: thread.author.kelas && canDeleteThread ? '160px' : thread.author.kelas ? '80px' : canDeleteThread ? '80px' : '0'
+                paddingRight: thread.author.kelas ? '80px' : '0'
               }}
             >
               {thread.title}
@@ -224,7 +194,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             {thread.author.kelas && (
               <span style={{
                 position: 'absolute',
-                right: canDeleteThread ? '80px' : '0',
+                right: '0',
                 top: 0,
                 display: 'inline-block',
                 padding: '0.125rem 0.375rem',
@@ -239,106 +209,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 {thread.author.kelas}
               </span>
             )}
-            {canDeleteThread && (
-              <button
-                onClick={handleDeleteThread}
-                className="thread-delete-btn thread-delete-btn-desktop"
-                disabled={deleteThread.isLoading}
-                style={{
-                  background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  padding: '0.375rem 0.625rem',
-                  cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  flexShrink: 0,
-                  transition: 'background 0.2s',
-                  whiteSpace: 'nowrap',
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  zIndex: 2,
-                  opacity: deleteThread.isLoading ? 0.7 : 1
-                }}
-                onMouseEnter={(e) => {
-                  if (!deleteThread.isLoading) {
-                    e.currentTarget.style.background = '#dc2626'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!deleteThread.isLoading) {
-                    e.currentTarget.style.background = '#ef4444'
-                  }
-                }}
-                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-              >
-                {deleteThread.isLoading ? (
-                  <LoadingSpinner size={14} color="white" />
-                ) : (
-                  <>
-                    <TrashIcon size={14} />
-                    <span className="delete-btn-text-desktop">Hapus</span>
-                  </>
-                )}
-              </button>
-            )}
           </div>
         </div>
-        
-        {canDeleteThread && (
-          <div className="thread-card-admin-actions">
-            <button
-              onClick={handleDeleteThread}
-              className="thread-delete-btn thread-delete-btn-mobile"
-              disabled={deleteThread.isLoading}
-              style={{
-                background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
-                padding: '0.5rem 0.75rem',
-                cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.375rem',
-                width: '100%',
-                transition: 'background 0.2s',
-                opacity: deleteThread.isLoading ? 0.7 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!deleteThread.isLoading) {
-                  e.currentTarget.style.background = '#dc2626'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!deleteThread.isLoading) {
-                  e.currentTarget.style.background = '#ef4444'
-                }
-              }}
-              title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-            >
-              {deleteThread.isLoading ? (
-                <>
-                  <LoadingSpinner size={16} color="white" />
-                  <span>Menghapus...</span>
-                </>
-              ) : (
-                <>
-                  <TrashIcon size={16} />
-                  <span>Hapus PR</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
         
         <div className="thread-meta">
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
@@ -405,15 +277,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
         onConfirm={handleConfirmUncheck}
         onCancel={() => setShowUncheckDialog(false)}
       />
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        title="Hapus PR?"
-        message={`Apakah Anda yakin ingin menghapus PR "${thread.title}"? Tindakan ini tidak dapat dibatalkan.`}
-        confirmText="Ya, Hapus"
-        cancelText="Batal"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setShowDeleteDialog(false)}
-      />
     </div>
   )
 }
@@ -430,7 +293,6 @@ function CommentItem({
   threadAuthorId: string
 }) {
   const { data: session } = useSession()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const commentStatus = statuses.find((s) => s.commentId === comment.id)
   const isCompleted = commentStatus?.isCompleted || false
 
@@ -440,11 +302,6 @@ function CommentItem({
   })
   const isAdmin = adminCheck?.isAdmin || false
   
-  // Check if user can delete this comment
-  const isCommentAuthor = session?.user?.id === comment.author.id
-  const isThreadAuthor = session?.user?.id === threadAuthorId
-  const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor
-
   const utils = trpc.useUtils()
 
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
@@ -479,31 +336,6 @@ function CommentItem({
     }
   }
 
-  // Delete comment (Admin only)
-  const deleteComment = trpc.thread.deleteComment.useMutation({
-    onSuccess: async () => {
-      setShowDeleteDialog(false)
-      // Invalidate and refetch immediately
-      await utils.thread.getAll.invalidate()
-      await utils.thread.getAll.refetch()
-    },
-    onError: (error: any) => {
-      console.error('Error deleting comment:', error)
-      toast.error('Gagal menghapus sub tugas. Silakan coba lagi.')
-      setShowDeleteDialog(false)
-    },
-  })
-
-  const handleDeleteComment = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (canDeleteComment) {
-      setShowDeleteDialog(true)
-    }
-  }
-
-  const handleConfirmDelete = () => {
-    deleteComment.mutate({ id: comment.id })
-  }
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
@@ -519,40 +351,6 @@ function CommentItem({
         </div>
       )}
       <div className="comment-text" style={{ flex: 1 }}>
-        {canDeleteComment && (
-          <button
-            onClick={handleDeleteComment}
-            disabled={deleteComment.isLoading}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.125rem 0.375rem',
-              cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
-              fontSize: '0.625rem',
-              fontWeight: 'bold',
-              opacity: deleteComment.isLoading ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            title={
-              isAdmin ? "Hapus Sub Tugas (Admin)" :
-              isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
-              "Hapus Sub Tugas Saya"
-            }
-          >
-            {deleteComment.isLoading ? (
-              <LoadingSpinner size={10} color="white" />
-            ) : (
-              <TrashIcon size={12} />
-            )}
-          </button>
-        )}
         <div style={{
           textDecoration: isCompleted ? 'line-through' : 'none',
           color: isCompleted ? 'var(--text-light)' : 'var(--text)'
@@ -578,15 +376,6 @@ function CommentItem({
           )}
         </div>
       </div>
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        title="Hapus Sub Tugas?"
-        message="Apakah Anda yakin ingin menghapus sub tugas ini? Tindakan ini tidak dapat dibatalkan."
-        confirmText="Ya, Hapus"
-        cancelText="Batal"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setShowDeleteDialog(false)}
-      />
     </div>
   )
 }
