@@ -15,8 +15,10 @@ export default function Header() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
   const [isProfileAnimating, setIsProfileAnimating] = useState(false)
+  const [headerHeight, setHeaderHeight] = useState(64)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const profileContentRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLElement>(null)
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -28,6 +30,14 @@ export default function Header() {
     { href: '/', label: 'Tugas' },
     { href: '/history', label: 'History' },
   ]
+
+  // Calculate header height for mobile menu positioning
+  useEffect(() => {
+    if (headerRef.current) {
+      const height = headerRef.current.offsetHeight
+      setHeaderHeight(height)
+    }
+  }, [session])
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -115,7 +125,7 @@ export default function Header() {
   if (!session) return null
 
   return (
-    <header className="header">
+    <header className="header" ref={headerRef}>
       <div className="header-content">
         <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <BookIcon size={24} style={{ flexShrink: 0 }} />
@@ -305,7 +315,10 @@ export default function Header() {
       </div>
 
       {/* Mobile Navigation */}
-      <nav className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+      <nav 
+        className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}
+        style={{ top: `${headerHeight}px` }}
+      >
         {navLinks.map((link) => (
           <Link
             key={link.href}
