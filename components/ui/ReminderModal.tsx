@@ -83,9 +83,13 @@ export default function ReminderModal({
     if (isOpen) {
       // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
-      // Small delay to ensure DOM is ready before showing
+      // Reset isVisible to false first, then set to true after a small delay
+      // This ensures the open animation plays
+      setIsVisible(false)
       requestAnimationFrame(() => {
-        setIsVisible(true)
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+        })
       })
     } else {
       // Don't immediately set isVisible to false
@@ -172,7 +176,7 @@ export default function ReminderModal({
       onClick={handleOverlayClick}
       onTransitionEnd={handleTransitionEnd}
       style={{
-        opacity: isOpen ? 1 : 0,
+        opacity: (isOpen && isVisible) ? 1 : 0,
         transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: (isOpen && isVisible) ? 'auto' : 'none'
       }}
@@ -182,8 +186,8 @@ export default function ReminderModal({
         className="confirm-dialog-content"
         onClick={handleContentClick}
         style={{
-          opacity: isOpen ? 1 : 0,
-          transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
+          opacity: (isOpen && isVisible) ? 1 : 0,
+          transform: (isOpen && isVisible) ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           maxWidth: '600px',
           width: '90%',
