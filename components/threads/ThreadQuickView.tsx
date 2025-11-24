@@ -28,8 +28,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string>('')
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Check if user is Erlan Nauval Aqilah
+  const isErlan = session?.user?.email === 'erlan@tuntasinaja.com'
 
   const handleCloseQuickView = useCallback(() => {
     setShowConfirmDialog(false)
@@ -341,6 +346,32 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
   })
 
+  // Update thread date (only for Erlan)
+  const updateThreadDate = trpc.thread.updateThreadDate.useMutation({
+    onSuccess: () => {
+      utils.thread.getById.invalidate({ id: threadId })
+      utils.thread.getAll.invalidate()
+      utils.userStatus.getOverdueTasks.invalidate()
+      toast.success('Tanggal thread berhasil diupdate!')
+      setShowDatePicker(false)
+      setSelectedDate('')
+    },
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`)
+    },
+  })
+
+  const handleUpdateDate = () => {
+    if (!selectedDate) {
+      toast.error('Pilih tanggal terlebih dahulu')
+      return
+    }
+    updateThreadDate.mutate({
+      threadId,
+      newDate: new Date(selectedDate),
+    })
+  }
+
   if (isLoading) {
     return (
       <div 
@@ -567,6 +598,95 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             </span>
           )}
         </div>
+
+        {/* Date Picker Button for Erlan (Testing Feature) */}
+        {isErlan && (
+          <div style={{
+            marginTop: '1rem',
+            padding: '1rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            border: '1px solid var(--border)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+            }}>
+              <button
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="btn btn-secondary"
+                style={{
+                  fontSize: '0.875rem',
+                  padding: '0.5rem 1rem',
+                }}
+              >
+                {showDatePicker ? 'Sembunyikan' : '⚙️ Atur Tanggal Thread (Test)'}
+              </button>
+              
+              {showDatePicker && (
+                <>
+                  <input
+                    type="datetime-local"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid var(--border)',
+                      borderRadius: '0.25rem',
+                      background: 'var(--card)',
+                      color: 'var(--text)',
+                      fontSize: '0.875rem',
+                    }}
+                  />
+                  <button
+                    onClick={handleUpdateDate}
+                    disabled={!selectedDate || updateThreadDate.isLoading}
+                    className="btn btn-primary"
+                    style={{
+                      fontSize: '0.875rem',
+                      padding: '0.5rem 1rem',
+                    }}
+                  >
+                    {updateThreadDate.isLoading ? (
+                      <>
+                        <LoadingSpinner size={14} />
+                        Memproses...
+                      </>
+                    ) : (
+                      'Update Tanggal'
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDatePicker(false)
+                      setSelectedDate('')
+                    }}
+                    className="btn btn-secondary"
+                    style={{
+                      fontSize: '0.875rem',
+                      padding: '0.5rem 1rem',
+                    }}
+                  >
+                    Batal
+                  </button>
+                </>
+              )}
+            </div>
+            {showDatePicker && (
+              <p style={{
+                marginTop: '0.75rem',
+                fontSize: '0.75rem',
+                color: 'var(--text-light)',
+                fontStyle: 'italic',
+              }}>
+                💡 Fitur testing: Atur tanggal thread untuk menguji reminder. 
+                Set tanggal lebih dari 7 hari yang lalu untuk melihat reminder.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>

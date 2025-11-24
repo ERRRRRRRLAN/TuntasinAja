@@ -571,5 +571,46 @@ export const threadRouter = createTRPCRouter({
 
     return { deleted: deletedCount }
   }),
+
+  // Update thread creation date (only for Erlan Nauval Aqilah for testing)
+  updateThreadDate: protectedProcedure
+    .input(
+      z.object({
+        threadId: z.string(),
+        newDate: z.date(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is Erlan Nauval Aqilah
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { email: true },
+      })
+
+      if (!user || user.email !== 'erlan@tuntasinaja.com') {
+        throw new Error('Unauthorized: Only Erlan Nauval Aqilah can update thread dates')
+      }
+
+      // Check if thread exists
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.threadId },
+      })
+
+      if (!thread) {
+        throw new Error('Thread not found')
+      }
+
+      // Update thread createdAt
+      const updatedThread = await prisma.thread.update({
+        where: { id: input.threadId },
+        data: {
+          createdAt: input.newDate,
+          // Also update date field if it exists
+          date: input.newDate,
+        },
+      })
+
+      return { success: true, thread: updatedThread }
+    }),
 })
 

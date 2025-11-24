@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
+import ReminderModal from '@/components/ui/ReminderModal'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -39,6 +40,8 @@ export default function FeedPage() {
   const [isDataValidated, setIsDataValidated] = useState(false)
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [showReminderModal, setShowReminderModal] = useState(false)
+  const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -70,9 +73,11 @@ export default function FeedPage() {
       // User changed - invalidate all queries and reset initial load
       utils.thread.getAll.invalidate()
       utils.userStatus.getUncompletedCount.invalidate()
+      utils.userStatus.getOverdueTasks.invalidate()
       setPreviousUserId(session.user.id)
       setIsDataValidated(false)
       setIsInitialLoad(true) // Reset initial load state when user changes
+      setHasCheckedReminder(false) // Reset reminder check when user changes
     }
   }, [session?.user?.id, previousUserId, utils])
 
@@ -109,8 +114,30 @@ export default function FeedPage() {
     }
   )
 
+  // Get overdue tasks for reminder (for all users)
+  const { data: overdueData } = trpc.userStatus.getOverdueTasks.useQuery(
+    undefined,
+    {
+      enabled: !!session && isDataValidated && !hasCheckedReminder,
+    }
+  )
+
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
+  const overdueTasks = overdueData?.overdueTasks || []
+
+  // Show reminder modal when user logs in and there are overdue tasks (for all users)
+  useEffect(() => {
+    if (
+      session &&
+      isDataValidated &&
+      !hasCheckedReminder &&
+      overdueTasks.length > 0
+    ) {
+      setShowReminderModal(true)
+      setHasCheckedReminder(true)
+    }
+  }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
 
   // Filter and search threads
@@ -370,6 +397,29 @@ export default function FeedPage() {
       {showCreateForm && (
         <CreateThreadQuickView onClose={() => setShowCreateForm(false)} />
       )}
+
+      {/* Reminder Modal - For all users */}
+      <ReminderModal
+          isOpen={showReminderModal}
+          onClose={() => {
+            setShowReminderModal(false)
+            // Invalidate overdue tasks query so it can be checked again next time
+            utils.userStatus.getOverdueTasks.invalidate()
+          }}
+          overdueTasks={overdueTasks.map((task) => ({
+            threadId: task.threadId,
+            threadTitle: task.threadTitle,
+            threadDate: new Date(task.threadDate),
+            authorName: task.authorName,
+            daysOverdue: task.daysOverdue,
+          }))}
+          onTasksUpdated={() => {
+            // Invalidate queries when tasks are updated
+            utils.userStatus.getOverdueTasks.invalidate()
+            utils.userStatus.getUncompletedCount.invalidate()
+            utils.thread.getAll.invalidate()
+          }}
+        />
 
       {/* Floating Action Button */}
       {session && (
