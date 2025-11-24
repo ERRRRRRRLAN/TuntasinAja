@@ -52,7 +52,7 @@ export default function ReminderModal({
     onSuccess: async () => {
       utils.userStatus.getUncompletedCount.invalidate()
       utils.thread.getAll.invalidate()
-      toast('Tugas berhasil ditandai sebagai selesai!', 'success')
+      toast.success('Tugas berhasil ditandai sebagai selesai!')
       
       // Refetch overdue tasks to update the list
       const result = await refetchOverdue()
@@ -68,7 +68,7 @@ export default function ReminderModal({
       }
     },
     onError: (error) => {
-      toast(`Error: ${error.message}`, 'error')
+      toast.error(`Error: ${error.message}`)
     },
   })
 
