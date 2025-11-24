@@ -6,7 +6,7 @@ import type { AppRouter } from '@/server/trpc/root'
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') {
-    // Client-side: use current origin
+    // Client-side web: use current origin
     return window.location.origin
   }
   // Server-side

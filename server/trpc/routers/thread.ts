@@ -3,6 +3,52 @@ import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure }
 import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 
+// Helper function to create notifications for users in the same kelas
+async function createNotificationsForSameKelas(
+  authorId: string,
+  authorKelas: string | null,
+  type: 'new_thread' | 'new_comment',
+  title: string,
+  message: string,
+  threadId?: string,
+  commentId?: string
+) {
+  if (!authorKelas) {
+    // If author has no kelas, don't send notifications
+    return
+  }
+
+  // Find all users in the same kelas (excluding the author)
+  const usersInSameKelas = await prisma.user.findMany({
+    where: {
+      kelas: authorKelas,
+      id: {
+        not: authorId, // Exclude the author
+      },
+    },
+    select: {
+      id: true,
+    },
+  })
+
+  if (usersInSameKelas.length === 0) {
+    return
+  }
+
+  // Create notifications for all users in the same kelas
+  await prisma.notification.createMany({
+    data: usersInSameKelas.map((user) => ({
+      userId: user.id,
+      type,
+      title,
+      message,
+      threadId: threadId || null,
+      commentId: commentId || null,
+      isRead: false,
+    })),
+  })
+}
+
 export const threadRouter = createTRPCRouter({
   // Get all threads
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -212,6 +258,15 @@ export const threadRouter = createTRPCRouter({
         if (existingThread) {
           // If comment provided, add as comment
           if (input.comment) {
+            // Get comment author info
+            const commentAuthor = await prisma.user.findUnique({
+              where: { id: ctx.session.user.id },
+              select: {
+                kelas: true,
+                name: true,
+              },
+            })
+
             const comment = await prisma.comment.create({
               data: {
                 threadId: existingThread.id,
@@ -227,6 +282,19 @@ export const threadRouter = createTRPCRouter({
                 },
               },
             })
+
+            // Create notifications for users in the same kelas
+            if (commentAuthor?.kelas) {
+              await createNotificationsForSameKelas(
+                ctx.session.user.id,
+                commentAuthor.kelas,
+                'new_comment',
+                `Sub Tugas Baru: ${existingThread.title}`,
+                `${commentAuthor.name} menambahkan sub tugas pada "${existingThread.title}"`,
+                existingThread.id,
+                comment.id
+              )
+            }
 
             return {
               type: 'comment' as const,
@@ -263,6 +331,7 @@ export const threadRouter = createTRPCRouter({
                 id: true,
                 name: true,
                 email: true,
+                kelas: true,
               },
             },
             comments: {
@@ -277,6 +346,18 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
+
+        // Create notifications for users in the same kelas
+        if (thread.author.kelas) {
+          await createNotificationsForSameKelas(
+            ctx.session.user.id,
+            thread.author.kelas,
+            'new_thread',
+            `PR Baru: ${input.title}`,
+            `${thread.author.name} membuat PR baru "${input.title}"`,
+            thread.id
+          )
+        }
 
         return {
           type: 'thread' as const,
@@ -316,6 +397,33 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Get thread info first
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.threadId },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              kelas: true,
+            },
+          },
+        },
+      })
+
+      if (!thread) {
+        throw new Error('Thread not found')
+      }
+
+      // Get comment author info
+      const commentAuthor = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          kelas: true,
+          name: true,
+        },
+      })
+
       const comment = await prisma.comment.create({
         data: {
           threadId: input.threadId,
@@ -331,6 +439,19 @@ export const threadRouter = createTRPCRouter({
           },
         },
       })
+
+      // Create notifications for users in the same kelas (excluding thread author if same person)
+      if (commentAuthor?.kelas) {
+        await createNotificationsForSameKelas(
+          ctx.session.user.id,
+          commentAuthor.kelas,
+          'new_comment',
+          `Sub Tugas Baru: ${thread.title}`,
+          `${commentAuthor.name} menambahkan sub tugas pada "${thread.title}"`,
+          thread.id,
+          comment.id
+        )
+      }
 
       return comment
     }),

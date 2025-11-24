@@ -10,6 +10,7 @@ import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import NotificationManager from '@/components/NotificationManager'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -432,6 +433,9 @@ export default function FeedPage() {
           )}
         </button>
       )}
+
+      {/* Notification Manager */}
+      <NotificationManager />
     </>
   )
 }
