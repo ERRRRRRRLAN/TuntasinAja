@@ -88,9 +88,9 @@ export default function ReminderModal({
         setIsVisible(true)
       })
     } else {
-      // Immediately set isVisible to false to trigger fade-out animation
-      // Transition will handle the smooth animation
-      setIsVisible(false)
+      // Don't immediately set isVisible to false
+      // Let the transition handle the fade-out animation first
+      // isVisible will be set to false in handleTransitionEnd after animation completes
     }
   }, [isOpen])
 
@@ -113,7 +113,8 @@ export default function ReminderModal({
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
     // Clean up after close animation completes
-    if (e.target === overlayRef.current && !isOpen && !isVisible) {
+    if (e.target === overlayRef.current && !isOpen) {
+      setIsVisible(false)
       document.body.style.overflow = 'unset'
     }
   }
@@ -171,9 +172,9 @@ export default function ReminderModal({
       onClick={handleOverlayClick}
       onTransitionEnd={handleTransitionEnd}
       style={{
-        opacity: isVisible ? 1 : 0,
+        opacity: isOpen ? 1 : 0,
         transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: isVisible ? 'auto' : 'none'
+        pointerEvents: (isOpen && isVisible) ? 'auto' : 'none'
       }}
     >
       <div 
@@ -181,8 +182,8 @@ export default function ReminderModal({
         className="confirm-dialog-content"
         onClick={handleContentClick}
         style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           maxWidth: '600px',
           width: '90%',
