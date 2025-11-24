@@ -32,10 +32,16 @@ export default function NotificationManager() {
   }, [session])
 
   // Use tRPC query hook for notifications
-  const { data: notifications } = trpc.notification.getAll.useQuery(undefined, {
+  const { data: notifications, isLoading: isLoadingNotifications } = trpc.notification.getAll.useQuery(undefined, {
     enabled: !!session,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 10000, // Refetch every 10 seconds (faster for testing)
     refetchOnWindowFocus: true,
+    onSuccess: (data) => {
+      console.log(`[NotificationManager] ✅ Loaded ${data?.length || 0} notifications`)
+    },
+    onError: (error) => {
+      console.error(`[NotificationManager] ❌ Error loading notifications:`, error)
+    },
   })
 
   // Mutation for marking as read
