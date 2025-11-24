@@ -150,6 +150,7 @@ Authorization: Bearer YOUR_SECRET_TOKEN
 3. **Permission**: User harus memberikan izin notifikasi
 4. **Kelas Matching**: Notifikasi hanya dikirim ke user di kelas yang sama dengan pembuat thread/comment
 5. **No Self-Notification**: User tidak akan mendapat notifikasi untuk thread/comment yang mereka buat sendiri
+6. **⚠️ BATASAN PENTING**: Notifikasi hanya muncul ketika aplikasi/website **DIBUKA**. Jika user menutup browser atau tidak membuka aplikasi, notifikasi tidak akan muncul. Untuk notifikasi push yang bekerja bahkan ketika aplikasi ditutup, diperlukan Push API (lihat `NOTIFICATION-PUSH-EXPLANATION.md`)
 
 ## 🐛 Troubleshooting
 
