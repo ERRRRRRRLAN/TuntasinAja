@@ -7,14 +7,16 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { CrownIcon, TrashIcon } from '@/components/ui/Icons'
+import { CrownIcon, TrashIcon, EditIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import EditUserForm from '@/components/admin/EditUserForm'
 
 export default function UserList() {
   const { data: session } = useSession()
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
   const [deleteUserName, setDeleteUserName] = useState('')
   const [deleteUserEmail, setDeleteUserEmail] = useState('')
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
 
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
@@ -234,51 +236,83 @@ export default function UserList() {
                     </td>
                     <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                       {!isCurrentUser && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteClick(user.id, user.name, user.email)
-                          }}
-                          title="Hapus User"
-                          disabled={deleteUser.isLoading}
-                          style={{
-                            background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '0.375rem',
-                            padding: '0.5rem 0.75rem',
-                            cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            transition: 'all 0.2s',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.375rem',
-                            opacity: deleteUser.isLoading ? 0.6 : 1
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!deleteUser.isLoading) {
-                              e.currentTarget.style.background = '#b91c1c'
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!deleteUser.isLoading) {
-                              e.currentTarget.style.background = '#dc2626'
-                            }
-                          }}
-                        >
-                          {deleteUser.isLoading ? (
-                            <>
-                              <LoadingSpinner size={14} color="white" style={{ marginRight: '0.25rem', display: 'inline-block' }} />
-                              <span>Menghapus...</span>
-                            </>
-                          ) : (
-                            <>
-                              <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                              <span>Hapus</span>
-                            </>
-                          )}
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingUserId(user.id)
+                            }}
+                            title="Edit User"
+                            style={{
+                              background: 'var(--primary)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.375rem',
+                              padding: '0.5rem 0.75rem',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              transition: 'all 0.2s',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.375rem'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--primary-hover)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'var(--primary)'
+                            }}
+                          >
+                            <EditIcon size={14} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteClick(user.id, user.name, user.email)
+                            }}
+                            title="Hapus User"
+                            disabled={deleteUser.isLoading}
+                            style={{
+                              background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.375rem',
+                              padding: '0.5rem 0.75rem',
+                              cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              transition: 'all 0.2s',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.375rem',
+                              opacity: deleteUser.isLoading ? 0.6 : 1
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!deleteUser.isLoading) {
+                                e.currentTarget.style.background = '#b91c1c'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!deleteUser.isLoading) {
+                                e.currentTarget.style.background = '#dc2626'
+                              }
+                            }}
+                          >
+                            {deleteUser.isLoading ? (
+                              <>
+                                <LoadingSpinner size={14} color="white" style={{ marginRight: '0.25rem', display: 'inline-block' }} />
+                                <span>Menghapus...</span>
+                              </>
+                            ) : (
+                              <>
+                                <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                                <span>Hapus</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       )}
                       {isCurrentUser && (
                         <span style={{ 
@@ -297,6 +331,19 @@ export default function UserList() {
           </table>
         </div>
       </div>
+
+      {editingUserId && users && (
+        <div style={{ marginTop: '2rem' }}>
+          <EditUserForm
+            user={users.find(u => u.id === editingUserId)!}
+            onSuccess={() => {
+              setEditingUserId(null)
+              utils.auth.getAllUsers.invalidate()
+            }}
+            onCancel={() => setEditingUserId(null)}
+          />
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={deleteUserId !== null}

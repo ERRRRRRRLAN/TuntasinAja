@@ -180,6 +180,92 @@ export const authRouter = createTRPCRouter({
     return users
   }),
 
+  // Update user (Admin only)
+  updateUser: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        name: z.string().min(3).optional(),
+        email: z.string().email().optional(),
+        password: z.string().min(6).optional(),
+        isAdmin: z.boolean().optional(),
+        kelas: z.string().optional().nullable(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userId, password, ...updateData } = input
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      })
+
+      if (!user) {
+        throw new Error('User tidak ditemukan')
+      }
+
+      // Check if email is being changed and if it's already taken
+      if (updateData.email && updateData.email !== user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: updateData.email },
+        })
+
+        if (existingUser) {
+          throw new Error('Email sudah digunakan oleh user lain')
+        }
+      }
+
+      // Validate kelas for non-admin users
+      const willBeAdmin = updateData.isAdmin !== undefined ? updateData.isAdmin : user.isAdmin
+      if (!willBeAdmin && updateData.kelas === null) {
+        throw new Error('Kelas harus diisi untuk user non-admin')
+      }
+
+      // Prepare update data
+      const dataToUpdate: any = {}
+
+      if (updateData.name !== undefined) {
+        dataToUpdate.name = updateData.name
+      }
+
+      if (updateData.email !== undefined) {
+        dataToUpdate.email = updateData.email
+      }
+
+      if (updateData.isAdmin !== undefined) {
+        dataToUpdate.isAdmin = updateData.isAdmin
+        // If making user admin, remove kelas
+        if (updateData.isAdmin) {
+          dataToUpdate.kelas = null
+        } else if (updateData.kelas !== undefined) {
+          dataToUpdate.kelas = updateData.kelas
+        }
+      } else if (updateData.kelas !== undefined) {
+        dataToUpdate.kelas = updateData.kelas
+      }
+
+      // Hash password if provided
+      if (password) {
+        dataToUpdate.passwordHash = await bcrypt.hash(password, 10)
+      }
+
+      // Update user
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: dataToUpdate,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          kelas: true,
+          createdAt: true,
+        },
+      })
+
+      return updatedUser
+    }),
+
   // Delete user (Admin only)
   deleteUser: adminProcedure
     .input(z.object({ userId: z.string() }))
