@@ -98,18 +98,19 @@ export default function ReminderModal({
     }
   }, [isOpen])
 
-  // Handle transition end to clean up after animation
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
     if (e.target === overlayRef.current && !isOpen) {
       setIsVisible(false)
-      // Restore scroll
+      // Restore scroll after transition completes
       const scrollY = parseInt(document.body.style.top || '0') * -1
       document.body.style.overflow = ''
       document.body.style.position = ''
       document.body.style.top = ''
       document.body.style.width = ''
-      window.scrollTo(0, scrollY)
+      if (scrollY > 0) {
+        window.scrollTo(0, scrollY)
+      }
     }
   }
 
@@ -145,6 +146,7 @@ export default function ReminderModal({
   }
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only close if clicking directly on the overlay, not on the content
     if (e.target === overlayRef.current) {
       onClose()
     }
@@ -167,7 +169,7 @@ export default function ReminderModal({
       style={{
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: isOpen ? 'auto' : 'none',
+        pointerEvents: (isOpen || isVisible) ? 'auto' : 'none',
         zIndex: 10000,
       }}
     >
@@ -198,8 +200,8 @@ export default function ReminderModal({
             </h3>
           </div>
           <button
+            type="button"
             onClick={(e) => {
-              e.preventDefault()
               e.stopPropagation()
               onClose()
             }}
@@ -406,10 +408,12 @@ export default function ReminderModal({
                         )}
                       </button>
                       <button
+                        type="button"
                         onClick={(e) => {
-                          e.preventDefault()
                           e.stopPropagation()
-                          onClose()
+                          if (isOpen) {
+                            onClose()
+                          }
                         }}
                         disabled={isProcessing}
                         className="btn btn-secondary"
@@ -433,7 +437,6 @@ export default function ReminderModal({
           <button
             type="button"
             onClick={(e) => {
-              e.preventDefault()
               e.stopPropagation()
               onClose()
             }}
