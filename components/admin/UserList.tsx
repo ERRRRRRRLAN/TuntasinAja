@@ -239,10 +239,17 @@ export default function UserList() {
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
                           <button
                             onClick={(e) => {
+                              e.preventDefault()
                               e.stopPropagation()
+                              console.log('Edit button clicked for user:', user.id)
                               setEditingUserId(user.id)
+                              // Scroll to form after a short delay
+                              setTimeout(() => {
+                                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+                              }, 100)
                             }}
                             title="Edit User"
+                            type="button"
                             style={{
                               background: 'var(--primary)',
                               color: 'white',
@@ -333,14 +340,29 @@ export default function UserList() {
       </div>
 
       {editingUserId && users && (
-        <div style={{ marginTop: '2rem' }}>
+        <div style={{ 
+          marginTop: '2rem',
+          position: 'relative',
+          zIndex: 10
+        }}>
           <EditUserForm
             user={users.find(u => u.id === editingUserId)!}
             onSuccess={() => {
               setEditingUserId(null)
               utils.auth.getAllUsers.invalidate()
+              // Scroll to top of form
+              window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
-            onCancel={() => setEditingUserId(null)}
+            onCancel={() => {
+              setEditingUserId(null)
+              // Scroll back to table
+              setTimeout(() => {
+                const tableElement = document.querySelector('.user-table')
+                if (tableElement) {
+                  tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }, 100)
+            }}
           />
         </div>
       )}
