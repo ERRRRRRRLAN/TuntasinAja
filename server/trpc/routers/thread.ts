@@ -508,61 +508,6 @@ export const threadRouter = createTRPCRouter({
       }
     }),
 
-  // Update thread date (Admin only)
-  updateThreadDate: adminProcedure
-    .input(
-      z.object({
-        threadId: z.string(),
-        date: z.string(), // ISO date string
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        // Get thread
-        const thread = await prisma.thread.findUnique({
-          where: { id: input.threadId },
-        })
-
-        if (!thread) {
-          throw new Error('Thread tidak ditemukan')
-        }
-
-        // Parse date string to Date object
-        const newDate = new Date(input.date)
-        if (isNaN(newDate.getTime())) {
-          throw new Error('Format tanggal tidak valid')
-        }
-
-        // Update thread date
-        const updatedThread = await prisma.thread.update({
-          where: { id: input.threadId },
-          data: {
-            date: newDate,
-          },
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                kelas: true,
-              },
-            },
-          },
-        })
-
-        return updatedThread
-      } catch (error: any) {
-        console.error('[thread.updateThreadDate] Error updating thread date:', {
-          error: error.message,
-          threadId: input.threadId,
-          userId: ctx.session.user.id,
-        })
-
-        throw new Error(error.message || 'Gagal mengupdate tanggal thread. Silakan coba lagi.')
-      }
-    }),
-
   // Delete comment (Author of comment OR author of thread OR Admin)
   deleteComment: protectedProcedure
     .input(z.object({ id: z.string() }))
