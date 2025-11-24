@@ -12,6 +12,7 @@ import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import NotificationManager from '@/components/NotificationManager'
 import NotificationTestButton from '@/components/NotificationTestButton'
+import FCMTokenManager from '@/components/FCMTokenManager'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -442,6 +443,9 @@ export default function FeedPage() {
 
       {/* Notification Manager */}
       <NotificationManager />
+      
+      {/* FCM Token Manager */}
+      <FCMTokenManager />
     </>
   )
 }

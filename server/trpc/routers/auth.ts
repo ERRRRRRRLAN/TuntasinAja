@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, publicProcedure, adminProcedure } from '../trpc'
+import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
@@ -201,6 +201,20 @@ export const authRouter = createTRPCRouter({
       // Delete user (cascade will delete related threads, comments, etc.)
       await prisma.user.delete({
         where: { id: input.userId },
+      })
+
+      return { success: true }
+    }),
+
+  // Save FCM token for push notifications
+  saveFCMToken: protectedProcedure
+    .input(z.object({ fcmToken: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await prisma.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          fcmToken: input.fcmToken,
+        },
       })
 
       return { success: true }

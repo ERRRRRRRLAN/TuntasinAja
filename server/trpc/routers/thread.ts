@@ -21,27 +21,31 @@ async function createNotificationsForSameKelas(
     return
   }
 
-  // Find all users in the same kelas (excluding the author)
+  // Find all users in the same kelas (excluding the author) with FCM tokens
   const usersInSameKelas = await prisma.user.findMany({
     where: {
       kelas: authorKelas,
       id: {
         not: authorId, // Exclude the author
       },
+      fcmToken: {
+        not: null, // Only users with FCM token
+      },
     },
     select: {
       id: true,
+      fcmToken: true,
     },
   })
 
-  console.log(`[Notification] Found ${usersInSameKelas.length} users in same kelas (${authorKelas})`)
+  console.log(`[Notification] Found ${usersInSameKelas.length} users in same kelas (${authorKelas}) with FCM tokens`)
 
   if (usersInSameKelas.length === 0) {
-    console.log(`[Notification] No other users in same kelas, skipping notifications`)
+    console.log(`[Notification] No other users in same kelas with FCM tokens, skipping notifications`)
     return
   }
 
-  // Create notifications for all users in the same kelas
+  // Create notifications in database
   try {
     const result = await prisma.notification.createMany({
       data: usersInSameKelas.map((user) => ({
@@ -55,10 +59,36 @@ async function createNotificationsForSameKelas(
       })),
     })
     
-    console.log(`[Notification] ✅ Created ${result.count} notifications for users:`, usersInSameKelas.map(u => u.id))
+    console.log(`[Notification] ✅ Created ${result.count} notifications in database`)
   } catch (error: any) {
     console.error(`[Notification] ❌ Error creating notifications:`, error)
     throw error
+  }
+
+  // Send FCM push notifications
+  try {
+    const { sendPushNotificationToMultiple } = await import('@/lib/firebase-admin')
+    
+    const fcmTokens = usersInSameKelas
+      .map((user) => user.fcmToken)
+      .filter((token): token is string => token !== null)
+
+    if (fcmTokens.length > 0) {
+      const url = threadId ? `/?thread=${threadId}` : '/'
+      const result = await sendPushNotificationToMultiple(fcmTokens, title, message, {
+        type,
+        threadId: threadId || '',
+        commentId: commentId || '',
+        url,
+        tag: threadId ? `thread-${threadId}` : 'notification',
+      })
+
+      console.log(`[Notification] ✅ Sent ${result.success} FCM push notifications, ${result.failure} failed`)
+    }
+  } catch (error: any) {
+    // Don't throw error for FCM, just log it
+    // Database notifications are already created, so it's okay if FCM fails
+    console.error(`[Notification] ⚠️ Error sending FCM push notifications:`, error)
   }
 }
 

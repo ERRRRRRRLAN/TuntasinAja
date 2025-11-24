@@ -20,7 +20,8 @@
     "migrate:kelas": "node scripts/add-kelas-column.js",
     "fix:timezone": "node scripts/fix-timestamp-timezone.js",
     "migrate:remove-thread-constraint": "node scripts/remove-thread-unique-constraint.js",
-    "migrate:notifications": "node scripts/create-notifications-table.js"
+    "migrate:notifications": "node scripts/create-notifications-table.js",
+    "migrate:fcm-token": "node scripts/add-fcm-token-column.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
@@ -32,6 +33,8 @@
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
+    "firebase": "^10.7.1",
+    "firebase-admin": "^12.0.0",
     "next": "14.0.4",
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
