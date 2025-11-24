@@ -577,5 +577,63 @@ export const userStatusRouter = createTRPCRouter({
 
     return { deleted: deletedCount }
   }),
+
+  // Get overdue tasks (uncompleted tasks older than 7 days)
+  getOverdueTasks: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { kelas: true },
+    })
+    const userKelas = user?.kelas || null
+    const sevenDaysAgo = getUTCDate()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const threads = await prisma.thread.findMany({
+      where: userKelas
+        ? {
+            author: {
+              kelas: userKelas,
+            },
+          }
+        : undefined,
+      include: {
+        author: {
+          select: { id: true, name: true, kelas: true },
+        },
+        comments: {
+          select: { id: true, content: true },
+        },
+      },
+    })
+
+    const overdueTasks = []
+    for (const thread of threads) {
+      const threadDate = new Date(thread.createdAt)
+      if (threadDate < sevenDaysAgo) {
+        const threadStatus = await prisma.userStatus.findUnique({
+          where: {
+            userId_threadId: {
+              userId: userId,
+              threadId: thread.id,
+            },
+          },
+        })
+        if (!threadStatus || !threadStatus.isCompleted) {
+          const daysOverdue = Math.floor(
+            (getUTCDate().getTime() - threadDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+          overdueTasks.push({
+            threadId: thread.id,
+            threadTitle: thread.title,
+            threadDate: threadDate,
+            authorName: thread.author.name,
+            daysOverdue: daysOverdue,
+          })
+        }
+      }
+    }
+    return { overdueTasks }
+  }),
 })
 
