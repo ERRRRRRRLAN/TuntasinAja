@@ -221,11 +221,14 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
+            // Use Jakarta time for comment creation
+            const now = getUTCDate()
             const comment = await prisma.comment.create({
               data: {
                 threadId: existingThread.id,
                 authorId: ctx.session.user.id,
                 content: input.comment,
+                createdAt: now,
               },
               include: {
                 author: {

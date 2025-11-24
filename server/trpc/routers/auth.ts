@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { getUTCDate } from '@/lib/date-utils'
 
 export const authRouter = createTRPCRouter({
   // Register
@@ -26,12 +27,16 @@ export const authRouter = createTRPCRouter({
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10)
 
+      // Use Jakarta time for user creation
+      const now = getUTCDate()
+      
       // Create user
       const user = await prisma.user.create({
         data: {
           name: input.name,
           email: input.email,
           passwordHash,
+          createdAt: now,
         },
         select: {
           id: true,
@@ -133,6 +138,9 @@ export const authRouter = createTRPCRouter({
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10)
 
+      // Use Jakarta time for user creation
+      const now = getUTCDate()
+      
       // Create user
       const user = await prisma.user.create({
         data: {
@@ -141,6 +149,7 @@ export const authRouter = createTRPCRouter({
           passwordHash,
           isAdmin: input.isAdmin || false,
           kelas: input.isAdmin ? null : input.kelas || null,
+          createdAt: now,
         },
         select: {
           id: true,
