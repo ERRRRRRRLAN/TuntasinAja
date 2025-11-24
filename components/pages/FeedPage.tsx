@@ -166,20 +166,20 @@ export default function FeedPage() {
                 Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
               </p>
               {session && uncompletedCount > 0 && (
-                  <span style={{ 
-                    display: 'inline-block',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '0.25rem',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: '0.8125rem',
-                    fontWeight: 500
-                  }}>
-                    {uncompletedCount} belum selesai
-                  </span>
-                )}
-              </p>
+                <span style={{ 
+                  display: 'inline-block',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '0.25rem',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text)',
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  marginTop: '0.5rem'
+                }}>
+                  {uncompletedCount} belum selesai
+                </span>
+              )}
             </div>
           </div>
 
