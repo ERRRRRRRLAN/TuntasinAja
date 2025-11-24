@@ -88,12 +88,9 @@ export default function ReminderModal({
         setIsVisible(true)
       })
     } else {
-      // Wait for transition to complete before hiding
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        document.body.style.overflow = 'unset'
-      }, 300) // Match transition duration
-      return () => clearTimeout(timer)
+      // Immediately set isVisible to false to trigger fade-out animation
+      // Transition will handle the smooth animation
+      setIsVisible(false)
     }
   }, [isOpen])
 
@@ -115,13 +112,16 @@ export default function ReminderModal({
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
-    if (e.target === overlayRef.current && !isOpen) {
-      setIsVisible(false)
+    // Clean up after close animation completes
+    if (e.target === overlayRef.current && !isOpen && !isVisible) {
       document.body.style.overflow = 'unset'
     }
   }
 
-  if (!isOpen || !mounted) return null
+  // Don't render if not mounted
+  if (!mounted) return null
+  // Keep rendered during close animation (when isOpen is false but isVisible is still true)
+  if (!isOpen && !isVisible) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only close if clicking directly on the overlay, not on the content
@@ -172,7 +172,7 @@ export default function ReminderModal({
       onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -182,8 +182,8 @@ export default function ReminderModal({
         onClick={handleContentClick}
         style={{
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           maxWidth: '600px',
           width: '90%',
           maxHeight: '80vh',
