@@ -8,7 +8,7 @@ import { id } from 'date-fns/locale'
 import { trpc } from '@/lib/trpc'
 import { toast } from './ToastContainer'
 import LoadingSpinner from './LoadingSpinner'
-import { CalendarIcon, UserIcon, CheckIcon, XIcon, BellIcon, AlertCircleIcon } from './Icons'
+import { CalendarIcon, UserIcon, CheckIcon, XIcon, BellIcon, AlertCircleIcon, InfoIcon } from './Icons'
 
 interface OverdueTask {
   threadId: string
@@ -23,6 +23,7 @@ interface ReminderModalProps {
   onClose: () => void
   overdueTasks: OverdueTask[]
   onTasksUpdated?: () => void
+  onTaskClick?: (threadId: string) => void
 }
 
 export default function ReminderModal({
@@ -30,6 +31,7 @@ export default function ReminderModal({
   onClose,
   overdueTasks: initialOverdueTasks,
   onTasksUpdated,
+  onTaskClick,
 }: ReminderModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -79,14 +81,35 @@ export default function ReminderModal({
 
   useEffect(() => {
     if (isOpen) {
+      // Prevent background scroll
+      const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
+      
+      return () => {
+        // Restore scroll when component unmounts
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo(0, scrollY)
+      }
     } else {
       const timer = setTimeout(() => {
         setIsVisible(false)
-        document.body.style.overflow = 'unset'
+        // Restore scroll
+        const scrollY = parseInt(document.body.style.top || '0') * -1
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo(0, scrollY)
       }, 300)
       return () => clearTimeout(timer)
     }
@@ -236,6 +259,22 @@ export default function ReminderModal({
               </p>
             </div>
 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontSize: '0.75rem',
+              color: 'var(--text-light)',
+              marginBottom: '1rem',
+              padding: '0.5rem',
+              background: 'var(--card)',
+              borderRadius: '0.375rem',
+            }}>
+              <InfoIcon size={14} style={{ color: 'var(--primary)' }} />
+              <span>Klik pada tugas untuk melihat detail</span>
+            </div>
+
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
@@ -255,6 +294,30 @@ export default function ReminderModal({
                       background: 'var(--bg-secondary)',
                       borderRadius: '0.5rem',
                       border: '1px solid var(--border)',
+                      cursor: onTaskClick ? 'pointer' : 'default',
+                      transition: 'all 0.2s',
+                    }}
+                    onClick={() => {
+                      if (onTaskClick && !isProcessing) {
+                        onTaskClick(task.threadId)
+                        onClose()
+                      }
+                    }}
+                    onMouseEnter={(e) => {
+                      if (onTaskClick && !isProcessing) {
+                        e.currentTarget.style.background = 'var(--card)'
+                        e.currentTarget.style.borderColor = 'var(--primary)'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (onTaskClick && !isProcessing) {
+                        e.currentTarget.style.background = 'var(--bg-secondary)'
+                        e.currentTarget.style.borderColor = 'var(--border)'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }
                     }}
                   >
                     <div style={{ marginBottom: '0.75rem' }}>
@@ -264,8 +327,20 @@ export default function ReminderModal({
                         fontSize: '1rem',
                         fontWeight: 600,
                         color: 'var(--text)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
                       }}>
                         {task.threadTitle}
+                        {onTaskClick && (
+                          <span style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--primary)',
+                            fontWeight: 400,
+                          }}>
+                            (Klik untuk detail)
+                          </span>
+                        )}
                       </h4>
                       <div style={{ 
                         display: 'flex', 

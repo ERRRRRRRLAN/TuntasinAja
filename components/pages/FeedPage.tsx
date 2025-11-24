@@ -8,7 +8,7 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
-import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
@@ -114,11 +114,11 @@ export default function FeedPage() {
     }
   )
 
-  // Get overdue tasks for reminder (for all users)
+  // Get overdue tasks for reminder (for all users) - always fetch to show badge
   const { data: overdueData } = trpc.userStatus.getOverdueTasks.useQuery(
     undefined,
     {
-      enabled: !!session && isDataValidated && !hasCheckedReminder,
+      enabled: !!session && isDataValidated,
     }
   )
 
@@ -126,7 +126,8 @@ export default function FeedPage() {
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
 
-  // Show reminder modal when user logs in and there are overdue tasks (for all users)
+  // Show reminder modal automatically when user logs in and there are overdue tasks (for all users)
+  // Only show once per session
   useEffect(() => {
     if (
       session &&
@@ -192,21 +193,52 @@ export default function FeedPage() {
               <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                 Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
               </p>
-              {session && uncompletedCount > 0 && (
-                <span style={{ 
-                  display: 'inline-block',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '0.25rem',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text)',
-                  fontSize: '0.8125rem',
-                  fontWeight: 500,
-                  marginTop: '0.5rem'
-                }}>
-                  {uncompletedCount} belum selesai
-                </span>
-              )}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                {session && uncompletedCount > 0 && (
+                  <span style={{ 
+                    display: 'inline-block',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                  }}>
+                    {uncompletedCount} belum selesai
+                  </span>
+                )}
+                {session && overdueTasks.length > 0 && (
+                  <button
+                    onClick={() => setShowReminderModal(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.375rem',
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '0.25rem',
+                      background: 'var(--danger)',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#dc2626'
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'var(--danger)'
+                      e.currentTarget.style.transform = 'scale(1)'
+                    }}
+                  >
+                    <BellIcon size={14} />
+                    {overdueTasks.length} tugas belum selesai &gt; 7 hari
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -418,6 +450,10 @@ export default function FeedPage() {
           utils.userStatus.getOverdueTasks.invalidate()
           utils.userStatus.getUncompletedCount.invalidate()
           utils.thread.getAll.invalidate()
+        }}
+        onTaskClick={(threadId) => {
+          // Open thread detail when task is clicked
+          setSelectedThreadId(threadId)
         }}
       />
 
