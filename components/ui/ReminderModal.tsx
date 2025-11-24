@@ -81,39 +81,23 @@ export default function ReminderModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Prevent background scroll
-      const scrollY = window.scrollY
+      // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
-      
       // Small delay to ensure DOM is ready before showing
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
     } else {
       // Wait for transition to complete before hiding
-      // Don't set isVisible to false immediately - let transition handle it
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+        document.body.style.overflow = 'unset'
+      }, 300) // Match transition duration
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
-  const handleTransitionEnd = (e: React.TransitionEvent) => {
-    // Only handle transition end for opacity (not child elements)
-    if (e.target === overlayRef.current && !isOpen) {
-      setIsVisible(false)
-      // Restore scroll after transition completes
-      const scrollY = parseInt(document.body.style.top || '0') * -1
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      if (scrollY > 0) {
-        window.scrollTo(0, scrollY)
-      }
-    }
-  }
-
+  // Handle browser back button
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
   useEffect(() => {
@@ -128,6 +112,34 @@ export default function ReminderModal({
   }, [isOpen, isVisible])
 
   useBackHandler(shouldHandleBack, onClose)
+
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isOpen) {
+      setIsVisible(false)
+      document.body.style.overflow = 'unset'
+    }
+  }
+
+  if (!isOpen || !mounted) return null
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only close if clicking directly on the overlay, not on the content
+    if (e.target === overlayRef.current) {
+      onClose()
+    }
+  }
+
+  const handleContentClick = (e: React.MouseEvent) => {
+    // Prevent clicks inside content from bubbling to overlay
+    e.stopPropagation()
+  }
+
+  const handleCloseClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onClose()
+  }
 
   const handleMarkComplete = async (threadId: string) => {
     setProcessingTasks((prev) => new Set(prev).add(threadId))
@@ -145,20 +157,12 @@ export default function ReminderModal({
     }
   }
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    // Only close if clicking directly on the overlay, not on the content
-    if (e.target === overlayRef.current) {
+  const handleTaskClick = (threadId: string) => {
+    if (onTaskClick && !processingTasks.has(threadId)) {
+      onTaskClick(threadId)
       onClose()
     }
   }
-
-  const handleContentClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-  }
-
-  // Don't render if not mounted, but keep rendered during close animation
-  if (!mounted) return null
-  if (!isOpen && !isVisible) return null
 
   const dialogContent = (
     <div 
@@ -169,8 +173,7 @@ export default function ReminderModal({
       style={{
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: (isOpen || isVisible) ? 'auto' : 'none',
-        zIndex: 10000,
+        pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
       <div 
@@ -201,10 +204,7 @@ export default function ReminderModal({
           </div>
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onClose()
-            }}
+            onClick={handleCloseClick}
             style={{
               background: 'none',
               border: 'none',
@@ -304,12 +304,7 @@ export default function ReminderModal({
                       cursor: onTaskClick ? 'pointer' : 'default',
                       transition: 'all 0.2s',
                     }}
-                    onClick={() => {
-                      if (onTaskClick && !isProcessing) {
-                        onTaskClick(task.threadId)
-                        onClose()
-                      }
-                    }}
+                    onClick={() => handleTaskClick(task.threadId)}
                     onMouseEnter={(e) => {
                       if (onTaskClick && !isProcessing) {
                         e.currentTarget.style.background = 'var(--card)'
@@ -382,7 +377,11 @@ export default function ReminderModal({
                       gap: '0.5rem',
                     }}>
                       <button
-                        onClick={() => handleMarkComplete(task.threadId)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleMarkComplete(task.threadId)
+                        }}
                         disabled={isProcessing}
                         className="btn btn-primary"
                         style={{
@@ -411,9 +410,7 @@ export default function ReminderModal({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          if (isOpen) {
-                            onClose()
-                          }
+                          handleCloseClick(e)
                         }}
                         disabled={isProcessing}
                         className="btn btn-secondary"
@@ -436,10 +433,7 @@ export default function ReminderModal({
         <div className="confirm-dialog-actions" style={{ marginTop: '1.5rem' }}>
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onClose()
-            }}
+            onClick={handleCloseClick}
             className="btn btn-secondary"
             style={{ width: '100%' }}
           >
@@ -452,4 +446,3 @@ export default function ReminderModal({
 
   return createPortal(dialogContent, document.body)
 }
-
