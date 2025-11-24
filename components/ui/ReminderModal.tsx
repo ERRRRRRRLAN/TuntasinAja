@@ -88,32 +88,30 @@ export default function ReminderModal({
       document.body.style.top = `-${scrollY}px`
       document.body.style.width = '100%'
       
+      // Small delay to ensure DOM is ready before showing
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
-      
-      return () => {
-        // Restore scroll when component unmounts
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.width = ''
-        window.scrollTo(0, scrollY)
-      }
     } else {
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        // Restore scroll
-        const scrollY = parseInt(document.body.style.top || '0') * -1
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.width = ''
-        window.scrollTo(0, scrollY)
-      }, 300)
-      return () => clearTimeout(timer)
+      // Wait for transition to complete before hiding
+      // Don't set isVisible to false immediately - let transition handle it
     }
   }, [isOpen])
+
+  // Handle transition end to clean up after animation
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    // Only handle transition end for opacity (not child elements)
+    if (e.target === overlayRef.current && !isOpen) {
+      setIsVisible(false)
+      // Restore scroll
+      const scrollY = parseInt(document.body.style.top || '0') * -1
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
+    }
+  }
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
@@ -156,13 +154,16 @@ export default function ReminderModal({
     e.stopPropagation()
   }
 
-  if (!isOpen || !mounted) return null
+  // Don't render if not mounted, but keep rendered during close animation
+  if (!mounted) return null
+  if (!isOpen && !isVisible) return null
 
   const dialogContent = (
     <div 
       ref={overlayRef}
       className="confirm-dialog-overlay"
       onClick={handleOverlayClick}
+      onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
