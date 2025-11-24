@@ -205,19 +205,5 @@ export const authRouter = createTRPCRouter({
 
       return { success: true }
     }),
-
-  // Save FCM token for push notifications
-  saveFCMToken: protectedProcedure
-    .input(z.object({ fcmToken: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      await prisma.user.update({
-        where: { id: ctx.session.user.id },
-        data: {
-          fcmToken: input.fcmToken,
-        },
-      })
-
-      return { success: true }
-    }),
 })
 
