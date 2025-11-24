@@ -42,6 +42,7 @@ export default function FeedPage() {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showReminderModal, setShowReminderModal] = useState(false)
   const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
+  const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -422,7 +423,14 @@ export default function FeedPage() {
       {selectedThreadId && (
         <ThreadQuickView
           threadId={selectedThreadId}
-          onClose={() => setSelectedThreadId(null)}
+          onClose={() => {
+            setSelectedThreadId(null)
+            // Jika thread dibuka dari reminder, buka reminder modal lagi
+            if (threadOpenedFromReminder) {
+              setThreadOpenedFromReminder(false)
+              setShowReminderModal(true)
+            }
+          }}
         />
       )}
 
@@ -453,7 +461,11 @@ export default function FeedPage() {
         }}
         onTaskClick={(threadId) => {
           // Open thread detail when task is clicked
+          // Set flag bahwa thread dibuka dari reminder
+          setThreadOpenedFromReminder(true)
           setSelectedThreadId(threadId)
+          // Tutup reminder modal sementara
+          setShowReminderModal(false)
         }}
       />
 
