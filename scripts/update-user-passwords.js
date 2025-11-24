@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
-// List of users to create
+// List of users
 const users = [
   'ADITTIA RAMADHAN',
   'AISYAH SALSABILA SOFYAN',
@@ -38,15 +38,6 @@ const users = [
   'YUDHA NUR WIJAYA',
 ]
 
-// Function to capitalize name properly (Title Case)
-function capitalizeName(name) {
-  return name
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
 // Function to get first name for email
 function getFirstName(fullName) {
   return fullName.split(' ')[0].toLowerCase()
@@ -62,52 +53,46 @@ function generatePassword(fullName) {
 }
 
 async function main() {
-  console.log('🚀 Creating users...\n')
+  console.log('🚀 Updating user passwords...\n')
 
-  const kelas = 'X RPL 1'
-
+  const passwords = []
   let successCount = 0
   let errorCount = 0
 
-  const passwords = []
-
   for (const fullName of users) {
     try {
-      const name = capitalizeName(fullName)
       const firstName = getFirstName(fullName)
       const email = `${firstName}@tuntasinaja.com`
       const password = generatePassword(fullName)
       const passwordHash = await bcrypt.hash(password, 10)
 
-      // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
+      // Find user
+      const user = await prisma.user.findUnique({
         where: { email },
       })
 
-      if (existingUser) {
-        console.log(`⚠️  User already exists: ${name} (${email})`)
+      if (!user) {
+        console.log(`⚠️  User not found: ${email}`)
+        errorCount++
         continue
       }
 
-      // Create user
-      const user = await prisma.user.create({
+      // Update password
+      await prisma.user.update({
+        where: { email },
         data: {
-          name,
-          email,
           passwordHash,
-          kelas,
         },
       })
 
-      console.log(`✅ Created: ${name}`)
+      console.log(`✅ Updated: ${user.name}`)
       console.log(`   Email: ${email}`)
-      console.log(`   Password: ${password}`)
-      console.log(`   Kelas: ${kelas}\n`)
+      console.log(`   Password: ${password}\n`)
 
-      passwords.push({ name, email, password })
+      passwords.push({ name: user.name, email, password })
       successCount++
     } catch (error) {
-      console.error(`❌ Error creating user ${fullName}:`, error.message)
+      console.error(`❌ Error updating user ${fullName}:`, error.message)
       errorCount++
     }
   }
