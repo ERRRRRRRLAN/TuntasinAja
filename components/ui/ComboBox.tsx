@@ -4,24 +4,19 @@ import { useState, useRef, useEffect } from 'react'
 import { FilterIcon, XIconSmall, CheckIcon } from './Icons'
 
 const MATA_PELAJARAN = [
-  'Matematika',
   'Bahasa Indonesia',
   'Bahasa Inggris',
-  'Fisika',
-  'Kimia',
-  'Biologi',
+  'Matematika',
+  'PAI',
+  'Pendidikan Kewarganegaraan Negara',
+  'PJOK',
   'Sejarah',
-  'Geografi',
-  'Ekonomi',
-  'Sosiologi',
-  'Pendidikan Agama',
-  'Pendidikan Kewarganegaraan',
-  'Seni Budaya',
-  'Pendidikan Jasmani',
-  'TIK',
-  'Bahasa Jawa',
-  'Bahasa Sunda',
-  'Prakarya',
+  'Mulok Batik',
+  'Mulok BK',
+  'Koding dan Kecerdasan Artificial',
+  'Dasar PPLG',
+  'Informatika',
+  'IPAS',
 ]
 
 interface ComboBoxProps {
