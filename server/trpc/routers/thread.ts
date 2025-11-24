@@ -3,65 +3,6 @@ import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure }
 import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 
-// Helper function to create notifications for users in the same kelas
-async function createNotificationsForSameKelas(
-  authorId: string,
-  authorKelas: string | null,
-  type: 'new_thread' | 'new_comment',
-  title: string,
-  message: string,
-  threadId?: string,
-  commentId?: string
-) {
-  console.log(`[Notification] Creating notifications for kelas: ${authorKelas}, type: ${type}, authorId: ${authorId}`)
-  
-  if (!authorKelas) {
-    // If author has no kelas, don't send notifications
-    console.log(`[Notification] Author has no kelas, skipping notifications`)
-    return
-  }
-
-  // Find all users in the same kelas (excluding the author)
-  const usersInSameKelas = await prisma.user.findMany({
-    where: {
-      kelas: authorKelas,
-      id: {
-        not: authorId, // Exclude the author
-      },
-    },
-    select: {
-      id: true,
-    },
-  })
-
-  console.log(`[Notification] Found ${usersInSameKelas.length} users in same kelas (${authorKelas})`)
-
-  if (usersInSameKelas.length === 0) {
-    console.log(`[Notification] No other users in same kelas, skipping notifications`)
-    return
-  }
-
-  // Create notifications in database
-  try {
-    const result = await prisma.notification.createMany({
-      data: usersInSameKelas.map((user) => ({
-        userId: user.id,
-        type,
-        title,
-        message,
-        threadId: threadId || null,
-        commentId: commentId || null,
-        isRead: false,
-      })),
-    })
-    
-    console.log(`[Notification] ✅ Created ${result.count} notifications in database`)
-  } catch (error: any) {
-    console.error(`[Notification] ❌ Error creating notifications:`, error)
-    throw error
-  }
-}
-
 export const threadRouter = createTRPCRouter({
   // Get all threads
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -296,19 +237,6 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
-            // Create notifications for users in the same kelas
-            if (commentAuthor?.kelas) {
-              await createNotificationsForSameKelas(
-                ctx.session.user.id,
-                commentAuthor.kelas,
-                'new_comment',
-                `Sub Tugas Baru: ${existingThread.title}`,
-                `${commentAuthor.name} menambahkan sub tugas pada "${existingThread.title}"`,
-                existingThread.id,
-                comment.id
-              )
-            }
-
             return {
               type: 'comment' as const,
               thread: existingThread,
@@ -359,18 +287,6 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
-
-        // Create notifications for users in the same kelas
-        if (thread.author.kelas) {
-          await createNotificationsForSameKelas(
-            ctx.session.user.id,
-            thread.author.kelas,
-            'new_thread',
-            `PR Baru: ${input.title}`,
-            `${thread.author.name} membuat PR baru "${input.title}"`,
-            thread.id
-          )
-        }
 
         return {
           type: 'thread' as const,
@@ -452,19 +368,6 @@ export const threadRouter = createTRPCRouter({
           },
         },
       })
-
-      // Create notifications for users in the same kelas (excluding thread author if same person)
-      if (commentAuthor?.kelas) {
-        await createNotificationsForSameKelas(
-          ctx.session.user.id,
-          commentAuthor.kelas,
-          'new_comment',
-          `Sub Tugas Baru: ${thread.title}`,
-          `${commentAuthor.name} menambahkan sub tugas pada "${thread.title}"`,
-          thread.id,
-          comment.id
-        )
-      }
 
       return comment
     }),

@@ -10,8 +10,6 @@ import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import NotificationManager from '@/components/NotificationManager'
-import NotificationTestButton from '@/components/NotificationTestButton'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -164,14 +162,10 @@ export default function FeedPage() {
           <div className="page-header">
             <div>
               <h2>Tugas</h2>
-              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <span>Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai</span>
-                {session && (
-                  <span style={{ marginLeft: 'auto' }}>
-                    <NotificationTestButton />
-                  </span>
-                )}
-                {session && uncompletedCount > 0 && (
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                Klik PR untuk melihat detail • Centang checkbox untuk menandai selesai
+              </p>
+              {session && uncompletedCount > 0 && (
                   <span style={{ 
                     display: 'inline-block',
                     padding: '0.25rem 0.5rem',
@@ -440,8 +434,6 @@ export default function FeedPage() {
         </button>
       )}
 
-      {/* Notification Manager */}
-      <NotificationManager />
     </>
   )
 }

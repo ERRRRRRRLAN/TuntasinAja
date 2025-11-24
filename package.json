@@ -19,8 +19,7 @@
     "migrate:history": "node scripts/migrate-history-denormalization.js",
     "migrate:kelas": "node scripts/add-kelas-column.js",
     "fix:timezone": "node scripts/fix-timestamp-timezone.js",
-    "migrate:remove-thread-constraint": "node scripts/remove-thread-unique-constraint.js",
-    "migrate:notifications": "node scripts/create-notifications-table.js"
+    "migrate:remove-thread-constraint": "node scripts/remove-thread-unique-constraint.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
