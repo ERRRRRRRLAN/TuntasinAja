@@ -167,7 +167,7 @@ export default function ReminderModal({
       style={{
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: isVisible ? 'auto' : 'none',
+        pointerEvents: isOpen ? 'auto' : 'none',
         zIndex: 10000,
       }}
     >
@@ -198,7 +198,11 @@ export default function ReminderModal({
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onClose()
+            }}
             style={{
               background: 'none',
               border: 'none',
@@ -356,7 +360,7 @@ export default function ReminderModal({
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <CalendarIcon size={14} />
-                          {format(new Date(task.threadDate), 'd MMMM yyyy', { locale: id })}
+                          {format(new Date(task.threadDate), 'EEEE, d MMMM yyyy', { locale: id })}
                         </span>
                         <span style={{ 
                           display: 'flex',
@@ -402,7 +406,11 @@ export default function ReminderModal({
                         )}
                       </button>
                       <button
-                        onClick={onClose}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onClose()
+                        }}
                         disabled={isProcessing}
                         className="btn btn-secondary"
                         style={{
@@ -424,7 +432,11 @@ export default function ReminderModal({
         <div className="confirm-dialog-actions" style={{ marginTop: '1.5rem' }}>
           <button
             type="button"
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onClose()
+            }}
             className="btn btn-secondary"
             style={{ width: '100%' }}
           >

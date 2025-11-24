@@ -219,7 +219,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
-            <span>{format(new Date(thread.date), 'd MMM yyyy', { locale: id })}</span>
+            <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
