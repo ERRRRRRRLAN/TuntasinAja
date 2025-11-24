@@ -7,6 +7,7 @@ import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { toJakartaDate } from '@/lib/date-utils'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { CheckIcon, ClockIcon, TrashIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -140,7 +141,7 @@ export default function HistoryPage() {
                       <div className="history-item-meta" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <span className="history-item-date" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                           <CheckIcon size={14} />
-                          Selesai: {format(new Date(history.completedDate), 'd MMMM yyyy', { locale: id })}
+                          Selesai: {format(toJakartaDate(history.completedDate), 'd MMMM yyyy', { locale: id })}
                         </span>
                         <span 
                           className="history-item-deletion"

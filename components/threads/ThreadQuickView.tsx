@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { toJakartaDate } from '@/lib/date-utils'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
@@ -982,7 +983,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         </div>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CalendarIcon size={12} />
-                          {format(new Date(comment.createdAt), 'EEEE, d MMM yyyy, HH:mm', { locale: id })}
+                          {format(toJakartaDate(comment.createdAt), 'EEEE, d MMM yyyy, HH:mm', { locale: id })}
                         </span>
                         </div>
                       )}
