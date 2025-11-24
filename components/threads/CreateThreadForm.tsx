@@ -35,6 +35,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const utils = trpc.useUtils()
 
@@ -50,6 +51,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
       }
       setTitle('')
       setComment('')
+      setIsSubmitting(false)
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
       await utils.thread.getAll.refetch()
@@ -57,16 +59,25 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
       onSuccess?.()
     },
     onError: (error) => {
+      setIsSubmitting(false)
       toast.error(error.message)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent double submission
+    if (isSubmitting || createThread.isLoading) {
+      return
+    }
+    
     if (!title) {
       toast.warning('Pilih mata pelajaran terlebih dahulu!')
       return
     }
+    
+    setIsSubmitting(true)
     createThread.mutate({ title, comment: comment || undefined })
   }
 
@@ -106,15 +117,15 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={createThread.isLoading}>
-            {createThread.isLoading ? (
+          <button type="submit" className="btn btn-primary" disabled={createThread.isLoading || isSubmitting}>
+            {createThread.isLoading || isSubmitting ? (
               <>
                 <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
                 Membuat...
               </>
             ) : 'Buat PR'}
           </button>
-          <button type="button" onClick={onSuccess} className="btn btn-secondary" disabled={createThread.isLoading}>
+          <button type="button" onClick={onSuccess} className="btn btn-secondary" disabled={createThread.isLoading || isSubmitting}>
             Batal
           </button>
         </div>

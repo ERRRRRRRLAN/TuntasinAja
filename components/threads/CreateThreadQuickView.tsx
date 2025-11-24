@@ -17,6 +17,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
   const [isVisible, setIsVisible] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -34,6 +35,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
+      setIsSubmitting(false)
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
       await utils.thread.getAll.refetch()
@@ -41,6 +43,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       onClose()
     },
     onError: (error) => {
+      setIsSubmitting(false)
       toast.error(error.message)
     },
   })
@@ -79,10 +82,18 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent double submission
+    if (isSubmitting || createThread.isLoading) {
+      return
+    }
+    
     if (!title) {
       toast.warning('Pilih mata pelajaran terlebih dahulu!')
       return
     }
+    
+    setIsSubmitting(true)
     createThread.mutate({ title, comment: comment || undefined })
   }
 
@@ -191,9 +202,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                disabled={createThread.isLoading}
+                disabled={createThread.isLoading || isSubmitting}
               >
-                {createThread.isLoading ? (
+                {createThread.isLoading || isSubmitting ? (
                   <>
                     <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
                     Membuat...
@@ -204,7 +215,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 type="button" 
                 onClick={handleClose} 
                 className="btn btn-secondary"
-                disabled={createThread.isLoading}
+                disabled={createThread.isLoading || isSubmitting}
               >
                 Batal
               </button>

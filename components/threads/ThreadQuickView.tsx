@@ -20,6 +20,7 @@ interface ThreadQuickViewProps {
 export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewProps) {
   const { data: session } = useSession()
   const [commentContent, setCommentContent] = useState('')
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
@@ -258,6 +259,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const addComment = trpc.thread.addComment.useMutation({
     onSuccess: async () => {
       setCommentContent('')
+      setIsSubmittingComment(false)
       // Invalidate and refetch immediately
       await Promise.all([
         utils.thread.getById.invalidate(),
@@ -269,16 +271,29 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.thread.getAll.refetch(),
       ])
     },
+    onError: (error) => {
+      setIsSubmittingComment(false)
+      toast.error(error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.')
+    },
   })
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault()
-    if (commentContent.trim()) {
-      addComment.mutate({
-        threadId,
-        content: commentContent.trim(),
-      })
+    
+    // Prevent double submission
+    if (isSubmittingComment || addComment.isLoading) {
+      return
     }
+    
+    if (!commentContent.trim()) {
+      return
+    }
+    
+    setIsSubmittingComment(true)
+    addComment.mutate({
+      threadId,
+      content: commentContent.trim(),
+    })
   }
 
   // Delete thread (Admin only)
@@ -576,7 +591,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={addComment.isLoading || !commentContent.trim()}
+                disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
               >
                 {addComment.isLoading ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
