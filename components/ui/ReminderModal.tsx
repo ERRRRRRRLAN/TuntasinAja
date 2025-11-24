@@ -8,7 +8,7 @@ import { id } from 'date-fns/locale'
 import { trpc } from '@/lib/trpc'
 import { toast } from './ToastContainer'
 import LoadingSpinner from './LoadingSpinner'
-import { CalendarIcon, UserIcon, CheckIcon, XIcon } from './Icons'
+import { CalendarIcon, UserIcon, CheckIcon, XIcon, BellIcon, AlertCircleIcon } from './Icons'
 
 interface OverdueTask {
   threadId: string
@@ -167,9 +167,12 @@ export default function ReminderModal({
           alignItems: 'center',
           marginBottom: '1.5rem'
         }}>
-          <h3 className="confirm-dialog-title" style={{ margin: 0 }}>
-            ⏰ Pengingat Tugas
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <BellIcon size={24} style={{ color: 'var(--primary)' }} />
+            <h3 className="confirm-dialog-title" style={{ margin: 0 }}>
+              Pengingat Tugas
+            </h3>
+          </div>
           <button
             onClick={onClose}
             style={{
@@ -197,15 +200,41 @@ export default function ReminderModal({
         </div>
 
         {overdueTasks.length === 0 ? (
-          <p className="confirm-dialog-message" style={{ textAlign: 'center', padding: '2rem' }}>
-            Tidak ada tugas yang perlu diingatkan. Semua tugas sudah selesai! 🎉
-          </p>
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'var(--bg-secondary)',
+              marginBottom: '1rem'
+            }}>
+              <CheckIcon size={32} style={{ color: 'var(--primary)' }} />
+            </div>
+            <p className="confirm-dialog-message">
+              Tidak ada tugas yang perlu diingatkan. Semua tugas sudah selesai!
+            </p>
+          </div>
         ) : (
           <>
-            <p className="confirm-dialog-message" style={{ marginBottom: '1.5rem' }}>
-              Ada {overdueTasks.length} tugas yang belum selesai selama lebih dari 7 hari. 
-              Apakah tugas-tugas ini sudah selesai?
-            </p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              padding: '1rem',
+              background: 'var(--bg-secondary)',
+              borderRadius: '0.5rem',
+              marginBottom: '1.5rem',
+              border: '1px solid var(--border)',
+            }}>
+              <AlertCircleIcon size={20} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: '0.125rem' }} />
+              <p className="confirm-dialog-message" style={{ margin: 0 }}>
+                Ada <strong>{overdueTasks.length}</strong> tugas yang belum selesai selama lebih dari 7 hari. 
+                Apakah tugas-tugas ini sudah selesai?
+              </p>
+            </div>
 
             <div style={{ 
               display: 'flex', 
@@ -241,23 +270,27 @@ export default function ReminderModal({
                       <div style={{ 
                         display: 'flex', 
                         flexDirection: 'column',
-                        gap: '0.25rem',
+                        gap: '0.375rem',
                         fontSize: '0.875rem',
                         color: 'var(--text-light)',
                       }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <UserIcon size={14} />
                           {task.authorName}
                         </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <CalendarIcon size={14} />
                           {format(new Date(task.threadDate), 'd MMMM yyyy', { locale: id })}
                         </span>
                         <span style={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
                           color: 'var(--danger)',
                           fontWeight: 500,
                         }}>
-                          ⚠️ Belum selesai selama {task.daysOverdue} hari
+                          <AlertCircleIcon size={14} />
+                          Belum selesai selama {task.daysOverdue} hari
                         </span>
                       </div>
                     </div>

@@ -400,26 +400,26 @@ export default function FeedPage() {
 
       {/* Reminder Modal - For all users */}
       <ReminderModal
-          isOpen={showReminderModal}
-          onClose={() => {
-            setShowReminderModal(false)
-            // Invalidate overdue tasks query so it can be checked again next time
-            utils.userStatus.getOverdueTasks.invalidate()
-          }}
-          overdueTasks={overdueTasks.map((task) => ({
-            threadId: task.threadId,
-            threadTitle: task.threadTitle,
-            threadDate: new Date(task.threadDate),
-            authorName: task.authorName,
-            daysOverdue: task.daysOverdue,
-          }))}
-          onTasksUpdated={() => {
-            // Invalidate queries when tasks are updated
-            utils.userStatus.getOverdueTasks.invalidate()
-            utils.userStatus.getUncompletedCount.invalidate()
-            utils.thread.getAll.invalidate()
-          }}
-        />
+        isOpen={showReminderModal}
+        onClose={() => {
+          setShowReminderModal(false)
+          // Invalidate overdue tasks query so it can be checked again next time
+          utils.userStatus.getOverdueTasks.invalidate()
+        }}
+        overdueTasks={overdueTasks.map((task) => ({
+          threadId: task.threadId,
+          threadTitle: task.threadTitle,
+          threadDate: new Date(task.threadDate),
+          authorName: task.authorName,
+          daysOverdue: task.daysOverdue,
+        }))}
+        onTasksUpdated={() => {
+          // Invalidate queries when tasks are updated
+          utils.userStatus.getOverdueTasks.invalidate()
+          utils.userStatus.getUncompletedCount.invalidate()
+          utils.thread.getAll.invalidate()
+        }}
+      />
 
       {/* Floating Action Button */}
       {session && (
