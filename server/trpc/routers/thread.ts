@@ -353,11 +353,14 @@ export const threadRouter = createTRPCRouter({
         },
       })
 
+      // Use Jakarta time for comment creation
+      const now = getUTCDate()
       const comment = await prisma.comment.create({
         data: {
           threadId: input.threadId,
           authorId: ctx.session.user.id,
           content: input.content,
+          createdAt: now,
         },
         include: {
           author: {
@@ -468,12 +471,13 @@ export const threadRouter = createTRPCRouter({
           throw new Error('Konten komentar tidak boleh kosong')
         }
 
-        // Update comment
+        // Update comment with Jakarta time
+        const now = getUTCDate()
         const updatedComment = await prisma.comment.update({
           where: { id: input.id },
           data: {
             content: input.content.trim(),
-            updatedAt: new Date(),
+            updatedAt: now,
           },
           include: {
             author: {
