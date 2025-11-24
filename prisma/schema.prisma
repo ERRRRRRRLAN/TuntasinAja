@@ -24,6 +24,7 @@ model User {
   comments      Comment[]
   userStatuses  UserStatus[]
   histories     History[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -40,6 +41,7 @@ model Thread {
   comments    Comment[]
   userStatuses UserStatus[]
   histories   History[]
+  notifications Notification[]
 
   // Unique constraint removed to allow same title+date for different classes
   // Duplicate prevention is now handled by application logic (checking kelas)
@@ -57,6 +59,7 @@ model Comment {
   thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
   author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   userStatuses UserStatus[]
+  notifications Notification[]
 
   @@map("comments")
 }
@@ -95,4 +98,24 @@ model History {
   // Note: Unique constraint removed to allow multiple histories with null threadId
   // Partial unique index is created via SQL migration to enforce uniqueness only when threadId is not null
   @@map("histories")
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  type        String    @map("type") // 'daily_reminder' | 'new_thread' | 'new_comment'
+  title       String    @map("title")
+  message     String    @map("message")
+  threadId    String?   @map("thread_id")
+  commentId   String?   @map("comment_id")
+  isRead      Boolean   @default(false) @map("is_read")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread      Thread?   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  comment     Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
