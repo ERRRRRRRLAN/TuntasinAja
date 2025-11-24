@@ -54,40 +54,63 @@ export class NotificationService {
    * Show a notification
    */
   async showNotification(title: string, options?: NotificationOptions): Promise<void> {
+    console.log(`🔔 Attempting to show notification: ${title}`)
+    
     if (!this.isSupported()) {
-      console.warn('Notifications are not supported in this browser')
+      console.warn('❌ Notifications are not supported in this browser')
       return
     }
 
-    if (this.permission !== 'granted') {
-      const newPermission = await this.requestPermission()
-      if (newPermission !== 'granted') {
-        console.warn('Notification permission denied')
-        return
-      }
+    // Check current permission status
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      this.permission = Notification.permission
     }
 
-    // Show notification
-    const notification = new Notification(title, {
-      icon: '/icon-192x192.png',
-      badge: '/icon-96x96.png',
-      tag: options?.tag || 'tuntasinaja-notification',
-      requireInteraction: false,
-      ...options,
-    })
-
-    // Auto close after 5 seconds
-    setTimeout(() => {
-      notification.close()
-    }, 5000)
-
-    // Handle click
-    notification.onclick = () => {
-      window.focus()
-      notification.close()
-      if (options?.data?.url) {
-        window.location.href = options.data.url
+    if (this.permission !== 'granted') {
+      console.log(`⚠️ Permission is ${this.permission}, requesting...`)
+      const newPermission = await this.requestPermission()
+      if (newPermission !== 'granted') {
+        console.warn(`❌ Notification permission denied: ${newPermission}`)
+        console.warn('💡 User needs to allow notifications in browser settings')
+        return
       }
+      console.log('✅ Permission granted after request')
+    }
+
+    try {
+      // Show notification
+      const notification = new Notification(title, {
+        icon: '/icon-192x192.png',
+        badge: '/icon-96x96.png',
+        tag: options?.tag || 'tuntasinaja-notification',
+        requireInteraction: false,
+        ...options,
+      })
+
+      console.log(`✅ Notification shown: ${title}`)
+
+      // Auto close after 5 seconds
+      setTimeout(() => {
+        notification.close()
+      }, 5000)
+
+      // Handle click
+      notification.onclick = () => {
+        console.log('👆 Notification clicked')
+        window.focus()
+        notification.close()
+        if (options?.data?.url) {
+          window.location.href = options.data.url
+        }
+      }
+
+      // Handle errors
+      notification.onerror = (error) => {
+        console.error('❌ Notification error:', error)
+      }
+    } catch (error) {
+      console.error('❌ Error creating notification:', error)
+      throw error
     }
   }
 

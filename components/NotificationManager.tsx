@@ -15,13 +15,19 @@ export default function NotificationManager() {
   // Request notification permission on mount
   useEffect(() => {
     if (session && notificationService.isSupported()) {
+      console.log('🔔 Requesting notification permission...')
       notificationService.requestPermission().then((permission) => {
         if (permission === 'granted') {
           console.log('✅ Notification permission granted')
         } else {
           console.warn('⚠️ Notification permission:', permission)
+          console.warn('💡 User needs to allow notifications in browser settings')
         }
-      }).catch(console.error)
+      }).catch((error) => {
+        console.error('❌ Error requesting notification permission:', error)
+      })
+    } else if (session && !notificationService.isSupported()) {
+      console.warn('⚠️ Browser does not support notifications')
     }
   }, [session])
 
@@ -37,42 +43,74 @@ export default function NotificationManager() {
 
   // Check for new notifications and show browser notifications
   useEffect(() => {
-    if (!session || !notifications) {
+    if (!session) {
       return
     }
+
+    if (!notifications) {
+      console.log('📭 No notifications data yet')
+      return
+    }
+
+    console.log(`📬 Checking ${notifications.length} notifications...`)
 
     const now = new Date()
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
 
+    let unreadCount = 0
+    let shownCount = 0
+
     for (const notification of notifications) {
-      if (!notification.isRead && !shownNotificationIds.current.has(notification.id)) {
-        const notificationDate = new Date(notification.createdAt)
+      if (!notification.isRead) {
+        unreadCount++
         
-        // Only show notifications from the last 5 minutes that we haven't shown yet
-        if (notificationDate > fiveMinutesAgo) {
-          if (notification.type === 'new_thread' && notification.thread) {
-            notificationService.showNewThreadNotification(
-              notification.thread.title,
-              notification.thread.author.name,
-              notification.thread.id
-            ).then(() => {
-              shownNotificationIds.current.add(notification.id)
-              // Mark as read after showing
-              markAsRead.mutate({ id: notification.id })
-            }).catch(console.error)
-          } else if (notification.type === 'new_comment' && notification.comment && notification.thread) {
-            notificationService.showNewCommentNotification(
-              notification.thread.title,
-              notification.comment.author.name,
-              notification.thread.id
-            ).then(() => {
-              shownNotificationIds.current.add(notification.id)
-              // Mark as read after showing
-              markAsRead.mutate({ id: notification.id })
-            }).catch(console.error)
+        if (!shownNotificationIds.current.has(notification.id)) {
+          const notificationDate = new Date(notification.createdAt)
+          
+          // Only show notifications from the last 5 minutes that we haven't shown yet
+          if (notificationDate > fiveMinutesAgo) {
+            console.log(`🔔 Showing notification: ${notification.type} - ${notification.title}`)
+            
+            if (notification.type === 'new_thread' && notification.thread) {
+              notificationService.showNewThreadNotification(
+                notification.thread.title,
+                notification.thread.author.name,
+                notification.thread.id
+              ).then(() => {
+                console.log(`✅ Shown thread notification: ${notification.id}`)
+                shownNotificationIds.current.add(notification.id)
+                // Mark as read after showing
+                markAsRead.mutate({ id: notification.id })
+                shownCount++
+              }).catch((error) => {
+                console.error('❌ Error showing thread notification:', error)
+              })
+            } else if (notification.type === 'new_comment' && notification.comment && notification.thread) {
+              notificationService.showNewCommentNotification(
+                notification.thread.title,
+                notification.comment.author.name,
+                notification.thread.id
+              ).then(() => {
+                console.log(`✅ Shown comment notification: ${notification.id}`)
+                shownNotificationIds.current.add(notification.id)
+                // Mark as read after showing
+                markAsRead.mutate({ id: notification.id })
+                shownCount++
+              }).catch((error) => {
+                console.error('❌ Error showing comment notification:', error)
+              })
+            }
+          } else {
+            console.log(`⏰ Notification ${notification.id} is too old (${Math.round((now.getTime() - notificationDate.getTime()) / 60000)} minutes ago)`)
           }
+        } else {
+          console.log(`👁️ Notification ${notification.id} already shown`)
         }
       }
+    }
+
+    if (unreadCount > 0) {
+      console.log(`📊 Found ${unreadCount} unread notifications, showing ${shownCount}`)
     }
   }, [session, notifications, markAsRead])
 
