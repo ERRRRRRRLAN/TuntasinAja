@@ -16,6 +16,7 @@
     "generate:secret": "node scripts/generate-secret.js",
     "create:admin": "node scripts/create-admin.js",
     "verify:admin": "node scripts/verify-admin.js",
+    "create:users": "node scripts/create-users.js",
     "migrate:history": "node scripts/migrate-history-denormalization.js",
     "migrate:kelas": "node scripts/add-kelas-column.js",
     "fix:timezone": "node scripts/fix-timestamp-timezone.js",
