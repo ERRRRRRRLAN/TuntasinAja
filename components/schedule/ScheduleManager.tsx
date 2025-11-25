@@ -7,7 +7,8 @@ import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { PlusIcon, TrashIcon, EditIcon, CalendarIcon } from '@/components/ui/Icons'
+import ComboBox from '@/components/ui/ComboBox'
+import { PlusIcon, TrashIcon, EditIcon, CalendarIcon, BookIcon } from '@/components/ui/Icons'
 
 const DAYS_OF_WEEK = [
   { value: 'monday', label: 'Senin' },
@@ -241,18 +242,18 @@ export default function ScheduleManager() {
                 <label className="form-label" htmlFor="subject">
                   Mata Pelajaran *
                 </label>
-                <input
-                  id="subject"
-                  type="text"
-                  className="form-input"
+                <ComboBox
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  required
-                  maxLength={100}
-                  disabled={createSchedule.isLoading}
-                  placeholder="Contoh: IPAS, MTK, PAI"
-                  style={{ minHeight: '44px' }}
+                  onChange={setSubject}
+                  placeholder="-- Pilih Mata Pelajaran --"
+                  showAllOption={false}
+                  searchPlaceholder="Cari mata pelajaran..."
+                  emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                  icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
                 />
+                <small className="form-hint" style={{ marginTop: '0.5rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  Pilih mata pelajaran dari daftar
+                </small>
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
