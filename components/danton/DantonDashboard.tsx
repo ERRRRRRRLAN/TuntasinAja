@@ -72,7 +72,11 @@ export default function DantonDashboard() {
       )}
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+        gap: '1rem'
+      }}>
         <div className="card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <UserIcon size={24} />
@@ -120,7 +124,12 @@ export default function DantonDashboard() {
       {/* Class User List - Only show if subscription active */}
       {canManage ? (
         <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '0.75rem',
+            marginBottom: '0.5rem'
+          }}>
             <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>Manajemen Siswa</h3>
             <button
               onClick={() => setShowAddUserForm(true)}
@@ -129,6 +138,7 @@ export default function DantonDashboard() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '0.5rem',
                 padding: '0.625rem 1.25rem',
                 background: stats && stats.userCount >= stats.maxUsers ? '#cbd5e1' : 'var(--primary)',
@@ -137,6 +147,8 @@ export default function DantonDashboard() {
                 borderRadius: '0.375rem',
                 cursor: stats && stats.userCount >= stats.maxUsers ? 'not-allowed' : 'pointer',
                 opacity: stats && stats.userCount >= stats.maxUsers ? 0.6 : 1,
+                minHeight: '44px',
+                width: '100%'
               }}
             >
               <PlusIcon size={18} />

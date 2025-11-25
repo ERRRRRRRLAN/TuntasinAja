@@ -78,67 +78,78 @@ export default function SubscriptionStatusCard() {
     }}>
       <div style={{ 
         display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start',
-        marginBottom: '1rem',
-        flexWrap: 'wrap',
-        gap: '0.75rem'
+        flexDirection: 'column',
+        gap: '0.75rem',
+        marginBottom: '1rem'
       }}>
-        <div>
-          <h3 style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: 600, 
-            margin: '0 0 0.5rem 0',
-            color: 'var(--text-primary)'
-          }}>
-            Status Subscription Kelas
-          </h3>
-          <p style={{ 
-            color: 'var(--text-light)', 
-            fontSize: '0.875rem',
-            margin: 0
-          }}>
-            {dantonKelas || '-'}
-          </p>
-        </div>
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.375rem',
-          padding: '0.375rem 0.75rem',
-          borderRadius: '0.5rem',
-          background: badgeBg,
-          color: badgeColor,
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          whiteSpace: 'nowrap',
-          border: `1px solid var(--border)`
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
         }}>
-          <StatusIcon size={14} style={{ color: badgeColor, flexShrink: 0 }} />
-          {badgeText}
-        </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ 
+              fontSize: '1.125rem', 
+              fontWeight: 600, 
+              margin: '0 0 0.5rem 0',
+              color: 'var(--text-primary)'
+            }}>
+              Status Subscription Kelas
+            </h3>
+            <p style={{ 
+              color: 'var(--text-light)', 
+              fontSize: '0.875rem',
+              margin: 0,
+              wordBreak: 'break-word'
+            }}>
+              {dantonKelas || '-'}
+            </p>
+          </div>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.375rem',
+            padding: '0.375rem 0.75rem',
+            borderRadius: '0.5rem',
+            background: badgeBg,
+            color: badgeColor,
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            border: `1px solid var(--border)`,
+            flexShrink: 0
+          }}>
+            <StatusIcon size={14} style={{ color: badgeColor, flexShrink: 0 }} />
+            {badgeText}
+          </span>
+        </div>
       </div>
 
       {endDate && (
         <div style={{ 
           marginBottom: '1rem',
           padding: '0.75rem',
-          background: 'white',
+          background: 'var(--bg-secondary)',
           borderRadius: '0.5rem',
           border: '1px solid var(--border)'
         }}>
           <p style={{ 
-            fontSize: '0.875rem', 
+            fontSize: '0.75rem', 
             color: 'var(--text-light)', 
-            margin: '0 0 0.25rem 0' 
+            margin: '0 0 0.25rem 0',
+            fontWeight: 500
           }}>
             Berakhir pada:
           </p>
           <p style={{ 
-            fontSize: '1rem', 
+            fontSize: '0.875rem', 
             fontWeight: 600, 
             color: 'var(--text-primary)',
-            margin: 0 
+            margin: 0,
+            wordBreak: 'break-word',
+            lineHeight: '1.4'
           }}>
             {format(endDate, 'EEEE, d MMMM yyyy, HH:mm', { locale: id })}
           </p>
@@ -169,7 +180,7 @@ export default function SubscriptionStatusCard() {
           gap: '0.5rem'
         }}>
           <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
-          <p style={{ margin: 0, fontWeight: 400 }}>
+          <p style={{ margin: 0, fontWeight: 400, wordBreak: 'break-word' }}>
             {statusMessage || 'Subscription tidak aktif'}
           </p>
         </div>
@@ -188,7 +199,7 @@ export default function SubscriptionStatusCard() {
           gap: '0.5rem'
         }}>
           <CheckIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
-          <p style={{ margin: 0, fontWeight: 400 }}>
+          <p style={{ margin: 0, fontWeight: 400, wordBreak: 'break-word' }}>
             Subscription aktif. {daysText}
           </p>
         </div>

@@ -97,14 +97,16 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '1.5rem'
+        alignItems: 'flex-start',
+        marginBottom: '1.5rem',
+        gap: '0.75rem',
+        flexWrap: 'wrap'
       }}>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
             {action === 'set' ? 'Set' : 'Extend'} Subscription Kelas
           </h3>
-          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem', wordBreak: 'break-word' }}>
             Kelas: <strong>{kelas}</strong>
           </p>
         </div>
@@ -121,7 +123,10 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
               justifyContent: 'center',
               color: 'var(--text-light)',
               borderRadius: '0.375rem',
-              transition: 'background 0.2s'
+              transition: 'background 0.2s',
+              minWidth: '44px',
+              minHeight: '44px',
+              flexShrink: 0
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'var(--bg-secondary)'
@@ -246,12 +251,21 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: '0.75rem', 
+          marginTop: '1.5rem'
+        }}>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={isLoading}
-            style={{ flex: 1 }}
+            style={{ 
+              width: '100%',
+              minHeight: '44px',
+              padding: '0.625rem 1rem'
+            }}
           >
             {isLoading ? (
               <>
@@ -268,7 +282,11 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
               onClick={onCancel}
               className="btn btn-secondary"
               disabled={isLoading}
-              style={{ flex: 1 }}
+              style={{ 
+                width: '100%',
+                minHeight: '44px',
+                padding: '0.625rem 1rem'
+              }}
             >
               Batal
             </button>
