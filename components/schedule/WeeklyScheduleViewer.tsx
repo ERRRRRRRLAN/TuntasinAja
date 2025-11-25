@@ -40,7 +40,7 @@ export default function WeeklyScheduleViewer() {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
         <p style={{ color: 'var(--text-light)' }}>
-          Jadwal belum tersedia untuk kelas {scheduleData?.kelas || 'Anda'}.
+          Jadwal belum tersedia untuk kelas Anda.
         </p>
       </div>
     )
