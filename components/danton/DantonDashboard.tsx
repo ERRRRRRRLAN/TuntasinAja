@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDanton } from '@/hooks/useDanton'
 import { trpc } from '@/lib/trpc'
 import ClassUserList from './ClassUserList'
 import AddUserToClassForm from './AddUserToClassForm'
 import SubscriptionStatusCard from './SubscriptionStatusCard'
+import ScheduleManager from '@/components/schedule/ScheduleManager'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { UserIcon, PlusIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
@@ -179,6 +181,9 @@ export default function DantonDashboard() {
           </p>
         </div>
       )}
+
+      {/* Schedule Manager - Only show if subscription active */}
+      {canManage && <ScheduleManager />}
     </div>
   )
 }

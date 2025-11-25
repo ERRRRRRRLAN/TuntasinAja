@@ -8,11 +8,13 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
+import ScheduleReminderModal from '@/components/schedule/ScheduleReminderModal'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
+import { useScheduleReminder } from '@/hooks/useScheduleReminder'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -43,7 +45,9 @@ export default function FeedPage() {
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showReminderModal, setShowReminderModal] = useState(false)
+  const [showScheduleReminderModal, setShowScheduleReminderModal] = useState(false)
   const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
+  const [hasCheckedScheduleReminder, setHasCheckedScheduleReminder] = useState(false)
   const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
 
   // Get user data (kelas, isAdmin)
@@ -134,6 +138,9 @@ export default function FeedPage() {
     }
   )
 
+  // Get schedule reminder (check if tomorrow has classes with tasks)
+  const { tasks: scheduleTasks, subjects: scheduleSubjects, tomorrow: tomorrowDate, hasReminder: hasScheduleReminder, isLoading: isLoadingScheduleReminder } = useScheduleReminder()
+
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
@@ -151,6 +158,49 @@ export default function FeedPage() {
       setHasCheckedReminder(true)
     }
   }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
+
+  // Show schedule reminder modal automatically when user logs in and there are tasks for tomorrow's classes
+  // Only show once per session
+  useEffect(() => {
+    // Debug logging
+    if (session && isDataValidated && !isLoadingScheduleReminder) {
+      console.log('[Schedule Reminder Debug]', {
+        hasCheckedScheduleReminder,
+        hasScheduleReminder,
+        scheduleTasksLength: scheduleTasks.length,
+        scheduleSubjectsLength: scheduleSubjects.length,
+        showReminderModal,
+        overdueTasksLength: overdueTasks.length,
+        tomorrowDate,
+      })
+    }
+
+    if (
+      session &&
+      isDataValidated &&
+      !hasCheckedScheduleReminder &&
+      !isLoadingScheduleReminder &&
+      scheduleTasks.length > 0 && // Must have tasks
+      scheduleSubjects.length > 0 // Must have subjects
+    ) {
+      // If overdue reminder is showing, wait for it to close first
+      if (showReminderModal) {
+        // Wait for overdue reminder to close, then show schedule reminder
+        const checkInterval = setInterval(() => {
+          if (!showReminderModal) {
+            clearInterval(checkInterval)
+            setShowScheduleReminderModal(true)
+            setHasCheckedScheduleReminder(true)
+          }
+        }, 500)
+        return () => clearInterval(checkInterval)
+      } else {
+        // No overdue reminder, show schedule reminder immediately
+        setShowScheduleReminderModal(true)
+        setHasCheckedScheduleReminder(true)
+      }
+    }
+  }, [session, isDataValidated, hasCheckedScheduleReminder, isLoadingScheduleReminder, scheduleTasks.length, scheduleSubjects.length, showReminderModal, overdueTasks.length, tomorrowDate])
 
 
   // Filter and search threads
@@ -477,6 +527,28 @@ export default function FeedPage() {
           setSelectedThreadId(threadId)
           // Tutup reminder modal sementara
           setShowReminderModal(false)
+        }}
+      />
+
+      {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
+      <ScheduleReminderModal
+        isOpen={showScheduleReminderModal}
+        onClose={() => {
+          setShowScheduleReminderModal(false)
+          utils.schedule.getReminderTasks.invalidate()
+        }}
+        subjects={scheduleSubjects}
+        tasks={scheduleTasks.map((task: any) => ({
+          threadId: task.threadId,
+          threadTitle: task.threadTitle,
+          authorName: task.authorName,
+          threadDate: new Date(task.threadDate),
+        }))}
+        tomorrow={tomorrowDate}
+        onTaskClick={(threadId) => {
+          setThreadOpenedFromReminder(true)
+          setSelectedThreadId(threadId)
+          setShowScheduleReminderModal(false)
         }}
       />
 

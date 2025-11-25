@@ -3282,3 +3282,44 @@ textarea {
   }
 }
 
+/* Schedule Components Responsive */
+@media (max-width: 768px) {
+  .schedule-manager-form {
+    padding: 1rem !important;
+  }
+
+  .schedule-day-card {
+    padding: 0.5rem !important;
+  }
+
+  .schedule-subject-item {
+    padding: 0.625rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .schedule-manager-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .schedule-manager-header button {
+    width: 100% !important;
+  }
+
+  .schedule-viewer-card {
+    padding: 1rem !important;
+  }
+
+  .schedule-day-header {
+    padding: 0.625rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .schedule-reminder-modal-content {
+    max-width: 95% !important;
+    padding: 1rem !important;
+  }
+}
+
