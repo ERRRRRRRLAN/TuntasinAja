@@ -33,7 +33,6 @@ export default function Header() {
   const navLinks = [
     { href: '/', label: 'Tugas' },
     { href: '/history', label: 'History' },
-    { href: '/announcements', label: 'Pengumuman' },
     ...(isDanton ? [{ href: '/danton', label: 'Danton' }] : []),
   ]
 

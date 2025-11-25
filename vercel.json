@@ -15,10 +15,6 @@
     {
       "path": "/api/cron/cleanup-user-statuses",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/auto-delete-expired-announcements",
-      "schedule": "0 1 * * *"
     }
   ]
 }
