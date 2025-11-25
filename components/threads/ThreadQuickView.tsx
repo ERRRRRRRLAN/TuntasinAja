@@ -12,6 +12,8 @@ import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, 
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useDanton } from '@/hooks/useDanton'
+import { useUserPermission } from '@/hooks/useUserPermission'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -131,9 +133,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   })
   const isAdmin = adminCheck?.isAdmin || false
   
+  // Check if user is danton
+  const { isDanton, kelas: dantonKelas } = useDanton()
+  
+  // Check user permission
+  const { canPostEdit, isOnlyRead } = useUserPermission()
+  
   // Check if user is the author of this thread
   const isThreadAuthor = session?.user?.id === (thread as any)?.author?.id
-  const canDeleteThread = isAdmin || isThreadAuthor
+  const threadAuthorKelas = (thread as any)?.author?.kelas || null
+  const isDantonOfSameClass = isDanton && dantonKelas === threadAuthorKelas && dantonKelas !== null
+  const canDeleteThread = isAdmin || isThreadAuthor || isDantonOfSameClass
 
   const utils = trpc.useUtils()
 
@@ -631,7 +641,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
-          {session && (
+          {session && canPostEdit && (
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="form-group">
                 <label htmlFor="newComment" className="form-label">
@@ -662,6 +672,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               </button>
             </form>
           )}
+          {session && isOnlyRead && (
+            <div className="card" style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem' }}>
+              <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', textAlign: 'center' }}>
+                ⚠️ Anda hanya memiliki izin membaca. Tidak dapat menambahkan sub tugas.
+              </p>
+            </div>
+          )}
 
           <div className="comments-list">
             {!((thread as any).comments?.length > 0) ? (
@@ -675,8 +692,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 
                 // Check if user can edit/delete this comment
                 const isCommentAuthor = session?.user?.id === comment?.author?.id
-                const canEditComment = isCommentAuthor // Only author can edit
-                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor
+                const commentAuthorKelas = comment?.author?.kelas || null
+                const isDantonOfCommentClass = isDanton && dantonKelas === commentAuthorKelas && dantonKelas !== null
+                const canEditComment = isCommentAuthor && canPostEdit // Only author can edit, and must have post/edit permission
+                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isDantonOfCommentClass
                 const isEditing = editingCommentId === comment.id
 
                 return (

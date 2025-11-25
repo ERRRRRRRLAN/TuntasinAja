@@ -11,6 +11,7 @@ import ReminderModal from '@/components/ui/ReminderModal'
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useUserPermission } from '@/hooks/useUserPermission'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -50,6 +51,9 @@ export default function FeedPage() {
   })
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
+
+  // Check user permission
+  const { canPostEdit, isOnlyRead, permission } = useUserPermission()
 
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
@@ -469,8 +473,29 @@ export default function FeedPage() {
         }}
       />
 
+      {/* Permission Indicator */}
+      {session && isOnlyRead && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '0.5rem',
+            color: '#dc2626',
+            fontSize: '0.875rem',
+            zIndex: 998,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          ⚠️ Hanya Baca - Tidak dapat membuat/ mengedit
+        </div>
+      )}
+
       {/* Floating Action Button */}
-      {session && (
+      {session && canPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"

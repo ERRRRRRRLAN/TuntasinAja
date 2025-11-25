@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useUserPermission } from '@/hooks/useUserPermission'
 
 interface CreateThreadQuickViewProps {
   onClose: () => void
@@ -22,6 +23,15 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const contentRef = useRef<HTMLDivElement>(null)
 
   const utils = trpc.useUtils()
+  const { canPostEdit, isOnlyRead } = useUserPermission()
+
+  // Close if user doesn't have permission
+  useEffect(() => {
+    if (isOnlyRead) {
+      toast.error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+      onClose()
+    }
+  }, [isOnlyRead, onClose])
 
   const createThread = trpc.thread.create.useMutation({
     onSuccess: async (data) => {
@@ -82,6 +92,12 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check permission
+    if (isOnlyRead || !canPostEdit) {
+      toast.error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+      return
+    }
     
     // Prevent double submission
     if (isSubmitting || createThread.isLoading) {

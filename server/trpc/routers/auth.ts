@@ -3,6 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure }
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { getUTCDate } from '@/lib/date-utils'
+import { getUserPermission } from '../trpc'
 
 export const authRouter = createTRPCRouter({
   // Register
@@ -89,10 +90,10 @@ export const authRouter = createTRPCRouter({
     return { isAdmin: user?.isAdmin || false }
   }),
 
-  // Get current user data (kelas, isAdmin)
+  // Get current user data (kelas, isAdmin, isDanton)
   getUserData: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return { kelas: null, isAdmin: false }
+      return { kelas: null, isAdmin: false, isDanton: false }
     }
 
     const user = await prisma.user.findUnique({
@@ -100,13 +101,45 @@ export const authRouter = createTRPCRouter({
       select: { 
         kelas: true,
         isAdmin: true,
+        isDanton: true,
       },
     })
 
     return { 
       kelas: user?.kelas || null, 
-      isAdmin: user?.isAdmin || false 
+      isAdmin: user?.isAdmin || false,
+      isDanton: user?.isDanton || false,
     }
+  }),
+
+  // Check if current user is danton
+  isDanton: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { isDanton: false, kelas: null }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { 
+        isDanton: true,
+        kelas: true,
+      },
+    })
+
+    return { 
+      isDanton: user?.isDanton || false,
+      kelas: user?.kelas || null,
+    }
+  }),
+
+  // Get user permission (only_read or read_and_post_edit)
+  getUserPermission: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { permission: 'read_and_post_edit' as const }
+    }
+
+    const permission = await getUserPermission(ctx.session.user.id)
+    return { permission }
   }),
 
   // Create user (Admin only)
