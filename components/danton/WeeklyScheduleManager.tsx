@@ -64,7 +64,12 @@ export default function WeeklyScheduleManager() {
     setEditingCell({ day, period })
   }
 
-  const handleSave = () => {
+  const handleSave = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     if (!editingCell || !selectedSubject) {
       toast.error('Pilih mata pelajaran terlebih dahulu')
       return
@@ -153,6 +158,7 @@ export default function WeeklyScheduleManager() {
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
+              type="button"
               onClick={handleSave}
               disabled={!selectedSubject || setSchedule.isLoading}
               className="btn btn-primary"
@@ -166,7 +172,12 @@ export default function WeeklyScheduleManager() {
               {setSchedule.isLoading ? 'Menyimpan...' : 'Simpan'}
             </button>
             <button
-              onClick={handleCancel}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleCancel()
+              }}
               disabled={setSchedule.isLoading}
               className="btn btn-secondary"
               style={{
@@ -181,7 +192,12 @@ export default function WeeklyScheduleManager() {
               s => s.period === editingCell.period
             ) && (
               <button
-                onClick={() => handleDelete(editingCell.day, editingCell.period)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleDelete(editingCell.day, editingCell.period)
+                }}
                 disabled={deleteSchedule.isLoading}
                 className="btn btn-danger"
                 style={{
@@ -264,7 +280,13 @@ export default function WeeklyScheduleManager() {
                   return (
                     <td
                       key={day.value}
-                      onClick={() => handleCellClick(day.value, period)}
+                      onClick={(e) => {
+                        // Don't open edit form if clicking on a button inside
+                        if ((e.target as HTMLElement).closest('button')) {
+                          return
+                        }
+                        handleCellClick(day.value, period)
+                      }}
                       style={{
                         padding: '0.75rem',
                         borderBottom: '1px solid var(--border)',
