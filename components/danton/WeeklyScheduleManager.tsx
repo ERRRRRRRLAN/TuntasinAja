@@ -5,7 +5,7 @@ import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComboBox from '@/components/ui/ComboBox'
-import { PlusIcon, TrashIcon, CalendarIcon } from '@/components/ui/Icons'
+import { TrashIcon, CalendarIcon } from '@/components/ui/Icons'
 
 const DAYS = [
   { value: 'monday', label: 'Senin' },
@@ -18,12 +18,6 @@ const DAYS = [
 const MAX_PERIODS = 10
 
 export default function WeeklyScheduleManager() {
-  const [editingCell, setEditingCell] = useState<{
-    day: string
-    period: number
-  } | null>(null)
-  const [selectedSubject, setSelectedSubject] = useState('')
-
   const utils = trpc.useUtils()
   const { data: scheduleData, isLoading } = trpc.weeklySchedule.getSchedule.useQuery()
   const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery()
@@ -31,8 +25,6 @@ export default function WeeklyScheduleManager() {
   const setSchedule = trpc.weeklySchedule.setSchedule.useMutation({
     onSuccess: () => {
       utils.weeklySchedule.getSchedule.invalidate()
-      setEditingCell(null)
-      setSelectedSubject('')
       toast.success('Jadwal berhasil disimpan!')
     },
     onError: (error) => {
@@ -50,35 +42,21 @@ export default function WeeklyScheduleManager() {
     },
   })
 
-  const handleCellClick = (day: string, period: number) => {
-    const existingSchedule = scheduleData?.schedule[day as keyof typeof scheduleData.schedule]?.find(
-      s => s.period === period
-    )
-    
-    if (existingSchedule) {
-      setSelectedSubject(existingSchedule.subject)
-    } else {
-      setSelectedSubject('')
-    }
-    
-    setEditingCell({ day, period })
-  }
-
-  const handleSave = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-
-    if (!editingCell || !selectedSubject) {
-      toast.error('Pilih mata pelajaran terlebih dahulu')
+  const handleSubjectChange = (
+    day: string, 
+    period: number, 
+    subject: string
+  ) => {
+    // If empty, don't do anything
+    if (!subject || subject.trim() === '') {
       return
     }
 
+    // Save the schedule (auto-save on selection)
     setSchedule.mutate({
-      dayOfWeek: editingCell.day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
-      period: editingCell.period,
-      subject: selectedSubject,
+      dayOfWeek: day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
+      period,
+      subject,
     })
   }
 
@@ -89,11 +67,6 @@ export default function WeeklyScheduleManager() {
         period,
       })
     }
-  }
-
-  const handleCancel = () => {
-    setEditingCell(null)
-    setSelectedSubject('')
   }
 
   if (isLoading) {
@@ -125,97 +98,8 @@ export default function WeeklyScheduleManager() {
         marginBottom: '1.5rem',
         lineHeight: '1.6'
       }}>
-        Klik pada sel untuk menambah atau mengubah jadwal pelajaran. Setiap sel mewakili satu jam pelajaran.
+        Pilih mata pelajaran langsung dari dropdown di setiap sel. Jadwal akan tersimpan otomatis saat dipilih. Pilih "Hapus" untuk menghapus jadwal.
       </p>
-
-      {/* Edit Form */}
-      {editingCell && (
-        <div style={{
-          padding: '1rem',
-          background: 'var(--bg-secondary)',
-          borderRadius: '0.5rem',
-          marginBottom: '1.5rem',
-          border: '1px solid var(--border)'
-        }}>
-          <div style={{ marginBottom: '0.75rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              fontWeight: 500,
-              fontSize: '0.875rem'
-            }}>
-              {scheduleData?.dayNames[editingCell.day as keyof typeof scheduleData.dayNames]} - Jam ke-{editingCell.period}
-            </label>
-            <ComboBox
-              value={selectedSubject}
-              onChange={setSelectedSubject}
-              placeholder="Pilih Mata Pelajaran"
-              options={subjects || []}
-              showAllOption={false}
-              searchPlaceholder="Cari mata pelajaran..."
-              emptyMessage="Tidak ada mata pelajaran yang ditemukan"
-            />
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={!selectedSubject || setSchedule.isLoading}
-              className="btn btn-primary"
-              style={{
-                flex: 1,
-                padding: '0.625rem 1rem',
-                fontSize: '0.875rem',
-                minHeight: '40px'
-              }}
-            >
-              {setSchedule.isLoading ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleCancel()
-              }}
-              disabled={setSchedule.isLoading}
-              className="btn btn-secondary"
-              style={{
-                padding: '0.625rem 1rem',
-                fontSize: '0.875rem',
-                minHeight: '40px'
-              }}
-            >
-              Batal
-            </button>
-            {scheduleData?.schedule[editingCell.day as keyof typeof scheduleData.schedule]?.find(
-              s => s.period === editingCell.period
-            ) && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleDelete(editingCell.day, editingCell.period)
-                }}
-                disabled={deleteSchedule.isLoading}
-                className="btn btn-danger"
-                style={{
-                  padding: '0.625rem 1rem',
-                  fontSize: '0.875rem',
-                  minHeight: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <TrashIcon size={16} />
-                Hapus
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Schedule Table */}
       <div style={{ overflowX: 'auto' }}>
@@ -275,76 +159,80 @@ export default function WeeklyScheduleManager() {
                   const scheduleItem = scheduleData?.schedule[day.value as keyof typeof scheduleData.schedule]?.find(
                     s => s.period === period
                   )
-                  const isEditing = editingCell?.day === day.value && editingCell?.period === period
+                  const currentSubject = scheduleItem?.subject || ''
 
                   return (
                     <td
                       key={day.value}
-                      onClick={(e) => {
-                        // Don't open edit form if clicking on a button inside
-                        if ((e.target as HTMLElement).closest('button')) {
-                          return
-                        }
-                        handleCellClick(day.value, period)
-                      }}
                       style={{
-                        padding: '0.75rem',
+                        padding: '0.5rem',
                         borderBottom: '1px solid var(--border)',
                         borderRight: '1px solid var(--border)',
-                        cursor: 'pointer',
                         textAlign: 'center',
-                        background: isEditing 
-                          ? 'var(--primary)' 
-                          : scheduleItem 
+                        background: scheduleItem 
                           ? 'var(--bg-secondary)' 
                           : 'transparent',
-                        color: isEditing ? 'white' : 'var(--text)',
                         transition: 'all 0.2s',
                         minHeight: '60px',
-                        verticalAlign: 'middle'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isEditing) {
-                          e.currentTarget.style.background = scheduleItem 
-                            ? 'var(--bg-tertiary)' 
-                            : 'var(--bg-secondary)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isEditing) {
-                          e.currentTarget.style.background = scheduleItem 
-                            ? 'var(--bg-secondary)' 
-                            : 'transparent'
-                        }
+                        verticalAlign: 'middle',
+                        position: 'relative'
                       }}
                     >
-                      {scheduleItem ? (
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          flexWrap: 'wrap'
-                        }}>
-                          <span style={{ 
-                            fontSize: '0.8125rem',
-                            fontWeight: 500,
-                            wordBreak: 'break-word'
-                          }}>
-                            {scheduleItem.subject}
-                          </span>
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          color: 'var(--text-light)',
-                          fontSize: '0.75rem'
-                        }}>
-                          <PlusIcon size={16} />
-                        </div>
-                      )}
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        alignItems: 'stretch'
+                      }}>
+                        <ComboBox
+                          value={currentSubject}
+                          onChange={(value) => handleSubjectChange(day.value, period, value)}
+                          placeholder="Pilih mata pelajaran..."
+                          options={subjects || []}
+                          showAllOption={false}
+                          searchPlaceholder="Cari mata pelajaran..."
+                          emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                        />
+                        {scheduleItem && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleDelete(day.value, period)
+                            }}
+                            disabled={deleteSchedule.isLoading || setSchedule.isLoading}
+                            style={{
+                              marginTop: '0.25rem',
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              background: 'var(--danger)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.25rem',
+                              cursor: deleteSchedule.isLoading || setSchedule.isLoading ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.25rem',
+                              width: '100%',
+                              transition: 'opacity 0.2s',
+                              opacity: deleteSchedule.isLoading || setSchedule.isLoading ? 0.6 : 1
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!deleteSchedule.isLoading && !setSchedule.isLoading) {
+                                e.currentTarget.style.opacity = '0.8'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = deleteSchedule.isLoading || setSchedule.isLoading ? 0.6 : 1
+                            }}
+                          >
+                            <TrashIcon size={12} />
+                            {deleteSchedule.isLoading ? 'Menghapus...' : 'Hapus'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   )
                 })}
@@ -362,7 +250,7 @@ export default function WeeklyScheduleManager() {
         fontSize: '0.8125rem',
         color: 'var(--text-light)'
       }}>
-        <strong>Tips:</strong> Klik pada sel kosong untuk menambah jadwal, atau klik pada sel yang sudah terisi untuk mengubah jadwal.
+        <strong>Tips:</strong> Pilih mata pelajaran langsung dari dropdown di setiap sel. Jadwal akan tersimpan otomatis. Gunakan tombol "Hapus" untuk menghapus jadwal yang sudah ada.
       </div>
     </div>
   )
