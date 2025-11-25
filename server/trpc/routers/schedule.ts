@@ -157,8 +157,10 @@ export const scheduleRouter = createTRPCRouter({
       return { tasks: [], subjects: [] }
     }
 
+    const userId = ctx.session.user.id
+
     const user = await prisma.user.findUnique({
-      where: { id: ctx.session.user.id },
+      where: { id: userId },
       select: { kelas: true },
     })
 
@@ -226,7 +228,7 @@ export const scheduleRouter = createTRPCRouter({
         const userStatus = await prisma.userStatus.findUnique({
           where: {
             userId_threadId: {
-              userId: ctx.session.user.id,
+              userId: userId,
               threadId: thread.id,
             },
           },
