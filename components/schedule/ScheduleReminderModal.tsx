@@ -17,7 +17,7 @@ interface ScheduleReminderModalProps {
     authorName: string
     threadDate: Date
   }>
-  tomorrow: string
+  tomorrow: string | null
   onTaskClick?: (threadId: string) => void
 }
 

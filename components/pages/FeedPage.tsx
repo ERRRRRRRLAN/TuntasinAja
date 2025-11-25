@@ -544,7 +544,7 @@ export default function FeedPage() {
           authorName: task.authorName,
           threadDate: new Date(task.threadDate),
         }))}
-        tomorrow={tomorrowDate || null}
+        tomorrow={tomorrowDate}
         onTaskClick={(threadId) => {
           setThreadOpenedFromReminder(true)
           setSelectedThreadId(threadId)
