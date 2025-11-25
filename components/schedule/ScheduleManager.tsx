@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ComboBox from '@/components/ui/ComboBox'
-import { PlusIcon, TrashIcon, EditIcon, CalendarIcon, BookIcon } from '@/components/ui/Icons'
+import { PlusIcon, TrashIcon, EditIcon, CalendarIcon, BookIcon, XIconSmall } from '@/components/ui/Icons'
 
 const DAYS_OF_WEEK = [
   { value: 'monday', label: 'Senin' },
@@ -26,16 +26,13 @@ export default function ScheduleManager() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [dayOfWeek, setDayOfWeek] = useState<'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'>('monday')
-  const [subject, setSubject] = useState('')
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
+  const [tempSubject, setTempSubject] = useState('') // Temporary selection for ComboBox
   const utils = trpc.useUtils()
 
   const createSchedule = trpc.schedule.create.useMutation({
     onSuccess: () => {
-      toast.success('Jadwal berhasil ditambahkan')
-      setShowAddForm(false)
-      setSubject('')
-      refetch()
-      utils.schedule.getByKelas.invalidate()
+      // This will be handled in handleSubmit after all schedules are created
     },
     onError: (error: any) => {
       toast.error(error.message || 'Gagal menambahkan jadwal')
@@ -55,13 +52,53 @@ export default function ScheduleManager() {
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddSubject = () => {
+    if (tempSubject.trim() && !selectedSubjects.includes(tempSubject.trim())) {
+      setSelectedSubjects([...selectedSubjects, tempSubject.trim()])
+      setTempSubject('') // Clear ComboBox after adding
+    }
+  }
+
+  const handleRemoveSubject = (subjectToRemove: string) => {
+    setSelectedSubjects(selectedSubjects.filter(s => s !== subjectToRemove))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!subject.trim()) {
-      toast.error('Nama mata pelajaran harus diisi')
+    if (selectedSubjects.length === 0) {
+      toast.error('Pilih minimal satu mata pelajaran')
       return
     }
-    createSchedule.mutate({ dayOfWeek, subject: subject.trim() })
+
+    // Create all schedules sequentially
+    let successCount = 0
+    let errorCount = 0
+
+    for (const subject of selectedSubjects) {
+      try {
+        await createSchedule.mutateAsync({ dayOfWeek, subject })
+        successCount++
+      } catch (error) {
+        errorCount++
+        // Continue with other subjects even if one fails
+      }
+    }
+
+    // Show appropriate message
+    if (successCount > 0 && errorCount === 0) {
+      toast.success(`${successCount} jadwal berhasil ditambahkan`)
+    } else if (successCount > 0 && errorCount > 0) {
+      toast.warning(`${successCount} jadwal berhasil ditambahkan, ${errorCount} gagal`)
+    } else {
+      toast.error('Gagal menambahkan jadwal')
+    }
+
+    // Reset form and close
+    setShowAddForm(false)
+    setSelectedSubjects([])
+    setTempSubject('')
+    refetch()
+    utils.schedule.getByKelas.invalidate()
   }
 
   // Group schedules by day
@@ -242,18 +279,113 @@ export default function ScheduleManager() {
                 <label className="form-label" htmlFor="subject">
                   Mata Pelajaran *
                 </label>
-                <ComboBox
-                  value={subject}
-                  onChange={setSubject}
-                  placeholder="-- Pilih Mata Pelajaran --"
-                  showAllOption={false}
-                  searchPlaceholder="Cari mata pelajaran..."
-                  emptyMessage="Tidak ada mata pelajaran yang ditemukan"
-                  icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
-                />
-                <small className="form-hint" style={{ marginTop: '0.5rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                  Pilih mata pelajaran dari daftar
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <ComboBox
+                      value={tempSubject}
+                      onChange={setTempSubject}
+                      placeholder="-- Pilih Mata Pelajaran --"
+                      showAllOption={false}
+                      searchPlaceholder="Cari mata pelajaran..."
+                      emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                      icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddSubject}
+                    disabled={!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading}
+                    style={{
+                      padding: '0.625rem 1rem',
+                      background: 'var(--primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.375rem',
+                      cursor: (!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading) ? 'not-allowed' : 'pointer',
+                      opacity: (!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading) ? 0.6 : 1,
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title="Tambah ke daftar"
+                  >
+                    <PlusIcon size={18} />
+                  </button>
+                </div>
+                <small className="form-hint" style={{ marginTop: '0.25rem', marginBottom: '0.75rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  Pilih mata pelajaran dan klik tombol + untuk menambah ke daftar
                 </small>
+
+                {/* Selected Subjects List */}
+                {selectedSubjects.length > 0 && (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <label className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                      Mata Pelajaran Terpilih ({selectedSubjects.length}):
+                    </label>
+                    <div style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '0.5rem',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      padding: '0.5rem',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '0.375rem',
+                      border: '1px solid var(--border)',
+                    }}>
+                      {selectedSubjects.map((subject) => (
+                        <div
+                          key={subject}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.625rem 0.75rem',
+                            background: 'var(--card)',
+                            borderRadius: '0.375rem',
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{subject}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubject(subject)}
+                            disabled={createSchedule.isLoading}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: createSchedule.isLoading ? 'not-allowed' : 'pointer',
+                              padding: '0.25rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'var(--text-light)',
+                              borderRadius: '0.25rem',
+                              transition: 'background 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!createSchedule.isLoading) {
+                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                                e.currentTarget.style.color = '#ef4444'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!createSchedule.isLoading) {
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.color = 'var(--text-light)'
+                              }
+                            }}
+                            title="Hapus dari daftar"
+                          >
+                            <XIconSmall size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
@@ -261,7 +393,8 @@ export default function ScheduleManager() {
                   type="button"
                   onClick={() => {
                     setShowAddForm(false)
-                    setSubject('')
+                    setSelectedSubjects([])
+                    setTempSubject('')
                   }}
                   className="btn"
                   disabled={createSchedule.isLoading}
@@ -279,7 +412,7 @@ export default function ScheduleManager() {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={createSchedule.isLoading || !subject.trim()}
+                  disabled={createSchedule.isLoading || selectedSubjects.length === 0}
                   style={{
                     padding: '0.625rem 1.25rem',
                     minHeight: '44px',
@@ -291,7 +424,7 @@ export default function ScheduleManager() {
                       Menyimpan...
                     </span>
                   ) : (
-                    'Simpan'
+                    `Simpan ${selectedSubjects.length > 0 ? `(${selectedSubjects.length})` : ''}`
                   )}
                 </button>
               </div>
