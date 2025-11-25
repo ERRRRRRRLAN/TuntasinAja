@@ -93,20 +93,6 @@ export default function FeedPage() {
     }
   }, [session?.user?.id, previousUserId, utils])
 
-  // Show reminder modal automatically when user logs in and there are overdue tasks (for all users)
-  // Only show once per session
-  useEffect(() => {
-    if (
-      session &&
-      isDataValidated &&
-      !hasCheckedReminder &&
-      overdueTasks.length > 0
-    ) {
-      setShowReminderModal(true)
-      setHasCheckedReminder(true)
-    }
-  }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
-
   // Validate that displayed threads match user's kelas
   useEffect(() => {
     if (threads && userKelas !== undefined && !isAdmin) {
@@ -151,6 +137,20 @@ export default function FeedPage() {
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
+
+  // Show reminder modal automatically when user logs in and there are overdue tasks (for all users)
+  // Only show once per session
+  useEffect(() => {
+    if (
+      session &&
+      isDataValidated &&
+      !hasCheckedReminder &&
+      overdueTasks.length > 0
+    ) {
+      setShowReminderModal(true)
+      setHasCheckedReminder(true)
+    }
+  }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
 
 
