@@ -125,3 +125,26 @@ model ClassSubscription {
 
   @@map("class_subscriptions")
 }
+
+enum DayOfWeek {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+}
+
+model WeeklySchedule {
+  id          String    @id @default(cuid())
+  kelas       String    @map("kelas")
+  dayOfWeek   DayOfWeek @map("day_of_week")
+  period      Int       @map("period") // Urutan jam pelajaran (1, 2, 3, dst)
+  subject     String    @map("subject")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([kelas, dayOfWeek, period])
+  @@index([kelas])
+  @@index([dayOfWeek])
+  @@map("weekly_schedules")
+}
