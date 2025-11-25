@@ -3252,3 +3252,32 @@ textarea {
     padding: 0.5rem;
   }
 }
+
+/* Danton User List Responsive */
+@media (min-width: 769px) {
+  .danton-user-table-desktop {
+    display: block !important;
+  }
+  .danton-user-list-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .danton-user-table-desktop {
+    display: none !important;
+  }
+  .danton-user-list-mobile {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .danton-user-list-mobile .card {
+    padding: 0.875rem !important;
+  }
+
+  .danton-user-list-mobile .card:active {
+    background: var(--bg-secondary) !important;
+  }
+}
