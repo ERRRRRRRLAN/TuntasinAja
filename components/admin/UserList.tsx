@@ -135,11 +135,12 @@ export default function UserList() {
               size={18} 
               style={{ 
                 position: 'absolute', 
-                left: '0.75rem', 
+                left: '0.875rem', 
                 top: '50%', 
                 transform: 'translateY(-50%)',
                 color: 'var(--text-light)',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                zIndex: 1
               }} 
             />
             <input
@@ -147,30 +148,27 @@ export default function UserList() {
               placeholder="Cari nama atau email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
               style={{
                 width: '100%',
-                padding: '0.75rem 0.75rem 0.75rem 2.5rem',
-                border: '1px solid var(--border)',
-                borderRadius: '0.375rem',
-                background: 'var(--bg)',
+                paddingLeft: '2.75rem',
+                paddingRight: searchQuery ? '2.5rem' : '0.875rem',
+                border: '2px solid var(--border)',
+                borderRadius: '0.5rem',
+                background: 'var(--card)',
                 color: 'var(--text)',
-                fontSize: '0.875rem',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)'
+                fontSize: '1rem',
+                fontFamily: 'inherit',
+                transition: 'border-color 0.2s, box-shadow 0.2s'
               }}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                type="button"
                 style={{
                   position: 'absolute',
-                  right: '0.5rem',
+                  right: '0.75rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'transparent',
@@ -179,14 +177,21 @@ export default function UserList() {
                   padding: '0.25rem',
                   display: 'flex',
                   alignItems: 'center',
-                  color: 'var(--text-light)'
+                  justifyContent: 'center',
+                  color: 'var(--text-light)',
+                  borderRadius: '0.25rem',
+                  transition: 'color 0.2s, background 0.2s',
+                  zIndex: 1
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = 'var(--text)'
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = 'var(--text-light)'
+                  e.currentTarget.style.background = 'transparent'
                 }}
+                aria-label="Hapus pencarian"
               >
                 <XIconSmall size={16} />
               </button>
@@ -194,27 +199,26 @@ export default function UserList() {
           </div>
 
           {/* Kelas Filter */}
-          <div style={{ minWidth: '150px' }}>
+          <div style={{ minWidth: '180px' }}>
             <select
               value={selectedKelas}
               onChange={(e) => setSelectedKelas(e.target.value)}
+              className="form-input"
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid var(--border)',
-                borderRadius: '0.375rem',
-                background: 'var(--bg)',
+                padding: '0.875rem 2.5rem 0.875rem 1rem',
+                border: '2px solid var(--border)',
+                borderRadius: '0.5rem',
+                background: 'var(--card)',
                 color: 'var(--text)',
-                fontSize: '0.875rem',
-                outline: 'none',
+                fontSize: '1rem',
+                fontFamily: 'inherit',
                 cursor: 'pointer',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)'
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%236366f1\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.75rem center'
               }}
             >
               <option value="">Semua Kelas</option>
@@ -230,7 +234,11 @@ export default function UserList() {
           <div style={{ 
             color: 'var(--text-light)', 
             fontSize: '0.875rem',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            padding: '0.5rem 0.75rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            border: '1px solid var(--border)'
           }}>
             {filteredUsers.length} dari {users.length} user
           </div>
