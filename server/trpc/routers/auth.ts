@@ -150,6 +150,7 @@ export const authRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string().min(6),
         isAdmin: z.boolean().optional().default(false),
+        isDanton: z.boolean().optional().default(false),
         kelas: z.string().optional(),
       })
     )
@@ -168,6 +169,16 @@ export const authRouter = createTRPCRouter({
         throw new Error('Kelas harus diisi untuk user non-admin')
       }
 
+      // Validate danton: cannot be admin and danton at the same time
+      if (input.isDanton && input.isAdmin) {
+        throw new Error('User tidak dapat menjadi admin dan danton sekaligus')
+      }
+
+      // Validate danton: must have kelas
+      if (input.isDanton && !input.kelas) {
+        throw new Error('User harus memiliki kelas untuk dijadikan danton')
+      }
+
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10)
 
@@ -181,6 +192,7 @@ export const authRouter = createTRPCRouter({
           email: input.email,
           passwordHash,
           isAdmin: input.isAdmin || false,
+          isDanton: input.isAdmin ? false : (input.isDanton || false), // Cannot be danton if admin
           kelas: input.isAdmin ? null : input.kelas || null,
           createdAt: now,
         },
@@ -189,10 +201,11 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
+          isDanton: true,
           kelas: true,
           createdAt: true,
         },
-      })
+      }) as any
 
       return user
     }),
@@ -205,6 +218,7 @@ export const authRouter = createTRPCRouter({
         name: true,
         email: true,
         isAdmin: true,
+        isDanton: true,
         kelas: true,
         createdAt: true,
         _count: {
@@ -217,7 +231,7 @@ export const authRouter = createTRPCRouter({
       orderBy: {
         createdAt: 'desc',
       },
-    })
+    }) as any[]
 
     return users
   }),
@@ -231,6 +245,7 @@ export const authRouter = createTRPCRouter({
         email: z.string().email().optional(),
         password: z.string().min(6).optional(),
         isAdmin: z.boolean().optional(),
+        isDanton: z.boolean().optional(),
         kelas: z.string().optional().nullable(),
       })
     )
@@ -240,7 +255,7 @@ export const authRouter = createTRPCRouter({
       // Check if user exists
       const user = await prisma.user.findUnique({
         where: { id: userId },
-      })
+      }) as any
 
       if (!user) {
         throw new Error('User tidak ditemukan')
@@ -263,6 +278,18 @@ export const authRouter = createTRPCRouter({
         throw new Error('Kelas harus diisi untuk user non-admin')
       }
 
+      // Validate danton: user must have kelas to be danton, cannot be admin and danton at the same time
+      const willBeDanton = updateData.isDanton !== undefined ? updateData.isDanton : (user as any).isDanton || false
+      const targetKelas = updateData.kelas !== undefined ? updateData.kelas : user.kelas
+      
+      if (willBeDanton && !targetKelas) {
+        throw new Error('User harus memiliki kelas untuk dijadikan danton')
+      }
+      
+      if (willBeDanton && willBeAdmin) {
+        throw new Error('User tidak dapat menjadi admin dan danton sekaligus')
+      }
+
       // Prepare update data
       const dataToUpdate: any = {}
 
@@ -276,14 +303,32 @@ export const authRouter = createTRPCRouter({
 
       if (updateData.isAdmin !== undefined) {
         dataToUpdate.isAdmin = updateData.isAdmin
-        // If making user admin, remove kelas
+        // If making user admin, remove kelas and danton status
         if (updateData.isAdmin) {
           dataToUpdate.kelas = null
+          dataToUpdate.isDanton = false
         } else if (updateData.kelas !== undefined) {
           dataToUpdate.kelas = updateData.kelas
         }
       } else if (updateData.kelas !== undefined) {
         dataToUpdate.kelas = updateData.kelas
+        // If removing kelas, also remove danton status
+        if (updateData.kelas === null) {
+          dataToUpdate.isDanton = false
+        }
+      }
+
+      // Handle isDanton update
+      if (updateData.isDanton !== undefined) {
+        dataToUpdate.isDanton = updateData.isDanton
+        // If setting as danton, ensure user has kelas
+        if (updateData.isDanton && !targetKelas) {
+          throw new Error('User harus memiliki kelas untuk dijadikan danton')
+        }
+        // If setting as danton, ensure user is not admin
+        if (updateData.isDanton && willBeAdmin) {
+          throw new Error('Admin tidak dapat menjadi danton')
+        }
       }
 
       // Hash password if provided
@@ -300,10 +345,11 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
+          isDanton: true,
           kelas: true,
           createdAt: true,
         },
-      })
+      }) as any
 
       return updatedUser
     }),
