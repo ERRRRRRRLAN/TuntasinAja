@@ -8,9 +8,31 @@ import { id } from 'date-fns/locale'
 import { getUTCDate } from '@/lib/date-utils'
 
 const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
+const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const
+
+// Helper function to initialize weekly schedule template (Monday-Friday, empty)
+async function initializeScheduleTemplate(kelas: string) {
+  // Check if any schedule exists for this kelas
+  const existingSchedules = await (prisma as any).classSchedule.findMany({
+    where: { kelas },
+    take: 1,
+  })
+
+  // If schedules already exist, don't initialize
+  if (existingSchedules.length > 0) {
+    return false
+  }
+
+  // Create empty schedule template for weekdays (Monday-Friday)
+  // Note: We don't create actual schedule entries with empty subjects
+  // Instead, we just ensure the structure is ready
+  // The UI will show empty slots for each day
+  return true
+}
 
 export const scheduleRouter = createTRPCRouter({
   // Get schedule for a kelas (all users can view)
+  // Returns schedule grouped by day of week (Monday-Friday)
   getByKelas: publicProcedure
     .input(z.object({ kelas: z.string().optional() }))
     .query(async ({ ctx, input }) => {
@@ -26,7 +48,13 @@ export const scheduleRouter = createTRPCRouter({
       }
 
       if (!kelas) {
-        return []
+        return {
+          monday: [],
+          tuesday: [],
+          wednesday: [],
+          thursday: [],
+          friday: [],
+        }
       }
 
       const schedules = await (prisma as any).classSchedule.findMany({
@@ -37,13 +65,35 @@ export const scheduleRouter = createTRPCRouter({
         ],
       })
 
-      return schedules
+      // Group schedules by day of week
+      const grouped: Record<string, any[]> = {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+      }
+
+      schedules.forEach((schedule: any) => {
+        if (grouped[schedule.dayOfWeek]) {
+          grouped[schedule.dayOfWeek].push(schedule)
+        }
+      })
+
+      return grouped
     }),
 
   // Get schedule for current user's kelas
+  // Returns schedule grouped by day of week (Monday-Friday)
   getMySchedule: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return []
+      return {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+      }
     }
 
     const user = await prisma.user.findUnique({
@@ -52,7 +102,13 @@ export const scheduleRouter = createTRPCRouter({
     })
 
     if (!user?.kelas) {
-      return []
+      return {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+      }
     }
 
     const schedules = await (prisma as any).classSchedule.findMany({
@@ -63,7 +119,22 @@ export const scheduleRouter = createTRPCRouter({
       ],
     })
 
-    return schedules
+    // Group schedules by day of week
+    const grouped: Record<string, any[]> = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+    }
+
+    schedules.forEach((schedule: any) => {
+      if (grouped[schedule.dayOfWeek]) {
+        grouped[schedule.dayOfWeek].push(schedule)
+      }
+    })
+
+    return grouped
   }),
 
   // Create schedule (Danton only)

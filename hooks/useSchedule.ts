@@ -11,8 +11,15 @@ export const useSchedule = (kelas?: string) => {
     }
   )
 
+  // Return grouped schedule by day of week
   return {
-    schedules: schedules || [],
+    schedules: schedules || {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+    },
     isLoading,
     error,
     refetch,
@@ -24,8 +31,15 @@ export const useMySchedule = () => {
     refetchOnWindowFocus: true,
   })
 
+  // Return grouped schedule by day of week
   return {
-    schedules: schedules || [],
+    schedules: schedules || {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+    },
     isLoading,
     error,
     refetch,

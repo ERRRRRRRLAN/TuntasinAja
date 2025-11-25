@@ -8,33 +8,28 @@ import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ComboBox from '@/components/ui/ComboBox'
-import { PlusIcon, TrashIcon, EditIcon, CalendarIcon, BookIcon, XIconSmall } from '@/components/ui/Icons'
+import { PlusIcon, TrashIcon, CalendarIcon, BookIcon, XIconSmall } from '@/components/ui/Icons'
 
-const DAYS_OF_WEEK = [
+const WEEKDAYS = [
   { value: 'monday', label: 'Senin' },
   { value: 'tuesday', label: 'Selasa' },
   { value: 'wednesday', label: 'Rabu' },
   { value: 'thursday', label: 'Kamis' },
   { value: 'friday', label: 'Jumat' },
-  { value: 'saturday', label: 'Sabtu' },
-  { value: 'sunday', label: 'Minggu' },
 ] as const
-
-const DAYS_OPTIONS = DAYS_OF_WEEK.map(day => day.label)
 
 export default function ScheduleManager() {
   const { kelas: dantonKelas } = useDanton()
   const { schedules, isLoading, refetch } = useSchedule(dantonKelas || undefined)
-  const [showAddForm, setShowAddForm] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [dayOfWeek, setDayOfWeek] = useState<'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'>('monday')
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
-  const [tempSubject, setTempSubject] = useState('') // Temporary selection for ComboBox
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({})
+  const [tempSubjects, setTempSubjects] = useState<Record<string, string>>({})
+  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, string[]>>({})
   const utils = trpc.useUtils()
 
   const createSchedule = trpc.schedule.create.useMutation({
     onSuccess: () => {
-      // This will be handled in handleSubmit after all schedules are created
+      // Handled in handleAddSubject
     },
     onError: (error: any) => {
       toast.error(error.message || 'Gagal menambahkan jadwal')
@@ -54,31 +49,57 @@ export default function ScheduleManager() {
     },
   })
 
-  const handleAddSubject = () => {
-    if (tempSubject.trim() && !selectedSubjects.includes(tempSubject.trim())) {
-      setSelectedSubjects([...selectedSubjects, tempSubject.trim()])
-      setTempSubject('') // Clear ComboBox after adding
-    }
-  }
-
-  const handleRemoveSubject = (subjectToRemove: string) => {
-    setSelectedSubjects(selectedSubjects.filter(s => s !== subjectToRemove))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (selectedSubjects.length === 0) {
-      toast.error('Pilih minimal satu mata pelajaran')
+  const handleAddSubjectToDay = (dayValue: string) => {
+    const subject = tempSubjects[dayValue]?.trim()
+    if (!subject) {
+      toast.warning('Pilih mata pelajaran terlebih dahulu')
       return
     }
 
-    // Create all schedules sequentially
+    const daySubjects = selectedSubjects[dayValue] || []
+    if (daySubjects.includes(subject)) {
+      toast.warning('Mata pelajaran sudah ada di daftar')
+      return
+    }
+
+    // Add to selected subjects for this day
+    setSelectedSubjects({
+      ...selectedSubjects,
+      [dayValue]: [...daySubjects, subject],
+    })
+
+    // Clear temp subject
+    setTempSubjects({
+      ...tempSubjects,
+      [dayValue]: '',
+    })
+  }
+
+  const handleRemoveSubjectFromList = (dayValue: string, subjectToRemove: string) => {
+    const daySubjects = selectedSubjects[dayValue] || []
+    setSelectedSubjects({
+      ...selectedSubjects,
+      [dayValue]: daySubjects.filter(s => s !== subjectToRemove),
+    })
+  }
+
+  const handleSaveDay = async (dayValue: string) => {
+    const daySubjects = selectedSubjects[dayValue] || []
+    if (daySubjects.length === 0) {
+      toast.warning('Pilih minimal satu mata pelajaran')
+      return
+    }
+
+    // Create all schedules for this day
     let successCount = 0
     let errorCount = 0
 
-    for (const subject of selectedSubjects) {
+    for (const subject of daySubjects) {
       try {
-        await createSchedule.mutateAsync({ dayOfWeek, subject })
+        await createSchedule.mutateAsync({ 
+          dayOfWeek: dayValue as any, 
+          subject 
+        })
         successCount++
       } catch (error) {
         errorCount++
@@ -88,29 +109,42 @@ export default function ScheduleManager() {
 
     // Show appropriate message
     if (successCount > 0 && errorCount === 0) {
-      toast.success(`${successCount} jadwal berhasil ditambahkan`)
+      toast.success(`${successCount} jadwal berhasil ditambahkan untuk ${WEEKDAYS.find(d => d.value === dayValue)?.label}`)
     } else if (successCount > 0 && errorCount > 0) {
       toast.warning(`${successCount} jadwal berhasil ditambahkan, ${errorCount} gagal`)
     } else {
       toast.error('Gagal menambahkan jadwal')
     }
 
-    // Reset form and close
-    setShowAddForm(false)
-    setSelectedSubjects([])
-    setTempSubject('')
+    // Clear selected subjects for this day
+    setSelectedSubjects({
+      ...selectedSubjects,
+      [dayValue]: [],
+    })
+
+    // Collapse form
+    setExpandedDays({
+      ...expandedDays,
+      [dayValue]: false,
+    })
+
     refetch()
     utils.schedule.getByKelas.invalidate()
   }
 
-  // Group schedules by day
-  const schedulesByDay = schedules.reduce((acc: any, schedule: any) => {
-    if (!acc[schedule.dayOfWeek]) {
-      acc[schedule.dayOfWeek] = []
+  const toggleDayForm = (dayValue: string) => {
+    setExpandedDays({
+      ...expandedDays,
+      [dayValue]: !expandedDays[dayValue],
+    })
+    // Initialize selected subjects if not exists
+    if (!selectedSubjects[dayValue]) {
+      setSelectedSubjects({
+        ...selectedSubjects,
+        [dayValue]: [],
+      })
     }
-    acc[schedule.dayOfWeek].push(schedule)
-    return acc
-  }, {})
+  }
 
   if (isLoading) {
     return (
@@ -134,51 +168,63 @@ export default function ScheduleManager() {
         }}>
           <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <CalendarIcon size={20} />
-            Jadwal Pelajaran
+            Jadwal Pelajaran Mingguan
           </h3>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="btn btn-primary"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.625rem 1.25rem',
-              minHeight: '44px',
-            }}
-          >
-            <PlusIcon size={18} />
-            Tambah Jadwal
-          </button>
+          <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-light)' }}>
+            Jadwal ini berlaku untuk setiap minggu
+          </p>
         </div>
 
-        {schedules.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-light)' }}>
-            <p style={{ margin: 0 }}>Belum ada jadwal pelajaran.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {DAYS_OF_WEEK.map((day) => {
-              const daySchedules = schedulesByDay[day.value] || []
-              if (daySchedules.length === 0) return null
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {WEEKDAYS.map((day) => {
+            const daySchedules = schedules[day.value] || []
+            const isExpanded = expandedDays[day.value] || false
+            const daySelectedSubjects = selectedSubjects[day.value] || []
+            const dayTempSubject = tempSubjects[day.value] || ''
 
-              return (
-                <div key={day.value} className="schedule-day-card" style={{
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
+            return (
+              <div key={day.value} className="schedule-day-card" style={{
+                border: '1px solid var(--border)',
+                borderRadius: '0.5rem',
+                overflow: 'hidden',
+              }}>
+                <div className="schedule-day-header" style={{
+                  padding: '0.75rem 1rem',
+                  background: 'var(--bg-secondary)',
+                  borderBottom: '1px solid var(--border)',
+                  fontWeight: 600,
+                  fontSize: '0.9375rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}>
-                  <div className="schedule-day-header" style={{
-                    padding: '0.75rem 1rem',
-                    background: 'var(--bg-secondary)',
-                    borderBottom: '1px solid var(--border)',
-                    fontWeight: 600,
-                    fontSize: '0.9375rem',
-                  }}>
-                    {day.label}
-                  </div>
-                  <div style={{ padding: '0.75rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span>{day.label}</span>
+                  <button
+                    onClick={() => toggleDayForm(day.value)}
+                    style={{
+                      background: 'var(--primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.375rem',
+                      padding: '0.375rem 0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      minHeight: '32px',
+                    }}
+                  >
+                    <PlusIcon size={16} />
+                    {isExpanded ? 'Tutup' : 'Tambah'}
+                  </button>
+                </div>
+
+                <div style={{ padding: '0.75rem' }}>
+                  {/* Existing Subjects */}
+                  {daySchedules.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: isExpanded ? '1rem' : '0' }}>
                       {daySchedules.map((schedule: any) => (
                         <div key={schedule.id} className="schedule-subject-item" style={{
                           display: 'flex',
@@ -212,231 +258,183 @@ export default function ScheduleManager() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                  )}
 
-      {/* Add Form Modal */}
-      {showAddForm && (
-        <div 
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1rem',
-          }}
-          onClick={() => setShowAddForm(false)}
-        >
-          <div
-            className="modal-content schedule-manager-form"
-            style={{
-              background: 'var(--card)',
-              borderRadius: '0.5rem',
-              padding: '1.5rem',
-              maxWidth: '500px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'auto',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.25rem', fontWeight: 600 }}>
-              Tambah Jadwal
-            </h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label className="form-label" htmlFor="dayOfWeek">
-                  Hari
-                </label>
-                <ComboBox
-                  value={DAYS_OF_WEEK.find(d => d.value === dayOfWeek)?.label || ''}
-                  onChange={(selectedLabel) => {
-                    const selectedDay = DAYS_OF_WEEK.find(d => d.label === selectedLabel)
-                    if (selectedDay) {
-                      setDayOfWeek(selectedDay.value as any)
-                    }
-                  }}
-                  options={DAYS_OPTIONS}
-                  placeholder="-- Pilih Hari --"
-                  showAllOption={false}
-                  searchPlaceholder="Cari hari..."
-                  emptyMessage="Tidak ada hari yang ditemukan"
-                  icon={<CalendarIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
-                />
-                <small className="form-hint" style={{ marginTop: '0.5rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                  Pilih hari dari daftar
-                </small>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label" htmlFor="subject">
-                  Mata Pelajaran *
-                </label>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <div style={{ flex: 1 }}>
-                    <ComboBox
-                      value={tempSubject}
-                      onChange={setTempSubject}
-                      placeholder="-- Pilih Mata Pelajaran --"
-                      showAllOption={false}
-                      searchPlaceholder="Cari mata pelajaran..."
-                      emptyMessage="Tidak ada mata pelajaran yang ditemukan"
-                      icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddSubject}
-                    disabled={!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading}
-                    style={{
-                      padding: '0.625rem 1rem',
-                      background: 'var(--primary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.375rem',
-                      cursor: (!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading) ? 'not-allowed' : 'pointer',
-                      opacity: (!tempSubject.trim() || selectedSubjects.includes(tempSubject.trim()) || createSchedule.isLoading) ? 0.6 : 1,
-                      minHeight: '44px',
-                      minWidth: '44px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    title="Tambah ke daftar"
-                  >
-                    <PlusIcon size={18} />
-                  </button>
-                </div>
-                <small className="form-hint" style={{ marginTop: '0.25rem', marginBottom: '0.75rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                  Pilih mata pelajaran dan klik tombol + untuk menambah ke daftar
-                </small>
-
-                {/* Selected Subjects List */}
-                {selectedSubjects.length > 0 && (
-                  <div style={{ marginTop: '0.75rem' }}>
-                    <label className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                      Mata Pelajaran Terpilih ({selectedSubjects.length}):
-                    </label>
-                    <div style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '0.5rem',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      padding: '0.5rem',
+                  {/* Add Form (Inline) */}
+                  {isExpanded && (
+                    <div style={{
+                      padding: '1rem',
                       background: 'var(--bg-secondary)',
                       borderRadius: '0.375rem',
                       border: '1px solid var(--border)',
                     }}>
-                      {selectedSubjects.map((subject) => (
-                        <div
-                          key={subject}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '0.625rem 0.75rem',
-                            background: 'var(--card)',
-                            borderRadius: '0.375rem',
-                            border: '1px solid var(--border)',
-                          }}
-                        >
-                          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{subject}</span>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.875rem', fontWeight: 500 }}>
+                          Mata Pelajaran
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <ComboBox
+                              value={dayTempSubject}
+                              onChange={(value) => setTempSubjects({ ...tempSubjects, [day.value]: value })}
+                              placeholder="-- Pilih Mata Pelajaran --"
+                              showAllOption={false}
+                              searchPlaceholder="Cari mata pelajaran..."
+                              emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                              icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+                            />
+                          </div>
                           <button
                             type="button"
-                            onClick={() => handleRemoveSubject(subject)}
-                            disabled={createSchedule.isLoading}
+                            onClick={() => handleAddSubjectToDay(day.value)}
+                            disabled={!dayTempSubject.trim() || daySelectedSubjects.includes(dayTempSubject.trim()) || createSchedule.isLoading}
                             style={{
-                              background: 'transparent',
+                              padding: '0.625rem 1rem',
+                              background: 'var(--primary)',
+                              color: 'white',
                               border: 'none',
-                              cursor: createSchedule.isLoading ? 'not-allowed' : 'pointer',
-                              padding: '0.25rem',
+                              borderRadius: '0.375rem',
+                              cursor: (!dayTempSubject.trim() || daySelectedSubjects.includes(dayTempSubject.trim()) || createSchedule.isLoading) ? 'not-allowed' : 'pointer',
+                              opacity: (!dayTempSubject.trim() || daySelectedSubjects.includes(dayTempSubject.trim()) || createSchedule.isLoading) ? 0.6 : 1,
+                              minHeight: '44px',
+                              minWidth: '44px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              color: 'var(--text-light)',
-                              borderRadius: '0.25rem',
-                              transition: 'background 0.2s',
                             }}
-                            onMouseEnter={(e) => {
-                              if (!createSchedule.isLoading) {
-                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
-                                e.currentTarget.style.color = '#ef4444'
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!createSchedule.isLoading) {
-                                e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.color = 'var(--text-light)'
-                              }
-                            }}
-                            title="Hapus dari daftar"
+                            title="Tambah ke daftar"
                           >
-                            <XIconSmall size={16} />
+                            <PlusIcon size={18} />
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                      </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddForm(false)
-                    setSelectedSubjects([])
-                    setTempSubject('')
-                  }}
-                  className="btn"
-                  disabled={createSchedule.isLoading}
-                  style={{
-                    padding: '0.625rem 1.25rem',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '0.375rem',
-                    minHeight: '44px',
-                  }}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={createSchedule.isLoading || selectedSubjects.length === 0}
-                  style={{
-                    padding: '0.625rem 1.25rem',
-                    minHeight: '44px',
-                  }}
-                >
-                  {createSchedule.isLoading ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <LoadingSpinner size={16} color="white" />
-                      Menyimpan...
-                    </span>
-                  ) : (
-                    `Simpan ${selectedSubjects.length > 0 ? `(${selectedSubjects.length})` : ''}`
+                      {/* Selected Subjects List */}
+                      {daySelectedSubjects.length > 0 && (
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.875rem', fontWeight: 500 }}>
+                            Mata Pelajaran Terpilih ({daySelectedSubjects.length}):
+                          </label>
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '0.5rem',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            padding: '0.5rem',
+                            background: 'var(--card)',
+                            borderRadius: '0.375rem',
+                            border: '1px solid var(--border)',
+                          }}>
+                            {daySelectedSubjects.map((subject) => (
+                              <div
+                                key={subject}
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '0.625rem 0.75rem',
+                                  background: 'var(--bg-secondary)',
+                                  borderRadius: '0.375rem',
+                                  border: '1px solid var(--border)',
+                                }}
+                              >
+                                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{subject}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSubjectFromList(day.value, subject)}
+                                  disabled={createSchedule.isLoading}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: createSchedule.isLoading ? 'not-allowed' : 'pointer',
+                                    padding: '0.25rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--text-light)',
+                                    borderRadius: '0.25rem',
+                                    transition: 'background 0.2s',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!createSchedule.isLoading) {
+                                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                                      e.currentTarget.style.color = '#ef4444'
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!createSchedule.isLoading) {
+                                      e.currentTarget.style.background = 'transparent'
+                                      e.currentTarget.style.color = 'var(--text-light)'
+                                    }
+                                  }}
+                                  title="Hapus dari daftar"
+                                >
+                                  <XIconSmall size={16} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Save Button */}
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExpandedDays({ ...expandedDays, [day.value]: false })
+                            setSelectedSubjects({ ...selectedSubjects, [day.value]: [] })
+                            setTempSubjects({ ...tempSubjects, [day.value]: '' })
+                          }}
+                          className="btn"
+                          disabled={createSchedule.isLoading}
+                          style={{
+                            padding: '0.625rem 1.25rem',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '0.375rem',
+                            minHeight: '44px',
+                          }}
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveDay(day.value)}
+                          className="btn btn-primary"
+                          disabled={createSchedule.isLoading || daySelectedSubjects.length === 0}
+                          style={{
+                            padding: '0.625rem 1.25rem',
+                            minHeight: '44px',
+                          }}
+                        >
+                          {createSchedule.isLoading ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <LoadingSpinner size={16} color="white" />
+                              Menyimpan...
+                            </span>
+                          ) : (
+                            `Simpan ${daySelectedSubjects.length > 0 ? `(${daySelectedSubjects.length})` : ''}`
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   )}
-                </button>
+
+                  {/* Empty State */}
+                  {!isExpanded && daySchedules.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                      Belum ada mata pelajaran. Klik "Tambah" untuk menambahkan.
+                    </div>
+                  )}
+                </div>
               </div>
-            </form>
-          </div>
+            )
+          })}
         </div>
-      )}
+      </div>
 
       {/* Delete Confirmation */}
       {deletingId && (
@@ -462,4 +460,3 @@ export default function ScheduleManager() {
     </>
   )
 }
-

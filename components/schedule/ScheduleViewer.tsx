@@ -2,29 +2,21 @@
 
 import { useMySchedule } from '@/hooks/useSchedule'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { CalendarIcon } from '@/components/ui/Icons'
+import { CalendarIcon, BookIcon } from '@/components/ui/Icons'
 
-const DAYS_OF_WEEK = [
+const WEEKDAYS = [
   { value: 'monday', label: 'Senin' },
   { value: 'tuesday', label: 'Selasa' },
   { value: 'wednesday', label: 'Rabu' },
   { value: 'thursday', label: 'Kamis' },
   { value: 'friday', label: 'Jumat' },
-  { value: 'saturday', label: 'Sabtu' },
-  { value: 'sunday', label: 'Minggu' },
 ] as const
 
 export default function ScheduleViewer() {
   const { schedules, isLoading } = useMySchedule()
 
-  // Group schedules by day
-  const schedulesByDay = schedules.reduce((acc: any, schedule: any) => {
-    if (!acc[schedule.dayOfWeek]) {
-      acc[schedule.dayOfWeek] = []
-    }
-    acc[schedule.dayOfWeek].push(schedule)
-    return acc
-  }, {})
+  // Check if any schedule exists
+  const hasAnySchedule = Object.values(schedules).some((daySchedules: any) => daySchedules.length > 0)
 
   if (isLoading) {
     return (
@@ -46,18 +38,24 @@ export default function ScheduleViewer() {
         gap: '0.5rem'
       }}>
         <CalendarIcon size={20} />
-        Jadwal Pelajaran
+        Jadwal Pelajaran Mingguan
       </h3>
+      <p style={{ 
+        margin: '0 0 1.5rem 0', 
+        fontSize: '0.875rem', 
+        color: 'var(--text-light)' 
+      }}>
+        Jadwal ini berlaku untuk setiap minggu
+      </p>
 
-      {schedules.length === 0 ? (
+      {!hasAnySchedule ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-light)' }}>
           <p style={{ margin: 0 }}>Belum ada jadwal pelajaran untuk kelas Anda.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {DAYS_OF_WEEK.map((day) => {
-            const daySchedules = schedulesByDay[day.value] || []
-            if (daySchedules.length === 0) return null
+          {WEEKDAYS.map((day) => {
+            const daySchedules = schedules[day.value] || []
 
             return (
               <div key={day.value} className="schedule-day-card" style={{
@@ -75,17 +73,28 @@ export default function ScheduleViewer() {
                   {day.label}
                 </div>
                 <div style={{ padding: '0.75rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {daySchedules.map((schedule: any) => (
-                      <div key={schedule.id} className="schedule-subject-item" style={{
-                        padding: '0.75rem',
-                        background: 'var(--bg-secondary)',
-                        borderRadius: '0.375rem',
-                      }}>
-                        <span style={{ fontWeight: 500 }}>{schedule.subject}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {daySchedules.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                      Tidak ada pelajaran
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {daySchedules.map((schedule: any) => (
+                        <div key={schedule.id} className="schedule-subject-item" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.75rem',
+                          background: 'var(--bg-secondary)',
+                          borderRadius: '0.375rem',
+                          border: '1px solid var(--border)',
+                        }}>
+                          <BookIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+                          <span style={{ fontWeight: 500 }}>{schedule.subject}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )
