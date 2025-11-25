@@ -3184,6 +3184,60 @@ textarea {
     animation: fadeOut 0.2s ease-out;
   }
 
+  /* Subscription Responsive */
+  @media (min-width: 769px) {
+    .subscription-table-desktop {
+      display: block !important;
+    }
+    .subscription-list-mobile {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .subscription-table-desktop {
+      display: none !important;
+    }
+    .subscription-list-mobile {
+      display: flex !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .subscription-status-card h3 {
+      font-size: 1rem !important;
+    }
+
+    .subscription-status-card .badge {
+      font-size: 0.7rem !important;
+      padding: 0.25rem 0.5rem !important;
+    }
+
+    .subscription-manager-form {
+      padding: 1rem !important;
+    }
+
+    .subscription-manager-form h3 {
+      font-size: 1.125rem !important;
+    }
+
+    .subscription-manager-form .form-group {
+      margin-bottom: 1rem !important;
+    }
+
+    .subscription-manager-form input,
+    .subscription-manager-form select {
+      font-size: 1rem !important;
+      padding: 0.75rem !important;
+      min-height: 44px !important;
+    }
+
+    .subscription-manager-form button {
+      min-height: 44px !important;
+      font-size: 0.875rem !important;
+    }
+  }
+
 @media (max-width: 640px) {
   .danton-stats-grid {
     grid-template-columns: 1fr;
