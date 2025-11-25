@@ -22,7 +22,7 @@ export const scheduleRouter = createTRPCRouter({
           where: { id: ctx.session.user.id },
           select: { kelas: true },
         })
-        kelas = user?.kelas || null
+        kelas = user?.kelas || undefined
       }
 
       if (!kelas) {
