@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import ComboBox from '@/components/ui/ComboBox'
-import { TrashIcon, CalendarIcon } from '@/components/ui/Icons'
+import { CalendarIcon } from '@/components/ui/Icons'
+import ScheduleEditQuickView from './ScheduleEditQuickView'
 
 const DAYS = [
   { value: 'monday', label: 'Senin' },
@@ -23,64 +22,13 @@ export default function WeeklyScheduleManager() {
     period: number
   } | null>(null)
 
-  const utils = trpc.useUtils()
   const { data: scheduleData, isLoading } = trpc.weeklySchedule.getSchedule.useQuery()
-  const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery()
-
-  const setSchedule = trpc.weeklySchedule.setSchedule.useMutation({
-    onSuccess: () => {
-      utils.weeklySchedule.getSchedule.invalidate()
-      setEditingCell(null)
-      toast.success('Jadwal berhasil disimpan!')
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Gagal menyimpan jadwal')
-    },
-  })
-
-  const deleteSchedule = trpc.weeklySchedule.deleteSchedule.useMutation({
-    onSuccess: () => {
-      utils.weeklySchedule.getSchedule.invalidate()
-      setEditingCell(null)
-      toast.success('Jadwal berhasil dihapus!')
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus jadwal')
-    },
-  })
 
   const handleCellClick = (day: string, period: number) => {
     setEditingCell({ day, period })
   }
 
-  const handleSubjectChange = (subject: string) => {
-    if (!editingCell) return
-
-    // If empty, don't do anything
-    if (!subject || subject.trim() === '') {
-      return
-    }
-
-    // Save the schedule (auto-save on selection)
-    setSchedule.mutate({
-      dayOfWeek: editingCell.day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
-      period: editingCell.period,
-      subject,
-    })
-  }
-
-  const handleDelete = () => {
-    if (!editingCell) return
-
-    if (confirm('Yakin ingin menghapus jadwal ini?')) {
-      deleteSchedule.mutate({
-        dayOfWeek: editingCell.day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
-        period: editingCell.period,
-      })
-    }
-  }
-
-  const handleCancel = () => {
+  const handleCloseQuickView = () => {
     setEditingCell(null)
   }
 
@@ -94,11 +42,10 @@ export default function WeeklyScheduleManager() {
     return scheduleItem?.subject || ''
   }
 
-  const getEditingCellLabel = () => {
+  const getDayName = () => {
     if (!editingCell || !scheduleData) return ''
     
-    const dayName = scheduleData.dayNames[editingCell.day as keyof typeof scheduleData.dayNames]
-    return `${dayName} - Jam ke-${editingCell.period}`
+    return scheduleData.dayNames[editingCell.day as keyof typeof scheduleData.dayNames]
   }
 
   if (isLoading) {
@@ -130,75 +77,8 @@ export default function WeeklyScheduleManager() {
         marginBottom: '1.5rem',
         lineHeight: '1.6'
       }}>
-        Klik pada sel untuk menambah atau mengubah jadwal pelajaran. Pilih mata pelajaran dari dropdown di bawah tabel.
+        Klik pada sel untuk menambah atau mengubah jadwal pelajaran.
       </p>
-
-      {/* Edit Form - Outside Table */}
-      {editingCell && (
-        <div style={{
-          padding: '1rem',
-          background: 'var(--bg-secondary)',
-          borderRadius: '0.5rem',
-          marginBottom: '1.5rem',
-          border: '1px solid var(--border)'
-        }}>
-          <div style={{ marginBottom: '0.75rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              fontWeight: 500,
-              fontSize: '0.875rem',
-              color: 'var(--text)'
-            }}>
-              {getEditingCellLabel()}
-            </label>
-            <ComboBox
-              value={getCurrentSubject()}
-              onChange={handleSubjectChange}
-              placeholder="Pilih Mata Pelajaran"
-              options={subjects || []}
-              showAllOption={false}
-              searchPlaceholder="Cari mata pelajaran..."
-              emptyMessage="Tidak ada mata pelajaran yang ditemukan"
-            />
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {getCurrentSubject() && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleteSchedule.isLoading || setSchedule.isLoading}
-                className="btn btn-danger"
-                style={{
-                  padding: '0.625rem 1rem',
-                  fontSize: '0.875rem',
-                  minHeight: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <TrashIcon size={16} />
-                {deleteSchedule.isLoading ? 'Menghapus...' : 'Hapus'}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={setSchedule.isLoading || deleteSchedule.isLoading}
-              className="btn btn-secondary"
-              style={{
-                marginLeft: 'auto',
-                padding: '0.625rem 1rem',
-                fontSize: '0.875rem',
-                minHeight: '40px'
-              }}
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Schedule Table */}
       <div style={{ overflowX: 'auto' }}>
@@ -339,8 +219,19 @@ export default function WeeklyScheduleManager() {
         fontSize: '0.8125rem',
         color: 'var(--text-light)'
       }}>
-        <strong>Tips:</strong> Klik pada sel untuk menambah atau mengubah jadwal. Form akan muncul di bawah tabel. Pilih mata pelajaran dari dropdown, jadwal akan tersimpan otomatis.
+        <strong>Tips:</strong> Klik pada sel untuk menambah atau mengubah jadwal. Quick view akan muncul untuk memilih mata pelajaran.
       </div>
+
+      {/* Schedule Edit QuickView */}
+      {editingCell && (
+        <ScheduleEditQuickView
+          day={editingCell.day}
+          period={editingCell.period}
+          dayName={getDayName()}
+          currentSubject={getCurrentSubject()}
+          onClose={handleCloseQuickView}
+        />
+      )}
     </div>
   )
 }
