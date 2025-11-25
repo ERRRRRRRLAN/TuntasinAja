@@ -4,6 +4,7 @@ import { userStatusRouter } from './routers/userStatus'
 import { historyRouter } from './routers/history'
 import { authRouter } from './routers/auth'
 import { dantonRouter } from './routers/danton'
+import { subscriptionRouter } from './routers/subscription'
 
 export const appRouter = createTRPCRouter({
   thread: threadRouter,
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   history: historyRouter,
   auth: authRouter,
   danton: dantonRouter,
+  subscription: subscriptionRouter,
 })
 
 export type AppRouter = typeof appRouter

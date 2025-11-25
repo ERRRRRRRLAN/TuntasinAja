@@ -14,6 +14,7 @@ import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useDanton } from '@/hooks/useDanton'
 import { useUserPermission } from '@/hooks/useUserPermission'
+import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -138,6 +139,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   
   // Check user permission
   const { canPostEdit, isOnlyRead } = useUserPermission()
+  
+  // Get user's kelas for subscription check
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session && !isAdmin,
+  })
+  const userKelas = isAdmin ? null : (userData?.kelas || null)
+  
+  // Check subscription status (skip for admin)
+  const { isActive: isSubscriptionActive, isExpired: isSubscriptionExpired } = useClassSubscription(userKelas || undefined)
+  
+  // User can only post/edit if: has permission AND subscription is active (or admin)
+  const canActuallyPostEdit = canPostEdit && (isAdmin || isSubscriptionActive)
   
   // Check if user is the author of this thread
   const isThreadAuthor = session?.user?.id === (thread as any)?.author?.id
@@ -641,7 +654,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
-          {session && canPostEdit && (
+          {session && canActuallyPostEdit && (
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="form-group">
                 <label htmlFor="newComment" className="form-label">
@@ -679,6 +692,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               </p>
             </div>
           )}
+          {session && !isAdmin && isSubscriptionExpired && canPostEdit && (
+            <div className="card" style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem' }}>
+              <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', textAlign: 'center' }}>
+                ⚠️ Subscription kelas {userKelas} sudah habis. Tidak dapat menambahkan sub tugas.
+              </p>
+            </div>
+          )}
 
           <div className="comments-list">
             {!((thread as any).comments?.length > 0) ? (
@@ -694,7 +714,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 const isCommentAuthor = session?.user?.id === comment?.author?.id
                 const commentAuthorKelas = comment?.author?.kelas || null
                 const isDantonOfCommentClass = isDanton && dantonKelas === commentAuthorKelas && dantonKelas !== null
-                const canEditComment = isCommentAuthor && canPostEdit // Only author can edit, and must have post/edit permission
+                const canEditComment = isCommentAuthor && canActuallyPostEdit // Only author can edit, and must have post/edit permission AND subscription active
                 const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isDantonOfCommentClass
                 const isEditing = editingCommentId === comment.id
 

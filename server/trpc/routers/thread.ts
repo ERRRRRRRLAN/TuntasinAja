@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure }
 import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 import { getUserPermission, checkIsDanton } from '../trpc'
+import { checkClassSubscription } from './subscription'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
@@ -175,10 +176,20 @@ export const threadRouter = createTRPCRouter({
           where: { id: ctx.session.user.id },
           select: {
             kelas: true,
+            isAdmin: true,
           },
-        })
+        }) as any
 
         const userKelas = currentUser?.kelas
+        const isAdmin = currentUser?.isAdmin || false
+
+        // Check subscription status (skip for admin)
+        if (!isAdmin && userKelas) {
+          const subscriptionStatus = await checkClassSubscription(userKelas)
+          if (!subscriptionStatus.isActive) {
+            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
+          }
+        }
 
         // Get today's date in Jakarta timezone, converted to UTC for database
         // This ensures we only check threads created TODAY, not yesterday or tomorrow
@@ -342,6 +353,26 @@ export const threadRouter = createTRPCRouter({
         throw new Error('Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.')
       }
 
+      // Get user info first to check subscription
+      const currentUser = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          kelas: true,
+          isAdmin: true,
+        },
+      }) as any
+
+      const userKelas = currentUser?.kelas
+      const isAdmin = currentUser?.isAdmin || false
+
+      // Check subscription status (skip for admin)
+      if (!isAdmin && userKelas) {
+        const subscriptionStatus = await checkClassSubscription(userKelas)
+        if (!subscriptionStatus.isActive) {
+          throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`)
+        }
+      }
+
       // Get thread info first
       const thread = await prisma.thread.findUnique({
         where: { id: input.threadId },
@@ -481,6 +512,26 @@ export const threadRouter = createTRPCRouter({
         const permission = await getUserPermission(ctx.session.user.id)
         if (permission === 'only_read') {
           throw new Error('Anda hanya memiliki izin membaca. Tidak dapat mengedit komentar.')
+        }
+
+        // Get user info to check subscription
+        const currentUser = await prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
+            isAdmin: true,
+          },
+        }) as any
+
+        const userKelas = currentUser?.kelas
+        const isAdmin = currentUser?.isAdmin || false
+
+        // Check subscription status (skip for admin)
+        if (!isAdmin && userKelas) {
+          const subscriptionStatus = await checkClassSubscription(userKelas)
+          if (!subscriptionStatus.isActive) {
+            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat mengedit komentar.`)
+          }
         }
 
         // Get comment with author info

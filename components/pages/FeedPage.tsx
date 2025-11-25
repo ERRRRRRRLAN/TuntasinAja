@@ -12,6 +12,7 @@ import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon } from '@/componen
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
+import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -54,6 +55,12 @@ export default function FeedPage() {
 
   // Check user permission
   const { canPostEdit, isOnlyRead, permission } = useUserPermission()
+
+  // Check subscription status (skip for admin)
+  const { isActive: isSubscriptionActive, isExpired: isSubscriptionExpired } = useClassSubscription(isAdmin ? undefined : userKelas || undefined)
+
+  // User can only post/edit if: has permission AND subscription is active (or admin)
+  const canActuallyPostEdit = canPostEdit && (isAdmin || isSubscriptionActive)
 
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
@@ -494,8 +501,30 @@ export default function FeedPage() {
         </div>
       )}
 
+      {/* Subscription Warning */}
+      {session && !isAdmin && isSubscriptionExpired && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '0.5rem',
+            color: '#dc2626',
+            fontSize: '0.875rem',
+            zIndex: 998,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            maxWidth: '300px',
+          }}
+        >
+          ⚠️ Subscription habis - Tidak dapat membuat/mengedit
+        </div>
+      )}
+
       {/* Floating Action Button */}
-      {session && canPostEdit && (
+      {session && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"

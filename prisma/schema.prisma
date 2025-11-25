@@ -115,3 +115,13 @@ model UserPermission {
 
   @@map("user_permissions")
 }
+
+model ClassSubscription {
+  id                 String   @id @default(cuid())
+  kelas              String   @unique @map("kelas")
+  subscriptionEndDate DateTime @map("subscription_end_date")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("class_subscriptions")
+}
