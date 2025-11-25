@@ -8,9 +8,11 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
-import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useUserPermission } from '@/hooks/useUserPermission'
+import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -50,6 +52,15 @@ export default function FeedPage() {
   })
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
+
+  // Check user permission
+  const { canPostEdit, isOnlyRead, permission } = useUserPermission()
+
+  // Check subscription status (skip for admin)
+  const { isActive: isSubscriptionActive, isExpired: isSubscriptionExpired } = useClassSubscription(isAdmin ? undefined : userKelas || undefined)
+
+  // User can only post/edit if: has permission AND subscription is active (or admin)
+  const canActuallyPostEdit = canPostEdit && (isAdmin || isSubscriptionActive)
 
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
@@ -469,8 +480,61 @@ export default function FeedPage() {
         }}
       />
 
+      {/* Permission Indicator */}
+      {session && isOnlyRead && (
+        <div
+          className="subscription-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            padding: '0.75rem 1rem',
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border)',
+            borderRadius: '0.5rem',
+            color: 'var(--text-primary)',
+            fontSize: '0.875rem',
+            zIndex: 998,
+            boxShadow: 'var(--shadow)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          <span>Hanya Baca - Tidak dapat membuat/mengedit</span>
+        </div>
+      )}
+
+      {/* Subscription Warning */}
+      {session && !isAdmin && isSubscriptionExpired && (
+        <div
+          className="subscription-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            padding: '0.75rem 1rem',
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border)',
+            borderRadius: '0.5rem',
+            color: 'var(--text-primary)',
+            fontSize: '0.875rem',
+            zIndex: 998,
+            boxShadow: 'var(--shadow)',
+            maxWidth: '300px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.5rem'
+          }}
+        >
+          <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+          <span>Subscription habis - Tidak dapat membuat/mengedit</span>
+        </div>
+      )}
+
       {/* Floating Action Button */}
-      {session && (
+      {session && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"

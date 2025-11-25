@@ -180,31 +180,46 @@ export default function UserList() {
                       {user.email}
                     </td>
                     <td style={{ padding: '0.75rem' }}>
-                      {user.isAdmin ? (
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
-                          background: 'var(--primary)',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
-                        }}>
-                          <CrownIcon size={12} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                          Admin
-                        </span>
-                      ) : (
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-light)',
-                          fontSize: '0.75rem'
-                        }}>
-                          User
-                        </span>
-                      )}
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                        {user.isAdmin ? (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}>
+                            <CrownIcon size={12} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                            Admin
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-light)',
+                            fontSize: '0.75rem'
+                          }}>
+                            User
+                          </span>
+                        )}
+                        {(user as any).isDanton && !user.isAdmin && (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: '#fbbf24',
+                            color: '#78350f',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}>
+                            Danton
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={{ padding: '0.75rem', color: 'var(--text-light)' }}>
                       {user.kelas ? (

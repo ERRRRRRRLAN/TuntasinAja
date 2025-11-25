@@ -141,3 +141,55 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
 
 export const adminProcedure = t.procedure.use(isAuthenticated).use(isAdmin)
 
+// Helper function to check if user is danton
+export const checkIsDanton = async (userId: string): Promise<{ isDanton: boolean; kelas: string | null }> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      isDanton: true,
+      kelas: true,
+    },
+  }) as any // Type assertion until Prisma Client is fully regenerated
+
+  return {
+    isDanton: user?.isDanton === true,
+    kelas: user?.kelas || null,
+  }
+}
+
+// Helper function to check user permission
+export const getUserPermission = async (userId: string): Promise<'only_read' | 'read_and_post_edit'> => {
+  const permission = await (prisma as any).userPermission.findUnique({
+    where: { userId },
+    select: { permission: true },
+  }) // Type assertion until Prisma Client is fully regenerated
+
+  // Default permission is read_and_post_edit if not set
+  return permission?.permission || 'read_and_post_edit'
+}
+
+// Middleware to check if user is danton
+const isDanton = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
+
+  const { isDanton: userIsDanton, kelas } = await checkIsDanton(ctx.session.user.id)
+
+  if (!userIsDanton || !kelas) {
+    throw new TRPCError({ 
+      code: 'FORBIDDEN', 
+      message: 'Danton access required' 
+    })
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+      dantonKelas: kelas,
+    },
+  })
+})
+
+export const dantonProcedure = t.procedure.use(isAuthenticated).use(isDanton)
+

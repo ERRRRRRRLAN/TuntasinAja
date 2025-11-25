@@ -8,10 +8,13 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useDanton } from '@/hooks/useDanton'
+import { useUserPermission } from '@/hooks/useUserPermission'
+import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 interface ThreadQuickViewProps {
   threadId: string
@@ -131,9 +134,29 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   })
   const isAdmin = adminCheck?.isAdmin || false
   
+  // Check if user is danton
+  const { isDanton, kelas: dantonKelas } = useDanton()
+  
+  // Check user permission
+  const { canPostEdit, isOnlyRead } = useUserPermission()
+  
+  // Get user's kelas for subscription check
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session && !isAdmin,
+  })
+  const userKelas = isAdmin ? null : (userData?.kelas || null)
+  
+  // Check subscription status (skip for admin)
+  const { isActive: isSubscriptionActive, isExpired: isSubscriptionExpired } = useClassSubscription(userKelas || undefined)
+  
+  // User can only post/edit if: has permission AND subscription is active (or admin)
+  const canActuallyPostEdit = canPostEdit && (isAdmin || isSubscriptionActive)
+  
   // Check if user is the author of this thread
   const isThreadAuthor = session?.user?.id === (thread as any)?.author?.id
-  const canDeleteThread = isAdmin || isThreadAuthor
+  const threadAuthorKelas = (thread as any)?.author?.kelas || null
+  const isDantonOfSameClass = isDanton && dantonKelas === threadAuthorKelas && dantonKelas !== null
+  const canDeleteThread = isAdmin || isThreadAuthor || isDantonOfSameClass
 
   const utils = trpc.useUtils()
 
@@ -631,7 +654,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
-          {session && (
+          {session && canActuallyPostEdit && (
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="form-group">
                 <label htmlFor="newComment" className="form-label">
@@ -662,6 +685,38 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               </button>
             </form>
           )}
+          {session && isOnlyRead && (
+            <div className="card subscription-fade-in" style={{ 
+              padding: '1rem', 
+              background: 'var(--bg-secondary)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem'
+            }}>
+              <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+                Anda hanya memiliki izin membaca. Tidak dapat menambahkan sub tugas.
+              </p>
+            </div>
+          )}
+          {session && !isAdmin && isSubscriptionExpired && canPostEdit && (
+            <div className="card subscription-fade-in" style={{ 
+              padding: '1rem', 
+              background: 'var(--bg-secondary)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem'
+            }}>
+              <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+                Subscription kelas {userKelas} sudah habis. Tidak dapat menambahkan sub tugas.
+              </p>
+            </div>
+          )}
 
           <div className="comments-list">
             {!((thread as any).comments?.length > 0) ? (
@@ -675,8 +730,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 
                 // Check if user can edit/delete this comment
                 const isCommentAuthor = session?.user?.id === comment?.author?.id
-                const canEditComment = isCommentAuthor // Only author can edit
-                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor
+                const commentAuthorKelas = comment?.author?.kelas || null
+                const isDantonOfCommentClass = isDanton && dantonKelas === commentAuthorKelas && dantonKelas !== null
+                const canEditComment = isCommentAuthor && canActuallyPostEdit // Only author can edit, and must have post/edit permission AND subscription active
+                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isDantonOfCommentClass
                 const isEditing = editingCommentId === comment.id
 
                 return (
@@ -884,8 +941,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                                 minWidth: '44px',
                                 minHeight: '44px',
                                 width: 'auto',
-                                opacity: editComment.isLoading ? 0.7 : 1,
-                                marginRight: canDeleteComment ? '0.5rem' : '0'
+                                opacity: editComment.isLoading ? 0.7 : 1
                               }}
                               onMouseEnter={(e) => {
                                 if (!editComment.isLoading) {
