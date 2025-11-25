@@ -224,8 +224,13 @@ export const scheduleRouter = createTRPCRouter({
 
   // Get reminder tasks (tasks for tomorrow's subjects)
   getReminderTasks: publicProcedure.query(async ({ ctx }) => {
+    // Get tomorrow's date first (needed for all return statements)
+    const now = getUTCDate()
+    const tomorrow = addDays(now, 1)
+    const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
+
     if (!ctx.session?.user) {
-      return { tasks: [], subjects: [] }
+      return { tasks: [], subjects: [], tomorrow: tomorrowFormatted }
     }
 
     const userId = ctx.session.user.id
@@ -236,12 +241,10 @@ export const scheduleRouter = createTRPCRouter({
     })
 
     if (!user?.kelas) {
-      return { tasks: [], subjects: [] }
+      return { tasks: [], subjects: [], tomorrow: tomorrowFormatted }
     }
 
-    // Get tomorrow's date and day of week (using Jakarta time)
-    const now = getUTCDate()
-    const tomorrow = addDays(now, 1)
+    // Get tomorrow's day of week (using Jakarta time)
     const tomorrowDay = getDay(tomorrow) // 0 = Sunday, 1 = Monday, etc.
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
 
@@ -267,7 +270,7 @@ export const scheduleRouter = createTRPCRouter({
     console.log('[getReminderTasks] schedules found:', schedules.length)
 
     if (schedules.length === 0) {
-      return { tasks: [], subjects: [], tomorrow: format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id }) }
+      return { tasks: [], subjects: [], tomorrow: tomorrowFormatted }
     }
 
     const subjects = schedules.map((s: any) => s.subject)
@@ -339,7 +342,7 @@ export const scheduleRouter = createTRPCRouter({
     const result = {
       tasks: incompleteTasks,
       subjects,
-      tomorrow: format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id }),
+      tomorrow: tomorrowFormatted,
     }
 
     console.log('[getReminderTasks] returning:', {
