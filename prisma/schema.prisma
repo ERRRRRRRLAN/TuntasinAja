@@ -26,6 +26,7 @@ model User {
   userStatuses  UserStatus[]
   histories     History[]
   permission    UserPermission?
+  announcements Announcement[]
 
   @@map("users")
 }
@@ -124,4 +125,23 @@ model ClassSubscription {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("class_subscriptions")
+}
+
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String    @map("title")
+  content     String    @map("content")
+  authorId    String    @map("author_id")
+  kelas       String    @map("kelas")
+  expiresAt   DateTime  @map("expires_at")
+  isApproved  Boolean   @default(false) @map("is_approved")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([kelas])
+  @@index([isApproved])
+  @@index([expiresAt])
+  @@map("announcements")
 }

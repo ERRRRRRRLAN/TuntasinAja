@@ -3281,3 +3281,52 @@ textarea {
     background: var(--bg-secondary) !important;
   }
 }
+
+/* Announcement Components Responsive */
+@media (max-width: 768px) {
+  .announcement-card {
+    padding: 1rem !important;
+  }
+
+  .announcement-card h3 {
+    font-size: 1rem !important;
+  }
+
+  .announcement-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .announcement-actions {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .announcement-form {
+    padding: 1rem !important;
+  }
+
+  .announcement-form-header {
+    padding: 1rem !important;
+    font-size: 1.125rem !important;
+  }
+
+  .announcement-form-content {
+    padding: 1rem !important;
+  }
+
+  .announcement-request-card {
+    padding: 1rem !important;
+  }
+
+  .announcements-page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .announcements-page-header button {
+    width: 100% !important;
+  }
+}

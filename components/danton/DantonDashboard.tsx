@@ -1,22 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDanton } from '@/hooks/useDanton'
 import { trpc } from '@/lib/trpc'
 import ClassUserList from './ClassUserList'
 import AddUserToClassForm from './AddUserToClassForm'
 import SubscriptionStatusCard from './SubscriptionStatusCard'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { UserIcon, PlusIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import { UserIcon, PlusIcon, AlertTriangleIcon, BellIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 export default function DantonDashboard() {
+  const router = useRouter()
   const { isDanton, kelas: dantonKelas, isLoading: isDantonLoading } = useDanton()
   const [showAddUserForm, setShowAddUserForm] = useState(false)
   const { isActive, isExpired, isLoading: isSubscriptionLoading } = useClassSubscription(dantonKelas || undefined)
 
   const { data: stats, isLoading: isStatsLoading } = trpc.danton.getClassStats.useQuery(undefined, {
     enabled: isDanton,
+  })
+
+  const { data: requestCount = 0 } = trpc.announcement.getRequestCount.useQuery(undefined, {
+    enabled: isDanton,
+    refetchInterval: 30000, // Refetch every 30 seconds
   })
 
   if (isDantonLoading || isStatsLoading || isSubscriptionLoading) {
@@ -70,6 +77,68 @@ export default function DantonDashboard() {
           </p>
         </div>
       )}
+
+      {/* Request Announcements Link */}
+      <div className="card" style={{ 
+        padding: '1.25rem',
+        border: '1px solid var(--border)',
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+      }}
+      onClick={() => router.push('/danton/requests')}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.boxShadow = 'var(--shadow)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = 'none'
+      }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+            <BellIcon size={24} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h4 style={{ 
+                margin: '0 0 0.25rem 0', 
+                fontSize: '1rem', 
+                fontWeight: 600 
+              }}>
+                Request Pengumuman
+              </h4>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                color: 'var(--text-light)' 
+              }}>
+                Kelola request pengumuman dari siswa
+              </p>
+            </div>
+          </div>
+          {requestCount > 0 && (
+            <div style={{
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '50%',
+              minWidth: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              flexShrink: 0,
+            }}>
+              {requestCount > 99 ? '99+' : requestCount}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div style={{ 
