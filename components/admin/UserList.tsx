@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
+import ComboBox from '@/components/ui/ComboBox'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -200,34 +201,17 @@ export default function UserList() {
 
           {/* Kelas Filter */}
           <div style={{ minWidth: '180px' }}>
-            <select
+            <ComboBox
               value={selectedKelas}
-              onChange={(e) => setSelectedKelas(e.target.value)}
-              className="form-input"
-              style={{
-                width: '100%',
-                padding: '0.875rem 2.5rem 0.875rem 1rem',
-                border: '2px solid var(--border)',
-                borderRadius: '0.5rem',
-                background: 'var(--card)',
-                color: 'var(--text)',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                cursor: 'pointer',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-                appearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%236366f1\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 0.75rem center'
-              }}
-            >
-              <option value="">Semua Kelas</option>
-              {kelasOptions.map((kelas) => (
-                <option key={kelas} value={kelas}>
-                  {kelas}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedKelas}
+              placeholder="Pilih Kelas"
+              options={kelasOptions}
+              showAllOption={true}
+              allValue=""
+              allLabel="Semua Kelas"
+              searchPlaceholder="Cari kelas..."
+              emptyMessage="Tidak ada kelas yang ditemukan"
+            />
           </div>
 
           {/* Results Count */}
