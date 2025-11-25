@@ -151,11 +151,16 @@ export const subscriptionRouter = createTRPCRouter({
 
     const subscribedKelas = new Set(subscriptions.map((s: any) => s.kelas))
     
-    // Add classes without subscription
-    const result = subscriptions.map((sub: any) => ({
-      ...sub,
-      ...checkClassSubscription(sub.kelas),
-    }))
+    // Add classes without subscription - await checkClassSubscription
+    const result = await Promise.all(
+      subscriptions.map(async (sub: any) => {
+        const status = await checkClassSubscription(sub.kelas)
+        return {
+          ...sub,
+          ...status,
+        }
+      })
+    )
 
     // Add classes without subscription
     for (const user of allKelas) {
