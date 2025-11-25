@@ -7,11 +7,13 @@ import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
 import UserList from '@/components/admin/UserList'
+import SubscriptionList from '@/components/admin/SubscriptionList'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions'>('users')
   const utils = trpc.useUtils()
   
 
@@ -61,34 +63,90 @@ export default function ProfilePage() {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
-                marginBottom: '1rem'
+                marginBottom: '1.5rem'
               }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>
                   Panel Admin
                 </h2>
+                {activeTab === 'users' && (
+                  <button
+                    onClick={() => setShowAddUser(!showAddUser)}
+                    className="btn btn-primary"
+                  >
+                    {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
+                  </button>
+                )}
+              </div>
+
+              {/* Tabs */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.5rem', 
+                marginBottom: '1.5rem',
+                borderBottom: '2px solid var(--border)'
+              }}>
                 <button
-                  onClick={() => setShowAddUser(!showAddUser)}
-                  className="btn btn-primary"
+                  onClick={() => setActiveTab('users')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'users' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'users' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'users' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'users' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px'
+                  }}
                 >
-                  {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
+                  Manajemen User
+                </button>
+                <button
+                  onClick={() => setActiveTab('subscriptions')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'subscriptions' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'subscriptions' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'subscriptions' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'subscriptions' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px'
+                  }}
+                >
+                  Manajemen Subscription
                 </button>
               </div>
 
-              {showAddUser && (
-                <div style={{ marginBottom: '2rem' }}>
-                  <AddUserForm 
-                    onSuccess={() => {
-                      setShowAddUser(false)
-                      // Invalidate user list to refresh
-                      utils.auth.getAllUsers.invalidate()
-                    }} 
-                  />
-                </div>
+              {/* Tab Content */}
+              {activeTab === 'users' && (
+                <>
+                  {showAddUser && (
+                    <div style={{ marginBottom: '2rem' }}>
+                      <AddUserForm 
+                        onSuccess={() => {
+                          setShowAddUser(false)
+                          // Invalidate user list to refresh
+                          utils.auth.getAllUsers.invalidate()
+                        }} 
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '2rem' }}>
+                    <UserList />
+                  </div>
+                </>
               )}
 
-              <div style={{ marginTop: '2rem' }}>
-                <UserList />
-              </div>
+              {activeTab === 'subscriptions' && (
+                <div>
+                  <SubscriptionList />
+                </div>
+              )}
             </div>
           ) : (
             <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
