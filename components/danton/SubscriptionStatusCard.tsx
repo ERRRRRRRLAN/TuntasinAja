@@ -7,7 +7,7 @@ import { id } from 'date-fns/locale'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function SubscriptionStatusCard() {
-  const { dantonKelas } = useDanton()
+  const { kelas: dantonKelas } = useDanton()
   const { subscription, isActive, isExpired, isExpiringSoon, daysRemaining, hoursRemaining, status, endDate, isLoading } = useClassSubscription(dantonKelas || undefined)
 
   if (isLoading) {
