@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, dantonProcedure } from '../trpc'
+import { createTRPCRouter, dantonProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { TRPCError } from '@trpc/server'
 
@@ -145,6 +145,61 @@ export const weeklyScheduleRouter = createTRPCRouter({
   // Get available subjects
   getSubjects: dantonProcedure.query(async () => {
     return MATA_PELAJARAN
+  }),
+
+  // Get schedule for regular user (read-only, based on their kelas)
+  getUserSchedule: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id
+
+    // Get user's kelas
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { kelas: true },
+    })
+
+    if (!user || !user.kelas) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User tidak memiliki kelas',
+      })
+    }
+
+    const schedules = await prisma.weeklySchedule.findMany({
+      where: {
+        kelas: user.kelas,
+      },
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { period: 'asc' },
+      ],
+    })
+
+    // Group by day
+    const scheduleByDay: Record<string, Array<{ period: number; subject: string }>> = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+    }
+
+    schedules.forEach(schedule => {
+      scheduleByDay[schedule.dayOfWeek].push({
+        period: schedule.period,
+        subject: schedule.subject,
+      })
+    })
+
+    // Sort by period for each day
+    Object.keys(scheduleByDay).forEach(day => {
+      scheduleByDay[day].sort((a, b) => a.period - b.period)
+    })
+
+    return {
+      kelas: user.kelas,
+      schedule: scheduleByDay,
+      dayNames: DAY_NAMES,
+    }
   }),
 })
 
