@@ -884,8 +884,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                                 minWidth: '44px',
                                 minHeight: '44px',
                                 width: 'auto',
-                                opacity: editComment.isLoading ? 0.7 : 1,
-                                marginRight: canDeleteComment ? '0.5rem' : '0'
+                                opacity: editComment.isLoading ? 0.7 : 1
                               }}
                               onMouseEnter={(e) => {
                                 if (!editComment.isLoading) {

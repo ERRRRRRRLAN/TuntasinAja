@@ -2407,6 +2407,14 @@ textarea {
   display: block;
 }
 
+.comment-edit-btn-desktop {
+  display: none;
+}
+
+.comment-edit-btn-mobile {
+  display: block;
+}
+
 .comments-section {
   padding: 1.5rem;
   flex: 1;
@@ -2465,6 +2473,14 @@ textarea {
   }
   
   .comment-delete-btn-mobile {
+    display: none !important;
+  }
+  
+  .comment-edit-btn-desktop {
+    display: flex !important;
+  }
+  
+  .comment-edit-btn-mobile {
     display: none !important;
   }
   
@@ -2671,9 +2687,10 @@ textarea {
   
   .comment-delete-btn-desktop {
     align-self: flex-start;
+    display: none !important;
   }
   
-  .comment-delete-btn-desktop {
+  .comment-edit-btn-desktop {
     display: none !important;
   }
   
@@ -2682,9 +2699,18 @@ textarea {
     padding-top: 0.75rem;
     border-top: 1px solid var(--border);
     width: 100%;
+    display: flex;
+    gap: 0.5rem;
   }
   
   .comment-delete-btn-mobile {
+    width: 100% !important;
+    min-height: 44px !important;
+    font-size: 0.875rem !important;
+    padding: 0.625rem 0.875rem !important;
+  }
+  
+  .comment-edit-btn-mobile {
     width: 100% !important;
     min-height: 44px !important;
     font-size: 0.875rem !important;
