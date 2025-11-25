@@ -12,7 +12,7 @@ export const useScheduleReminder = () => {
     tasks: data?.tasks || [],
     subjects: data?.subjects || [],
     tomorrow: data?.tomorrow || '',
-    hasReminder: (data?.tasks || []).length > 0,
+    hasReminder: (data?.tasks || []).length > 0 && (data?.subjects || []).length > 0,
     isLoading,
     error,
   }

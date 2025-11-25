@@ -15,9 +15,9 @@ interface ScheduleReminderModalProps {
     threadId: string
     threadTitle: string
     authorName: string
-    createdAt: Date
+    threadDate: Date
   }>
-  tomorrowDate: Date | null
+  tomorrow: string
   onTaskClick?: (threadId: string) => void
 }
 
@@ -26,7 +26,7 @@ export default function ScheduleReminderModal({
   onClose,
   subjects,
   tasks,
-  tomorrowDate,
+  tomorrow,
   onTaskClick,
 }: ScheduleReminderModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -73,6 +73,16 @@ export default function ScheduleReminderModal({
     }
   }
 
+  useEffect(() => {
+    if (!isOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+        document.body.style.overflow = 'unset'
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, isVisible])
+
   if (!mounted) return null
   if (!isOpen && !isVisible) return null
 
@@ -113,7 +123,7 @@ export default function ScheduleReminderModal({
     >
       <div 
         ref={contentRef}
-        className="confirm-dialog-content"
+        className="confirm-dialog-content schedule-reminder-modal-content"
         onClick={handleContentClick}
         style={{
           opacity: (isOpen && isVisible) ? 1 : 0,
@@ -164,7 +174,7 @@ export default function ScheduleReminderModal({
           </button>
         </div>
 
-        {tomorrowDate && (
+        {tomorrow && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -177,7 +187,7 @@ export default function ScheduleReminderModal({
           }}>
             <CalendarIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
             <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
-              Besok: {format(tomorrowDate, 'EEEE, d MMMM yyyy', { locale: id })}
+              Besok: {tomorrow}
             </span>
           </div>
         )}
