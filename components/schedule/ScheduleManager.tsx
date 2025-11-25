@@ -20,6 +20,8 @@ const DAYS_OF_WEEK = [
   { value: 'sunday', label: 'Minggu' },
 ] as const
 
+const DAYS_OPTIONS = DAYS_OF_WEEK.map(day => day.label)
+
 export default function ScheduleManager() {
   const { kelas: dantonKelas } = useDanton()
   const { schedules, isLoading, refetch } = useSchedule(dantonKelas || undefined)
@@ -258,21 +260,24 @@ export default function ScheduleManager() {
                 <label className="form-label" htmlFor="dayOfWeek">
                   Hari
                 </label>
-                <select
-                  id="dayOfWeek"
-                  className="form-select"
-                  value={dayOfWeek}
-                  onChange={(e) => setDayOfWeek(e.target.value as any)}
-                  required
-                  disabled={createSchedule.isLoading}
-                  style={{ minHeight: '44px' }}
-                >
-                  {DAYS_OF_WEEK.map((day) => (
-                    <option key={day.value} value={day.value}>
-                      {day.label}
-                    </option>
-                  ))}
-                </select>
+                <ComboBox
+                  value={DAYS_OF_WEEK.find(d => d.value === dayOfWeek)?.label || ''}
+                  onChange={(selectedLabel) => {
+                    const selectedDay = DAYS_OF_WEEK.find(d => d.label === selectedLabel)
+                    if (selectedDay) {
+                      setDayOfWeek(selectedDay.value as any)
+                    }
+                  }}
+                  options={DAYS_OPTIONS}
+                  placeholder="-- Pilih Hari --"
+                  showAllOption={false}
+                  searchPlaceholder="Cari hari..."
+                  emptyMessage="Tidak ada hari yang ditemukan"
+                  icon={<CalendarIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+                />
+                <small className="form-hint" style={{ marginTop: '0.5rem', display: 'block', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  Pilih hari dari daftar
+                </small>
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
