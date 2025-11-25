@@ -214,7 +214,7 @@ export const scheduleRouter = createTRPCRouter({
     // Filter threads that contain subject names in title
     const relevantTasks = threads.filter((thread) => {
       const titleUpper = thread.title.toUpperCase()
-      return subjects.some((subject) => {
+      return subjects.some((subject: string) => {
         const subjectUpper = subject.toUpperCase()
         return titleUpper.includes(subjectUpper)
       })
