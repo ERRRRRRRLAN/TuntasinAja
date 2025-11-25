@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 // This API route can be called by Vercel Cron Jobs or external cron services
 // Auto-deletes announcements that have passed their expiresAt date
+// Runs once daily at 1:00 AM (due to Vercel Hobby plan limitation - only daily cron jobs)
 // To set up Vercel Cron, add this to vercel.json:
 // {
 //   "crons": [{
 //     "path": "/api/cron/auto-delete-expired-announcements",
-//     "schedule": "0 * * * *" // Every hour
+//     "schedule": "0 1 * * *" // Once daily at 1:00 AM
 //   }]
 // }
 

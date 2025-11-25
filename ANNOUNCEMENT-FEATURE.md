@@ -73,11 +73,12 @@ npx prisma generate
 
 ## 🔄 Auto-Delete Expired Announcements
 
-Cron job otomatis menghapus announcement yang sudah expired setiap jam:
+Cron job otomatis menghapus announcement yang sudah expired sekali sehari:
 
-- **Cron Schedule:** Setiap jam (0 * * * *)
+- **Cron Schedule:** Setiap hari jam 1:00 AM (0 1 * * *)
 - **API Endpoint:** `/api/cron/auto-delete-expired-announcements`
 - **Konfigurasi:** Sudah ditambahkan di `vercel.json`
+- **Note:** Schedule diubah menjadi sekali sehari karena Vercel Hobby plan hanya mendukung daily cron jobs
 
 ## 🔒 Permission & Access Control
 
