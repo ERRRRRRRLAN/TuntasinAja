@@ -12,6 +12,7 @@ interface EditUserFormProps {
     name: string
     email: string
     isAdmin: boolean
+    isDanton?: boolean
     kelas: string | null
   }
   onSuccess?: () => void
@@ -41,6 +42,7 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
   const [email, setEmail] = useState(user.email)
   const [password, setPassword] = useState('')
   const [isAdmin, setIsAdmin] = useState(user.isAdmin)
+  const [isDanton, setIsDanton] = useState(user.isDanton || false)
   const [kelas, setKelas] = useState(user.kelas || '')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -52,6 +54,7 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
     setName(user.name)
     setEmail(user.email)
     setIsAdmin(user.isAdmin)
+    setIsDanton(user.isDanton || false)
     setKelas(user.kelas || '')
     setPassword('')
     setError('')
@@ -102,11 +105,23 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
       return
     }
 
+    // Validate: cannot be danton if admin or no kelas
+    if (isDanton && isAdmin) {
+      setError('User tidak dapat menjadi admin dan danton sekaligus!')
+      return
+    }
+
+    if (isDanton && !kelas) {
+      setError('User harus memiliki kelas untuk dijadikan danton!')
+      return
+    }
+
     const updateData: any = {
       userId: user.id,
       name,
       email,
       isAdmin,
+      isDanton: isAdmin ? false : isDanton, // Cannot be danton if admin
       kelas: isAdmin ? null : kelas,
     }
 
@@ -244,6 +259,7 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                 setIsAdmin(e.target.checked)
                 if (e.target.checked) {
                   setKelas('')
+                  setIsDanton(false) // Cannot be danton if admin
                 }
               }}
               disabled={updateUser.isLoading}
@@ -259,21 +275,69 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
         </div>
 
         {!isAdmin && (
-          <div className="form-group">
-            <label htmlFor="editKelas" className="form-label">
-              Kelas *
-            </label>
-            <ComboBox
-              value={kelas}
-              onChange={setKelas}
-              placeholder="Pilih Kelas"
-              options={kelasOptions}
-              showAllOption={false}
-              searchPlaceholder="Cari kelas..."
-              emptyMessage="Tidak ada kelas yang ditemukan"
-              icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
-            />
-          </div>
+          <>
+            <div className="form-group">
+              <label htmlFor="editKelas" className="form-label">
+                Kelas *
+              </label>
+              <ComboBox
+                value={kelas}
+                onChange={(value) => {
+                  setKelas(value)
+                  // If removing kelas, also remove danton status
+                  if (!value) {
+                    setIsDanton(false)
+                  }
+                }}
+                placeholder="Pilih Kelas"
+                options={kelasOptions}
+                showAllOption={false}
+                searchPlaceholder="Cari kelas..."
+                emptyMessage="Tidak ada kelas yang ditemukan"
+                icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+              />
+            </div>
+
+            {kelas && (
+              <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={isDanton}
+                    onChange={(e) => setIsDanton(e.target.checked)}
+                    disabled={updateUser.isLoading || !kelas}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer',
+                      accentColor: '#fbbf24'
+                    }}
+                  />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>Jadikan sebagai Danton (Ketua Kelas)</span>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.125rem 0.375rem',
+                      borderRadius: '0.25rem',
+                      background: '#fbbf24',
+                      color: '#78350f',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                    }}>
+                      Danton
+                    </span>
+                  </span>
+                </label>
+                <p style={{ 
+                  margin: '0.5rem 0 0 0', 
+                  fontSize: '0.875rem', 
+                  color: 'var(--text-light)' 
+                }}>
+                  Danton dapat mengelola user di kelas ini dan mengatur permission mereka.
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>

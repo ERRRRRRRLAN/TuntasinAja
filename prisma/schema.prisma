@@ -16,6 +16,7 @@ model User {
   email         String    @unique
   passwordHash  String    @map("password_hash")
   isAdmin       Boolean   @default(false) @map("is_admin")
+  isDanton      Boolean   @default(false) @map("is_danton")
   kelas         String?   @map("kelas")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -24,6 +25,7 @@ model User {
   comments      Comment[]
   userStatuses  UserStatus[]
   histories     History[]
+  permission    UserPermission?
 
   @@map("users")
 }
@@ -95,4 +97,31 @@ model History {
   // Note: Unique constraint removed to allow multiple histories with null threadId
   // Partial unique index is created via SQL migration to enforce uniqueness only when threadId is not null
   @@map("histories")
+}
+
+enum PermissionType {
+  only_read
+  read_and_post_edit
+}
+
+model UserPermission {
+  id          String         @id @default(cuid())
+  userId      String         @unique @map("user_id")
+  permission  PermissionType @default(read_and_post_edit)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_permissions")
+}
+
+model ClassSubscription {
+  id                 String   @id @default(cuid())
+  kelas              String   @unique @map("kelas")
+  subscriptionEndDate DateTime @map("subscription_end_date")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("class_subscriptions")
 }

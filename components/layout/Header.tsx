@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { BookIcon, UserIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
 import { trpc } from '@/lib/trpc'
+import { useDanton } from '@/hooks/useDanton'
 
 export default function Header() {
   const { data: session } = useSession()
@@ -26,9 +27,13 @@ export default function Header() {
   })
   const isAdmin = adminCheck?.isAdmin || false
 
+  // Check if user is danton
+  const { isDanton } = useDanton()
+
   const navLinks = [
     { href: '/', label: 'Tugas' },
     { href: '/history', label: 'History' },
+    ...(isDanton ? [{ href: '/danton', label: 'Danton' }] : []),
   ]
 
   // Calculate header height for mobile menu positioning
@@ -120,6 +125,11 @@ export default function Header() {
   const handleAdminPanel = () => {
     setIsProfileDropdownOpen(false)
     router.push('/profile')
+  }
+
+  const handleDantonPanel = () => {
+    setIsProfileDropdownOpen(false)
+    router.push('/danton')
   }
 
   if (!session) return null
@@ -272,6 +282,36 @@ export default function Header() {
                     <span>Logout</span>
                   </button>
 
+                  {isDanton && (
+                    <button
+                      onClick={handleDantonPanel}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        color: 'var(--text)',
+                        fontSize: '0.875rem',
+                        transition: 'background 0.2s',
+                        textAlign: 'left',
+                        marginTop: '0.25rem',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--bg-secondary)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
+                    >
+                      <CrownIcon size={18} style={{ color: '#fbbf24' }} />
+                      <span>Danton Dashboard</span>
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       onClick={handleAdminPanel}

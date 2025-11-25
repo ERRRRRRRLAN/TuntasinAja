@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
+import { getUserPermission, checkIsDanton } from '../trpc'
+import { checkClassSubscription } from './subscription'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
@@ -163,15 +165,31 @@ export const threadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        // Check user permission - only_read users cannot create threads
+        const permission = await getUserPermission(ctx.session.user.id)
+        if (permission === 'only_read') {
+          throw new Error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+        }
+
         // Get user's kelas to filter threads by the same kelas
         const currentUser = await prisma.user.findUnique({
           where: { id: ctx.session.user.id },
           select: {
             kelas: true,
+            isAdmin: true,
           },
-        })
+        }) as any
 
         const userKelas = currentUser?.kelas
+        const isAdmin = currentUser?.isAdmin || false
+
+        // Check subscription status (skip for admin)
+        if (!isAdmin && userKelas) {
+          const subscriptionStatus = await checkClassSubscription(userKelas)
+          if (!subscriptionStatus.isActive) {
+            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
+          }
+        }
 
         // Get today's date in Jakarta timezone, converted to UTC for database
         // This ensures we only check threads created TODAY, not yesterday or tomorrow
@@ -329,6 +347,32 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Check user permission - only_read users cannot add comments
+      const permission = await getUserPermission(ctx.session.user.id)
+      if (permission === 'only_read') {
+        throw new Error('Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.')
+      }
+
+      // Get user info first to check subscription
+      const currentUser = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          kelas: true,
+          isAdmin: true,
+        },
+      }) as any
+
+      const userKelas = currentUser?.kelas
+      const isAdmin = currentUser?.isAdmin || false
+
+      // Check subscription status (skip for admin)
+      if (!isAdmin && userKelas) {
+        const subscriptionStatus = await checkClassSubscription(userKelas)
+        if (!subscriptionStatus.isActive) {
+          throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`)
+        }
+      }
+
       // Get thread info first
       const thread = await prisma.thread.findUnique({
         where: { id: input.threadId },
@@ -400,18 +444,34 @@ export const threadRouter = createTRPCRouter({
         throw new Error('Thread not found')
       }
 
-      // Check if user is admin
+      // Check if user is admin or danton of the same class
       const currentUser = await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
+          isDanton: true,
+          kelas: true,
         },
-      })
+      }) as any
 
       const isAdmin = currentUser?.isAdmin || false
+      const isDanton = currentUser?.isDanton || false
+      const userKelas = currentUser?.kelas || null
 
-      // Only allow deletion if user is the author OR admin
-      if (thread.authorId !== ctx.session.user.id && !isAdmin) {
+      // Get thread author's kelas
+      const threadAuthor = await prisma.user.findUnique({
+        where: { id: thread.authorId },
+        select: { kelas: true },
+      })
+      const threadAuthorKelas = threadAuthor?.kelas || null
+
+      // Only allow deletion if:
+      // 1. User is the author, OR
+      // 2. User is admin, OR
+      // 3. User is danton of the same class as thread author
+      const isDantonOfSameClass = isDanton && userKelas === threadAuthorKelas && userKelas !== null
+
+      if (thread.authorId !== ctx.session.user.id && !isAdmin && !isDantonOfSameClass) {
         throw new Error('Anda tidak memiliki izin untuk menghapus thread ini')
       }
 
@@ -448,6 +508,32 @@ export const threadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        // Check user permission - only_read users cannot edit comments
+        const permission = await getUserPermission(ctx.session.user.id)
+        if (permission === 'only_read') {
+          throw new Error('Anda hanya memiliki izin membaca. Tidak dapat mengedit komentar.')
+        }
+
+        // Get user info to check subscription
+        const currentUser = await prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
+            isAdmin: true,
+          },
+        }) as any
+
+        const userKelas = currentUser?.kelas
+        const isAdmin = currentUser?.isAdmin || false
+
+        // Check subscription status (skip for admin)
+        if (!isAdmin && userKelas) {
+          const subscriptionStatus = await checkClassSubscription(userKelas)
+          if (!subscriptionStatus.isActive) {
+            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat mengedit komentar.`)
+          }
+        }
+
         // Get comment with author info
         const comment = await prisma.comment.findUnique({
           where: { id: input.id },
@@ -537,24 +623,37 @@ export const threadRouter = createTRPCRouter({
         throw new Error('Comment not found')
       }
 
-      // Check if user is admin
+      // Check if user is admin or danton of the same class
       const currentUser = await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
+          isDanton: true,
+          kelas: true,
         },
-      })
+      }) as any
 
       const isAdmin = currentUser?.isAdmin || false
+      const isDanton = currentUser?.isDanton || false
+      const userKelas = currentUser?.kelas || null
+
+      // Get comment author's kelas
+      const commentAuthor = await prisma.user.findUnique({
+        where: { id: comment.authorId },
+        select: { kelas: true },
+      })
+      const commentAuthorKelas = commentAuthor?.kelas || null
 
       // Allow deletion if:
       // 1. User is the author of the comment, OR
       // 2. User is the author of the thread, OR
-      // 3. User is admin
+      // 3. User is admin, OR
+      // 4. User is danton of the same class as comment author
       const isCommentAuthor = comment.authorId === ctx.session.user.id
       const isThreadAuthor = comment.thread.authorId === ctx.session.user.id
+      const isDantonOfSameClass = isDanton && userKelas === commentAuthorKelas && userKelas !== null
 
-      if (!isCommentAuthor && !isThreadAuthor && !isAdmin) {
+      if (!isCommentAuthor && !isThreadAuthor && !isAdmin && !isDantonOfSameClass) {
         throw new Error('Anda tidak memiliki izin untuk menghapus komentar ini')
       }
 
