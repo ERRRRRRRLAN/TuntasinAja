@@ -1,15 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { CrownIcon, TrashIcon, EditIcon } from '@/components/ui/Icons'
+import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
+
+// Generate list of kelas options
+const generateKelasOptions = () => {
+  const kelasOptions: string[] = []
+  const tingkat = ['X', 'XI', 'XII']
+  const jurusan = ['RPL', 'TKJ', 'BC']
+  const nomor = ['1', '2']
+
+  tingkat.forEach((t) => {
+    jurusan.forEach((j) => {
+      nomor.forEach((n) => {
+        kelasOptions.push(`${t} ${j} ${n}`)
+      })
+    })
+  })
+
+  return kelasOptions
+}
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -17,9 +35,34 @@ export default function UserList() {
   const [deleteUserName, setDeleteUserName] = useState('')
   const [deleteUserEmail, setDeleteUserEmail] = useState('')
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedKelas, setSelectedKelas] = useState<string>('')
 
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
+  const kelasOptions = generateKelasOptions()
+
+  // Filter users based on search query and kelas
+  const filteredUsers = useMemo(() => {
+    if (!users) return []
+
+    return users.filter((user) => {
+      // Filter by kelas
+      if (selectedKelas && user.kelas !== selectedKelas) {
+        return false
+      }
+
+      // Filter by search query (name or email)
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchesName = user.name.toLowerCase().includes(query)
+        const matchesEmail = user.email.toLowerCase().includes(query)
+        return matchesName || matchesEmail
+      }
+
+      return true
+    })
+  }, [users, searchQuery, selectedKelas])
 
   const deleteUser = trpc.auth.deleteUser.useMutation({
     onSuccess: () => {
@@ -73,7 +116,136 @@ export default function UserList() {
           Daftar Users
         </h3>
 
-        <div className="user-table" style={{ overflowX: 'auto' }}>
+        {/* Search and Filter Controls */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '1rem', 
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          {/* Search Bar */}
+          <div style={{ 
+            position: 'relative', 
+            flex: '1', 
+            minWidth: '200px',
+            maxWidth: '400px'
+          }}>
+            <SearchIcon 
+              size={18} 
+              style={{ 
+                position: 'absolute', 
+                left: '0.75rem', 
+                top: '50%', 
+                transform: 'translateY(-50%)',
+                color: 'var(--text-light)',
+                pointerEvents: 'none'
+              }} 
+            />
+            <input
+              type="text"
+              placeholder="Cari nama atau email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+                border: '1px solid var(--border)',
+                borderRadius: '0.375rem',
+                background: 'var(--bg)',
+                color: 'var(--text)',
+                fontSize: '0.875rem',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'var(--text-light)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-light)'
+                }}
+              >
+                <XIconSmall size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Kelas Filter */}
+          <div style={{ minWidth: '150px' }}>
+            <select
+              value={selectedKelas}
+              onChange={(e) => setSelectedKelas(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid var(--border)',
+                borderRadius: '0.375rem',
+                background: 'var(--bg)',
+                color: 'var(--text)',
+                fontSize: '0.875rem',
+                outline: 'none',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+            >
+              <option value="">Semua Kelas</option>
+              {kelasOptions.map((kelas) => (
+                <option key={kelas} value={kelas}>
+                  {kelas}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Results Count */}
+          <div style={{ 
+            color: 'var(--text-light)', 
+            fontSize: '0.875rem',
+            whiteSpace: 'nowrap'
+          }}>
+            {filteredUsers.length} dari {users.length} user
+          </div>
+        </div>
+
+        {filteredUsers.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem',
+            color: 'var(--text-light)'
+          }}>
+            <p>Tidak ada user yang sesuai dengan filter.</p>
+          </div>
+        ) : (
+          <div className="user-table" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
@@ -152,7 +324,7 @@ export default function UserList() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => {
+              {filteredUsers.map((user) => {
                 const isCurrentUser = user.id === session?.user?.id
                 return (
                   <tr 
@@ -352,6 +524,7 @@ export default function UserList() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {editingUserId && users && (
@@ -361,7 +534,7 @@ export default function UserList() {
           zIndex: 10
         }}>
           <EditUserForm
-            user={users.find(u => u.id === editingUserId)!}
+            user={users.find(u => u.id === editingUserId) || filteredUsers.find(u => u.id === editingUserId)!}
             onSuccess={() => {
               setEditingUserId(null)
               utils.auth.getAllUsers.invalidate()
