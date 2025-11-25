@@ -11,7 +11,7 @@ import { UserIcon, PlusIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 export default function DantonDashboard() {
-  const { isDanton, dantonKelas, isLoading: isDantonLoading } = useDanton()
+  const { isDanton, kelas: dantonKelas, isLoading: isDantonLoading } = useDanton()
   const [showAddUserForm, setShowAddUserForm] = useState(false)
   const { isActive, isExpired, isLoading: isSubscriptionLoading } = useClassSubscription(dantonKelas || undefined)
 
@@ -86,7 +86,7 @@ export default function DantonDashboard() {
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Kelas</h4>
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
-            {kelas || '-'}
+            {dantonKelas || '-'}
           </div>
         </div>
 
