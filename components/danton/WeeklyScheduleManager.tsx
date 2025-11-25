@@ -225,7 +225,7 @@ export default function WeeklyScheduleManager() {
                               }
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = deleteSchedule.isLoading || setSchedule.isLoading ? 0.6 : 1
+                              e.currentTarget.style.opacity = (deleteSchedule.isLoading || setSchedule.isLoading ? 0.6 : 1).toString()
                             }}
                           >
                             <TrashIcon size={12} />
