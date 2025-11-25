@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -686,16 +686,34 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             </form>
           )}
           {session && isOnlyRead && (
-            <div className="card" style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem' }}>
-              <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', textAlign: 'center' }}>
-                ⚠️ Anda hanya memiliki izin membaca. Tidak dapat menambahkan sub tugas.
+            <div className="card subscription-fade-in" style={{ 
+              padding: '1rem', 
+              background: 'var(--bg-secondary)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem'
+            }}>
+              <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+                Anda hanya memiliki izin membaca. Tidak dapat menambahkan sub tugas.
               </p>
             </div>
           )}
           {session && !isAdmin && isSubscriptionExpired && canPostEdit && (
-            <div className="card" style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem' }}>
-              <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', textAlign: 'center' }}>
-                ⚠️ Subscription kelas {userKelas} sudah habis. Tidak dapat menambahkan sub tugas.
+            <div className="card subscription-fade-in" style={{ 
+              padding: '1rem', 
+              background: 'var(--bg-secondary)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem'
+            }}>
+              <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+                Subscription kelas {userKelas} sudah habis. Tidak dapat menambahkan sub tugas.
               </p>
             </div>
           )}

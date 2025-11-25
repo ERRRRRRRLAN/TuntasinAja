@@ -101,7 +101,7 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
                 <div>
                   <div style={{ fontWeight: 500 }}>Read & Post/Edit</div>
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                    User dapat membaca, membuat, dan mengedit thread/komentar
+                    User dapat membaca, membuat, dan mengedit tugas/sub tugas
                   </div>
                 </div>
               </label>

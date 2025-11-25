@@ -8,7 +8,7 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
-import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon } from '@/components/ui/Icons'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
@@ -483,43 +483,53 @@ export default function FeedPage() {
       {/* Permission Indicator */}
       {session && isOnlyRead && (
         <div
+          className="subscription-fade-in"
           style={{
             position: 'fixed',
             bottom: '1.5rem',
             right: '1.5rem',
             padding: '0.75rem 1rem',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem',
-            color: '#dc2626',
+            color: 'var(--text-primary)',
             fontSize: '0.875rem',
             zIndex: 998,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            boxShadow: 'var(--shadow)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          ⚠️ Hanya Baca - Tidak dapat membuat/ mengedit
+          <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          <span>Hanya Baca - Tidak dapat membuat/mengedit</span>
         </div>
       )}
 
       {/* Subscription Warning */}
       {session && !isAdmin && isSubscriptionExpired && (
         <div
+          className="subscription-fade-in"
           style={{
             position: 'fixed',
             bottom: '1.5rem',
             right: '1.5rem',
             padding: '0.75rem 1rem',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem',
-            color: '#dc2626',
+            color: 'var(--text-primary)',
             fontSize: '0.875rem',
             zIndex: 998,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            boxShadow: 'var(--shadow)',
             maxWidth: '300px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.5rem'
           }}
         >
-          ⚠️ Subscription habis - Tidak dapat membuat/mengedit
+          <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+          <span>Subscription habis - Tidak dapat membuat/mengedit</span>
         </div>
       )}
 

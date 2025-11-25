@@ -93,7 +93,7 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
   const isLoading = setSubscription.isLoading || extendSubscription.isLoading
 
   return (
-    <div className="card" style={{ position: 'relative' }}>
+    <div className="card subscription-fade-in" style={{ position: 'relative' }}>
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -137,16 +137,16 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       </div>
 
       {currentSubscription && currentSubscription.status !== 'no_subscription' && currentSubscription.status !== 'expired' && (
-        <div style={{
+        <div className="subscription-fade-in" style={{
           padding: '0.75rem 1rem',
-          background: '#f0fdf4',
-          border: '1px solid #86efac',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
           borderRadius: '0.5rem',
           marginBottom: '1.5rem',
           fontSize: '0.875rem',
-          color: '#166534'
+          color: 'var(--text-primary)'
         }}>
-          <p style={{ margin: 0, fontWeight: 500 }}>
+          <p style={{ margin: 0, fontWeight: 400 }}>
             Info: Subscription saat ini akan berakhir pada{' '}
             {currentSubscription.subscriptionEndDate && (
               new Date(currentSubscription.subscriptionEndDate).toLocaleDateString('id-ID', {
@@ -165,10 +165,10 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       )}
 
       {error && (
-        <div style={{
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          color: '#b91c1c',
+        <div className="subscription-fade-in" style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-primary)',
           padding: '0.75rem 1rem',
           borderRadius: '0.5rem',
           marginBottom: '1.5rem',
@@ -179,10 +179,10 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       )}
 
       {success && (
-        <div style={{
-          background: '#f0fdf4',
-          border: '1px solid #86efac',
-          color: '#166534',
+        <div className="subscription-fade-in" style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-primary)',
           padding: '0.75rem 1rem',
           borderRadius: '0.5rem',
           marginBottom: '1.5rem',

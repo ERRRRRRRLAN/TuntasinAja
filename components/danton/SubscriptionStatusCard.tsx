@@ -1,14 +1,22 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 import { useDanton } from '@/hooks/useDanton'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from '@/components/ui/Icons'
 
 export default function SubscriptionStatusCard() {
   const { kelas: dantonKelas } = useDanton()
   const { subscription, isActive, isExpired, isExpiringSoon, daysRemaining, hoursRemaining, status, endDate, isLoading } = useClassSubscription(dantonKelas || undefined)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+    return () => setIsVisible(false)
+  }, [])
 
   if (isLoading) {
     return (
@@ -22,44 +30,51 @@ export default function SubscriptionStatusCard() {
   }
 
   // Determine status badge color and text
-  let badgeColor = '#ef4444' // red for expired
-  let badgeBg = '#fef2f2'
-  let badgeText = 'Expired'
+  let badgeColor = 'var(--text-light)' // neutral for expired
+  let badgeBg = 'var(--bg-secondary)'
+  let badgeText = 'Habis'
   let statusMessage = ''
   let daysText = ''
+  let StatusIcon = XIcon
 
   if (status === 'active') {
-    badgeColor = '#22c55e' // green
-    badgeBg = '#f0fdf4'
+    badgeColor = 'var(--text-primary)'
+    badgeBg = 'var(--bg-secondary)'
     badgeText = 'Aktif'
+    StatusIcon = CheckIcon
     if (daysRemaining !== null) {
       daysText = `${daysRemaining} hari tersisa`
     }
   } else if (status === 'expiring_soon') {
-    badgeColor = '#f59e0b' // amber
-    badgeBg = '#fffbeb'
+    badgeColor = 'var(--text-primary)'
+    badgeBg = 'var(--bg-secondary)'
     badgeText = 'Akan Berakhir'
+    StatusIcon = AlertTriangleIcon
     if (daysRemaining !== null) {
       daysText = `${daysRemaining} hari tersisa`
       statusMessage = `Subscription akan berakhir dalam ${daysRemaining} hari. Hubungi admin untuk memperpanjang.`
     }
   } else if (status === 'expired') {
-    badgeColor = '#ef4444' // red
-    badgeBg = '#fef2f2'
+    badgeColor = 'var(--text-light)'
+    badgeBg = 'var(--bg-secondary)'
     badgeText = 'Habis'
+    StatusIcon = XIcon
     statusMessage = 'Subscription sudah habis. Fitur kelas telah dinonaktifkan. Hubungi admin untuk memperpanjang subscription.'
   } else {
     // no_subscription
-    badgeColor = '#ef4444' // red
-    badgeBg = '#fef2f2'
+    badgeColor = 'var(--text-light)'
+    badgeBg = 'var(--bg-secondary)'
     badgeText = 'Tidak Ada Subscription'
+    StatusIcon = InfoIcon
     statusMessage = 'Kelas ini belum memiliki subscription. Hubungi admin untuk mengaktifkan subscription.'
   }
 
   return (
-    <div className="card" style={{ 
-      border: `2px solid ${badgeColor}20`,
-      background: badgeBg,
+    <div className={`card subscription-fade-in`} style={{ 
+      border: `1px solid var(--border)`,
+      background: 'var(--bg-primary)',
+      opacity: isVisible ? 1 : 0,
+      transition: 'opacity 0.2s ease-out'
     }}>
       <div style={{ 
         display: 'flex', 
@@ -87,15 +102,19 @@ export default function SubscriptionStatusCard() {
           </p>
         </div>
         <span style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.375rem',
           padding: '0.375rem 0.75rem',
           borderRadius: '0.5rem',
-          background: badgeColor,
-          color: 'white',
+          background: badgeBg,
+          color: badgeColor,
           fontSize: '0.75rem',
           fontWeight: 600,
-          whiteSpace: 'nowrap'
+          whiteSpace: 'nowrap',
+          border: `1px solid var(--border)`
         }}>
+          <StatusIcon size={14} style={{ color: badgeColor, flexShrink: 0 }} />
           {badgeText}
         </span>
       </div>
@@ -126,9 +145,9 @@ export default function SubscriptionStatusCard() {
           {daysText && (
             <p style={{ 
               fontSize: '0.875rem', 
-              color: badgeColor, 
+              color: 'var(--text-light)', 
               margin: '0.5rem 0 0 0',
-              fontWeight: 600
+              fontWeight: 500
             }}>
               {daysText}
             </p>
@@ -137,31 +156,40 @@ export default function SubscriptionStatusCard() {
       )}
 
       {(isExpired || isExpiringSoon || status === 'no_subscription') && (
-        <div style={{
+        <div className="subscription-fade-in" style={{
           padding: '0.75rem 1rem',
-          background: badgeColor,
-          color: 'white',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-primary)',
           borderRadius: '0.5rem',
           fontSize: '0.875rem',
-          lineHeight: '1.5'
+          lineHeight: '1.5',
+          border: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.5rem'
         }}>
-          <p style={{ margin: 0, fontWeight: 500 }}>
-            ⚠️ {statusMessage || 'Subscription tidak aktif'}
+          <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+          <p style={{ margin: 0, fontWeight: 400 }}>
+            {statusMessage || 'Subscription tidak aktif'}
           </p>
         </div>
       )}
 
       {isActive && daysRemaining !== null && daysRemaining > 7 && (
-        <div style={{
+        <div className="subscription-fade-in" style={{
           padding: '0.75rem 1rem',
-          background: '#f0fdf4',
-          color: '#166534',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-primary)',
           borderRadius: '0.5rem',
           fontSize: '0.875rem',
-          border: '1px solid #86efac'
+          border: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.5rem'
         }}>
-          <p style={{ margin: 0 }}>
-            ✓ Subscription aktif. {daysText}
+          <CheckIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
+          <p style={{ margin: 0, fontWeight: 400 }}>
+            Subscription aktif. {daysText}
           </p>
         </div>
       )}

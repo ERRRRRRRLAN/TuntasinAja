@@ -6,6 +6,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ClassSubscriptionManager from './ClassSubscriptionManager'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from '@/components/ui/Icons'
 
 export default function SubscriptionList() {
   const [editingKelas, setEditingKelas] = useState<string | null>(null)
@@ -23,61 +24,73 @@ export default function SubscriptionList() {
     if (status === 'active') {
       return (
         <span style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
           padding: '0.25rem 0.5rem',
           borderRadius: '0.25rem',
-          background: '#f0fdf4',
-          color: '#166534',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-primary)',
           fontSize: '0.75rem',
           fontWeight: 600,
-          border: '1px solid #86efac'
+          border: '1px solid var(--border)'
         }}>
-          ✓ Aktif {daysRemaining !== null && daysRemaining > 0 ? `(${daysRemaining} hari)` : ''}
+          <CheckIcon size={12} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          Aktif {daysRemaining !== null && daysRemaining > 0 ? `(${daysRemaining} hari)` : ''}
         </span>
       )
     } else if (status === 'expiring_soon') {
       return (
         <span style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
           padding: '0.25rem 0.5rem',
           borderRadius: '0.25rem',
-          background: '#fffbeb',
-          color: '#92400e',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-primary)',
           fontSize: '0.75rem',
           fontWeight: 600,
-          border: '1px solid #fde047'
+          border: '1px solid var(--border)'
         }}>
-          ⚠ Akan Berakhir {daysRemaining !== null ? `(${daysRemaining} hari)` : ''}
+          <AlertTriangleIcon size={12} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          Akan Berakhir {daysRemaining !== null ? `(${daysRemaining} hari)` : ''}
         </span>
       )
     } else if (status === 'expired') {
       return (
         <span style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
           padding: '0.25rem 0.5rem',
           borderRadius: '0.25rem',
-          background: '#fef2f2',
-          color: '#991b1b',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-light)',
           fontSize: '0.75rem',
           fontWeight: 600,
-          border: '1px solid #fecaca'
+          border: '1px solid var(--border)'
         }}>
-          ✗ Habis
+          <XIcon size={12} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          Habis
         </span>
       )
     } else {
       return (
         <span style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
           padding: '0.25rem 0.5rem',
           borderRadius: '0.25rem',
-          background: '#f3f4f6',
-          color: '#6b7280',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-light)',
           fontSize: '0.75rem',
           fontWeight: 600,
-          border: '1px solid #d1d5db'
+          border: '1px solid var(--border)'
         }}>
-          - Belum Ada
+          <InfoIcon size={12} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          Belum Ada
         </span>
       )
     }
@@ -127,8 +140,15 @@ export default function SubscriptionList() {
                 </tr>
               </thead>
               <tbody>
-                {subscriptions.map((sub: any) => (
-                  <tr key={sub.kelas} style={{ borderBottom: '1px solid var(--border)' }}>
+                {subscriptions.map((sub: any, index: number) => (
+                  <tr 
+                    key={sub.kelas} 
+                    className="subscription-fade-in"
+                    style={{ 
+                      borderBottom: '1px solid var(--border)',
+                      animationDelay: `${index * 0.05}s`
+                    }}
+                  >
                     <td style={{ padding: '0.75rem' }}>
                       <span style={{ 
                         display: 'inline-block',
@@ -175,10 +195,19 @@ export default function SubscriptionList() {
                     <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                       <button
                         onClick={() => setEditingKelas(sub.kelas)}
-                        className="btn btn-primary"
+                        className="btn btn-primary subscription-fade-in"
                         style={{
                           padding: '0.5rem 1rem',
-                          fontSize: '0.875rem'
+                          fontSize: '0.875rem',
+                          transition: 'all 0.2s ease-out'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-1px)'
+                          e.currentTarget.style.boxShadow = 'var(--shadow)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = 'none'
                         }}
                       >
                         {sub.status === 'no_subscription' || sub.status === 'expired' ? 'Set Subscription' : 'Extend'}
@@ -199,7 +228,7 @@ export default function SubscriptionList() {
       )}
 
       {editingKelas && (
-        <div style={{ marginTop: '2rem' }}>
+        <div className="subscription-fade-in" style={{ marginTop: '2rem' }}>
           <ClassSubscriptionManager
             kelas={editingKelas}
             onSuccess={handleSuccess}

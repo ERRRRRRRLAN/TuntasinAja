@@ -7,7 +7,7 @@ import ClassUserList from './ClassUserList'
 import AddUserToClassForm from './AddUserToClassForm'
 import SubscriptionStatusCard from './SubscriptionStatusCard'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { UserIcon, PlusIcon } from '@/components/ui/Icons'
+import { UserIcon, PlusIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 export default function DantonDashboard() {
@@ -46,17 +46,25 @@ export default function DantonDashboard() {
 
       {/* Warning if subscription expired */}
       {isExpired && (
-        <div style={{
+        <div className="subscription-fade-in" style={{
           padding: '1.5rem',
-          background: '#fef2f2',
-          border: '2px solid #ef4444',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
           borderRadius: '0.5rem',
-          color: '#991b1b'
+          color: 'var(--text-primary)'
         }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem', fontWeight: 600 }}>
-            ⚠️ Subscription Sudah Habis
+          <h3 style={{ 
+            margin: '0 0 0.5rem 0', 
+            fontSize: '1.125rem', 
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <AlertTriangleIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+            Subscription Sudah Habis
           </h3>
-          <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: '1.6' }}>
+          <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: '1.6', color: 'var(--text-light)' }}>
             Subscription untuk kelas {dantonKelas} sudah habis. Semua fitur management telah dinonaktifkan.
             Hubungi admin untuk memperpanjang subscription agar fitur dapat digunakan kembali.
           </p>
@@ -92,7 +100,7 @@ export default function DantonDashboard() {
 
         <div className="card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Thread</h4>
+            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Tugas</h4>
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.threadCount || 0}
@@ -101,7 +109,7 @@ export default function DantonDashboard() {
 
         <div className="card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Komentar</h4>
+            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Sub Tugas</h4>
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.commentCount || 0}
