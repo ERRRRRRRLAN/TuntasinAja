@@ -160,26 +160,47 @@ export default function FeedPage() {
   }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
   // Show schedule reminder modal automatically when user logs in and there are tasks for tomorrow's classes
-  // Only show once per session, and only if overdue reminder is not showing
+  // Only show once per session
   useEffect(() => {
+    // Debug logging
+    if (session && isDataValidated && !isLoadingScheduleReminder) {
+      console.log('[Schedule Reminder Debug]', {
+        hasCheckedScheduleReminder,
+        hasScheduleReminder,
+        scheduleTasksLength: scheduleTasks.length,
+        scheduleSubjectsLength: scheduleSubjects.length,
+        showReminderModal,
+        overdueTasksLength: overdueTasks.length,
+        tomorrowDate,
+      })
+    }
+
     if (
       session &&
       isDataValidated &&
       !hasCheckedScheduleReminder &&
       !isLoadingScheduleReminder &&
-      hasScheduleReminder &&
-      !showReminderModal && // Don't show if overdue reminder is showing
-      scheduleTasks.length > 0 // Only show if there are tasks
+      scheduleTasks.length > 0 && // Must have tasks
+      scheduleSubjects.length > 0 // Must have subjects
     ) {
-      // Delay schedule reminder to show after overdue reminder if both exist
-      const delay = overdueTasks.length > 0 ? 2000 : 0
-      const timer = setTimeout(() => {
+      // If overdue reminder is showing, wait for it to close first
+      if (showReminderModal) {
+        // Wait for overdue reminder to close, then show schedule reminder
+        const checkInterval = setInterval(() => {
+          if (!showReminderModal) {
+            clearInterval(checkInterval)
+            setShowScheduleReminderModal(true)
+            setHasCheckedScheduleReminder(true)
+          }
+        }, 500)
+        return () => clearInterval(checkInterval)
+      } else {
+        // No overdue reminder, show schedule reminder immediately
         setShowScheduleReminderModal(true)
         setHasCheckedScheduleReminder(true)
-      }, delay)
-      return () => clearTimeout(timer)
+      }
     }
-  }, [session, isDataValidated, hasCheckedScheduleReminder, isLoadingScheduleReminder, hasScheduleReminder, showReminderModal, scheduleTasks.length, overdueTasks.length])
+  }, [session, isDataValidated, hasCheckedScheduleReminder, isLoadingScheduleReminder, scheduleTasks.length, scheduleSubjects.length, showReminderModal, overdueTasks.length, tomorrowDate])
 
 
   // Filter and search threads
@@ -523,7 +544,7 @@ export default function FeedPage() {
           authorName: task.authorName,
           threadDate: new Date(task.threadDate),
         }))}
-        tomorrow={tomorrowDate}
+        tomorrow={tomorrowDate || null}
         onTaskClick={(threadId) => {
           setThreadOpenedFromReminder(true)
           setSelectedThreadId(threadId)

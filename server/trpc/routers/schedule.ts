@@ -174,6 +174,16 @@ export const scheduleRouter = createTRPCRouter({
     const tomorrowDay = getDay(tomorrow) // 0 = Sunday, 1 = Monday, etc.
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
 
+    // Debug logging
+    console.log('[getReminderTasks]', {
+      userId,
+      kelas: user.kelas,
+      now: now.toISOString(),
+      tomorrow: tomorrow.toISOString(),
+      tomorrowDay,
+      tomorrowDayName,
+    })
+
     // Get schedules for tomorrow
     const schedules = await (prisma as any).classSchedule.findMany({
       where: {
@@ -183,8 +193,10 @@ export const scheduleRouter = createTRPCRouter({
       select: { subject: true },
     })
 
+    console.log('[getReminderTasks] schedules found:', schedules.length)
+
     if (schedules.length === 0) {
-      return { tasks: [], subjects: [] }
+      return { tasks: [], subjects: [], tomorrow: format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id }) }
     }
 
     const subjects = schedules.map((s: any) => s.subject)
@@ -213,6 +225,8 @@ export const scheduleRouter = createTRPCRouter({
       },
     })
 
+    console.log('[getReminderTasks] threads found today:', threads.length)
+
     // Filter threads that contain subject names in title
     const relevantTasks = threads.filter((thread) => {
       const titleUpper = thread.title.toUpperCase()
@@ -221,6 +235,8 @@ export const scheduleRouter = createTRPCRouter({
         return titleUpper.includes(subjectUpper)
       })
     })
+
+    console.log('[getReminderTasks] relevant tasks (matching subjects):', relevantTasks.length)
 
     // Check which tasks are not completed by user
     const tasksWithStatus = await Promise.all(
@@ -247,10 +263,20 @@ export const scheduleRouter = createTRPCRouter({
     // Only return incomplete tasks
     const incompleteTasks = tasksWithStatus.filter((task) => !task.isCompleted)
 
-    return {
+    console.log('[getReminderTasks] incomplete tasks:', incompleteTasks.length)
+
+    const result = {
       tasks: incompleteTasks,
       subjects,
       tomorrow: format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id }),
     }
+
+    console.log('[getReminderTasks] returning:', {
+      tasksCount: result.tasks.length,
+      subjectsCount: result.subjects.length,
+      tomorrow: result.tomorrow,
+    })
+
+    return result
   }),
 })
