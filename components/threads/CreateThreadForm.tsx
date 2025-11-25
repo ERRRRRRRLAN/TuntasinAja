@@ -7,18 +7,24 @@ import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 const MATA_PELAJARAN = [
-  'Bahasa Indonesia',
+  'Dasar BC',
   'Bahasa Inggris',
+  'Seni Musik',
+  'Koding dan Kecerdasan Artificial',
   'Matematika',
+  'Mulok BK',
+  'Mulok Batik',
+  'Pendidikan Pancasila',
+  'Bahasa Indonesia',
+  'Proj IPAS',
+  'Sejarah',
+  'PJOK',
+  'PAI & BP',
+  'Informatika',
+  // Legacy mata pelajaran (untuk backward compatibility)
   'PAI',
   'Pendidikan Kewarganegaraan Negara',
-  'PJOK',
-  'Sejarah',
-  'Mulok Batik',
-  'Mulok BK',
-  'Koding dan Kecerdasan Artificial',
   'Dasar PPLG',
-  'Informatika',
   'IPAS',
 ]
 
