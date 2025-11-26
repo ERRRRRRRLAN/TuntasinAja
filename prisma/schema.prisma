@@ -148,3 +148,15 @@ model WeeklySchedule {
   @@index([dayOfWeek])
   @@map("weekly_schedules")
 }
+
+model ClassSubject {
+  id          String   @id @default(cuid())
+  kelas       String   @map("kelas")
+  subject     String   @map("subject")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([kelas, subject])
+  @@index([kelas])
+  @@map("class_subjects")
+}

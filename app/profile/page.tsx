@@ -8,12 +8,13 @@ import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
 import UserList from '@/components/admin/UserList'
 import SubscriptionList from '@/components/admin/SubscriptionList'
+import ClassSubjectList from '@/components/admin/ClassSubjectList'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects'>('users')
   const utils = trpc.useUtils()
   
 
@@ -76,6 +77,11 @@ export default function ProfilePage() {
                     {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
                   </button>
                 )}
+                {activeTab === 'subjects' && (
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    Kelola mata pelajaran per kelas
+                  </div>
+                )}
               </div>
 
               {/* Tabs */}
@@ -119,6 +125,23 @@ export default function ProfilePage() {
                 >
                   Manajemen Subscription
                 </button>
+                <button
+                  onClick={() => setActiveTab('subjects')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'subjects' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'subjects' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'subjects' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'subjects' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px'
+                  }}
+                >
+                  Mata Pelajaran per Kelas
+                </button>
               </div>
 
               {/* Tab Content */}
@@ -145,6 +168,12 @@ export default function ProfilePage() {
               {activeTab === 'subscriptions' && (
                 <div>
                   <SubscriptionList />
+                </div>
+              )}
+
+              {activeTab === 'subjects' && (
+                <div>
+                  <ClassSubjectList />
                 </div>
               )}
             </div>
