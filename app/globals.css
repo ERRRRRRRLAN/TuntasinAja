@@ -482,6 +482,32 @@ body {
   background: var(--bg);
 }
 
+.signin-password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  transition: color 0.2s ease;
+  opacity: 1;
+}
+
+.signin-password-toggle:hover:not(:disabled) {
+  color: var(--primary);
+}
+
+.signin-password-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .signin-form-button {
   width: 100%;
   padding: 0.875rem 1.5rem;
