@@ -53,6 +53,13 @@ export default function FeedPage() {
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
 
+  // Get subjects for user's class
+  const { data: classSubjects, isLoading: isLoadingSubjects } = trpc.classSubject.getClassSubjects.useQuery(
+    { kelas: userKelas || undefined },
+    { enabled: !!session && !!userKelas }
+  )
+  const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
+
   // Check user permission
   const { canPostEdit, isOnlyRead, permission } = useUserPermission()
 
@@ -347,6 +354,7 @@ export default function FeedPage() {
                 value={selectedSubject}
                 onChange={setSelectedSubject}
                 placeholder="Pilih Mata Pelajaran"
+                options={subjectOptions}
               />
             </div>
 
@@ -397,7 +405,7 @@ export default function FeedPage() {
           )}
 
           {/* Only show loading on initial load, not during background refresh */}
-          {(isLoading || isLoadingUserData || (isInitialLoad && !isDataValidated)) ? (
+          {(isLoading || isLoadingUserData || isLoadingSubjects || (isInitialLoad && !isDataValidated)) ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <LoadingSpinner size={32} />
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
