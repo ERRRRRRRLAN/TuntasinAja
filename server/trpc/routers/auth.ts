@@ -379,5 +379,102 @@ export const authRouter = createTRPCRouter({
 
       return { success: true }
     }),
+
+  // Bulk create users (Admin only)
+  bulkCreateUsers: adminProcedure
+    .input(
+      z.object({
+        names: z.array(z.string().min(1)).min(1),
+        kelas: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { names, kelas } = input
+
+      // Helper function to capitalize name properly (Title Case)
+      const capitalizeName = (name: string): string => {
+        return name
+          .toLowerCase()
+          .split(' ')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      }
+
+      // Helper function to get words for email/password (2 words or 1 if only 1 word)
+      const getWordsForEmail = (name: string): string => {
+        const words = name.trim().toLowerCase().split(/\s+/).filter((w) => w.length > 0)
+        if (words.length >= 2) {
+          return `${words[0]}${words[1]}`
+        } else if (words.length === 1) {
+          return words[0]
+        }
+        return 'user'
+      }
+
+      // Helper function to generate random number (4-5 digits)
+      const generateRandomNumber = (): number => {
+        // Generate 4 or 5 digit number randomly
+        const isFourDigit = Math.random() < 0.5
+        if (isFourDigit) {
+          return Math.floor(1000 + Math.random() * 9000) // 1000-9999
+        } else {
+          return Math.floor(10000 + Math.random() * 90000) // 10000-99999
+        }
+      }
+
+      const now = getUTCDate()
+      let successCount = 0
+      let failedCount = 0
+      const errors: string[] = []
+
+      // Process each name
+      for (const name of names) {
+        try {
+          const capitalizedName = capitalizeName(name)
+          const emailPrefix = getWordsForEmail(name)
+          const email = `${emailPrefix}@tuntasinaja.com`
+          const randomNum = generateRandomNumber()
+          const password = `${emailPrefix}${randomNum}`
+
+          // Check if user already exists
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
+          })
+
+          if (existingUser) {
+            failedCount++
+            errors.push(`${capitalizedName}: Email ${email} sudah terdaftar`)
+            continue
+          }
+
+          // Hash password
+          const passwordHash = await bcrypt.hash(password, 10)
+
+          // Create user
+          await prisma.user.create({
+            data: {
+              name: capitalizedName,
+              email,
+              passwordHash,
+              kelas,
+              isAdmin: false,
+              isDanton: false,
+              createdAt: now,
+            },
+          })
+
+          successCount++
+        } catch (error: any) {
+          failedCount++
+          errors.push(`${name}: ${error.message || 'Terjadi kesalahan'}`)
+        }
+      }
+
+      return {
+        success: successCount,
+        failed: failedCount,
+        errors,
+      }
+    }),
 })
 

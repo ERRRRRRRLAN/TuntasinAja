@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import AddUserForm from '@/components/admin/AddUserForm'
+import BulkAddUserForm from '@/components/admin/BulkAddUserForm'
 import UserList from '@/components/admin/UserList'
 import SubscriptionList from '@/components/admin/SubscriptionList'
 
@@ -13,6 +14,7 @@ export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
+  const [showBulkAddUser, setShowBulkAddUser] = useState(false)
   const [activeTab, setActiveTab] = useState<'users' | 'subscriptions'>('users')
   const utils = trpc.useUtils()
   
@@ -69,12 +71,27 @@ export default function ProfilePage() {
                   Panel Admin
                 </h2>
                 {activeTab === 'users' && (
-                  <button
-                    onClick={() => setShowAddUser(!showAddUser)}
-                    className="btn btn-primary"
-                  >
-                    {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => {
+                        setShowAddUser(!showAddUser)
+                        if (showAddUser) setShowBulkAddUser(false)
+                      }}
+                      className="btn btn-primary"
+                    >
+                      {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBulkAddUser(!showBulkAddUser)
+                        if (showBulkAddUser) setShowAddUser(false)
+                      }}
+                      className="btn btn-primary"
+                      style={{ background: 'var(--primary)', border: '1px solid var(--primary)' }}
+                    >
+                      {showBulkAddUser ? '✕ Tutup' : '📦 Tambah User Bulk'}
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -131,6 +148,19 @@ export default function ProfilePage() {
                           setShowAddUser(false)
                           // Invalidate user list to refresh
                           utils.auth.getAllUsers.invalidate()
+                        }} 
+                      />
+                    </div>
+                  )}
+
+                  {showBulkAddUser && (
+                    <div style={{ marginBottom: '2rem' }}>
+                      <BulkAddUserForm 
+                        onSuccess={() => {
+                          setShowBulkAddUser(false)
+                          // Invalidate user list and subscription list to refresh
+                          utils.auth.getAllUsers.invalidate()
+                          utils.subscription.getAllClassSubscriptions.invalidate()
                         }} 
                       />
                     </div>
