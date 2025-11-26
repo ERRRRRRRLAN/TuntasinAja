@@ -265,10 +265,13 @@ async function main() {
         continue
       }
 
+      // Normalize email: trim whitespace and convert to lowercase
+      const normalizedEmail = student.email.trim().toLowerCase()
+
       // Create user
       const user = await prisma.user.create({
           data: {
-            email: student.email,
+            email: normalizedEmail,
             passwordHash: hashedPassword,
             name: student.name,
             kelas: 'XI BC 1',
