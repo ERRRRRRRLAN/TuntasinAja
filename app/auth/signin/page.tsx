@@ -51,11 +51,8 @@ export default function SignInPage() {
     setError('')
 
     try {
-      // Normalize email: trim whitespace and convert to lowercase
-      const normalizedEmail = email.trim().toLowerCase()
-      
       const result = await signIn('credentials', {
-        email: normalizedEmail,
+        email,
         password,
         redirect: false,
         callbackUrl: '/',
