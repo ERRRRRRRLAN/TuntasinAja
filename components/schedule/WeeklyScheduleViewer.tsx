@@ -86,18 +86,9 @@ export default function WeeklyScheduleViewer() {
         marginBottom: '1.5rem' 
       }}>
         <CalendarIcon size={24} style={{ color: 'var(--primary)' }} />
-        <div style={{ flex: 1 }}>
-          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
-            Jadwal Pelajaran
-          </h3>
-          <p style={{ 
-            margin: '0.25rem 0 0 0', 
-            fontSize: '0.875rem', 
-            color: 'var(--text-light)' 
-          }}>
-            Kelas {scheduleData.kelas}
-          </p>
-        </div>
+        <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
+          Jadwal Pelajaran
+        </h3>
       </div>
 
       {/* Schedule Table */}
@@ -189,12 +180,15 @@ export default function WeeklyScheduleViewer() {
                           </span>
                         </div>
                       ) : (
-                        <span style={{ 
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
                           color: 'var(--text-light)',
                           fontSize: '0.75rem'
                         }}>
                           -
-                        </span>
+                        </div>
                       )}
                     </td>
                   )
