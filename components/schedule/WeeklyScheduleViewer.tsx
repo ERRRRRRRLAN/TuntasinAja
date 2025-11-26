@@ -113,8 +113,9 @@ export default function WeeklyScheduleViewer() {
                 color: 'var(--text-light)',
                 borderBottom: '2px solid var(--border)',
                 borderRight: '1px solid var(--border)',
+                borderLeft: '1px solid var(--border)',
                 position: 'sticky',
-                left: '1.5rem',
+                left: 0,
                 background: 'var(--card)',
                 zIndex: 1,
                 boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
@@ -147,8 +148,9 @@ export default function WeeklyScheduleViewer() {
                   color: 'var(--text)',
                   borderBottom: '1px solid var(--border)',
                   borderRight: '1px solid var(--border)',
+                  borderLeft: '1px solid var(--border)',
                   position: 'sticky',
-                  left: '1.5rem',
+                  left: 0,
                   background: 'var(--card)',
                   zIndex: 1,
                   boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
