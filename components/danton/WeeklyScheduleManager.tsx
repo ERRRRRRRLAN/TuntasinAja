@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { CalendarIcon } from '@/components/ui/Icons'
@@ -21,15 +21,37 @@ export default function WeeklyScheduleManager() {
     day: string
     period: number
   } | null>(null)
+  const savedScrollPositionRef = useRef<number>(0)
+  const shouldRestoreScrollRef = useRef<boolean>(false)
 
   const { data: scheduleData, isLoading } = trpc.weeklySchedule.getSchedule.useQuery()
 
+  // Restore scroll position after data is updated
+  useEffect(() => {
+    if (shouldRestoreScrollRef.current && scheduleData) {
+      // Wait a bit for DOM to update after data refetch
+      const timeoutId = setTimeout(() => {
+        window.scrollTo({
+          top: savedScrollPositionRef.current,
+          behavior: 'instant' as ScrollBehavior
+        })
+        shouldRestoreScrollRef.current = false
+      }, 100)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [scheduleData])
+
   const handleCellClick = (day: string, period: number) => {
+    // Save current scroll position before opening quickview
+    savedScrollPositionRef.current = window.scrollY
     setEditingCell({ day, period })
   }
 
   const handleCloseQuickView = () => {
     setEditingCell(null)
+    // Mark that we should restore scroll position after data refetch
+    shouldRestoreScrollRef.current = true
   }
 
   const getCurrentSubject = () => {

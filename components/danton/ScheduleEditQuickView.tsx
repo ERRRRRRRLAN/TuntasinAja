@@ -130,11 +130,7 @@ export default function ScheduleEditQuickView({
       document.body.style.top = ''
       document.body.style.width = ''
       
-      // Restore scroll position
-      const scrollY = document.body.style.top
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1)
-      }
+      // Note: Scroll position restoration is handled by parent component (WeeklyScheduleManager)
     }
   }, [day, period, currentSubject])
 
