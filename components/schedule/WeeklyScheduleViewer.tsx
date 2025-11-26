@@ -94,8 +94,8 @@ export default function WeeklyScheduleViewer() {
       {/* Schedule Table */}
       <div style={{ 
         overflowX: 'auto',
-        background: 'var(--card)',
-        borderRadius: '0.5rem'
+        margin: '0 -1.5rem',
+        padding: '0 1.5rem'
       }}>
         <table style={{ 
           width: '100%', 
@@ -112,7 +112,7 @@ export default function WeeklyScheduleViewer() {
                 borderBottom: '2px solid var(--border)',
                 borderRight: '1px solid var(--border)',
                 position: 'sticky',
-                left: 0,
+                left: '1.5rem',
                 background: 'var(--card)',
                 zIndex: 1
               }}>
@@ -145,7 +145,7 @@ export default function WeeklyScheduleViewer() {
                   borderBottom: '1px solid var(--border)',
                   borderRight: '1px solid var(--border)',
                   position: 'sticky',
-                  left: 0,
+                  left: '1.5rem',
                   background: 'var(--card)',
                   zIndex: 1
                 }}>
