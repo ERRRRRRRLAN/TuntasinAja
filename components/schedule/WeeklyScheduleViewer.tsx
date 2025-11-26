@@ -110,13 +110,7 @@ export default function WeeklyScheduleViewer() {
                 fontWeight: 600,
                 color: 'var(--text-light)',
                 borderBottom: '2px solid var(--border)',
-                borderRight: '1px solid var(--border)',
-                borderLeft: '1px solid var(--border)',
-                position: 'sticky',
-                left: '1.5rem',
-                background: 'var(--card)',
-                zIndex: 1,
-                boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
+                borderRight: '1px solid var(--border)'
               }}>
                 Jam
               </th>
@@ -145,13 +139,7 @@ export default function WeeklyScheduleViewer() {
                   fontWeight: 600,
                   color: 'var(--text)',
                   borderBottom: '1px solid var(--border)',
-                  borderRight: '1px solid var(--border)',
-                  borderLeft: '1px solid var(--border)',
-                  position: 'sticky',
-                  left: '1.5rem',
-                  background: 'var(--card)',
-                  zIndex: 1,
-                  boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
+                  borderRight: '1px solid var(--border)'
                 }}>
                   {period}
                 </td>
