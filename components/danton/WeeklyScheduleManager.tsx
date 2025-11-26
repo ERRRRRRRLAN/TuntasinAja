@@ -105,8 +105,8 @@ export default function WeeklyScheduleManager() {
       {/* Schedule Table */}
       <div style={{ 
         overflowX: 'auto',
-        margin: '0 -1.5rem',
-        padding: '0 1.5rem'
+        overflowY: 'visible',
+        position: 'relative'
       }}>
         <table style={{ 
           width: '100%', 
@@ -123,9 +123,10 @@ export default function WeeklyScheduleManager() {
                 borderBottom: '2px solid var(--border)',
                 borderRight: '1px solid var(--border)',
                 position: 'sticky',
-                left: '1.5rem',
+                left: 0,
                 background: 'var(--card)',
-                zIndex: 1
+                zIndex: 1,
+                boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
               }}>
                 Jam
               </th>
@@ -156,9 +157,10 @@ export default function WeeklyScheduleManager() {
                   borderBottom: '1px solid var(--border)',
                   borderRight: '1px solid var(--border)',
                   position: 'sticky',
-                  left: '1.5rem',
+                  left: 0,
                   background: 'var(--card)',
-                  zIndex: 1
+                  zIndex: 1,
+                  boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
                 }}>
                   {period}
                 </td>
