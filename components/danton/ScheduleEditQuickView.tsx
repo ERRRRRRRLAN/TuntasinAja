@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import ComboBox from '@/components/ui/ComboBox'
@@ -28,6 +29,7 @@ export default function ScheduleEditQuickView({
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -37,6 +39,7 @@ export default function ScheduleEditQuickView({
   const setSchedule = trpc.weeklySchedule.setSchedule.useMutation({
     onSuccess: () => {
       utils.weeklySchedule.getSchedule.invalidate()
+      utils.weeklySchedule.getUserSchedule.invalidate()
       handleCloseQuickView()
       toast.success('Jadwal berhasil disimpan!')
     },
@@ -48,6 +51,7 @@ export default function ScheduleEditQuickView({
   const deleteSchedule = trpc.weeklySchedule.deleteSchedule.useMutation({
     onSuccess: () => {
       utils.weeklySchedule.getSchedule.invalidate()
+      utils.weeklySchedule.getUserSchedule.invalidate()
       handleCloseQuickView()
       toast.success('Jadwal berhasil dihapus!')
     },
@@ -59,6 +63,7 @@ export default function ScheduleEditQuickView({
   const handleCloseQuickView = useCallback(() => {
     setIsQuickViewOpen(false)
     setIsVisible(false)
+    setShowDeleteDialog(false)
     
     // Wait for transition to complete before closing
     setTimeout(() => {
@@ -66,7 +71,13 @@ export default function ScheduleEditQuickView({
     }, 300) // Match transition duration
   }, [onClose])
 
-  // Reset state when props change
+  // Mount effect for Portal
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  // Reset state when props change and handle scroll lock
   useEffect(() => {
     setSelectedSubject(currentSubject)
     setIsQuickViewOpen(true)
@@ -181,7 +192,10 @@ export default function ScheduleEditQuickView({
     }
   }
 
-  return (
+  // Don't render until mounted (for Portal)
+  if (!mounted) return null
+
+  const quickViewContent = (
     <>
       <div 
         ref={overlayRef}
@@ -349,5 +363,6 @@ export default function ScheduleEditQuickView({
       />
     </>
   )
-}
 
+  return createPortal(quickViewContent, document.body)
+}
