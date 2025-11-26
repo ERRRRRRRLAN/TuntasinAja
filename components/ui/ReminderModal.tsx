@@ -47,7 +47,6 @@ export default function ReminderModal({
     }
   )
 
-  // Use updated data if available, otherwise use initial data
   const overdueTasks = updatedOverdueData?.overdueTasks || initialOverdueTasks
 
   const toggleThreadMutation = trpc.userStatus.toggleThread.useMutation({

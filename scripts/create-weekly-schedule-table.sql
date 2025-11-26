@@ -26,3 +26,4 @@ ON "weekly_schedules"("kelas", "day_of_week", "period");
 CREATE INDEX IF NOT EXISTS "weekly_schedules_kelas_idx" ON "weekly_schedules"("kelas");
 CREATE INDEX IF NOT EXISTS "weekly_schedules_day_of_week_idx" ON "weekly_schedules"("day_of_week");
 
+
