@@ -103,7 +103,11 @@ export default function WeeklyScheduleManager() {
       </p>
 
       {/* Schedule Table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ 
+        overflowX: 'auto',
+        background: 'var(--card)',
+        borderRadius: '0.5rem'
+      }}>
         <table style={{ 
           width: '100%', 
           borderCollapse: 'collapse',
@@ -117,6 +121,7 @@ export default function WeeklyScheduleManager() {
                 fontWeight: 600,
                 color: 'var(--text-light)',
                 borderBottom: '2px solid var(--border)',
+                borderRight: '1px solid var(--border)',
                 position: 'sticky',
                 left: 0,
                 background: 'var(--card)',
@@ -149,6 +154,7 @@ export default function WeeklyScheduleManager() {
                   fontWeight: 600,
                   color: 'var(--text)',
                   borderBottom: '1px solid var(--border)',
+                  borderRight: '1px solid var(--border)',
                   position: 'sticky',
                   left: 0,
                   background: 'var(--card)',
