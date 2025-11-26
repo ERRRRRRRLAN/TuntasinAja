@@ -219,15 +219,30 @@ async function main() {
 
   // 1. Create subscription for XI BC 1 (7 days)
   console.log('📝 Creating subscription for XI BC 1 (7 days)...')
-  const subscription = await prisma.classSubscription.create({
-    data: {
-      className: 'XI BC 1',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      isActive: true,
-    },
+  
+  // Check if subscription already exists
+  const existingSubscription = await prisma.classSubscription.findUnique({
+    where: { kelas: 'XI BC 1' },
   })
-  console.log(`✅ Subscription created: ${subscription.id}\n`)
+
+  let subscription
+  if (existingSubscription) {
+    console.log('⚠️  Subscription already exists, updating end date...')
+    subscription = await prisma.classSubscription.update({
+      where: { kelas: 'XI BC 1' },
+      data: {
+        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      },
+    })
+  } else {
+    subscription = await prisma.classSubscription.create({
+      data: {
+        kelas: 'XI BC 1',
+        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      },
+    })
+  }
+  console.log(`✅ Subscription set: expires ${subscription.subscriptionEndDate.toLocaleDateString('id-ID')}\n`)
 
   // 2. Create users
   console.log('👥 Creating users...\n')
@@ -254,7 +269,7 @@ async function main() {
       const user = await prisma.user.create({
         data: {
           email: student.email,
-          password: hashedPassword,
+          passwordHash: hashedPassword,
           name: student.name,
           kelas: 'XI BC 1',
           isDanton: student.isDanton || false,

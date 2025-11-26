@@ -1,24 +1,29 @@
 -- Script untuk menambahkan kelas XI BC 1 dengan subscription 7 hari
 -- Tanggal: 2025-01-XX (sesuaikan dengan tanggal saat ini)
 
--- 1. Insert subscription untuk kelas XI BC 1 (durasi 7 hari)
-INSERT INTO "ClassSubscription" (id, "className", "startDate", "endDate", "isActive", "createdAt", "updatedAt")
+-- 1. Insert or Update subscription untuk kelas XI BC 1 (durasi 7 hari)
+-- Menggunakan ON CONFLICT untuk update jika sudah ada
+INSERT INTO "class_subscriptions" (id, kelas, subscription_end_date, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'XI BC 1',
-  NOW(),
   NOW() + INTERVAL '7 days',
-  true,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (kelas) 
+DO UPDATE SET 
+  subscription_end_date = NOW() + INTERVAL '7 days',
+  updated_at = NOW();
 
 -- 2. Insert users untuk XI BC 1
 -- Password format: 2 kata pertama + 4 angka random
 -- Email format: 2 kata pertama (lowercase)
+-- PENTING: Password di-hash dengan bcrypt, jalankan TypeScript script untuk hash yang proper!
+-- SQL script ini menggunakan simplified hash, GUNAKAN TypeScript script untuk production!
 
 -- ABEL YOLANDA RAHMADANI (Danton)
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'abelyolanda@gmail.com',
@@ -29,10 +34,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- ALIFA JATIL IJAH
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'alifajatil@gmail.com',
@@ -43,10 +49,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- AMANDA PUTRI ALFIANI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'amandaputri@gmail.com',
@@ -57,10 +64,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- AREL GAMAULANA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'arelgamaulana@gmail.com',
@@ -71,10 +79,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- SARUNI KAMILA UTAMI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'sarunikamila@gmail.com',
@@ -85,10 +94,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- SAURA SAKILLA RUDINI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'saurasakilla@gmail.com',
@@ -99,10 +109,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- AUREL DANU PRATAMA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'aureldanu@gmail.com',
@@ -113,10 +124,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- BANYU PANGESTU
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'banyupangestu@gmail.com',
@@ -127,10 +139,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- BELLA AMANDA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'bellaamanda@gmail.com',
@@ -141,10 +154,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- BIANCA DESFA AYUNDARI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'biancadesfa@gmail.com',
@@ -155,10 +169,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- CAHAYA AULIA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'cahayaaulia@gmail.com',
@@ -169,10 +184,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- CRISTHOPER GORA PARHA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'cristhopergora@gmail.com',
@@ -183,10 +199,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- ERDI SAPUTRA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'erdisaputra@gmail.com',
@@ -197,10 +214,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- FABIAN MUHAMMAD CHEYNET
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'fabianmuhammad@gmail.com',
@@ -211,10 +229,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- FATHIR AHMAD SHAREZAD
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'fathirahmad@gmail.com',
@@ -225,10 +244,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- HELWA NIDA LUTHFIAH
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'helwanida@gmail.com',
@@ -239,10 +259,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- ISTIQOMAH
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'istiqomah@gmail.com',
@@ -253,10 +274,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- KESYA SAFIRA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'kesyasafira@gmail.com',
@@ -267,10 +289,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- KHANSA SYAFIQAH AURELLIA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'khansasyafiqah@gmail.com',
@@ -281,10 +304,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- KHOLISHAH RIZKI KAMILATUNNISA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'kholishahrizki@gmail.com',
@@ -295,10 +319,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MAESYA SAFINATUNAZZA GHIFFARI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'maesyasafinatunazza@gmail.com',
@@ -309,10 +334,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MAMARA AZKA MUHANA SAKTI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'mamaraazka@gmail.com',
@@ -323,10 +349,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MISCHA RACHMADIANTY
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'mischarachmadianty@gmail.com',
@@ -337,10 +364,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMAD AJRIL ILHAM
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhamadajril@gmail.com',
@@ -351,10 +379,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMAD FAIRUL AZKA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhamadfairul@gmail.com',
@@ -365,10 +394,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMMAD ARIA PAKULA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhammadaria@gmail.com',
@@ -379,10 +409,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- MUTHI NAURA SABITHA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muthinaura@gmail.com',
@@ -393,10 +424,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- NAYLA OKTAFIA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'naylaoktafia@gmail.com',
@@ -407,10 +439,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- NAYRA KANISYA PUTRI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'nayrakanisya@gmail.com',
@@ -421,10 +454,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- NONI JULEHA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'nonijuleha@gmail.com',
@@ -435,10 +469,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- NOVIANA NILA SUKMA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'noviananila@gmail.com',
@@ -449,10 +484,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- OCTAVIA SAFITRI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'octaviasafitri@gmail.com',
@@ -463,10 +499,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- PAHROJI HIDAYATULOH
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'pahrojihidayatuloh@gmail.com',
@@ -477,10 +514,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- RIZKY FADILA RAMADHON
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'rizkyfadila@gmail.com',
@@ -491,10 +529,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- SHIFA FAUZIAH
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'shifafauziah@gmail.com',
@@ -505,10 +544,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- SISKA WULANDARI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'siskawulandari@gmail.com',
@@ -519,10 +559,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- SYIFA KEISA AUDIA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'syifakeisa@gmail.com',
@@ -533,10 +574,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- TIARA SALSABILA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'tiarasalsabila@gmail.com',
@@ -547,10 +589,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- VERLITA AZZAHRA
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'verlitaazzahra@gmail.com',
@@ -561,10 +604,11 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- ZULFA RAIHANA PUTRI
-INSERT INTO "User" (id, email, password, name, "kelas", "isDanton", "isAdmin", "createdAt", "updatedAt")
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'zulfaraihana@gmail.com',
@@ -575,7 +619,8 @@ VALUES (
   false,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
 -- Script selesai
 -- Total: 40 siswa + 1 subscription untuk kelas XI BC 1
