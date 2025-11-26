@@ -25,28 +25,6 @@ const generateKelasOptions = () => {
   return kelasOptions
 }
 
-// Default subjects list (for reference)
-const DEFAULT_SUBJECTS = [
-  'Dasar BC',
-  'Bahasa Inggris',
-  'Seni Musik',
-  'Koding dan Kecerdasan Artificial',
-  'Matematika',
-  'Mulok BK',
-  'Mulok Batik',
-  'Pendidikan Pancasila',
-  'Bahasa Indonesia',
-  'Proj IPAS',
-  'Sejarah',
-  'PJOK',
-  'PAI & BP',
-  'Informatika',
-  'PAI',
-  'Pendidikan Kewarganegaraan Negara',
-  'Dasar PPLG',
-  'IPAS',
-]
-
 export default function ClassSubjectList() {
   const [selectedKelas, setSelectedKelas] = useState<string>('')
   const [newSubject, setNewSubject] = useState<string>('')
@@ -80,29 +58,10 @@ export default function ClassSubjectList() {
     },
   })
 
-  const bulkAddMutation = trpc.classSubject.bulkAddClassSubjects.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.added} mata pelajaran ditambahkan, ${data.skipped} dilewati`)
-      setNewSubject('')
-      setShowAddForm(false)
-      utils.classSubject.getAllClassSubjects.invalidate()
-      refetch()
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Gagal menambahkan mata pelajaran')
-    },
-  })
-
   const currentClassSubjects = useMemo(() => {
     if (!selectedKelas || !allClassSubjects) return []
     return allClassSubjects[selectedKelas] || []
   }, [selectedKelas, allClassSubjects])
-
-  const availableSubjects = useMemo(() => {
-    if (!selectedKelas) return DEFAULT_SUBJECTS
-    const existingSubjects = new Set(currentClassSubjects.map((s: any) => s.subject))
-    return DEFAULT_SUBJECTS.filter(s => !existingSubjects.has(s))
-  }, [selectedKelas, currentClassSubjects])
 
   const handleAddSubject = () => {
     if (!selectedKelas || !newSubject.trim()) {
@@ -120,18 +79,6 @@ export default function ClassSubjectList() {
     if (confirm('Yakin ingin menghapus mata pelajaran ini?')) {
       removeSubjectMutation.mutate({ id })
     }
-  }
-
-  const handleBulkAdd = (subjects: string[]) => {
-    if (!selectedKelas || subjects.length === 0) {
-      toast.error('Pilih kelas dan pilih mata pelajaran')
-      return
-    }
-
-    bulkAddMutation.mutate({
-      kelas: selectedKelas,
-      subjects,
-    })
   }
 
   if (isLoading) {
@@ -222,46 +169,45 @@ export default function ClassSubjectList() {
                   }}>
                     Nama Mata Pelajaran
                   </label>
-                  <ComboBox
+                  <input
+                    type="text"
                     value={newSubject}
-                    onChange={setNewSubject}
-                    placeholder="Pilih atau ketik nama mata pelajaran"
-                    options={availableSubjects}
-                    showAllOption={false}
-                    searchPlaceholder="Cari atau ketik mata pelajaran..."
-                    emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    placeholder="Ketik nama mata pelajaran..."
+                    style={{
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      fontSize: '0.875rem',
+                      border: '1px solid var(--border)',
+                      borderRadius: '0.5rem',
+                      background: 'var(--card)',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !addSubjectMutation.isLoading && newSubject.trim()) {
+                        e.preventDefault()
+                        handleAddSubject()
+                      }
+                    }}
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={handleAddSubject}
-                    className="btn btn-primary"
-                    disabled={!newSubject.trim() || addSubjectMutation.isLoading}
-                    style={{ flex: 1, padding: '0.625rem 1rem' }}
-                  >
-                    {addSubjectMutation.isLoading ? 'Menambahkan...' : 'Tambah Mata Pelajaran'}
-                  </button>
-                  {availableSubjects.length > 0 && (
-                    <button
-                      onClick={() => {
-                        if (confirm(`Tambahkan semua ${availableSubjects.length} mata pelajaran yang tersedia?`)) {
-                          handleBulkAdd(availableSubjects)
-                        }
-                      }}
-                      className="btn"
-                      disabled={bulkAddMutation.isLoading}
-                      style={{ 
-                        padding: '0.625rem 1rem',
-                        background: 'var(--bg-secondary)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--border)'
-                      }}
-                    >
-                      {bulkAddMutation.isLoading ? 'Menambahkan...' : 'Tambah Semua'}
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={handleAddSubject}
+                  className="btn btn-primary"
+                  disabled={!newSubject.trim() || addSubjectMutation.isLoading}
+                  style={{ padding: '0.625rem 1rem' }}
+                >
+                  {addSubjectMutation.isLoading ? 'Menambahkan...' : 'Tambah Mata Pelajaran'}
+                </button>
               </div>
             )}
           </div>
@@ -346,3 +292,4 @@ export default function ClassSubjectList() {
     </div>
   )
 }
+

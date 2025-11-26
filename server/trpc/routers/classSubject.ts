@@ -138,58 +138,5 @@ export const classSubjectRouter = createTRPCRouter({
 
       return { success: true }
     }),
-
-  // Bulk add subjects to a class (Admin only)
-  bulkAddClassSubjects: adminProcedure
-    .input(
-      z.object({
-        kelas: z.string().min(1),
-        subjects: z.array(z.string().min(1)),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const { kelas, subjects } = input
-
-      // Get existing subjects for this class
-      const existing = await (prisma as any).classSubject.findMany({
-        where: { kelas },
-        select: { subject: true },
-      })
-
-      const existingSubjects = new Set(existing.map((e: any) => e.subject))
-      const newSubjects = subjects.filter(s => !existingSubjects.has(s))
-
-      if (newSubjects.length === 0) {
-        return {
-          added: 0,
-          skipped: subjects.length,
-          message: 'Semua mata pelajaran sudah ada',
-        }
-      }
-
-      // Create new subjects
-      const created = await Promise.all(
-        newSubjects.map(subject =>
-          (prisma as any).classSubject.create({
-            data: {
-              kelas,
-              subject,
-            },
-            select: {
-              id: true,
-              kelas: true,
-              subject: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          })
-        )
-      )
-
-      return {
-        added: created.length,
-        skipped: subjects.length - created.length,
-        subjects: created,
-      }
-    }),
 })
+
