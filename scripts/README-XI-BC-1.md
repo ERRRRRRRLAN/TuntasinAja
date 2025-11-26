@@ -47,21 +47,21 @@ Lihat file `XI-BC-1-CREDENTIALS.txt` untuk daftar lengkap email dan password sem
 
 **DANTON:**
 - Nama: Abel Yolanda Rahmadani
-- Email: abelyolanda@gmail.com
+- Email: abelyolanda@tuntasinaja.com
 - Password: AbelYolanda2847
 - Role: isDanton = true
 
 **SISWA (contoh):**
 - Nama: Alifa Jatil Ijah
-- Email: alifajatil@gmail.com
+- Email: alifajatil@tuntasinaja.com
 - Password: AlifaJatil9315
 
 ## 📋 Format Data
 
 ### Email Format:
-- 2 kata pertama dari nama (lowercase)
-- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@gmail.com`
-- Jika 1 kata: "Istiqomah" → `istiqomah@gmail.com`
+- 2 kata pertama dari nama (lowercase) + @tuntasinaja.com
+- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@tuntasinaja.com`
+- Jika 1 kata: "Istiqomah" → `istiqomah@tuntasinaja.com`
 
 ### Password Format:
 - 2 kata pertama dari nama (PascalCase) + 4 angka random
