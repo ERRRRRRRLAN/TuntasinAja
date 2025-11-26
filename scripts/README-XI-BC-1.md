@@ -47,21 +47,21 @@ Lihat file `XI-BC-1-CREDENTIALS.txt` untuk daftar lengkap email dan password sem
 
 **DANTON:**
 - Nama: Abel Yolanda Rahmadani
-- Email: abelyolanda@tuntasinaja.com
+- Email: abelyolanda@gmail.com
 - Password: AbelYolanda2847
 - Role: isDanton = true
 
 **SISWA (contoh):**
 - Nama: Alifa Jatil Ijah
-- Email: alifajatil@tuntasinaja.com
+- Email: alifajatil@gmail.com
 - Password: AlifaJatil9315
 
 ## 📋 Format Data
 
 ### Email Format:
-- 2 kata pertama dari nama (lowercase) + @tuntasinaja.com
-- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@tuntasinaja.com`
-- Jika 1 kata: "Istiqomah" → `istiqomah@tuntasinaja.com`
+- 2 kata pertama dari nama (lowercase)
+- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@gmail.com`
+- Jika 1 kata: "Istiqomah" → `istiqomah@gmail.com`
 
 ### Password Format:
 - 2 kata pertama dari nama (PascalCase) + 4 angka random
@@ -76,24 +76,24 @@ Lihat file `XI-BC-1-CREDENTIALS.txt` untuk daftar lengkap email dan password sem
 
 ### 1. Cek Subscription
 ```sql
-SELECT * FROM "ClassSubscription" 
-WHERE "className" = 'XI BC 1';
+SELECT * FROM "class_subscriptions" 
+WHERE kelas = 'XI BC 1';
 ```
 
 ### 2. Cek Users
 ```sql
-SELECT id, name, email, kelas, "isDanton" 
-FROM "User" 
+SELECT id, name, email, kelas, is_danton 
+FROM "users" 
 WHERE kelas = 'XI BC 1'
-ORDER BY "isDanton" DESC, name ASC;
+ORDER BY is_danton DESC, name ASC;
 ```
 
 ### 3. Count Users
 ```sql
 SELECT 
   COUNT(*) as total,
-  COUNT(*) FILTER (WHERE "isDanton" = true) as danton_count
-FROM "User" 
+  COUNT(*) FILTER (WHERE is_danton = true) as danton_count
+FROM "users" 
 WHERE kelas = 'XI BC 1';
 ```
 
