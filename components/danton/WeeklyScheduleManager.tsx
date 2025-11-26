@@ -116,11 +116,7 @@ export default function WeeklyScheduleManager() {
                 textAlign: 'left', 
                 fontWeight: 600,
                 color: 'var(--text-light)',
-                borderBottom: '2px solid var(--border)',
-                position: 'sticky',
-                left: 0,
-                background: 'var(--card)',
-                zIndex: 1
+                borderBottom: '2px solid var(--border)'
               }}>
                 Jam
               </th>
@@ -148,11 +144,7 @@ export default function WeeklyScheduleManager() {
                   padding: '0.75rem', 
                   fontWeight: 600,
                   color: 'var(--text)',
-                  borderBottom: '1px solid var(--border)',
-                  position: 'sticky',
-                  left: 0,
-                  background: 'var(--card)',
-                  zIndex: 1
+                  borderBottom: '1px solid var(--border)'
                 }}>
                   {period}
                 </td>
