@@ -476,5 +476,66 @@ export const authRouter = createTRPCRouter({
         errors,
       }
     }),
+
+  // Bulk delete users (Admin only)
+  bulkDeleteUsers: adminProcedure
+    .input(
+      z.object({
+        userIds: z.array(z.string()).min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userIds } = input
+      const currentUserId = ctx.session?.user?.id
+
+      // Prevent admin from deleting themselves
+      if (currentUserId && userIds.includes(currentUserId)) {
+        throw new Error('Tidak dapat menghapus akun sendiri')
+      }
+
+      let successCount = 0
+      let failedCount = 0
+      const errors: string[] = []
+
+      // Process each user ID
+      for (const userId of userIds) {
+        try {
+          // Check if user exists
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, name: true, email: true },
+          })
+
+          if (!user) {
+            failedCount++
+            errors.push(`User dengan ID ${userId} tidak ditemukan`)
+            continue
+          }
+
+          // Prevent deleting current user
+          if (userId === currentUserId) {
+            failedCount++
+            errors.push(`${user.name}: Tidak dapat menghapus akun sendiri`)
+            continue
+          }
+
+          // Delete user (cascade will delete related threads, comments, etc.)
+          await prisma.user.delete({
+            where: { id: userId },
+          })
+
+          successCount++
+        } catch (error: any) {
+          failedCount++
+          errors.push(`User ID ${userId}: ${error.message || 'Terjadi kesalahan'}`)
+        }
+      }
+
+      return {
+        success: successCount,
+        failed: failedCount,
+        errors,
+      }
+    }),
 })
 

@@ -38,6 +38,8 @@ export default function UserList() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedKelas, setSelectedKelas] = useState<string>('')
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
 
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
@@ -81,6 +83,62 @@ export default function UserList() {
     },
   })
 
+  const bulkDeleteUsers = trpc.auth.bulkDeleteUsers.useMutation({
+    onSuccess: (data) => {
+      utils.auth.getAllUsers.invalidate()
+      setSelectedUserIds(new Set())
+      setShowBulkDeleteConfirm(false)
+      if (data.success > 0) {
+        toast.success(`Berhasil menghapus ${data.success} user`)
+      }
+      if (data.failed > 0) {
+        toast.error(`Gagal menghapus ${data.failed} user. ${data.errors.join('; ')}`)
+      }
+    },
+    onError: (error: any) => {
+      console.error('Error bulk deleting users:', error)
+      toast.error(error.message || 'Gagal menghapus user. Silakan coba lagi.')
+      setShowBulkDeleteConfirm(false)
+    },
+  })
+
+  // Handle select/deselect user
+  const handleToggleUser = (userId: string) => {
+    const newSelected = new Set(selectedUserIds)
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId)
+    } else {
+      newSelected.add(userId)
+    }
+    setSelectedUserIds(newSelected)
+  }
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.filter(u => u.id !== session?.user?.id).length) {
+      // Deselect all
+      setSelectedUserIds(new Set())
+    } else {
+      // Select all (except current user)
+      const allIds = new Set(
+        filteredUsers
+          .filter(u => u.id !== session?.user?.id)
+          .map(u => u.id)
+      )
+      setSelectedUserIds(allIds)
+    }
+  }
+
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    const userIds = Array.from(selectedUserIds)
+    if (userIds.length === 0) {
+      toast.error('Pilih minimal satu user untuk dihapus')
+      return
+    }
+    bulkDeleteUsers.mutate({ userIds })
+  }
+
   const handleDeleteClick = (userId: string, userName: string, userEmail: string) => {
     setDeleteUserId(userId)
     setDeleteUserName(userName)
@@ -116,6 +174,82 @@ export default function UserList() {
         <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 600 }}>
           Daftar Users
         </h3>
+
+        {/* Bulk Actions */}
+        {selectedUserIds.size > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+            padding: '0.75rem 1rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            border: '1px solid var(--border)'
+          }}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+              {selectedUserIds.size} user dipilih
+            </span>
+            <button
+              onClick={() => setShowBulkDeleteConfirm(true)}
+              disabled={bulkDeleteUsers.isLoading}
+              style={{
+                background: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                padding: '0.5rem 1rem',
+                cursor: bulkDeleteUsers.isLoading ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                opacity: bulkDeleteUsers.isLoading ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!bulkDeleteUsers.isLoading) {
+                  e.currentTarget.style.background = '#b91c1c'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!bulkDeleteUsers.isLoading) {
+                  e.currentTarget.style.background = '#dc2626'
+                }
+              }}
+            >
+              <TrashIcon size={14} />
+              Hapus {selectedUserIds.size} User
+            </button>
+            <button
+              onClick={() => setSelectedUserIds(new Set())}
+              disabled={bulkDeleteUsers.isLoading}
+              style={{
+                background: 'transparent',
+                color: 'var(--text-light)',
+                border: '1px solid var(--border)',
+                borderRadius: '0.375rem',
+                padding: '0.5rem 1rem',
+                cursor: bulkDeleteUsers.isLoading ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!bulkDeleteUsers.isLoading) {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!bulkDeleteUsers.isLoading) {
+                  e.currentTarget.style.background = 'transparent'
+                }
+              }}
+            >
+              Batal
+            </button>
+          </div>
+        )}
 
         {/* Search and Filter Controls */}
         <div style={{ 
@@ -246,6 +380,29 @@ export default function UserList() {
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
+                  fontSize: '0.875rem',
+                  width: '40px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      filteredUsers.filter(u => u.id !== session?.user?.id).length > 0 &&
+                      filteredUsers.filter(u => u.id !== session?.user?.id).every(u => selectedUserIds.has(u.id))
+                    }
+                    onChange={handleSelectAll}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer',
+                      accentColor: 'var(--primary)'
+                    }}
+                  />
+                </th>
+                <th style={{ 
+                  padding: '0.75rem', 
+                  textAlign: 'left', 
+                  fontWeight: 600,
+                  color: 'var(--text-light)',
                   fontSize: '0.875rem'
                 }}>
                   Nama
@@ -318,14 +475,34 @@ export default function UserList() {
             <tbody>
               {filteredUsers.map((user) => {
                 const isCurrentUser = user.id === session?.user?.id
+                const isSelected = selectedUserIds.has(user.id)
                 return (
                   <tr 
                     key={user.id}
                     style={{ 
                       borderBottom: '1px solid var(--border)',
-                      backgroundColor: isCurrentUser ? 'var(--bg-secondary)' : 'transparent'
+                      backgroundColor: isCurrentUser 
+                        ? 'var(--bg-secondary)' 
+                        : isSelected 
+                        ? 'rgba(var(--primary-rgb), 0.1)' 
+                        : 'transparent'
                     }}
                   >
+                    <td style={{ padding: '0.75rem' }}>
+                      {!isCurrentUser && (
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleUser(user.id)}
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            cursor: 'pointer',
+                            accentColor: 'var(--primary)'
+                          }}
+                        />
+                      )}
+                    </td>
                     <td style={{ padding: '0.75rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span>{user.name}</span>
@@ -561,6 +738,22 @@ export default function UserList() {
             setDeleteUserId(null)
             setDeleteUserName('')
             setDeleteUserEmail('')
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        isOpen={showBulkDeleteConfirm}
+        title="Hapus Multiple User?"
+        message={`Apakah Anda yakin ingin menghapus ${selectedUserIds.size} user yang dipilih? Tindakan ini akan menghapus semua PR, sub tugas, dan data terkait user-user ini. Tindakan ini tidak dapat dibatalkan.`}
+        confirmText={bulkDeleteUsers.isLoading ? 'Menghapus...' : `Ya, Hapus ${selectedUserIds.size} User`}
+        cancelText="Batal"
+        danger={true}
+        disabled={bulkDeleteUsers.isLoading}
+        onConfirm={handleBulkDelete}
+        onCancel={() => {
+          if (!bulkDeleteUsers.isLoading) {
+            setShowBulkDeleteConfirm(false)
           }
         }}
       />
