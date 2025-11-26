@@ -32,13 +32,10 @@ npx tsx scripts/add-xi-bc-1-users.ts
 
 ### Opsi 2: Menggunakan SQL Script (Manual)
 
-**⚠️ PERHATIAN:** 
-- SQL script menggunakan hash yang simplified (SHA256), TIDAK SE-AMAN bcrypt!
-- Untuk production, WAJIB gunakan TypeScript script!
-- SQL script hanya untuk testing/development
+**⚠️ PERHATIAN:** SQL script menggunakan hash yang simplified, sebaiknya gunakan TypeScript script!
 
 ```bash
-# Jalankan SQL script (NOT RECOMMENDED for production)
+# Jalankan SQL script
 psql -U postgres -d tuntasinaja -f scripts/add-xi-bc-1-users.sql
 ```
 
@@ -50,45 +47,21 @@ Lihat file `XI-BC-1-CREDENTIALS.txt` untuk daftar lengkap email dan password sem
 
 **DANTON:**
 - Nama: Abel Yolanda Rahmadani
-- Email: abelyolanda@gmail.com
+- Email: abelyolanda@tuntasinaja.com
 - Password: AbelYolanda2847
 - Role: isDanton = true
 
 **SISWA (contoh):**
 - Nama: Alifa Jatil Ijah
-- Email: alifajatil@gmail.com
+- Email: alifajatil@tuntasinaja.com
 - Password: AlifaJatil9315
-
-## 🗄️ Database Schema
-
-Script ini sudah disesuaikan dengan Prisma schema:
-
-```prisma
-model ClassSubscription {
-  id                 String   @id @default(cuid())
-  kelas              String   @unique
-  subscriptionEndDate DateTime
-  @@map("class_subscriptions")
-}
-
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  name         String
-  kelas        String?
-  isDanton     Boolean  @default(false) @map("is_danton")
-  isAdmin      Boolean  @default(false) @map("is_admin")
-  @@map("users")
-}
-```
 
 ## 📋 Format Data
 
 ### Email Format:
-- 2 kata pertama dari nama (lowercase)
-- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@gmail.com`
-- Jika 1 kata: "Istiqomah" → `istiqomah@gmail.com`
+- 2 kata pertama dari nama (lowercase) + @tuntasinaja.com
+- Contoh: "Abel Yolanda Rahmadani" → `abelyolanda@tuntasinaja.com`
+- Jika 1 kata: "Istiqomah" → `istiqomah@tuntasinaja.com`
 
 ### Password Format:
 - 2 kata pertama dari nama (PascalCase) + 4 angka random
@@ -103,24 +76,24 @@ model User {
 
 ### 1. Cek Subscription
 ```sql
-SELECT * FROM "class_subscriptions" 
-WHERE kelas = 'XI BC 1';
+SELECT * FROM "ClassSubscription" 
+WHERE "className" = 'XI BC 1';
 ```
 
 ### 2. Cek Users
 ```sql
-SELECT id, name, email, kelas, is_danton 
-FROM "users" 
+SELECT id, name, email, kelas, "isDanton" 
+FROM "User" 
 WHERE kelas = 'XI BC 1'
-ORDER BY is_danton DESC, name ASC;
+ORDER BY "isDanton" DESC, name ASC;
 ```
 
 ### 3. Count Users
 ```sql
 SELECT 
   COUNT(*) as total,
-  COUNT(*) FILTER (WHERE is_danton = true) as danton_count
-FROM "users" 
+  COUNT(*) FILTER (WHERE "isDanton" = true) as danton_count
+FROM "User" 
 WHERE kelas = 'XI BC 1';
 ```
 
