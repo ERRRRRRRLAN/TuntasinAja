@@ -259,7 +259,10 @@ export default function ScheduleEditQuickView({
             </div>
           </div>
 
-          <div className="quickview-body" style={{ padding: '1.5rem' }}>
+          <div className="quickview-body" style={{ 
+            padding: '1.5rem',
+            paddingBottom: '2rem'
+          }}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ 
                 display: 'block', 
@@ -325,7 +328,8 @@ export default function ScheduleEditQuickView({
               background: 'var(--bg-secondary)',
               borderRadius: '0.5rem',
               fontSize: '0.8125rem',
-              color: 'var(--text-light)'
+              color: 'var(--text-light)',
+              lineHeight: '1.5'
             }}>
               <strong>Tips:</strong> Pilih mata pelajaran dari dropdown di atas. Jadwal akan tersimpan otomatis saat dipilih.
             </div>
