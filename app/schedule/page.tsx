@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client'
 
 import { useSession } from 'next-auth/react'
@@ -18,11 +19,30 @@ export default function SchedulePage() {
   }, [status, router])
 
   if (status === 'loading') {
+=======
+import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import Header from '@/components/layout/Header'
+import WeeklyScheduleViewer from '@/components/schedule/WeeklyScheduleViewer'
+
+export const dynamic = 'force-dynamic'
+
+export default async function SchedulePage() {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session) {
+      redirect('/auth/signin')
+    }
+
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
     return (
       <>
         <Header />
         <main className="main-content">
           <div className="container">
+<<<<<<< HEAD
             <div style={{ 
               minHeight: 'calc(100vh - 4rem)', 
               display: 'flex', 
@@ -31,10 +51,14 @@ export default function SchedulePage() {
             }}>
               <LoadingSpinner size={32} />
             </div>
+=======
+            <WeeklyScheduleViewer />
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
           </div>
         </main>
       </>
     )
+<<<<<<< HEAD
   }
 
   if (!session) {
@@ -58,5 +82,17 @@ export default function SchedulePage() {
       </main>
     </>
   )
+=======
+  } catch (error: any) {
+    // NEXT_REDIRECT is not a real error, it's how Next.js handles redirects
+    // Don't log redirect errors
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error // Re-throw redirect to let Next.js handle it
+    }
+    // Only log actual errors
+    console.error('Error getting session:', error)
+    redirect('/auth/signin')
+  }
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 }
 

@@ -7,7 +7,11 @@ import { trpc } from '@/lib/trpc'
 import ClassUserList from './ClassUserList'
 import AddUserToClassForm from './AddUserToClassForm'
 import SubscriptionStatusCard from './SubscriptionStatusCard'
+<<<<<<< HEAD
 import ScheduleManager from '@/components/schedule/ScheduleManager'
+=======
+import WeeklyScheduleManager from './WeeklyScheduleManager'
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { UserIcon, PlusIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
@@ -182,8 +186,13 @@ export default function DantonDashboard() {
         </div>
       )}
 
+<<<<<<< HEAD
       {/* Schedule Manager - Only show if subscription active */}
       {canManage && <ScheduleManager />}
+=======
+      {/* Weekly Schedule Manager - Only show if subscription active */}
+      {canManage && <WeeklyScheduleManager />}
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
     </div>
   )
 }

@@ -130,9 +130,15 @@ export default function QuickViewConfirmDialog({
           transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
         }}
       >
+<<<<<<< HEAD
         <h3 className="confirm-dialog-title">{title}</h3>
         <p className="confirm-dialog-message">{message}</p>
         <div className="confirm-dialog-actions">
+=======
+        <h3 className="confirm-dialog-title quickview-confirm-dialog-title">{title}</h3>
+        <p className="confirm-dialog-message quickview-confirm-dialog-message">{message}</p>
+        <div className="confirm-dialog-actions quickview-confirm-dialog-actions">
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
           <button
             type="button"
             onClick={handleCancelClick}

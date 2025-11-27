@@ -1,15 +1,44 @@
 'use client'
 
+<<<<<<< HEAD
 import { useState } from 'react'
+=======
+import { useState, useMemo } from 'react'
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
+<<<<<<< HEAD
 import { CrownIcon, TrashIcon, EditIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
+=======
+import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import EditUserForm from '@/components/admin/EditUserForm'
+import ComboBox from '@/components/ui/ComboBox'
+
+// Generate list of kelas options
+const generateKelasOptions = () => {
+  const kelasOptions: string[] = []
+  const tingkat = ['X', 'XI', 'XII']
+  const jurusan = ['RPL', 'TKJ', 'BC']
+  const nomor = ['1', '2']
+
+  tingkat.forEach((t) => {
+    jurusan.forEach((j) => {
+      nomor.forEach((n) => {
+        kelasOptions.push(`${t} ${j} ${n}`)
+      })
+    })
+  })
+
+  return kelasOptions
+}
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
 export default function UserList() {
   const { data: session } = useSession()
@@ -17,9 +46,40 @@ export default function UserList() {
   const [deleteUserName, setDeleteUserName] = useState('')
   const [deleteUserEmail, setDeleteUserEmail] = useState('')
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
+<<<<<<< HEAD
 
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
+=======
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedKelas, setSelectedKelas] = useState<string>('')
+
+  const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
+  const utils = trpc.useUtils()
+  const kelasOptions = generateKelasOptions()
+
+  // Filter users based on search query and kelas
+  const filteredUsers = useMemo(() => {
+    if (!users) return []
+
+    return users.filter((user) => {
+      // Filter by kelas
+      if (selectedKelas && user.kelas !== selectedKelas) {
+        return false
+      }
+
+      // Filter by search query (name or email)
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchesName = user.name.toLowerCase().includes(query)
+        const matchesEmail = user.email.toLowerCase().includes(query)
+        return matchesName || matchesEmail
+      }
+
+      return true
+    })
+  }, [users, searchQuery, selectedKelas])
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
   const deleteUser = trpc.auth.deleteUser.useMutation({
     onSuccess: () => {
@@ -73,7 +133,131 @@ export default function UserList() {
           Daftar Users
         </h3>
 
+<<<<<<< HEAD
         <div className="user-table" style={{ overflowX: 'auto' }}>
+=======
+        {/* Search and Filter Controls */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '1rem', 
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          {/* Search Bar */}
+          <div style={{ 
+            position: 'relative', 
+            flex: '1', 
+            minWidth: '200px',
+            maxWidth: '400px'
+          }}>
+            <SearchIcon 
+              size={18} 
+              style={{ 
+                position: 'absolute', 
+                left: '0.875rem', 
+                top: '50%', 
+                transform: 'translateY(-50%)',
+                color: 'var(--text-light)',
+                pointerEvents: 'none',
+                zIndex: 1
+              }} 
+            />
+            <input
+              type="text"
+              placeholder="Cari nama atau email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
+              style={{
+                width: '100%',
+                paddingLeft: '2.75rem',
+                paddingRight: searchQuery ? '2.5rem' : '0.875rem',
+                border: '2px solid var(--border)',
+                borderRadius: '0.5rem',
+                background: 'var(--card)',
+                color: 'var(--text)',
+                fontSize: '1rem',
+                fontFamily: 'inherit',
+                transition: 'border-color 0.2s, box-shadow 0.2s'
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                type="button"
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--text-light)',
+                  borderRadius: '0.25rem',
+                  transition: 'color 0.2s, background 0.2s',
+                  zIndex: 1
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text)'
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-light)'
+                  e.currentTarget.style.background = 'transparent'
+                }}
+                aria-label="Hapus pencarian"
+              >
+                <XIconSmall size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Kelas Filter */}
+          <div style={{ minWidth: '180px' }}>
+            <ComboBox
+              value={selectedKelas}
+              onChange={setSelectedKelas}
+              placeholder="Pilih Kelas"
+              options={kelasOptions}
+              showAllOption={true}
+              allValue=""
+              allLabel="Semua Kelas"
+              searchPlaceholder="Cari kelas..."
+              emptyMessage="Tidak ada kelas yang ditemukan"
+            />
+          </div>
+
+          {/* Results Count */}
+          <div style={{ 
+            color: 'var(--text-light)', 
+            fontSize: '0.875rem',
+            whiteSpace: 'nowrap',
+            padding: '0.5rem 0.75rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            border: '1px solid var(--border)'
+          }}>
+            {filteredUsers.length} dari {users.length} user
+          </div>
+        </div>
+
+        {filteredUsers.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem',
+            color: 'var(--text-light)'
+          }}>
+            <p>Tidak ada user yang sesuai dengan filter.</p>
+          </div>
+        ) : (
+          <div className="user-table" style={{ overflowX: 'auto' }}>
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
@@ -152,7 +336,11 @@ export default function UserList() {
               </tr>
             </thead>
             <tbody>
+<<<<<<< HEAD
               {users.map((user) => {
+=======
+              {filteredUsers.map((user) => {
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
                 const isCurrentUser = user.id === session?.user?.id
                 return (
                   <tr 
@@ -352,6 +540,10 @@ export default function UserList() {
             </tbody>
           </table>
         </div>
+<<<<<<< HEAD
+=======
+        )}
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
       </div>
 
       {editingUserId && users && (
@@ -361,7 +553,11 @@ export default function UserList() {
           zIndex: 10
         }}>
           <EditUserForm
+<<<<<<< HEAD
             user={users.find(u => u.id === editingUserId)!}
+=======
+            user={users.find(u => u.id === editingUserId) || filteredUsers.find(u => u.id === editingUserId)!}
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
             onSuccess={() => {
               setEditingUserId(null)
               utils.auth.getAllUsers.invalidate()

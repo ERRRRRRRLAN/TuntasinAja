@@ -8,13 +8,19 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
+<<<<<<< HEAD
 import ScheduleReminderModal from '@/components/schedule/ScheduleReminderModal'
+=======
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
+<<<<<<< HEAD
 import { useScheduleReminder } from '@/hooks/useScheduleReminder'
+=======
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -45,9 +51,13 @@ export default function FeedPage() {
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showReminderModal, setShowReminderModal] = useState(false)
+<<<<<<< HEAD
   const [showScheduleReminderModal, setShowScheduleReminderModal] = useState(false)
   const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
   const [hasCheckedScheduleReminder, setHasCheckedScheduleReminder] = useState(false)
+=======
+  const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
 
   // Get user data (kelas, isAdmin)
@@ -138,9 +148,12 @@ export default function FeedPage() {
     }
   )
 
+<<<<<<< HEAD
   // Get schedule reminder (check if tomorrow has classes with tasks)
   const { tasks: scheduleTasks, subjects: scheduleSubjects, tomorrow: tomorrowDate, hasReminder: hasScheduleReminder, isLoading: isLoadingScheduleReminder } = useScheduleReminder()
 
+=======
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
@@ -159,6 +172,7 @@ export default function FeedPage() {
     }
   }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
+<<<<<<< HEAD
   // Show schedule reminder modal automatically when user logs in and there are tasks for tomorrow's classes
   // Only show once per session
   useEffect(() => {
@@ -201,6 +215,8 @@ export default function FeedPage() {
       }
     }
   }, [session, isDataValidated, hasCheckedScheduleReminder, isLoadingScheduleReminder, scheduleTasks.length, scheduleSubjects.length, showReminderModal, overdueTasks.length, tomorrowDate])
+=======
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
 
   // Filter and search threads
@@ -531,6 +547,7 @@ export default function FeedPage() {
       />
 
       {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
+<<<<<<< HEAD
       <ScheduleReminderModal
         isOpen={showScheduleReminderModal}
         onClose={() => {
@@ -552,6 +569,8 @@ export default function FeedPage() {
         }}
       />
 
+=======
+>>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
       {/* Permission Indicator */}
       {session && isOnlyRead && (
         <div
