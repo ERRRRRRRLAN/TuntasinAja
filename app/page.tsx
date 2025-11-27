@@ -14,9 +14,6 @@ export default async function Home() {
     }
 
     return <FeedPage />
-<<<<<<< HEAD
-  } catch (error) {
-=======
   } catch (error: any) {
     // NEXT_REDIRECT is not a real error, it's how Next.js handles redirects
     // Don't log redirect errors
@@ -24,7 +21,6 @@ export default async function Home() {
       throw error // Re-throw redirect to let Next.js handle it
     }
     // Only log actual errors
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
     console.error('Error getting session:', error)
     redirect('/auth/signin')
   }

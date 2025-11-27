@@ -132,7 +132,6 @@ enum DayOfWeek {
   wednesday
   thursday
   friday
-<<<<<<< HEAD
   saturday
   sunday
 }
@@ -141,7 +140,14 @@ model ClassSchedule {
   id          String    @id @default(cuid())
   kelas       String    @map("kelas")
   dayOfWeek   DayOfWeek @map("day_of_week")
-=======
+  subject     String    @map("subject")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([kelas, dayOfWeek, subject])
+  @@index([kelas])
+  @@index([dayOfWeek])
+  @@map("class_schedules")
 }
 
 model WeeklySchedule {
@@ -149,20 +155,12 @@ model WeeklySchedule {
   kelas       String    @map("kelas")
   dayOfWeek   DayOfWeek @map("day_of_week")
   period      Int       @map("period") // Urutan jam pelajaran (1, 2, 3, dst)
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   subject     String    @map("subject")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-<<<<<<< HEAD
-  @@unique([kelas, dayOfWeek, subject])
-  @@index([kelas])
-  @@index([dayOfWeek])
-  @@map("class_schedules")
-=======
   @@unique([kelas, dayOfWeek, period])
   @@index([kelas])
   @@index([dayOfWeek])
   @@map("weekly_schedules")
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 }
