@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  isAdmin       Boolean   @default(false) @map("is_admin")
+  isDanton      Boolean   @default(false) @map("is_danton")
+  kelas         String?   @map("kelas")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  threads       Thread[]
+  comments      Comment[]
+  userStatuses  UserStatus[]
+  histories     History[]
+  permission    UserPermission?
+
+  @@map("users")
+}
+
+model Thread {
+  id          String    @id @default(cuid())
+  title       String    @map("judul_mapel")
+  authorId    String    @map("user_id_pembuat")
+  date        DateTime  @default(now())
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  userStatuses UserStatus[]
+  histories   History[]
+
+  // Unique constraint removed to allow same title+date for different classes
+  // Duplicate prevention is now handled by application logic (checking kelas)
+  @@map("threads")
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  threadId    String    @map("thread_id")
+  authorId    String    @map("user_id_pembuat")
+  content     String    @map("isi_tugas")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  userStatuses UserStatus[]
+
+  @@map("comments")
+}
+
+model UserStatus {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  commentId   String?   @map("comment_id")
+  threadId    String?   @map("thread_id")
+  isCompleted Boolean   @default(false) @map("status_selesai")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment     Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  thread      Thread?   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@unique([userId, threadId])
+  @@map("user_statuses")
+}
+
+model History {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  threadId      String?   @map("thread_id") // Optional karena thread bisa dihapus
+  threadTitle   String    @map("thread_title") // Denormalisasi: simpan title thread
+  threadAuthorId String?  @map("thread_author_id") // Denormalisasi: simpan author ID
+  threadAuthorName String? @map("thread_author_name") // Denormalisasi: simpan author name
+  completedDate DateTime  @default(now()) @map("tanggal_selesai")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread        Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull) // SetNull agar history tidak terhapus
+
+  // Note: Unique constraint removed to allow multiple histories with null threadId
+  // Partial unique index is created via SQL migration to enforce uniqueness only when threadId is not null
+  @@map("histories")
+}
+
+enum PermissionType {
+  only_read
+  read_and_post_edit
+}
+
+model UserPermission {
+  id          String         @id @default(cuid())
+  userId      String         @unique @map("user_id")
+  permission  PermissionType @default(read_and_post_edit)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_permissions")
+}
+
+model ClassSubscription {
+  id                 String   @id @default(cuid())
+  kelas              String   @unique @map("kelas")
+  subscriptionEndDate DateTime @map("subscription_end_date")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("class_subscriptions")
+}
+
+enum DayOfWeek {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+model ClassSchedule {
+  id          String    @id @default(cuid())
+  kelas       String    @map("kelas")
+  dayOfWeek   DayOfWeek @map("day_of_week")
+  subject     String    @map("subject")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([kelas, dayOfWeek, subject])
+  @@index([kelas])
+  @@index([dayOfWeek])
+  @@map("class_schedules")
+}

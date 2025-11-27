@@ -1,0 +1,381 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
+import { id } from 'date-fns/locale'
+import { useSession } from 'next-auth/react'
+import { trpc } from '@/lib/trpc'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { toast } from '@/components/ui/ToastContainer'
+import { UserIcon, CalendarIcon, MessageIcon, ClockIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+
+interface ThreadCardProps {
+  thread: {
+    id: string
+    title: string
+    date: Date
+    createdAt: Date
+    author: {
+      id: string
+      name: string
+      kelas?: string | null
+    }
+    comments: Array<{
+      id: string
+      content: string
+      author: {
+        id: string
+        name: string
+        kelas?: string | null
+      }
+    }>
+    _count: {
+      comments: number
+    }
+  }
+  onThreadClick?: (threadId: string) => void
+}
+
+export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
+  const { data: session } = useSession()
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showUncheckDialog, setShowUncheckDialog] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState<string>('')
+
+  // Get thread status
+  const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
+    { threadId: thread.id },
+    { enabled: !!session }
+  )
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
+
+  const utils = trpc.useUtils()
+
+  const threadStatus = statuses?.find((s) => s.threadId === thread.id && !s.commentId)
+  const isCompleted = threadStatus?.isCompleted || false
+
+  // Calculate time remaining until auto-delete (1 day from when thread was checked)
+  // Timer only shows when thread is completed
+  useEffect(() => {
+    if (!isCompleted || !threadStatus?.updatedAt) {
+      setTimeRemaining('')
+      return
+    }
+
+    const calculateTimeRemaining = () => {
+      // Timer is calculated from when thread was checked (updatedAt) + 1 day
+      const deleteDate = addDays(new Date(threadStatus.updatedAt), 1)
+      const now = new Date()
+      const diffMs = deleteDate.getTime() - now.getTime()
+
+      if (diffMs <= 0) {
+        setTimeRemaining('Akan terhapus segera')
+        return
+      }
+
+      const hours = differenceInHours(deleteDate, now)
+      const minutes = differenceInMinutes(deleteDate, now) % 60
+
+      if (hours > 0) {
+        setTimeRemaining(`${hours}j ${minutes}m lagi`)
+      } else if (minutes > 0) {
+        setTimeRemaining(`${minutes}m lagi`)
+      } else {
+        setTimeRemaining('Akan terhapus segera')
+      }
+    }
+
+    calculateTimeRemaining()
+    const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [isCompleted, threadStatus?.updatedAt])
+
+  // Toggle thread completion
+  const toggleThread = trpc.userStatus.toggleThread.useMutation({
+    onSuccess: async () => {
+      setShowConfirmDialog(false)
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId: thread.id }),
+        utils.thread.getAll.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId: thread.id }),
+        utils.thread.getAll.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
+    },
+    onError: (error: any) => {
+      console.error('Error toggling thread:', error)
+      toast.error('Gagal mengubah status thread. Silakan coba lagi.')
+      setShowConfirmDialog(false)
+    },
+  })
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (session) {
+      // If unchecking, show confirmation dialog about timer reset
+      if (isCompleted) {
+        setShowUncheckDialog(true)
+      } else {
+        // If checking, show confirmation dialog
+        setShowConfirmDialog(true)
+      }
+    }
+  }
+
+  const handleConfirmUncheck = () => {
+    setShowUncheckDialog(false)
+    toggleThread.mutate({
+      threadId: thread.id,
+      isCompleted: false,
+    })
+  }
+
+  const handleConfirmThread = () => {
+    // Close dialog immediately for better UX
+    setShowConfirmDialog(false)
+    // Then execute the mutation
+    toggleThread.mutate({
+      threadId: thread.id,
+      isCompleted: true,
+    })
+  }
+
+  const handleCardClick = () => {
+    if (onThreadClick) {
+      onThreadClick(thread.id)
+    }
+  }
+
+
+  return (
+    <div 
+      className="thread-card" 
+      onClick={handleCardClick}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="thread-card-content">
+        <div className="thread-card-header">
+          {session && (
+            <Checkbox
+              checked={isCompleted}
+              onClick={handleCheckboxClick}
+              isLoading={toggleThread.isLoading}
+              disabled={toggleThread.isLoading}
+              size={28}
+            />
+          )}
+          <div className="thread-card-header-content" style={{ position: 'relative' }}>
+            <h3 
+              className="thread-title"
+              style={{
+                textDecoration: isCompleted ? 'line-through' : 'none',
+                color: isCompleted ? 'var(--text-light)' : 'var(--text)',
+                flex: 1,
+                margin: 0,
+                lineHeight: 1.4,
+                paddingRight: thread.author.kelas ? '80px' : '0'
+              }}
+            >
+              {thread.title}
+            </h3>
+            {thread.author.kelas && (
+              <span style={{
+                position: 'absolute',
+                right: '0',
+                top: 0,
+                display: 'inline-block',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: 'transparent',
+                zIndex: 1
+              }}>
+                {thread.author.kelas}
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="thread-meta">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <UserIcon size={16} />
+            <span>{thread.author.name}</span>
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <CalendarIcon size={16} />
+            <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <MessageIcon size={16} />
+            <span>{thread._count.comments} sub tugas</span>
+          </span>
+          {isCompleted && timeRemaining && (
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.375rem',
+              color: 'var(--text-light)',
+              fontSize: '0.875rem'
+            }}>
+              <ClockIcon size={16} />
+              <span>Auto-hapus: {timeRemaining}</span>
+            </span>
+          )}
+        </div>
+
+        {thread.comments.length > 0 && (
+          <div className="thread-comments-preview">
+            {thread.comments.slice(0, 2).map((comment) => (
+              <CommentItem 
+                key={comment.id} 
+                comment={comment} 
+                threadId={thread.id}
+                statuses={statuses || []}
+                threadAuthorId={thread.author.id}
+              />
+            ))}
+            {thread.comments.length > 2 && (
+              <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                + {thread.comments.length - 2} sub tugas lainnya
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="Centang PR?"
+        message={`Apakah Anda yakin ingin mencentang PR "${thread.title}"? Semua sub tugas di dalamnya akan otomatis tercentang.`}
+        confirmText="Ya, Centang"
+        cancelText="Batal"
+        onConfirm={handleConfirmThread}
+        onCancel={() => setShowConfirmDialog(false)}
+      />
+      <ConfirmDialog
+        isOpen={showUncheckDialog}
+        title="Uncentang PR?"
+        message={`Apakah Anda yakin ingin menguncentang PR "${thread.title}"? Jika Anda mencentang lagi nanti, timer auto-hapus akan direset ke 1 hari lagi dari waktu centang tersebut.`}
+        confirmText="Ya, Uncentang"
+        cancelText="Batal"
+        onConfirm={handleConfirmUncheck}
+        onCancel={() => setShowUncheckDialog(false)}
+      />
+    </div>
+  )
+}
+
+function CommentItem({ 
+  comment, 
+  threadId,
+  statuses,
+  threadAuthorId
+}: { 
+  comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
+  threadId: string
+  statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
+  threadAuthorId: string
+}) {
+  const { data: session } = useSession()
+  const commentStatus = statuses.find((s) => s.commentId === comment.id)
+  const isCompleted = commentStatus?.isCompleted || false
+
+  // Check if user is admin
+  const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = adminCheck?.isAdmin || false
+  
+  const utils = trpc.useUtils()
+
+  const toggleComment = trpc.userStatus.toggleComment.useMutation({
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.invalidate({ threadId }),
+        utils.thread.getAll.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+      ])
+      // Force immediate refetch
+      await Promise.all([
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getAll.refetch(),
+        utils.history.getUserHistory.refetch(),
+      ])
+    },
+    onError: (error: any) => {
+      console.error('Error toggling comment:', error)
+      toast.error('Gagal mengubah status sub tugas. Silakan coba lagi.')
+    },
+  })
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (session) {
+      toggleComment.mutate({
+        threadId,
+        commentId: comment.id,
+        isCompleted: !isCompleted,
+      })
+    }
+  }
+
+
+  return (
+    <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
+      {session && (
+        <div style={{ marginTop: '0.25rem' }}>
+          <Checkbox
+            checked={isCompleted}
+            onClick={handleCheckboxClick}
+            isLoading={toggleComment.isLoading}
+            disabled={toggleComment.isLoading}
+            size={24}
+          />
+        </div>
+      )}
+      <div className="comment-text" style={{ flex: 1 }}>
+        <div style={{
+          textDecoration: isCompleted ? 'line-through' : 'none',
+          color: isCompleted ? 'var(--text-light)' : 'var(--text)'
+        }}>
+          {comment.content}
+        </div>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative' }}>
+          <span>- {comment.author.name}</span>
+          {comment.author.kelas && (
+            <span style={{
+              display: 'inline-block',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              border: '1px solid var(--primary)',
+              color: 'var(--primary)',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              marginLeft: 'auto',
+              background: 'transparent'
+            }}>
+              {comment.author.kelas}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

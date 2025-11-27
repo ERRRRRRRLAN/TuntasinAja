@@ -1,0 +1,20 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "true"
+  },
+  "crons": [
+    {
+      "path": "/api/cron/auto-delete-threads",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-user-statuses",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuntasinAja - Social Homework Thread</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>📚 TuntasinAja</h1>
+            </div>
+            <nav class="nav" id="mainNav">
+                <a href="#" class="nav-link" data-page="feed">Feed</a>
+                <a href="#" class="nav-link" data-page="history">History</a>
+                <a href="#" class="nav-link" data-page="profile">Profil</a>
+                <button class="btn-logout" id="logoutBtn" style="display: none;">Logout</button>
+                <button class="btn-clear" id="clearDataBtn" style="display: none;" title="Hapus semua data (untuk testing)">🗑️ Clear</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Login Page -->
+        <div id="loginPage" class="page active">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Masuk ke TuntasinAja</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Masuk</button>
+                    </form>
+                    <p class="auth-switch">Belum punya akun? <a href="#" id="showRegister">Daftar di sini</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="registerPage" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Daftar ke TuntasinAja</h2>
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerName">Nama</label>
+                            <input type="text" id="registerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <input type="email" id="registerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Daftar</button>
+                    </form>
+                    <p class="auth-switch">Sudah punya akun? <a href="#" id="showLogin">Masuk di sini</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feed Page -->
+        <div id="feedPage" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <div>
+                        <h2>Feed Tugas</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
+                            Klik thread untuk melihat detail • Centang checkbox untuk menandai selesai
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" id="createThreadBtn">+ Buat Thread Baru</button>
+                </div>
+
+                <!-- Create Thread Form -->
+                <div class="card create-thread-form" id="createThreadForm" style="display: none;">
+                    <h3>Buat Thread Baru</h3>
+                    <form id="threadForm">
+                        <div class="form-group">
+                            <label for="threadTitle">Nama Mata Pelajaran *</label>
+                            <select id="threadTitle" required>
+                                <option value="">-- Pilih Mata Pelajaran --</option>
+                                <option value="Matematika">Matematika</option>
+                                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                <option value="Bahasa Inggris">Bahasa Inggris</option>
+                                <option value="Fisika">Fisika</option>
+                                <option value="Kimia">Kimia</option>
+                                <option value="Biologi">Biologi</option>
+                                <option value="Sejarah">Sejarah</option>
+                                <option value="Geografi">Geografi</option>
+                                <option value="Ekonomi">Ekonomi</option>
+                                <option value="Sosiologi">Sosiologi</option>
+                                <option value="Pendidikan Agama">Pendidikan Agama</option>
+                                <option value="Pendidikan Kewarganegaraan">Pendidikan Kewarganegaraan</option>
+                                <option value="Seni Budaya">Seni Budaya</option>
+                                <option value="Pendidikan Jasmani">Pendidikan Jasmani</option>
+                                <option value="TIK">TIK</option>
+                                <option value="Bahasa Jawa">Bahasa Jawa</option>
+                                <option value="Bahasa Sunda">Bahasa Sunda</option>
+                                <option value="Prakarya">Prakarya</option>
+                            </select>
+                            <small class="form-hint">Pilih mata pelajaran dari daftar</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="threadComment">Komentar Awal (Deskripsi Tugas)</label>
+                            <textarea id="threadComment" rows="3" placeholder="Contoh: Kerjakan halaman 42-45"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Buat Thread</button>
+                            <button type="button" class="btn btn-secondary" id="cancelThreadBtn">Batal</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Threads List -->
+                <div class="threads-container" id="threadsContainer">
+                    <!-- Threads will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Thread Detail Page -->
+        <div id="threadDetailPage" class="page">
+            <div class="container">
+                <button class="btn btn-secondary" id="backToFeedBtn">← Kembali ke Feed</button>
+                <div class="thread-detail" id="threadDetailContent">
+                    <!-- Thread detail will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- History Page -->
+        <div id="historyPage" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h2>History Tugas Selesai</h2>
+                </div>
+                <div class="history-container" id="historyContainer">
+                    <!-- History items will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page">
+            <div class="container">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">👤</div>
+                        <h2 id="profileName">Nama User</h2>
+                        <p id="profileEmail">email@example.com</p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="threadsCount">0</div>
+                            <div class="stat-label">Thread Dibuat</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="commentsCount">0</div>
+                            <div class="stat-label">Komentar</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="completedCount">0</div>
+                            <div class="stat-label">Tugas Selesai</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <span class="toast-message" id="toastMessage"></span>
+            <button class="toast-close" id="toastClose">×</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

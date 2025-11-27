@@ -1,0 +1,383 @@
+import { z } from 'zod'
+import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure } from '../trpc'
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import { getUTCDate } from '@/lib/date-utils'
+import { getUserPermission } from '../trpc'
+
+export const authRouter = createTRPCRouter({
+  // Register
+  register: publicProcedure
+    .input(
+      z.object({
+        name: z.string().min(3),
+        email: z.string().email(),
+        password: z.string().min(6),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: input.email },
+      })
+
+      if (existingUser) {
+        throw new Error('Email already registered')
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(input.password, 10)
+
+      // Use Jakarta time for user creation
+      const now = getUTCDate()
+      
+      // Create user
+      const user = await prisma.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          passwordHash,
+          createdAt: now,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+        },
+      })
+
+      return user
+    }),
+
+  // Get user profile (simplified - no stats)
+  getProfile: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+        },
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      }
+    }),
+
+  // Check if current user is admin
+  isAdmin: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { isAdmin: false }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { isAdmin: true },
+    })
+
+    return { isAdmin: user?.isAdmin || false }
+  }),
+
+  // Get current user data (kelas, isAdmin, isDanton)
+  getUserData: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { kelas: null, isAdmin: false, isDanton: false }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { 
+        kelas: true,
+        isAdmin: true,
+        isDanton: true,
+      },
+    })
+
+    return { 
+      kelas: user?.kelas || null, 
+      isAdmin: user?.isAdmin || false,
+      isDanton: user?.isDanton || false,
+    }
+  }),
+
+  // Check if current user is danton
+  isDanton: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { isDanton: false, kelas: null }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { 
+        isDanton: true,
+        kelas: true,
+      },
+    })
+
+    return { 
+      isDanton: user?.isDanton || false,
+      kelas: user?.kelas || null,
+    }
+  }),
+
+  // Get user permission (only_read or read_and_post_edit)
+  getUserPermission: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session?.user) {
+      return { permission: 'read_and_post_edit' as const }
+    }
+
+    const permission = await getUserPermission(ctx.session.user.id)
+    return { permission }
+  }),
+
+  // Create user (Admin only)
+  createUser: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(3),
+        email: z.string().email(),
+        password: z.string().min(6),
+        isAdmin: z.boolean().optional().default(false),
+        isDanton: z.boolean().optional().default(false),
+        kelas: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: input.email },
+      })
+
+      if (existingUser) {
+        throw new Error('Email sudah terdaftar')
+      }
+
+      // Validate kelas for non-admin users
+      if (!input.isAdmin && !input.kelas) {
+        throw new Error('Kelas harus diisi untuk user non-admin')
+      }
+
+      // Validate danton: cannot be admin and danton at the same time
+      if (input.isDanton && input.isAdmin) {
+        throw new Error('User tidak dapat menjadi admin dan danton sekaligus')
+      }
+
+      // Validate danton: must have kelas
+      if (input.isDanton && !input.kelas) {
+        throw new Error('User harus memiliki kelas untuk dijadikan danton')
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(input.password, 10)
+
+      // Use Jakarta time for user creation
+      const now = getUTCDate()
+      
+      // Create user
+      const user = await prisma.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          passwordHash,
+          isAdmin: input.isAdmin || false,
+          isDanton: input.isAdmin ? false : (input.isDanton || false), // Cannot be danton if admin
+          kelas: input.isAdmin ? null : input.kelas || null,
+          createdAt: now,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          isDanton: true,
+          kelas: true,
+          createdAt: true,
+        },
+      }) as any
+
+      return user
+    }),
+
+  // Get all users (Admin only)
+  getAllUsers: adminProcedure.query(async () => {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isAdmin: true,
+        isDanton: true,
+        kelas: true,
+        createdAt: true,
+        _count: {
+          select: {
+            threads: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }) as any[]
+
+    return users
+  }),
+
+  // Update user (Admin only)
+  updateUser: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        name: z.string().min(3).optional(),
+        email: z.string().email().optional(),
+        password: z.string().min(6).optional(),
+        isAdmin: z.boolean().optional(),
+        isDanton: z.boolean().optional(),
+        kelas: z.string().optional().nullable(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userId, password, ...updateData } = input
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      }) as any
+
+      if (!user) {
+        throw new Error('User tidak ditemukan')
+      }
+
+      // Check if email is being changed and if it's already taken
+      if (updateData.email && updateData.email !== user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: updateData.email },
+        })
+
+        if (existingUser) {
+          throw new Error('Email sudah digunakan oleh user lain')
+        }
+      }
+
+      // Validate kelas for non-admin users
+      const willBeAdmin = updateData.isAdmin !== undefined ? updateData.isAdmin : user.isAdmin
+      if (!willBeAdmin && updateData.kelas === null) {
+        throw new Error('Kelas harus diisi untuk user non-admin')
+      }
+
+      // Validate danton: user must have kelas to be danton, cannot be admin and danton at the same time
+      const willBeDanton = updateData.isDanton !== undefined ? updateData.isDanton : (user as any).isDanton || false
+      const targetKelas = updateData.kelas !== undefined ? updateData.kelas : user.kelas
+      
+      if (willBeDanton && !targetKelas) {
+        throw new Error('User harus memiliki kelas untuk dijadikan danton')
+      }
+      
+      if (willBeDanton && willBeAdmin) {
+        throw new Error('User tidak dapat menjadi admin dan danton sekaligus')
+      }
+
+      // Prepare update data
+      const dataToUpdate: any = {}
+
+      if (updateData.name !== undefined) {
+        dataToUpdate.name = updateData.name
+      }
+
+      if (updateData.email !== undefined) {
+        dataToUpdate.email = updateData.email
+      }
+
+      if (updateData.isAdmin !== undefined) {
+        dataToUpdate.isAdmin = updateData.isAdmin
+        // If making user admin, remove kelas and danton status
+        if (updateData.isAdmin) {
+          dataToUpdate.kelas = null
+          dataToUpdate.isDanton = false
+        } else if (updateData.kelas !== undefined) {
+          dataToUpdate.kelas = updateData.kelas
+        }
+      } else if (updateData.kelas !== undefined) {
+        dataToUpdate.kelas = updateData.kelas
+        // If removing kelas, also remove danton status
+        if (updateData.kelas === null) {
+          dataToUpdate.isDanton = false
+        }
+      }
+
+      // Handle isDanton update
+      if (updateData.isDanton !== undefined) {
+        dataToUpdate.isDanton = updateData.isDanton
+        // If setting as danton, ensure user has kelas
+        if (updateData.isDanton && !targetKelas) {
+          throw new Error('User harus memiliki kelas untuk dijadikan danton')
+        }
+        // If setting as danton, ensure user is not admin
+        if (updateData.isDanton && willBeAdmin) {
+          throw new Error('Admin tidak dapat menjadi danton')
+        }
+      }
+
+      // Hash password if provided
+      if (password) {
+        dataToUpdate.passwordHash = await bcrypt.hash(password, 10)
+      }
+
+      // Update user
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: dataToUpdate,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          isDanton: true,
+          kelas: true,
+          createdAt: true,
+        },
+      }) as any
+
+      return updatedUser
+    }),
+
+  // Delete user (Admin only)
+  deleteUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // Prevent admin from deleting themselves
+      if (input.userId === ctx.session?.user?.id) {
+        throw new Error('Tidak dapat menghapus akun sendiri')
+      }
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+      })
+
+      if (!user) {
+        throw new Error('User tidak ditemukan')
+      }
+
+      // Delete user (cascade will delete related threads, comments, etc.)
+      await prisma.user.delete({
+        where: { id: input.userId },
+      })
+
+      return { success: true }
+    }),
+})
+
