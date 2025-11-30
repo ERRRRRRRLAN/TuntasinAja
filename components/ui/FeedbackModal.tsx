@@ -41,14 +41,28 @@ export default function FeedbackModal({
 
   useEffect(() => {
     if (isOpen) {
+      // Lock body scroll when modal is open (mobile)
+      const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
+      
+      return () => {
+        // Unlock body scroll when modal is closed
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo(0, scrollY)
+      }
     } else {
       const timer = setTimeout(() => {
         setIsVisible(false)
-        document.body.style.overflow = 'unset'
       }, 300)
       return () => clearTimeout(timer)
     }
@@ -96,6 +110,7 @@ export default function FeedbackModal({
     <div 
       ref={overlayRef}
       onClick={handleOverlayClick}
+      className="feedback-modal-overlay"
       style={{
         position: 'fixed',
         top: 0,
@@ -131,47 +146,52 @@ export default function FeedbackModal({
         }}
       >
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.5rem',
-          borderBottom: '1px solid var(--border)'
-        }}>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-            Saran dan Masukan
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '0.25rem',
-              color: 'var(--text-light)',
-              transition: 'background 0.2s, color 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-              e.currentTarget.style.color = 'var(--text)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none'
-              e.currentTarget.style.color = 'var(--text-light)'
-            }}
-            aria-label="Tutup"
-            disabled={submitFeedback.isLoading}
-          >
-            <XIconSmall size={20} />
-          </button>
+        <div className="feedback-modal-header">
+          <div className="feedback-modal-header-top">
+            <div className="feedback-modal-header-left">
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+                Saran dan Masukan
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="feedback-modal-close-btn"
+              style={{
+                background: 'var(--card)',
+                border: '2px solid var(--border)',
+                cursor: 'pointer',
+                color: 'var(--text)',
+                padding: '0.625rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '0.5rem',
+                minWidth: '44px',
+                minHeight: '44px',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.color = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--card)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text)'
+              }}
+              aria-label="Tutup"
+              disabled={submitFeedback.isLoading}
+            >
+              <XIconSmall size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '1.5rem', overflow: 'auto', flex: 1 }}>
+        <form onSubmit={handleSubmit} className="feedback-modal-form">
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="feedback-content" style={{ 
               display: 'block', 
@@ -186,7 +206,7 @@ export default function FeedbackModal({
               id="feedback-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={6}
+              rows={8}
               placeholder="Masukkan saran dan masukan Anda di sini (minimal 10 karakter)..."
               required
               disabled={submitFeedback.isLoading}
@@ -202,7 +222,8 @@ export default function FeedbackModal({
                 resize: 'vertical',
                 outline: 'none',
                 transition: 'border-color 0.2s',
-                minHeight: '120px'
+                minHeight: '150px',
+                lineHeight: '1.5'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = 'var(--primary)'
@@ -221,18 +242,12 @@ export default function FeedbackModal({
             </small>
           </div>
 
-          <div style={{
-            display: 'flex',
-            gap: '0.75rem',
-            justifyContent: 'flex-end',
-            flexWrap: 'wrap'
-          }}>
+          <div className="feedback-modal-actions">
             <button
               type="button"
               onClick={onClose}
               className="btn btn-secondary"
               disabled={submitFeedback.isLoading}
-              style={{ minWidth: '80px' }}
             >
               Batal
             </button>
@@ -240,7 +255,6 @@ export default function FeedbackModal({
               type="submit"
               className="btn btn-primary"
               disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
-              style={{ minWidth: '100px' }}
             >
               {submitFeedback.isLoading ? (
                 <>

@@ -2296,6 +2296,53 @@ textarea {
     line-height: 1.3;
     margin-top: 0;
   }
+
+  /* Feedback Modal Desktop */
+  .feedback-modal-overlay {
+    background: rgba(0, 0, 0, 0.5) !important;
+    padding: 1rem !important;
+    align-items: center !important;
+  }
+
+  .feedback-modal-content {
+    max-width: 500px !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    margin: 0 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: var(--shadow-lg) !important;
+    transform: scale(1) !important;
+  }
+
+  .feedback-modal-header {
+    padding: 1.5rem !important;
+    position: relative !important;
+  }
+
+  .feedback-modal-header-left h3 {
+    font-size: 1.25rem !important;
+  }
+
+  .feedback-modal-form {
+    padding: 1.5rem !important;
+  }
+
+  .feedback-modal-form textarea {
+    min-height: 150px !important;
+  }
+
+  .feedback-modal-actions {
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+
+  .feedback-modal-actions .btn {
+    width: auto !important;
+    min-width: 100px !important;
+  }
   
   .thread-detail-meta {
     padding: 1.25rem 2rem;
@@ -3513,16 +3560,126 @@ textarea {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
   }
 
-  /* Modal Responsive Mobile */
-  .feedback-modal-content,
+  /* Feedback Modal Mobile - Fullscreen like QuickView */
+  .feedback-modal-overlay {
+    padding: 0 !important;
+    background: var(--card) !important;
+    align-items: flex-start !important;
+    overflow: hidden !important;
+  }
+
+  .feedback-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    transform: none !important;
+  }
+
+  .feedback-modal-header {
+    padding: 1rem !important;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .feedback-modal-header-top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .feedback-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .feedback-modal-header-left h3 {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word;
+  }
+
+  .feedback-modal-close-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex-shrink: 0 !important;
+    padding: 0.5rem !important;
+  }
+
+  .feedback-modal-close-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .feedback-modal-form {
+    padding: 1rem !important;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .feedback-modal-form .form-group {
+    margin-bottom: 1.25rem !important;
+  }
+
+  .feedback-modal-form label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .feedback-modal-form textarea {
+    font-size: 0.875rem !important;
+    padding: 0.875rem !important;
+    min-height: 180px !important;
+    line-height: 1.6 !important;
+  }
+
+  .feedback-modal-form small {
+    font-size: 0.75rem !important;
+  }
+
+  .feedback-modal-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    margin-top: 1.5rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  .feedback-modal-actions .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem !important;
+    justify-content: center !important;
+  }
+
+  /* Completion Stats Modal Mobile */
   .completion-stats-modal-content {
     max-width: calc(100vw - 2rem) !important;
     margin: 1rem !important;
-  }
-
-  /* Feedback Modal Mobile */
-  form[style*="padding"] {
-    padding: 1rem !important;
   }
 
   /* Completion Stats Modal Mobile */
