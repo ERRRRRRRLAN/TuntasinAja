@@ -50,28 +50,54 @@ async function fixAdmin() {
       if (!passwordValid || !existingUser.isAdmin) {
         console.log('⚠️  Updating admin user...')
         
-        // Generate hash baru
-        const passwordHash = await bcrypt.hash(adminPassword, 10)
-        
-        // Update password and ensure isAdmin = true
-        await prisma.user.update({
-          where: { email: adminEmail },
-          data: {
-            passwordHash,
-            isAdmin: true
+          // Test current password first
+          const currentPasswordValid = await bcrypt.compare(adminPassword, existingUser.passwordHash)
+          
+          if (currentPasswordValid) {
+            console.log('✅ Password sudah valid!')
+            
+            // Only ensure isAdmin = true
+            if (!existingUser.isAdmin) {
+              await prisma.user.update({
+                where: { email: adminEmail },
+                data: { isAdmin: true }
+              })
+              console.log('✅ isAdmin updated to true!\n')
+            } else {
+              console.log('✅ Admin user sudah benar, tidak perlu di-update!\n')
+            }
+          } else {
+            console.log('⚠️  Password tidak valid, generating new hash...')
+            
+            // Generate hash baru
+            const passwordHash = await bcrypt.hash(adminPassword, 10)
+            console.log('Generated new hash:', passwordHash.substring(0, 29) + '...')
+            
+            // Update password and ensure isAdmin = true
+            await prisma.user.update({
+              where: { email: adminEmail },
+              data: {
+                passwordHash,
+                isAdmin: true
+              }
+            })
+            
+            console.log('✅ Admin user updated!')
+            
+            // Verify password
+            const verifyUser = await prisma.user.findUnique({
+              where: { email: adminEmail }
+            })
+            
+            const isValid = await bcrypt.compare(adminPassword, verifyUser.passwordHash)
+            console.log(`   Password verification: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
+            console.log(`   isAdmin: ${verifyUser.isAdmin ? '✅ True' : '❌ False'}\n`)
+            
+            if (!isValid) {
+              console.error('❌ ERROR: Password verification failed after update!')
+              process.exit(1)
+            }
           }
-        })
-        
-        console.log('✅ Admin user updated!')
-        
-        // Verify password
-        const verifyUser = await prisma.user.findUnique({
-          where: { email: adminEmail }
-        })
-        
-        const isValid = await bcrypt.compare(adminPassword, verifyUser.passwordHash)
-        console.log(`   Password verification: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
-        console.log(`   isAdmin: ${verifyUser.isAdmin ? '✅ True' : '❌ False'}\n`)
       } else {
         console.log('✅ Admin user sudah benar, tidak perlu di-update!\n')
       }
