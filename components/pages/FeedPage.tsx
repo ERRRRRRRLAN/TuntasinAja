@@ -569,16 +569,19 @@ export default function FeedPage() {
 
       {/* Feedback FAB - Above Create Thread Button */}
       {session && (
-        <div style={{
-          position: 'fixed',
-          bottom: '8rem',
-          right: '1.5rem',
-          zIndex: 999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: '0.5rem'
-        }}>
+        <div 
+          className="feedback-fab-container"
+          style={{
+            position: 'fixed',
+            bottom: '8rem',
+            right: '1.5rem',
+            zIndex: 999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '0.5rem'
+          }}
+        >
           {/* Tooltip - Hidden on mobile */}
           {showFeedbackTooltip && (
             <div style={{

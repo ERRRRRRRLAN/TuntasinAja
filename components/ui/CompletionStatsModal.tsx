@@ -232,8 +232,11 @@ export default function CompletionStatsModal({
         <div style={{
           flex: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           padding: '1.5rem',
-          minHeight: 0
+          minHeight: 0,
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
         }}>
           <h4 style={{
             margin: '0 0 1rem 0',
