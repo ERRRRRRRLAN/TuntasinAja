@@ -746,4 +746,74 @@ export const threadRouter = createTRPCRouter({
 
     return { deleted: deletedCount }
   }),
+
+  // Get thread completion statistics (Admin only)
+  getCompletionStats: adminProcedure
+    .input(z.object({ threadId: z.string() }))
+    .query(async ({ input }) => {
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.threadId },
+        include: {
+          author: {
+            select: {
+              kelas: true,
+            },
+          },
+        },
+      })
+
+      if (!thread) {
+        throw new Error('Thread not found')
+      }
+
+      const authorKelas = (thread.author as any)?.kelas
+
+      if (!authorKelas) {
+        // Thread by admin or no kelas - return empty stats
+        return {
+          completedCount: 0,
+          totalCount: 0,
+          completedUsers: [],
+        }
+      }
+
+      // Get all users in the same kelas (excluding admins)
+      const totalUsers = await prisma.user.findMany({
+        where: {
+          kelas: authorKelas,
+          isAdmin: false,
+        },
+        select: {
+          id: true,
+        },
+      })
+
+      // Get all users who have completed this thread (have history)
+      const completedHistories = await prisma.history.findMany({
+        where: {
+          threadId: input.threadId,
+        },
+        select: {
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        distinct: ['userId'],
+      })
+
+      const completedUsers = completedHistories.map((h) => ({
+        id: h.user.id,
+        name: h.user.name,
+      }))
+
+      return {
+        completedCount: completedUsers.length,
+        totalCount: totalUsers.length,
+        completedUsers: completedUsers.sort((a, b) => a.name.localeCompare(b.name)),
+      }
+    }),
 })

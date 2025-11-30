@@ -13,6 +13,15 @@ export const userStatusRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Prevent admin from checking/unchecking threads
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { isAdmin: true },
+      })
+      
+      if ((user as any)?.isAdmin) {
+        throw new Error('Admin tidak dapat mencentang thread. Admin hanya dapat melihat statistik pengerjaan.')
+      }
       if (input.isCompleted) {
         // Mark thread as completed
         await prisma.userStatus.upsert({
@@ -153,6 +162,15 @@ export const userStatusRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Prevent admin from checking/unchecking comments
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { isAdmin: true },
+      })
+      
+      if ((user as any)?.isAdmin) {
+        throw new Error('Admin tidak dapat mencentang comment. Admin hanya dapat melihat statistik pengerjaan.')
+      }
       if (input.isCompleted) {
         // Don't set threadId for comment status to avoid unique constraint conflict
         // We can get threadId from comment relation if needed

@@ -6,6 +6,7 @@ import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
@@ -42,6 +43,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const { data: session } = useSession()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
+  const [showCompletionStatsModal, setShowCompletionStatsModal] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Get thread status
@@ -55,6 +57,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
+
+  // Get completion stats for admin
+  const { data: completionStats } = trpc.thread.getCompletionStats.useQuery(
+    { threadId: thread.id },
+    { enabled: !!session && isAdmin }
+  )
 
   const utils = trpc.useUtils()
 
@@ -168,7 +176,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     >
       <div className="thread-card-content">
         <div className="thread-card-header">
-          {session && (
+          {session && !isAdmin && (
             <Checkbox
               checked={isCompleted}
               onClick={handleCheckboxClick}
@@ -176,6 +184,41 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               disabled={toggleThread.isLoading}
               size={28}
             />
+          )}
+          {session && isAdmin && (
+            <div style={{
+              minWidth: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              padding: '0 0.5rem',
+              borderRadius: '0.25rem',
+              border: '1px solid var(--primary)',
+              background: 'transparent',
+              transition: 'all 0.2s',
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (completionStats) {
+                setShowCompletionStatsModal(true)
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--primary)'
+              e.currentTarget.style.color = 'white'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'var(--primary)'
+            }}
+            >
+              {completionStats ? `${completionStats.completedCount}/${completionStats.totalCount}` : '-'}
+            </div>
           )}
           <div className="thread-card-header-content" style={{ position: 'relative' }}>
             <h3 
@@ -277,6 +320,17 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
         onConfirm={handleConfirmUncheck}
         onCancel={() => setShowUncheckDialog(false)}
       />
+      
+      {isAdmin && completionStats && (
+        <CompletionStatsModal
+          isOpen={showCompletionStatsModal}
+          onClose={() => setShowCompletionStatsModal(false)}
+          threadTitle={thread.title}
+          completedCount={completionStats.completedCount}
+          totalCount={completionStats.totalCount}
+          completedUsers={completionStats.completedUsers}
+        />
+      )}
     </div>
   )
 }
@@ -339,7 +393,7 @@ function CommentItem({
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
-      {session && (
+      {session && !isAdmin && (
         <div style={{ marginTop: '0.25rem' }}>
           <Checkbox
             checked={isCompleted}
