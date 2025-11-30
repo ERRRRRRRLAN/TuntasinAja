@@ -152,6 +152,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       >
         <div className="quickview-header">
           <div className="quickview-header-top">
+            <div className="quickview-header-left">
+              {/* Empty left section for CreateThreadQuickView */}
+            </div>
             <button
               onClick={handleClose}
               className="quickview-close-btn"

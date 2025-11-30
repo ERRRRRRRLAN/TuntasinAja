@@ -503,6 +503,66 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         )}
         <div className="quickview-header">
           <div className="quickview-header-top">
+            <div className="quickview-header-left">
+              {(thread as any).author?.kelas && (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {(thread as any).author?.kelas}
+                </span>
+              )}
+              {canDeleteThread && (
+                <button
+                  onClick={() => setShowDeleteThreadDialog(true)}
+                  className="quickview-delete-btn"
+                  disabled={deleteThread.isLoading}
+                  style={{
+                    background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    padding: '0.625rem',
+                    cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.2s, transform 0.2s',
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    flexShrink: 0,
+                    opacity: deleteThread.isLoading ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!deleteThread.isLoading) {
+                      e.currentTarget.style.background = '#dc2626'
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!deleteThread.isLoading) {
+                      e.currentTarget.style.background = '#ef4444'
+                      e.currentTarget.style.transform = 'scale(1)'
+                    }
+                  }}
+                  title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
+                  aria-label={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
+                >
+                  {deleteThread.isLoading ? (
+                    <LoadingSpinner size={20} color="white" />
+                  ) : (
+                    <TrashIcon size={20} />
+                  )}
+                </button>
+              )}
+            </div>
             <button
               onClick={handleCloseQuickView}
               className="quickview-close-btn"
@@ -536,71 +596,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             >
               <XCloseIcon size={22} />
             </button>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.75rem',
-              marginLeft: 'auto'
-            }}>
-              {(thread as any).author?.kelas && (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid var(--primary)',
-                  color: 'var(--primary)',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  background: 'rgba(99, 102, 241, 0.1)',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {(thread as any).author?.kelas}
-                </span>
-              )}
-            {canDeleteThread && (
-              <button
-                onClick={() => setShowDeleteThreadDialog(true)}
-                className="quickview-delete-btn"
-                disabled={deleteThread.isLoading}
-                style={{
-                  background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  padding: '0.625rem',
-                  cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s, transform 0.2s',
-                  minWidth: '44px',
-                  minHeight: '44px',
-                  flexShrink: 0,
-                  opacity: deleteThread.isLoading ? 0.7 : 1
-                }}
-                onMouseEnter={(e) => {
-                  if (!deleteThread.isLoading) {
-                    e.currentTarget.style.background = '#dc2626'
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!deleteThread.isLoading) {
-                    e.currentTarget.style.background = '#ef4444'
-                    e.currentTarget.style.transform = 'scale(1)'
-                  }
-                }}
-                title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-                aria-label={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-              >
-                {deleteThread.isLoading ? (
-                  <LoadingSpinner size={20} color="white" />
-                ) : (
-                  <TrashIcon size={20} />
-                )}
-              </button>
-            )}
-            </div>
           </div>
           
           <div className="quickview-title-section">

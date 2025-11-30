@@ -203,52 +203,54 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1.5rem',
-            borderBottom: '1px solid var(--border)',
-            position: 'sticky',
-            top: 0,
-            background: 'var(--card)',
-            zIndex: 10,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <UserIcon size={20} style={{ color: 'var(--text-light)' }} />
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-                Edit User
-              </h2>
+          <div className="quickview-header">
+            <div className="quickview-header-top">
+              <div className="quickview-header-left">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <UserIcon size={20} style={{ color: 'var(--text-light)' }} />
+                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+                    Edit User
+                  </h2>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseQuickView}
+                className="quickview-close-btn"
+                style={{
+                  background: 'var(--card)',
+                  border: '2px solid var(--border)',
+                  cursor: 'pointer',
+                  color: 'var(--text)',
+                  padding: '0.625rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '0.5rem',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.borderColor = 'var(--primary)'
+                  e.currentTarget.style.color = 'var(--primary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--card)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.color = 'var(--text)'
+                }}
+                aria-label="Tutup"
+              >
+                <XCloseIcon size={20} />
+              </button>
             </div>
-            <button
-              onClick={handleCloseQuickView}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-light)',
-                borderRadius: '0.375rem',
-                minWidth: '44px',
-                minHeight: '44px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-              }}
-              title="Tutup"
-            >
-              <XCloseIcon size={20} />
-            </button>
           </div>
 
           {/* Content */}
-          <div style={{ padding: '1.5rem' }}>
+          <div className="quickview-body" style={{ padding: '1.5rem' }}>
             {/* User Info */}
             <div style={{
               padding: '1rem',
