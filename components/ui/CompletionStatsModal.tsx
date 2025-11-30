@@ -103,11 +103,11 @@ export default function CompletionStatsModal({
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className="card"
+        className="card completion-stats-modal-content"
         style={{
           maxWidth: '500px',
           width: '100%',
-          maxHeight: '80vh',
+          maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
@@ -124,14 +124,17 @@ export default function CompletionStatsModal({
           padding: '1.5rem',
           borderBottom: '1px solid var(--border)'
         }}>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
               Status Pengerjaan
             </h3>
             <p style={{ 
               margin: '0.5rem 0 0 0', 
               fontSize: '0.875rem', 
-              color: 'var(--text-light)' 
+              color: 'var(--text-light)',
+              wordBreak: 'break-word',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {threadTitle}
             </p>
@@ -173,7 +176,8 @@ export default function CompletionStatsModal({
             display: 'flex',
             alignItems: 'baseline',
             gap: '0.5rem',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            flexWrap: 'wrap'
           }}>
             <span style={{
               fontSize: '2rem',
@@ -228,7 +232,8 @@ export default function CompletionStatsModal({
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '1.5rem'
+          padding: '1.5rem',
+          minHeight: 0
         }}>
           <h4 style={{
             margin: '0 0 1rem 0',
@@ -242,7 +247,8 @@ export default function CompletionStatsModal({
             <p style={{
               textAlign: 'center',
               color: 'var(--text-light)',
-              padding: '2rem 0'
+              padding: '2rem 0',
+              fontSize: '0.875rem'
             }}>
               Belum ada siswa yang menyelesaikan tugas ini
             </p>
@@ -261,7 +267,8 @@ export default function CompletionStatsModal({
                     borderRadius: '0.5rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem'
+                    gap: '0.75rem',
+                    transition: 'background 0.2s'
                   }}
                 >
                   <span style={{
@@ -282,7 +289,8 @@ export default function CompletionStatsModal({
                   <span style={{
                     fontSize: '0.875rem',
                     color: 'var(--text)',
-                    flex: 1
+                    flex: 1,
+                    wordBreak: 'break-word'
                   }}>
                     {user.name}
                   </span>

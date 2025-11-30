@@ -149,12 +149,12 @@ export default function BulkAddUserForm({ onSuccess }: BulkAddUserFormProps) {
           <p style={{ margin: '0 0 0.5rem 0', fontWeight: 600, color: 'var(--text-primary)' }}>
             Hasil:
           </p>
-          <p style={{ margin: '0 0 0.25rem 0', color: 'var(--text-primary)' }}>
-            ✅ Berhasil: {results.success} user
+          <p style={{ margin: '0 0 0.25rem 0', color: 'var(--success)' }}>
+            Berhasil: {results.success} user
           </p>
           {results.failed > 0 && (
-            <p style={{ margin: '0 0 0.5rem 0', color: '#b91c1c' }}>
-              ❌ Gagal: {results.failed} user
+            <p style={{ margin: '0 0 0.5rem 0', color: 'var(--danger)' }}>
+              Gagal: {results.failed} user
             </p>
           )}
           {results.errors.length > 0 && (

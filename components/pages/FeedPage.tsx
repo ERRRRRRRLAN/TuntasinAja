@@ -579,7 +579,7 @@ export default function FeedPage() {
           alignItems: 'flex-end',
           gap: '0.5rem'
         }}>
-          {/* Tooltip */}
+          {/* Tooltip - Hidden on mobile */}
           {showFeedbackTooltip && (
             <div style={{
               background: 'var(--bg-primary)',
@@ -587,6 +587,7 @@ export default function FeedPage() {
               borderRadius: '0.5rem',
               padding: '0.75rem 1rem',
               maxWidth: '280px',
+              width: 'calc(100vw - 3rem)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               marginBottom: '0.5rem',
               fontSize: '0.875rem',
@@ -599,7 +600,7 @@ export default function FeedPage() {
                 Saran & Masukan
               </div>
               <div style={{ color: 'var(--text-light)', fontSize: '0.8125rem' }}>
-                Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang!
+                Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang
               </div>
               {/* Arrow pointing down */}
               <div style={{
@@ -645,16 +646,24 @@ export default function FeedPage() {
               position: 'relative'
             }}
             onMouseEnter={(e) => {
-              setShowFeedbackTooltip(true)
-              e.currentTarget.style.background = 'var(--primary-dark)'
-              e.currentTarget.style.transform = 'scale(1.1)'
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+              if (window.innerWidth > 640) {
+                setShowFeedbackTooltip(true)
+                e.currentTarget.style.background = 'var(--primary-dark)'
+                e.currentTarget.style.transform = 'scale(1.1)'
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+              }
             }}
             onMouseLeave={(e) => {
               setShowFeedbackTooltip(false)
               e.currentTarget.style.background = 'var(--primary)'
               e.currentTarget.style.transform = 'scale(1)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.background = 'var(--primary-dark)'
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.background = 'var(--primary)'
             }}
             aria-label="Saran dan Masukan - Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang"
           >

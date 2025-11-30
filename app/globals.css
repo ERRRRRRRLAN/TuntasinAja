@@ -3469,6 +3469,57 @@ textarea {
     font-size: 0.75rem !important;
     margin-top: 1rem !important;
   }
+
+  /* FAB Buttons Mobile */
+  [style*="position: fixed"][style*="bottom"][style*="right"] {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+
+  [style*="bottom: 8rem"] {
+    bottom: 6.5rem !important;
+  }
+
+  /* Modal Responsive Mobile */
+  .feedback-modal-content,
+  .completion-stats-modal-content {
+    max-width: calc(100vw - 2rem) !important;
+    margin: 1rem !important;
+  }
+
+  /* Feedback Modal Mobile */
+  form[style*="padding"] {
+    padding: 1rem !important;
+  }
+
+  /* Completion Stats Modal Mobile */
+  div[style*="maxHeight: 85vh"] {
+    max-height: 90vh !important;
+  }
+
+  /* Feedback List Mobile */
+  .card h4 {
+    font-size: 0.9375rem !important;
+  }
+
+  .card button[class*="btn"] {
+    padding: 0.625rem 1rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  /* Stats Cards Mobile */
+  div[style*="padding: 0.75rem 1rem"][style*="background"] {
+    min-width: 100px !important;
+    padding: 0.625rem 0.75rem !important;
+  }
+
+  div[style*="padding: 0.75rem 1rem"][style*="background"] > div:first-child {
+    font-size: 0.6875rem !important;
+  }
+
+  div[style*="padding: 0.75rem 1rem"][style*="background"] > div:last-child {
+    font-size: 1.25rem !important;
+  }
 }
 
 /* Schedule Table Tablet */

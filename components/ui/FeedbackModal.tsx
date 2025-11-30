@@ -110,16 +110,21 @@ export default function FeedbackModal({
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: isVisible ? 'auto' : 'none'
+        pointerEvents: isVisible ? 'auto' : 'none',
+        overflowY: 'auto'
       }}
     >
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className="card"
+        className="card feedback-modal-content"
         style={{
           maxWidth: '500px',
           width: '100%',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'scale(1)' : 'scale(0.95)',
           transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
@@ -166,7 +171,7 @@ export default function FeedbackModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
+        <form onSubmit={handleSubmit} style={{ padding: '1.5rem', overflow: 'auto', flex: 1 }}>
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="feedback-content" style={{ 
               display: 'block', 
@@ -181,7 +186,7 @@ export default function FeedbackModal({
               id="feedback-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={8}
+              rows={6}
               placeholder="Masukkan saran dan masukan Anda di sini (minimal 10 karakter)..."
               required
               disabled={submitFeedback.isLoading}
@@ -190,13 +195,14 @@ export default function FeedbackModal({
                 padding: '0.75rem',
                 border: '1px solid var(--border)',
                 borderRadius: '0.5rem',
-                background: 'var(--card)',
+                background: 'var(--bg-primary)',
                 color: 'var(--text)',
                 fontSize: '0.875rem',
                 fontFamily: 'inherit',
                 resize: 'vertical',
                 outline: 'none',
-                transition: 'border-color 0.2s'
+                transition: 'border-color 0.2s',
+                minHeight: '120px'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = 'var(--primary)'
@@ -211,20 +217,22 @@ export default function FeedbackModal({
               fontSize: '0.75rem',
               color: 'var(--text-light)'
             }}>
-              Minimal 10 karakter • {content.length} karakter
+              Minimal 10 karakter - {content.length} karakter
             </small>
           </div>
 
           <div style={{
             display: 'flex',
             gap: '0.75rem',
-            justifyContent: 'flex-end'
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap'
           }}>
             <button
               type="button"
               onClick={onClose}
               className="btn btn-secondary"
               disabled={submitFeedback.isLoading}
+              style={{ minWidth: '80px' }}
             >
               Batal
             </button>
@@ -232,6 +240,7 @@ export default function FeedbackModal({
               type="submit"
               className="btn btn-primary"
               disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
+              style={{ minWidth: '100px' }}
             >
               {submitFeedback.isLoading ? (
                 <>
