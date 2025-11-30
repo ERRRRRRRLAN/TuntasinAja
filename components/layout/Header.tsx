@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { BookIcon, UserIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
+import { BookIcon, UserIcon, LogOutIcon, CrownIcon, MessageIcon } from '@/components/ui/Icons'
 import { trpc } from '@/lib/trpc'
 import { useDanton } from '@/hooks/useDanton'
+import FeedbackModal from '@/components/ui/FeedbackModal'
 
 export default function Header() {
   const { data: session } = useSession()
@@ -16,6 +17,7 @@ export default function Header() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
   const [isProfileAnimating, setIsProfileAnimating] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(64)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const profileContentRef = useRef<HTMLDivElement>(null)
@@ -152,7 +154,7 @@ export default function Header() {
           <span>TuntasinAja</span>
         </Link>
         
-        {/* Right side: Navigation + Profile */}
+        {/* Right side: Navigation + Feedback Button + Profile */}
         <div className="header-right-container" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           {/* Desktop Navigation */}
           <nav className="nav nav-desktop">
@@ -169,6 +171,23 @@ export default function Header() {
               </Link>
             ))}
           </nav>
+
+          {/* Feedback Button */}
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className="btn btn-secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+            }}
+          >
+            <MessageIcon size={18} />
+            <span>Saran & Masukan</span>
+          </button>
 
           {/* Profile Dropdown */}
           {session && (
@@ -384,6 +403,12 @@ export default function Header() {
           </Link>
         ))}
       </nav>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
     </header>
   )
 }

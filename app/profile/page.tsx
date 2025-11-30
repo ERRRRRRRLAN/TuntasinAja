@@ -10,15 +10,21 @@ import BulkAddUserForm from '@/components/admin/BulkAddUserForm'
 import UserList from '@/components/admin/UserList'
 import SubscriptionList from '@/components/admin/SubscriptionList'
 import ClassSubjectList from '@/components/admin/ClassSubjectList'
+import FeedbackList from '@/components/admin/FeedbackList'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
   const [showBulkAddUser, setShowBulkAddUser] = useState(false)
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback'>('users')
   const utils = trpc.useUtils()
   
+  // Get unread feedback count for admin
+  const { data: unreadCount } = trpc.feedback.getUnreadCount.useQuery(undefined, {
+    enabled: !!session,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -99,6 +105,11 @@ export default function ProfilePage() {
                     Kelola mata pelajaran per kelas
                   </div>
                 )}
+                {activeTab === 'feedback' && (
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    Kelola saran dan masukan dari user
+                  </div>
+                )}
               </div>
 
               {/* Tabs */}
@@ -159,6 +170,44 @@ export default function ProfilePage() {
                 >
                   Mata Pelajaran per Kelas
                 </button>
+                <button
+                  onClick={() => setActiveTab('feedback')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'feedback' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'feedback' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'feedback' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'feedback' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <span>Saran & Masukan</span>
+                  {unreadCount && unreadCount.count > 0 && (
+                    <span style={{
+                      background: activeTab === 'feedback' ? 'white' : 'var(--danger)',
+                      color: activeTab === 'feedback' ? 'var(--primary)' : 'white',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      flexShrink: 0
+                    }}>
+                      {unreadCount.count > 99 ? '99+' : unreadCount.count}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* Tab Content */}
@@ -204,6 +253,12 @@ export default function ProfilePage() {
               {activeTab === 'subjects' && (
                 <div>
                   <ClassSubjectList />
+                </div>
+              )}
+
+              {activeTab === 'feedback' && (
+                <div>
+                  <FeedbackList />
                 </div>
               )}
             </div>

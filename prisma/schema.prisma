@@ -26,6 +26,7 @@ model User {
   userStatuses  UserStatus[]
   histories     History[]
   permission    UserPermission?
+  feedbacks     Feedback[]
 
   @@map("users")
 }
@@ -159,4 +160,20 @@ model ClassSubject {
   @@unique([kelas, subject])
   @@index([kelas])
   @@map("class_subjects")
+}
+
+model Feedback {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  content     String    @map("content")
+  isRead      Boolean   @default(false) @map("is_read")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("feedbacks")
 }
