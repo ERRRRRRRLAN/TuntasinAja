@@ -8,7 +8,8 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
-import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import FeedbackModal from '@/components/ui/FeedbackModal'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon, MessageIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
@@ -45,6 +46,8 @@ export default function FeedPage() {
   const [showReminderModal, setShowReminderModal] = useState(false)
   const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
   const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false)
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -564,7 +567,103 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* Floating Action Button */}
+      {/* Feedback FAB - Above Create Thread Button */}
+      {session && (
+        <div style={{
+          position: 'fixed',
+          bottom: '8rem',
+          right: '1.5rem',
+          zIndex: 999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '0.5rem'
+        }}>
+          {/* Tooltip */}
+          {showFeedbackTooltip && (
+            <div style={{
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border)',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem',
+              maxWidth: '280px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              marginBottom: '0.5rem',
+              fontSize: '0.875rem',
+              color: 'var(--text)',
+              lineHeight: '1.5',
+              animation: 'fadeIn 0.2s ease-out',
+              position: 'relative'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--primary)' }}>
+                Saran & Masukan
+              </div>
+              <div style={{ color: 'var(--text-light)', fontSize: '0.8125rem' }}>
+                Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang!
+              </div>
+              {/* Arrow pointing down */}
+              <div style={{
+                position: 'absolute',
+                bottom: '-8px',
+                right: '20px',
+                width: '0',
+                height: '0',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderTop: '8px solid var(--border)'
+              }} />
+              <div style={{
+                position: 'absolute',
+                bottom: '-7px',
+                right: '20px',
+                width: '0',
+                height: '0',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderTop: '8px solid var(--bg-primary)'
+              }} />
+            </div>
+          )}
+
+          {/* Feedback Button */}
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease',
+              padding: 0,
+              position: 'relative'
+            }}
+            onMouseEnter={(e) => {
+              setShowFeedbackTooltip(true)
+              e.currentTarget.style.background = 'var(--primary-dark)'
+              e.currentTarget.style.transform = 'scale(1.1)'
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              setShowFeedbackTooltip(false)
+              e.currentTarget.style.background = 'var(--primary)'
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+            aria-label="Saran dan Masukan - Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang"
+          >
+            <MessageIcon size={24} />
+          </button>
+        </div>
+      )}
+
+      {/* Floating Action Button - Create Thread */}
       {session && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
@@ -626,6 +725,12 @@ export default function FeedPage() {
           )}
         </button>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
 
     </>
   )
