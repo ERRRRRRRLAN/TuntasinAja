@@ -6,7 +6,7 @@ Log perubahan dan update fitur untuk aplikasi TuntasinAja.
 
 ## 🎉 Update Terbaru - Versi 1.1.0
 
-**Tanggal:** $(date)
+**Tanggal:** 2025-01-27
 
 ### ✨ Fitur Baru
 
@@ -257,7 +257,7 @@ npx prisma migrate dev --name add_feedback_model
 ---
 
 **Versi**: 1.1.0  
-**Update Date**: $(date +%Y-%m-%d)  
+**Update Date**: 2025-01-27  
 **Branch**: main
 
 ---
