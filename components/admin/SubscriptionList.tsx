@@ -210,7 +210,7 @@ export default function SubscriptionList() {
                             e.currentTarget.style.boxShadow = 'none'
                           }}
                         >
-                          {sub.status === 'no_subscription' || sub.status === 'expired' ? 'Set Subscription' : 'Extend'}
+                          Edit
                         </button>
                       </td>
                     </tr>
@@ -317,7 +317,7 @@ export default function SubscriptionList() {
                     transition: 'all 0.2s ease-out'
                   }}
                 >
-                  {sub.status === 'no_subscription' || sub.status === 'expired' ? 'Set Subscription' : 'Extend'}
+                  Edit
                 </button>
               </div>
             ))}

@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import { BookIcon } from '@/components/ui/Icons'
+import { BookIcon, EyeIcon, EyeOffIcon } from '@/components/ui/Icons'
 
 export default function SignInPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -134,16 +135,32 @@ export default function SignInPage() {
                 <label htmlFor="password" className="signin-form-label">
                   Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="signin-form-input"
-                  placeholder="Masukkan password Anda"
-                  required
-                  disabled={isLoading}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="signin-form-input"
+                    placeholder="Masukkan password Anda"
+                    required
+                    disabled={isLoading}
+                    style={{ paddingRight: '3rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                    className="signin-password-toggle"
+                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon size={20} />
+                    ) : (
+                      <EyeIcon size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button

@@ -8,19 +8,12 @@ import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
 import ReminderModal from '@/components/ui/ReminderModal'
-<<<<<<< HEAD
-import ScheduleReminderModal from '@/components/schedule/ScheduleReminderModal'
-=======
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
-import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import FeedbackModal from '@/components/ui/FeedbackModal'
+import { PlusIcon, SearchIcon, XIconSmall, BookIcon, BellIcon, AlertTriangleIcon, MessageIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
-<<<<<<< HEAD
-import { useScheduleReminder } from '@/hooks/useScheduleReminder'
-=======
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -51,14 +44,10 @@ export default function FeedPage() {
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showReminderModal, setShowReminderModal] = useState(false)
-<<<<<<< HEAD
-  const [showScheduleReminderModal, setShowScheduleReminderModal] = useState(false)
   const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
-  const [hasCheckedScheduleReminder, setHasCheckedScheduleReminder] = useState(false)
-=======
-  const [hasCheckedReminder, setHasCheckedReminder] = useState(false)
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false)
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -66,6 +55,13 @@ export default function FeedPage() {
   })
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
+
+  // Get subjects for user's class
+  const { data: classSubjects, isLoading: isLoadingSubjects } = trpc.classSubject.getClassSubjects.useQuery(
+    { kelas: userKelas || undefined },
+    { enabled: !!session && !!userKelas }
+  )
+  const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
 
   // Check user permission
   const { canPostEdit, isOnlyRead, permission } = useUserPermission()
@@ -88,10 +84,17 @@ export default function FeedPage() {
 
   // Track initial load completion
   useEffect(() => {
+    // For admin, mark initial load complete once data is validated (don't wait for threads)
+    if (isAdmin && isDataValidated && !isLoadingUserData && userData !== undefined) {
+      setIsInitialLoad(false)
+      return
+    }
+
+    // For non-admin, wait for threads to load and validate
     if (!isLoading && threads && isDataValidated) {
       setIsInitialLoad(false)
     }
-  }, [isLoading, threads, isDataValidated])
+  }, [isLoading, threads, isDataValidated, isAdmin, isLoadingUserData, userData])
 
   // Invalidate cache when user changes
   useEffect(() => {
@@ -109,6 +112,13 @@ export default function FeedPage() {
 
   // Validate that displayed threads match user's kelas
   useEffect(() => {
+    // For admin, validate immediately once userData is loaded (don't wait for threads)
+    if (isAdmin && !isLoadingUserData && userData !== undefined) {
+      setIsDataValidated(true)
+      return
+    }
+
+    // For non-admin users, validate threads match their kelas
     if (threads && userKelas !== undefined && !isAdmin) {
       // Check if all threads match user's kelas
       const allMatchKelas = threads.every(thread => {
@@ -124,11 +134,11 @@ export default function FeedPage() {
         setIsDataValidated(false)
         utils.thread.getAll.invalidate()
       }
-    } else if (isAdmin || !userKelas) {
-      // Admin or no kelas - always valid
+    } else if (!userKelas && !isLoadingUserData && userData !== undefined) {
+      // No kelas but user data is loaded - always valid (public view)
       setIsDataValidated(true)
     }
-  }, [threads, userKelas, isAdmin, utils, isInitialLoad])
+  }, [threads, userKelas, isAdmin, utils, isInitialLoad, isLoadingUserData, userData])
 
   // Get uncompleted comments count
   const { data: uncompletedData } = trpc.userStatus.getUncompletedCount.useQuery(
@@ -148,12 +158,6 @@ export default function FeedPage() {
     }
   )
 
-<<<<<<< HEAD
-  // Get schedule reminder (check if tomorrow has classes with tasks)
-  const { tasks: scheduleTasks, subjects: scheduleSubjects, tomorrow: tomorrowDate, hasReminder: hasScheduleReminder, isLoading: isLoadingScheduleReminder } = useScheduleReminder()
-
-=======
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   const kelasOptions = generateKelasOptions()
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
@@ -172,51 +176,6 @@ export default function FeedPage() {
     }
   }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
-<<<<<<< HEAD
-  // Show schedule reminder modal automatically when user logs in and there are tasks for tomorrow's classes
-  // Only show once per session
-  useEffect(() => {
-    // Debug logging
-    if (session && isDataValidated && !isLoadingScheduleReminder) {
-      console.log('[Schedule Reminder Debug]', {
-        hasCheckedScheduleReminder,
-        hasScheduleReminder,
-        scheduleTasksLength: scheduleTasks.length,
-        scheduleSubjectsLength: scheduleSubjects.length,
-        showReminderModal,
-        overdueTasksLength: overdueTasks.length,
-        tomorrowDate,
-      })
-    }
-
-    if (
-      session &&
-      isDataValidated &&
-      !hasCheckedScheduleReminder &&
-      !isLoadingScheduleReminder &&
-      scheduleTasks.length > 0 && // Must have tasks
-      scheduleSubjects.length > 0 // Must have subjects
-    ) {
-      // If overdue reminder is showing, wait for it to close first
-      if (showReminderModal) {
-        // Wait for overdue reminder to close, then show schedule reminder
-        const checkInterval = setInterval(() => {
-          if (!showReminderModal) {
-            clearInterval(checkInterval)
-            setShowScheduleReminderModal(true)
-            setHasCheckedScheduleReminder(true)
-          }
-        }, 500)
-        return () => clearInterval(checkInterval)
-      } else {
-        // No overdue reminder, show schedule reminder immediately
-        setShowScheduleReminderModal(true)
-        setHasCheckedScheduleReminder(true)
-      }
-    }
-  }, [session, isDataValidated, hasCheckedScheduleReminder, isLoadingScheduleReminder, scheduleTasks.length, scheduleSubjects.length, showReminderModal, overdueTasks.length, tomorrowDate])
-=======
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 
 
   // Filter and search threads
@@ -412,6 +371,7 @@ export default function FeedPage() {
                 value={selectedSubject}
                 onChange={setSelectedSubject}
                 placeholder="Pilih Mata Pelajaran"
+                options={subjectOptions}
               />
             </div>
 
@@ -462,7 +422,14 @@ export default function FeedPage() {
           )}
 
           {/* Only show loading on initial load, not during background refresh */}
-          {(isLoading || isLoadingUserData || (isInitialLoad && !isDataValidated)) ? (
+          {/* For admin: don't wait for isLoadingSubjects (query is disabled) or threads loading after validation */}
+          {/* For non-admin: wait for all data including threads on initial load */}
+          {(
+            isLoadingUserData || 
+            (!isAdmin && isLoadingSubjects) || 
+            (isInitialLoad && !isDataValidated) ||
+            (!isAdmin && isInitialLoad && isLoading && !threads)
+          ) ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <LoadingSpinner size={32} />
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
@@ -547,30 +514,6 @@ export default function FeedPage() {
       />
 
       {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
-<<<<<<< HEAD
-      <ScheduleReminderModal
-        isOpen={showScheduleReminderModal}
-        onClose={() => {
-          setShowScheduleReminderModal(false)
-          utils.schedule.getReminderTasks.invalidate()
-        }}
-        subjects={scheduleSubjects}
-        tasks={scheduleTasks.map((task: any) => ({
-          threadId: task.threadId,
-          threadTitle: task.threadTitle,
-          authorName: task.authorName,
-          threadDate: new Date(task.threadDate),
-        }))}
-        tomorrow={tomorrowDate}
-        onTaskClick={(threadId) => {
-          setThreadOpenedFromReminder(true)
-          setSelectedThreadId(threadId)
-          setShowScheduleReminderModal(false)
-        }}
-      />
-
-=======
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
       {/* Permission Indicator */}
       {session && isOnlyRead && (
         <div
@@ -624,7 +567,103 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* Floating Action Button */}
+      {/* Feedback FAB - Above Create Thread Button */}
+      {session && (
+        <div style={{
+          position: 'fixed',
+          bottom: '8rem',
+          right: '1.5rem',
+          zIndex: 999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '0.5rem'
+        }}>
+          {/* Tooltip */}
+          {showFeedbackTooltip && (
+            <div style={{
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border)',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem',
+              maxWidth: '280px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              marginBottom: '0.5rem',
+              fontSize: '0.875rem',
+              color: 'var(--text)',
+              lineHeight: '1.5',
+              animation: 'fadeIn 0.2s ease-out',
+              position: 'relative'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--primary)' }}>
+                Saran & Masukan
+              </div>
+              <div style={{ color: 'var(--text-light)', fontSize: '0.8125rem' }}>
+                Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang!
+              </div>
+              {/* Arrow pointing down */}
+              <div style={{
+                position: 'absolute',
+                bottom: '-8px',
+                right: '20px',
+                width: '0',
+                height: '0',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderTop: '8px solid var(--border)'
+              }} />
+              <div style={{
+                position: 'absolute',
+                bottom: '-7px',
+                right: '20px',
+                width: '0',
+                height: '0',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderTop: '8px solid var(--bg-primary)'
+              }} />
+            </div>
+          )}
+
+          {/* Feedback Button */}
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease',
+              padding: 0,
+              position: 'relative'
+            }}
+            onMouseEnter={(e) => {
+              setShowFeedbackTooltip(true)
+              e.currentTarget.style.background = 'var(--primary-dark)'
+              e.currentTarget.style.transform = 'scale(1.1)'
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              setShowFeedbackTooltip(false)
+              e.currentTarget.style.background = 'var(--primary)'
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+            aria-label="Saran dan Masukan - Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang"
+          >
+            <MessageIcon size={24} />
+          </button>
+        </div>
+      )}
+
+      {/* Floating Action Button - Create Thread */}
       {session && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
@@ -686,6 +725,12 @@ export default function FeedPage() {
           )}
         </button>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
 
     </>
   )

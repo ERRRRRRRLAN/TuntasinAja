@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
@@ -15,6 +16,7 @@ interface CreateThreadQuickViewProps {
 
 export default function CreateThreadQuickView({ onClose }: CreateThreadQuickViewProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
   const [isVisible, setIsVisible] = useState(false)
@@ -24,6 +26,19 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
   const utils = trpc.useUtils()
   const { canPostEdit, isOnlyRead } = useUserPermission()
+
+  // Get user data (kelas)
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const userKelas = userData?.kelas || null
+
+  // Get subjects for user's class
+  const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
+    { kelas: userKelas || undefined },
+    { enabled: !!session && !!userKelas }
+  )
+  const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
 
   // Close if user doesn't have permission
   useEffect(() => {
@@ -195,6 +210,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 value={title}
                 onChange={setTitle}
                 placeholder="-- Pilih Mata Pelajaran --"
+                options={subjectOptions}
                 showAllOption={false}
                 searchPlaceholder="Cari mata pelajaran..."
                 emptyMessage="Tidak ada mata pelajaran yang ditemukan"

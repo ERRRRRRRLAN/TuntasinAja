@@ -7,6 +7,7 @@ import { toJakartaDate } from '@/lib/date-utils'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
+import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
@@ -28,6 +29,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
+  const [showCompletionStatsModal, setShowCompletionStatsModal] = useState(false)
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState<string | null>(null)
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
   const [editCommentContent, setEditCommentContent] = useState('')
@@ -133,6 +135,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     enabled: !!session,
   })
   const isAdmin = adminCheck?.isAdmin || false
+  
+  // Get completion stats for admin
+  const { data: completionStats } = trpc.thread.getCompletionStats.useQuery(
+    { threadId },
+    { enabled: !!session && isAdmin }
+  )
   
   // Check if user is danton
   const { isDanton, kelas: dantonKelas } = useDanton()
@@ -596,7 +604,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </div>
           
           <div className="quickview-title-section">
-            {session && (
+            {session && !isAdmin && (
               <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
                 <Checkbox
                   checked={isThreadCompleted}
@@ -605,6 +613,43 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   disabled={toggleThread.isLoading}
                   size={28}
                 />
+              </div>
+            )}
+            {session && isAdmin && (
+              <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
+                <div style={{
+                  minWidth: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--primary)',
+                  cursor: 'pointer',
+                  padding: '0 0.5rem',
+                  borderRadius: '0.25rem',
+                  border: '1px solid var(--primary)',
+                  background: 'transparent',
+                  transition: 'all 0.2s',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (completionStats) {
+                    setShowCompletionStatsModal(true)
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--primary)'
+                  e.currentTarget.style.color = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--primary)'
+                }}
+                >
+                  {completionStats ? `${completionStats.completedCount}/${completionStats.totalCount}` : '-'}
+                </div>
               </div>
             )}
             <h2 className="thread-detail-title" style={{ 
@@ -738,7 +783,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
                 return (
                   <div key={comment.id} className="comment-card" style={{ position: 'relative' }}>
-                    {session && !isEditing && (
+                    {session && !isAdmin && !isEditing && (
                       <div style={{ marginTop: '0.25rem' }}>
                         <Checkbox
                           checked={isCommentCompleted}
@@ -1097,6 +1142,17 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 setShowDeleteCommentDialog(null)
               }
             }}
+          />
+        )}
+        
+        {isAdmin && completionStats && thread && (
+          <CompletionStatsModal
+            isOpen={showCompletionStatsModal}
+            onClose={() => setShowCompletionStatsModal(false)}
+            threadTitle={thread.title}
+            completedCount={completionStats.completedCount}
+            totalCount={completionStats.totalCount}
+            completedUsers={completionStats.completedUsers}
           />
         )}
       </div>

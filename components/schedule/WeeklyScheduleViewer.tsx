@@ -78,7 +78,7 @@ export default function WeeklyScheduleViewer() {
   }
 
   return (
-    <div className="card">
+    <div className="card" style={{ overflow: 'hidden' }}>
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
@@ -86,22 +86,17 @@ export default function WeeklyScheduleViewer() {
         marginBottom: '1.5rem' 
       }}>
         <CalendarIcon size={24} style={{ color: 'var(--primary)' }} />
-        <div style={{ flex: 1 }}>
-          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
-            Jadwal Pelajaran
-          </h3>
-          <p style={{ 
-            margin: '0.25rem 0 0 0', 
-            fontSize: '0.875rem', 
-            color: 'var(--text-light)' 
-          }}>
-            Kelas {scheduleData.kelas}
-          </p>
-        </div>
+        <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
+          Jadwal Pelajaran
+        </h3>
       </div>
 
       {/* Schedule Table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ 
+        overflowX: 'auto',
+        overflowY: 'visible',
+        position: 'relative'
+      }}>
         <table style={{ 
           width: '100%', 
           borderCollapse: 'collapse',
@@ -115,10 +110,7 @@ export default function WeeklyScheduleViewer() {
                 fontWeight: 600,
                 color: 'var(--text-light)',
                 borderBottom: '2px solid var(--border)',
-                position: 'sticky',
-                left: 0,
-                background: 'var(--card)',
-                zIndex: 1
+                borderRight: '1px solid var(--border)'
               }}>
                 Jam
               </th>
@@ -147,10 +139,7 @@ export default function WeeklyScheduleViewer() {
                   fontWeight: 600,
                   color: 'var(--text)',
                   borderBottom: '1px solid var(--border)',
-                  position: 'sticky',
-                  left: 0,
-                  background: 'var(--card)',
-                  zIndex: 1
+                  borderRight: '1px solid var(--border)'
                 }}>
                   {period}
                 </td>
@@ -189,12 +178,15 @@ export default function WeeklyScheduleViewer() {
                           </span>
                         </div>
                       ) : (
-                        <span style={{ 
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
                           color: 'var(--text-light)',
                           fontSize: '0.75rem'
                         }}>
                           -
-                        </span>
+                        </div>
                       )}
                     </td>
                   )

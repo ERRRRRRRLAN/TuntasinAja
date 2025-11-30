@@ -283,5 +283,103 @@ export const subscriptionRouter = createTRPCRouter({
         ...subscriptionStatus,
       }
     }),
+
+  // Update subscription for a class (Admin only)
+  // Flexible: can extend, reduce, or set forcefully
+  updateClassSubscription: adminProcedure
+    .input(
+      z.object({
+        kelas: z.string(),
+        action: z.enum(['set', 'extend', 'reduce']),
+        days: z.number().int().min(-3650).max(3650), // Can be negative for reduce
+        forceFromNow: z.boolean().optional().default(false), // For set: force from now instead of extending
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { kelas, action, days, forceFromNow } = input
+
+      const existing = await (prisma as any).classSubscription.findUnique({
+        where: { kelas },
+      })
+
+      const now = getUTCDate()
+      let newEndDate: Date
+
+      if (action === 'set') {
+        // Set subscription: from now (if forceFromNow or no existing) or extend from existing
+        if (forceFromNow || !existing) {
+          // Set from now
+          newEndDate = addDays(now, days)
+        } else {
+          // Extend from existing endDate (or now if expired)
+          const currentEndDate = new Date(existing.subscriptionEndDate)
+          if (isBefore(currentEndDate, now)) {
+            newEndDate = addDays(now, days)
+          } else {
+            newEndDate = addDays(currentEndDate, days)
+          }
+        }
+      } else if (action === 'extend') {
+        // Extend: add days (must be positive)
+        if (days <= 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Untuk extend, jumlah hari harus positif. Gunakan action "reduce" untuk mengurangi.',
+          })
+        }
+        if (!existing) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Subscription untuk kelas ini belum ada. Gunakan action "set" untuk membuat subscription baru.',
+          })
+        }
+        const currentEndDate = new Date(existing.subscriptionEndDate)
+        if (isBefore(currentEndDate, now)) {
+          newEndDate = addDays(now, days)
+        } else {
+          newEndDate = addDays(currentEndDate, days)
+        }
+      } else if (action === 'reduce') {
+        // Reduce: subtract days (must be negative or will be treated as negative)
+        if (!existing) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Subscription untuk kelas ini belum ada. Tidak dapat mengurangi subscription yang tidak ada.',
+          })
+        }
+        const currentEndDate = new Date(existing.subscriptionEndDate)
+        const reduceDays = days < 0 ? Math.abs(days) : days // Ensure positive for subtraction
+        newEndDate = addDays(currentEndDate, -reduceDays)
+        
+        // Prevent setting endDate before now (minimum is now)
+        if (isBefore(newEndDate, now)) {
+          newEndDate = now
+        }
+      } else {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Action tidak valid',
+        })
+      }
+
+      // Upsert subscription
+      const subscription = await (prisma as any).classSubscription.upsert({
+        where: { kelas },
+        create: {
+          kelas,
+          subscriptionEndDate: newEndDate,
+        },
+        update: {
+          subscriptionEndDate: newEndDate,
+        },
+      })
+
+      const subscriptionStatus = await checkClassSubscription(kelas)
+
+      return {
+        ...subscription,
+        ...subscriptionStatus,
+      }
+    }),
 })
 

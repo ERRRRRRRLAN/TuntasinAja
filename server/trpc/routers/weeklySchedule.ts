@@ -3,27 +3,6 @@ import { createTRPCRouter, dantonProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { TRPCError } from '@trpc/server'
 
-const MATA_PELAJARAN = [
-  'Dasar BC',
-  'Bahasa Inggris',
-  'Seni Musik',
-  'Koding dan Kecerdasan Artificial',
-  'Matematika',
-  'Mulok BK',
-  'Mulok Batik',
-  'Pendidikan Pancasila',
-  'Bahasa Indonesia',
-  'Proj IPAS',
-  'Sejarah',
-  'PJOK',
-  'PAI & BP',
-  'Informatika',
-  'PAI',
-  'Pendidikan Kewarganegaraan Negara',
-  'Dasar PPLG',
-  'IPAS',
-]
-
 const DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const
 const DAY_NAMES = {
   monday: 'Senin',
@@ -38,7 +17,7 @@ export const weeklyScheduleRouter = createTRPCRouter({
   getSchedule: dantonProcedure.query(async ({ ctx }) => {
     const dantonKelas = ctx.dantonKelas
 
-    const schedules = await prisma.weeklySchedule.findMany({
+    const schedules = await (prisma as any).weeklySchedule.findMany({
       where: {
         kelas: dantonKelas,
       },
@@ -57,7 +36,7 @@ export const weeklyScheduleRouter = createTRPCRouter({
       friday: [],
     }
 
-    schedules.forEach(schedule => {
+    schedules.forEach((schedule: any) => {
       scheduleByDay[schedule.dayOfWeek].push({
         period: schedule.period,
         subject: schedule.subject,
@@ -89,16 +68,23 @@ export const weeklyScheduleRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const dantonKelas = ctx.dantonKelas
 
-      // Validate subject
-      if (!MATA_PELAJARAN.includes(input.subject)) {
+      // Validate subject exists in database for this class
+      const subjectExists = await (prisma as any).classSubject.findFirst({
+        where: {
+          kelas: dantonKelas,
+          subject: input.subject,
+        },
+      })
+
+      if (!subjectExists) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Mata pelajaran tidak valid',
+          message: 'Mata pelajaran tidak valid atau tidak tersedia untuk kelas ini',
         })
       }
 
       // Upsert schedule
-      const schedule = await prisma.weeklySchedule.upsert({
+      const schedule = await (prisma as any).weeklySchedule.upsert({
         where: {
           kelas_dayOfWeek_period: {
             kelas: dantonKelas,
@@ -131,7 +117,7 @@ export const weeklyScheduleRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const dantonKelas = ctx.dantonKelas
 
-      await prisma.weeklySchedule.deleteMany({
+      await (prisma as any).weeklySchedule.deleteMany({
         where: {
           kelas: dantonKelas,
           dayOfWeek: input.dayOfWeek,
@@ -142,9 +128,20 @@ export const weeklyScheduleRouter = createTRPCRouter({
       return { success: true }
     }),
 
-  // Get available subjects
-  getSubjects: dantonProcedure.query(async () => {
-    return MATA_PELAJARAN
+  // Get available subjects for danton's class
+  getSubjects: dantonProcedure.query(async ({ ctx }) => {
+    const dantonKelas = ctx.dantonKelas
+
+    const subjects = await (prisma as any).classSubject.findMany({
+      where: { kelas: dantonKelas },
+      orderBy: { subject: 'asc' },
+      select: {
+        subject: true,
+      },
+    })
+
+    // Return array of subject names
+    return subjects.map((s: any) => s.subject)
   }),
 
   // Get schedule for regular user (read-only, based on their kelas)
@@ -164,7 +161,7 @@ export const weeklyScheduleRouter = createTRPCRouter({
       })
     }
 
-    const schedules = await prisma.weeklySchedule.findMany({
+    const schedules = await (prisma as any).weeklySchedule.findMany({
       where: {
         kelas: user.kelas,
       },
@@ -183,7 +180,7 @@ export const weeklyScheduleRouter = createTRPCRouter({
       friday: [],
     }
 
-    schedules.forEach(schedule => {
+    schedules.forEach((schedule: any) => {
       scheduleByDay[schedule.dayOfWeek].push({
         period: schedule.period,
         subject: schedule.subject,

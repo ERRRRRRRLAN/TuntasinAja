@@ -103,13 +103,23 @@ export default async function handler(
         completedUserIds.has(userId)
       )
 
-      // Also check if all completions are older than 24 hours
-      const allCompletionsOld = thread.histories.every(
-        (h: { completedDate: Date }) => h.completedDate < oneDayAgo
-      )
+      if (!allUsersCompleted) {
+        continue
+      }
 
-      // Only delete if ALL users in kelas have completed AND all completions are old enough
-      if (!allUsersCompleted || !allCompletionsOld) {
+      // Check if at least the oldest completion is older than 24 hours
+      // This ensures that the thread has been completed by all users for at least 24 hours
+      const completionDates = thread.histories.map((h: { completedDate: Date }) => 
+        new Date(h.completedDate)
+      )
+      const oldestCompletion = completionDates.length > 0 
+        ? new Date(Math.min(...completionDates.map(d => d.getTime())))
+        : null
+
+      // Only delete if oldest completion is older than 24 hours
+      // This allows deletion even if some users completed it recently (within 24h)
+      // as long as at least one user completed it more than 24 hours ago
+      if (!oldestCompletion || oldestCompletion >= oneDayAgo) {
         continue
       }
 

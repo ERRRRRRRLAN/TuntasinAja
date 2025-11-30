@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import * as fs from 'fs'
+import * as path from 'path'
 
 const prisma = new PrismaClient()
 
@@ -214,94 +216,88 @@ const students: Student[] = [
   },
 ]
 
-async function main() {
-  console.log('🚀 Starting to add XI BC 1 students...\n')
+async function generateSQL() {
+  console.log('🚀 Generating SQL script for XI BC 1 users...\n')
 
-  // 1. Create subscription for XI BC 1 (7 days)
-  console.log('📝 Creating subscription for XI BC 1 (7 days)...')
+  const sqlLines: string[] = []
   
-  // Check if subscription already exists
-  const existingSubscription = await prisma.classSubscription.findUnique({
-    where: { kelas: 'XI BC 1' },
-  })
+  // Header
+  sqlLines.push('-- ============================================')
+  sqlLines.push('-- SCRIPT SQL: CREATE/UPDATE XI BC 1 USERS')
+  sqlLines.push('-- Email dan password sudah dinormalisasi')
+  sqlLines.push('-- Password sudah di-hash dengan bcrypt (rounds: 10)')
+  sqlLines.push('-- ============================================')
+  sqlLines.push('')
+  sqlLines.push('-- Hapus user XI BC 1 yang sudah ada (optional - uncomment jika perlu)')
+  sqlLines.push('-- DELETE FROM users WHERE kelas = \'XI BC 1\';')
+  sqlLines.push('')
+  sqlLines.push('-- Buat/Update subscription untuk XI BC 1 (7 hari)')
+  sqlLines.push('INSERT INTO class_subscriptions (kelas, subscription_end_date, created_at, updated_at)')
+  sqlLines.push('VALUES (\'XI BC 1\', NOW() + INTERVAL \'7 days\', NOW(), NOW())')
+  sqlLines.push('ON CONFLICT (kelas) DO UPDATE SET')
+  sqlLines.push('  subscription_end_date = NOW() + INTERVAL \'7 days\',')
+  sqlLines.push('  updated_at = NOW();')
+  sqlLines.push('')
+  sqlLines.push('-- ============================================')
+  sqlLines.push('-- INSERT USERS')
+  sqlLines.push('-- ============================================')
+  sqlLines.push('')
 
-  let subscription
-  if (existingSubscription) {
-    console.log('⚠️  Subscription already exists, updating end date...')
-    subscription = await prisma.classSubscription.update({
-      where: { kelas: 'XI BC 1' },
-      data: {
-        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      },
-    })
-  } else {
-    subscription = await prisma.classSubscription.create({
-      data: {
-        kelas: 'XI BC 1',
-        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      },
-    })
-  }
-  console.log(`✅ Subscription set: expires ${subscription.subscriptionEndDate.toLocaleDateString('id-ID')}\n`)
-
-  // 2. Create users
-  console.log('👥 Creating users...\n')
-  let successCount = 0
-  let errorCount = 0
-
+  // Generate SQL for each student
   for (const student of students) {
-    try {
-      // Hash password
-      const hashedPassword = await bcrypt.hash(student.password, 10)
-
-      // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email: student.email },
-      })
-
-      if (existingUser) {
-        console.log(`⚠️  User already exists: ${student.email}`)
-        errorCount++
-        continue
-      }
-
-      // Normalize email: trim whitespace and convert to lowercase
-      const normalizedEmail = student.email.trim().toLowerCase()
-
-      // Create user
-      const user = await prisma.user.create({
-          data: {
-            email: normalizedEmail,
-            passwordHash: hashedPassword,
-            name: student.name,
-            kelas: 'XI BC 1',
-            isDanton: student.isDanton || false,
-            isAdmin: false,
-          } as any,
-      })
-
-      console.log(
-        `✅ Created: ${student.name} ${student.isDanton ? '(DANTON)' : ''}`
-      )
-      successCount++
-    } catch (error) {
-      console.error(`❌ Error creating user ${student.name}:`, error)
-      errorCount++
-    }
+    // Normalize email
+    const normalizedEmail = student.email.trim().toLowerCase()
+    
+    // Hash password
+    const passwordHash = await bcrypt.hash(student.password, 10)
+    
+    // Escape single quotes in name and email
+    const escapedName = student.name.replace(/'/g, "''")
+    const escapedEmail = normalizedEmail.replace(/'/g, "''")
+    
+    // Generate SQL INSERT with ON CONFLICT UPDATE
+    sqlLines.push(`-- ${student.name} ${student.isDanton ? '(DANTON)' : ''}`)
+    sqlLines.push(`INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)`)
+    sqlLines.push(`VALUES (`)
+    sqlLines.push(`  gen_random_uuid(),`)
+    sqlLines.push(`  '${escapedName}',`)
+    sqlLines.push(`  '${escapedEmail}',`)
+    sqlLines.push(`  '${passwordHash}',`)
+    sqlLines.push(`  'XI BC 1',`)
+    sqlLines.push(`  false,`)
+    sqlLines.push(`  ${student.isDanton ? 'true' : 'false'},`)
+    sqlLines.push(`  NOW(),`)
+    sqlLines.push(`  NOW()`)
+    sqlLines.push(`)`)
+    sqlLines.push(`ON CONFLICT (email) DO UPDATE SET`)
+    sqlLines.push(`  name = EXCLUDED.name,`)
+    sqlLines.push(`  password_hash = EXCLUDED.password_hash,`)
+    sqlLines.push(`  kelas = EXCLUDED.kelas,`)
+    sqlLines.push(`  is_admin = EXCLUDED.is_admin,`)
+    sqlLines.push(`  is_danton = EXCLUDED.is_danton,`)
+    sqlLines.push(`  updated_at = NOW();`)
+    sqlLines.push('')
   }
 
-  console.log('\n' + '='.repeat(50))
-  console.log('📊 SUMMARY')
-  console.log('='.repeat(50))
-  console.log(`✅ Successfully created: ${successCount} users`)
-  console.log(`❌ Errors: ${errorCount}`)
-  console.log(`📦 Total students: ${students.length}`)
-  console.log(`📅 Subscription: 7 days`)
-  console.log(`🎓 Class: XI BC 1`)
-  console.log('='.repeat(50))
+  // Footer
+  sqlLines.push('-- ============================================')
+  sqlLines.push(`-- TOTAL: ${students.length} users (${students.filter(s => s.isDanton).length} Danton + ${students.filter(s => !s.isDanton).length} Siswa)`)
+  sqlLines.push('-- KELAS: XI BC 1')
+  sqlLines.push('-- SUBSCRIPTION: 7 Hari')
+  sqlLines.push('-- ============================================')
+
+  // Write to file
+  const outputPath = path.join(__dirname, 'recreate-xi-bc-1-users.sql')
+  fs.writeFileSync(outputPath, sqlLines.join('\n'), 'utf-8')
+
+  console.log(`✅ SQL script generated successfully!`)
+  console.log(`   File: ${outputPath}`)
+  console.log(`   Total users: ${students.length}`)
+  console.log(`   Danton: ${students.filter(s => s.isDanton).length}`)
+  console.log(`   Siswa: ${students.filter(s => !s.isDanton).length}\n`)
 }
 
-main()
+generateSQL()
   .catch((e) => {
     console.error('❌ Fatal error:', e)
     process.exit(1)
