@@ -1679,11 +1679,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-<<<<<<< HEAD
-  z-index: 3000; /* Lebih tinggi dari quickview overlay (1000) dan content */
-=======
   z-index: 10001; /* Lebih tinggi dari quickview overlay (1000) dan semua elemen lainnya */
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
   backdrop-filter: blur(2px);
   isolation: isolate; /* Create new stacking context to prevent flicker */
 }
@@ -3328,10 +3324,7 @@ textarea {
   }
 }
 
-<<<<<<< HEAD
-=======
 /* Schedule Components Mobile Styles */
->>>>>>> 1dac9a9394949390aa486672e06bf372bec80955
 @media (max-width: 640px) {
   .schedule-manager-header {
     flex-direction: column !important;
@@ -3355,8 +3348,6 @@ textarea {
     max-width: 95% !important;
     padding: 1rem !important;
   }
-<<<<<<< HEAD
-=======
 
   /* Schedule Table Mobile - WeeklyScheduleViewer & WeeklyScheduleManager */
   .card > div[style*="overflowX"] {
