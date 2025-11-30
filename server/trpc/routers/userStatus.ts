@@ -86,58 +86,22 @@ export const userStatusRouter = createTRPCRouter({
         return { success: true }
       }
 
-      // Check if all comments are completed and move to history
-      const thread = await prisma.thread.findUnique({
-        where: { id: input.threadId },
-        include: {
-          comments: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
+      // Always create/update history when thread is checked
+      // This is necessary for the 24-hour hide feature to work
+      if (input.isCompleted) {
+        const thread = await prisma.thread.findUnique({
+          where: { id: input.threadId },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-      })
+        })
 
-      if (thread && input.isCompleted) {
-        // If thread has no comments, consider all comments as completed
-        // Otherwise, check if all comments are completed
-        const allCommentsCompleted = 
-          thread.comments.length === 0 || 
-          thread.comments.every(async (comment) => {
-            const status = await prisma.userStatus.findUnique({
-              where: {
-                userId_commentId: {
-                  userId: ctx.session.user.id,
-                  commentId: comment.id,
-                },
-              },
-            })
-            return status?.isCompleted ?? false
-          })
-
-        // Check if all comments are actually completed
-        const commentsStatuses = await Promise.all(
-          thread.comments.map(async (comment) => {
-            const status = await prisma.userStatus.findUnique({
-              where: {
-                userId_commentId: {
-                  userId: ctx.session.user.id,
-                  commentId: comment.id,
-                },
-              },
-            })
-            return status?.isCompleted ?? false
-          })
-        )
-
-        const allCompleted = 
-          thread.comments.length === 0 || 
-          commentsStatuses.every((status) => status === true)
-
-        // Move to history if all comments are completed and thread is completed
-        if (allCompleted) {
+        if (thread) {
           // Find existing history (if threadId is not null)
           const existingHistory = await prisma.history.findFirst({
             where: {
@@ -147,19 +111,21 @@ export const userStatusRouter = createTRPCRouter({
           })
 
           if (existingHistory) {
-            // Update existing history
+            // History already exists - don't update completedDate to preserve the original completion time
+            // Only update denormalized data in case thread info changed
+            // This ensures the 24-hour timer is calculated from the first completion time
             await prisma.history.update({
               where: { id: existingHistory.id },
               data: {
-                completedDate: getUTCDate(),
-                // Update denormalized data in case thread info changed
+                // Keep completedDate as is - don't reset the 24-hour timer
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
                 threadAuthorName: thread.author.name,
               },
             })
           } else {
-            // Create new history
+            // Create new history - always create when thread is checked for the first time
+            // This ensures the 24-hour hide feature works correctly
             await prisma.history.create({
               data: {
                 userId: ctx.session.user.id,
@@ -167,7 +133,7 @@ export const userStatusRouter = createTRPCRouter({
                 threadTitle: thread.title,
                 threadAuthorId: thread.author.id,
                 threadAuthorName: thread.author.name,
-                completedDate: getUTCDate(),
+                completedDate: getUTCDate(), // Set completion date to now (first time check)
               },
             })
           }

@@ -104,7 +104,7 @@ export const threadRouter = createTRPCRouter({
           .filter((id): id is string => id !== null)
       )
 
-      // Filter out completed threads for this user (only if completion > 2 minutes)
+      // Filter out completed threads for this user (only if completion > 24 hours)
       return threads.filter((thread) => !completedIds.has(thread.id))
     }
 
