@@ -81,10 +81,17 @@ export default function FeedPage() {
 
   // Track initial load completion
   useEffect(() => {
+    // For admin, mark initial load complete once data is validated (don't wait for threads)
+    if (isAdmin && isDataValidated && !isLoadingUserData && userData !== undefined) {
+      setIsInitialLoad(false)
+      return
+    }
+
+    // For non-admin, wait for threads to load and validate
     if (!isLoading && threads && isDataValidated) {
       setIsInitialLoad(false)
     }
-  }, [isLoading, threads, isDataValidated])
+  }, [isLoading, threads, isDataValidated, isAdmin, isLoadingUserData, userData])
 
   // Invalidate cache when user changes
   useEffect(() => {
@@ -102,6 +109,13 @@ export default function FeedPage() {
 
   // Validate that displayed threads match user's kelas
   useEffect(() => {
+    // For admin, validate immediately once userData is loaded (don't wait for threads)
+    if (isAdmin && !isLoadingUserData && userData !== undefined) {
+      setIsDataValidated(true)
+      return
+    }
+
+    // For non-admin users, validate threads match their kelas
     if (threads && userKelas !== undefined && !isAdmin) {
       // Check if all threads match user's kelas
       const allMatchKelas = threads.every(thread => {
@@ -117,11 +131,11 @@ export default function FeedPage() {
         setIsDataValidated(false)
         utils.thread.getAll.invalidate()
       }
-    } else if (isAdmin || !userKelas) {
-      // Admin or no kelas - always valid
+    } else if (!userKelas && !isLoadingUserData && userData !== undefined) {
+      // No kelas but user data is loaded - always valid (public view)
       setIsDataValidated(true)
     }
-  }, [threads, userKelas, isAdmin, utils, isInitialLoad])
+  }, [threads, userKelas, isAdmin, utils, isInitialLoad, isLoadingUserData, userData])
 
   // Get uncompleted comments count
   const { data: uncompletedData } = trpc.userStatus.getUncompletedCount.useQuery(
@@ -405,7 +419,14 @@ export default function FeedPage() {
           )}
 
           {/* Only show loading on initial load, not during background refresh */}
-          {(isLoading || isLoadingUserData || isLoadingSubjects || (isInitialLoad && !isDataValidated)) ? (
+          {/* For admin: don't wait for isLoadingSubjects (query is disabled) or threads loading after validation */}
+          {/* For non-admin: wait for all data including threads on initial load */}
+          {(
+            isLoadingUserData || 
+            (!isAdmin && isLoadingSubjects) || 
+            (isInitialLoad && !isDataValidated) ||
+            (!isAdmin && isInitialLoad && isLoading && !threads)
+          ) ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <LoadingSpinner size={32} />
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
