@@ -71,8 +71,8 @@ export function useNavigationHistory() {
 
   // Track navigation
   useEffect(() => {
-    // Skip if pathname is null
-    if (!pathname) {
+    // Skip if pathname is null or empty
+    if (!pathname || pathname.trim() === '') {
       return
     }
 
