@@ -103,9 +103,8 @@ export default function PushNotificationSetup() {
     }
 
     let isMounted = true
-    const currentUserId = session?.user?.id
     setupAttempted.current = true
-    lastUserIdRef.current = currentUserId || null
+    lastUserIdRef.current = currentUserId
 
     const initialize = async () => {
       try {
