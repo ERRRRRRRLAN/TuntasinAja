@@ -24,14 +24,14 @@ export default function FeedbackModal({
   const [isVisible, setIsVisible] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false)
     
     // Wait for transition to complete before closing
     setTimeout(() => {
       onClose()
     }, 300) // Match transition duration
-  }
+  }, [onClose])
 
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
@@ -76,15 +76,6 @@ export default function FeedbackModal({
       setIsModalOpen(false)
     }
   }, [isOpen])
-
-  const handleClose = useCallback(() => {
-    setIsVisible(false)
-    
-    // Wait for transition to complete before closing
-    setTimeout(() => {
-      onClose()
-    }, 300) // Match transition duration
-  }, [onClose])
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
