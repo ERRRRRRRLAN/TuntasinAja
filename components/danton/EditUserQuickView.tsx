@@ -38,6 +38,18 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     }
   }, [user])
 
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+
+  const handleCloseQuickView = useCallback(() => {
+    setIsQuickViewOpen(false)
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
+
   useEffect(() => {
     setIsQuickViewOpen(true)
     setIsVisible(false)
@@ -74,7 +86,6 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
 
   // Handle browser back button untuk quickview
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   
   useEffect(() => {
     if (isQuickViewOpen && isVisible) {
@@ -88,16 +99,6 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   }, [isQuickViewOpen, isVisible])
 
   useBackHandler(shouldHandleBack, handleCloseQuickView)
-
-  const handleCloseQuickView = useCallback(() => {
-    setIsQuickViewOpen(false)
-    setIsVisible(false)
-    
-    // Wait for transition to complete before closing
-    setTimeout(() => {
-      onClose()
-    }, 300) // Match transition duration
-  }, [onClose])
 
   const utils = trpc.useUtils()
 
