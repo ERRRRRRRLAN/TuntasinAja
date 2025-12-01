@@ -136,7 +136,9 @@ export default function ProfilePage() {
                     fontWeight: activeTab === 'users' ? 600 : 400,
                     fontSize: '0.875rem',
                     transition: 'all 0.2s',
-                    marginBottom: '-2px'
+                    marginBottom: '-2px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   Manajemen User
@@ -153,7 +155,9 @@ export default function ProfilePage() {
                     fontWeight: activeTab === 'subscriptions' ? 600 : 400,
                     fontSize: '0.875rem',
                     transition: 'all 0.2s',
-                    marginBottom: '-2px'
+                    marginBottom: '-2px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   Manajemen Subscription
@@ -170,7 +174,9 @@ export default function ProfilePage() {
                     fontWeight: activeTab === 'subjects' ? 600 : 400,
                     fontSize: '0.875rem',
                     transition: 'all 0.2s',
-                    marginBottom: '-2px'
+                    marginBottom: '-2px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   Mata Pelajaran per Kelas
@@ -191,7 +197,9 @@ export default function ProfilePage() {
                     position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   <span>Saran & Masukan</span>
