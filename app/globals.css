@@ -36,7 +36,8 @@ body {
   /* Remove tap highlight and callout on mobile */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  /* Add padding for status bar on Android - removed from body, handled by header */
+  /* Add padding for navigation bar on Android */
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* Container */
@@ -286,6 +287,7 @@ body {
 .main-content {
   min-height: calc(100vh - 80px);
   padding: 2rem 0;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0));
   width: 100%;
   animation: fadeIn 0.5s ease-out;
 }
@@ -293,12 +295,14 @@ body {
 @media (max-width: 768px) {
   .main-content {
     padding: 1.5rem 0;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
   }
 }
 
 @media (max-width: 640px) {
   .main-content {
     padding: 1rem 0;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
   }
 }
 
@@ -2960,7 +2964,7 @@ textarea {
 /* Floating Action Button (FAB) */
 .fab-button {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
   right: 1.5rem;
   width: 56px;
   height: 56px;
@@ -2990,7 +2994,7 @@ textarea {
 
 @media (max-width: 640px) {
   .fab-button {
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0));
     right: 1rem;
     width: 56px;
     height: 56px;
@@ -3654,7 +3658,7 @@ textarea {
   }
 
   .feedback-fab-container {
-    bottom: 5.5rem !important;
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0)) !important;
     right: 1rem !important;
     z-index: 999 !important;
   }

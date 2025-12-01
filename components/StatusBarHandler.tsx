@@ -51,6 +51,10 @@ export default function StatusBarHandler() {
           overlay: false,
         })
 
+        // Note: Navigation bar is handled by Android theme configuration
+        // (windowTranslucentNavigation: false in styles.xml)
+        // CSS padding-bottom with env(safe-area-inset-bottom) handles spacing
+
         console.log('[StatusBarHandler] ✅ Status bar configured')
       } catch (error) {
         console.error('[StatusBarHandler] ❌ Error configuring status bar:', error)
