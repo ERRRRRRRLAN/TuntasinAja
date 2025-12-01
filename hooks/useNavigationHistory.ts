@@ -88,12 +88,19 @@ export function useNavigationHistory() {
   }, [pathname])
 
   // Handle back button for navigation (only on native platform)
+  // This handler has lower priority - it will only be called if no QuickView/Modal is open
+  // QuickView handlers will be registered after this, so they have higher priority
   useBackButton(
     Capacitor.isNativePlatform() && navigationHistory.getHistory().length > 1,
     () => {
+      // Check if we're at root (can't go back further)
+      if (navigationHistory.getHistory().length <= 1) {
+        return false // Allow default (exit app)
+      }
+      
       const previous = navigationHistory.pop()
-      if (previous) {
-        console.log('[NavigationHistory] Navigating back to:', previous)
+      if (previous && previous !== pathname) {
+        console.log('[NavigationHistory] Navigating back to:', previous, 'from:', pathname)
         router.push(previous)
         return true // Prevent default
       }

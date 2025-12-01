@@ -117,10 +117,16 @@ export function useBackButton(isActive: boolean, onBack: () => boolean | void) {
     }
 
     // Register handler
+    // Note: Handlers are called in reverse order (last registered = highest priority)
+    // So QuickView handlers (registered after navigation) will be called first
     const unregister = backButtonManager.register(() => {
+      // Double check isActive to avoid stale closures
       if (isActive) {
-        return onBackRef.current()
+        const result = onBackRef.current()
+        console.log('[useBackButton] Handler called, result:', result)
+        return result
       }
+      console.log('[useBackButton] Handler not active, skipping')
       return false
     })
 
