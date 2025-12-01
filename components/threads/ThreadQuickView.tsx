@@ -466,11 +466,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     return null
   }
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (e.target === overlayRef.current) {
+      handleCloseQuickView()
+    }
+  }
+
   return (
     <div 
       ref={overlayRef}
       className="quickview-overlay" 
-      onClick={handleCloseQuickView}
+      onClick={handleOverlayClick}
       onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,

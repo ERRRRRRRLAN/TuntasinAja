@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
@@ -9,6 +9,7 @@ import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface CreateThreadQuickViewProps {
   onClose: () => void
@@ -21,6 +22,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const [comment, setComment] = useState('')
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -73,35 +75,77 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     },
   })
 
+  const handleClose = useCallback(() => {
+    setIsQuickViewOpen(false)
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      document.body.style.overflow = ''
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
+
   // Lock body scroll when quickview is open (mobile)
   useEffect(() => {
+    setIsQuickViewOpen(true)
+    const scrollY = window.scrollY
     document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    
+    // Push state untuk back handler
+    window.history.pushState({ quickview: true }, '')
+    
     // Small delay to ensure DOM is ready before showing
     requestAnimationFrame(() => {
       setIsVisible(true)
     })
+    
     return () => {
+      setIsQuickViewOpen(false)
+      setIsVisible(false)
+      
+      // Unlock body scroll when quickview is closed
       document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      
+      // Restore scroll position
+      window.scrollTo(0, scrollY)
     }
   }, [])
 
-  const handleClose = () => {
-    setIsVisible(false)
-    
-    // Wait for transition to complete before closing
-    const timer = setTimeout(() => {
-      document.body.style.overflow = ''
-      onClose()
-    }, 300) // Match transition duration
-    
-    return () => clearTimeout(timer)
+  // Handle browser back button untuk quickview
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  
+  useEffect(() => {
+    if (isQuickViewOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
+    }
+  }, [isQuickViewOpen, isVisible])
+
+  useBackHandler(shouldHandleBack, handleClose)
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (e.target === overlayRef.current) {
+      handleClose()
+    }
   }
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
-    if (e.target === overlayRef.current && !isVisible) {
-      document.body.style.overflow = ''
-      onClose()
+    if (e.target === overlayRef.current && !isQuickViewOpen) {
+      setIsVisible(false)
     }
   }
 
@@ -132,7 +176,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     <div 
       ref={overlayRef}
       className="quickview-overlay" 
-      onClick={handleClose}
+      onClick={handleOverlayClick}
       onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,

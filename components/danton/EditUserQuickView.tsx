@@ -8,6 +8,7 @@ import { XCloseIcon, EditIcon, TrashIcon, UserIcon } from '@/components/ui/Icons
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface EditUserQuickViewProps {
   userId: string
@@ -38,7 +39,8 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   }, [user])
 
   useEffect(() => {
-    setIsVisible(true)
+    setIsQuickViewOpen(true)
+    setIsVisible(false)
     
     // Lock body scroll when quickview is open (mobile)
     const scrollY = window.scrollY
@@ -56,6 +58,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     })
     
     return () => {
+      setIsQuickViewOpen(false)
       setIsVisible(false)
       
       // Unlock body scroll when quickview is closed
@@ -70,19 +73,24 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   }, [])
 
   // Handle browser back button untuk quickview
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+  
   useEffect(() => {
-    if (!isVisible) return
-
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault()
-      handleCloseQuickView()
+    if (isQuickViewOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
     }
+  }, [isQuickViewOpen, isVisible])
 
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [isVisible])
+  useBackHandler(shouldHandleBack, handleCloseQuickView)
 
   const handleCloseQuickView = useCallback(() => {
+    setIsQuickViewOpen(false)
     setIsVisible(false)
     
     // Wait for transition to complete before closing
@@ -183,12 +191,20 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
           padding: '1rem',
+          pointerEvents: isVisible ? 'auto' : 'none'
         }}
-        onClick={handleCloseQuickView}
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+          if (e.target === overlayRef.current) {
+            handleCloseQuickView()
+          }
+        }}
       >
         <div
           ref={contentRef}
           className="quickview-content"
+          onClick={(e) => e.stopPropagation()}
           style={{
             background: 'var(--card)',
             borderRadius: '0.5rem',
@@ -196,8 +212,9 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
             maxWidth: '600px',
             maxHeight: '90vh',
             overflow: 'auto',
+            opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'transform 0.3s ease-out',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
             boxShadow: 'var(--shadow-lg)',
           }}
           onClick={(e) => e.stopPropagation()}

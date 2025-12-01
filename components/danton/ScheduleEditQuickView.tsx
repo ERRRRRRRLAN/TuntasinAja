@@ -151,6 +151,8 @@ export default function ScheduleEditQuickView({
   useBackHandler(shouldHandleBack, handleCloseQuickView)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     if (e.target === overlayRef.current) {
       handleCloseQuickView()
     }
