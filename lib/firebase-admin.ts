@@ -21,12 +21,41 @@ export function getFirebaseMessaging(): Messaging {
     }
 
     try {
-      const serviceAccountJson = JSON.parse(serviceAccount)
+      // Clean the service account string - remove any leading/trailing quotes or whitespace
+      let cleanedServiceAccount = serviceAccount.trim()
+      
+      // Remove surrounding quotes if present
+      if ((cleanedServiceAccount.startsWith('"') && cleanedServiceAccount.endsWith('"')) ||
+          (cleanedServiceAccount.startsWith("'") && cleanedServiceAccount.endsWith("'"))) {
+        cleanedServiceAccount = cleanedServiceAccount.slice(1, -1)
+      }
+      
+      // Unescape any escaped quotes
+      cleanedServiceAccount = cleanedServiceAccount.replace(/\\"/g, '"').replace(/\\'/g, "'")
+      
+      const serviceAccountJson = JSON.parse(cleanedServiceAccount)
+      
+      // Validate required fields
+      if (!serviceAccountJson.project_id || !serviceAccountJson.private_key || !serviceAccountJson.client_email) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT is missing required fields: project_id, private_key, or client_email')
+      }
+      
       app = initializeApp({
         credential: cert(serviceAccountJson),
       })
+      
+      console.log('[FirebaseAdmin] ✅ Firebase initialized successfully', {
+        projectId: serviceAccountJson.project_id,
+        clientEmail: serviceAccountJson.client_email,
+      })
     } catch (error) {
-      throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT: ${error}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error('[FirebaseAdmin] ❌ Failed to parse FIREBASE_SERVICE_ACCOUNT:', {
+        error: errorMessage,
+        serviceAccountLength: serviceAccount.length,
+        serviceAccountPrefix: serviceAccount.substring(0, 50) + '...',
+      })
+      throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT: ${errorMessage}. Please check that the value is valid JSON without surrounding quotes.`)
     }
   } else {
     app = apps[0]
