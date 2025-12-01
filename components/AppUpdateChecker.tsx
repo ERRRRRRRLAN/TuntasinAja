@@ -104,21 +104,52 @@ export default function AppUpdateChecker() {
     setIsDownloading(true)
 
     try {
-      // For Android, we need to use native file download
-      // Capacitor doesn't have built-in APK installer, so we'll use a workaround
-      
       if (Capacitor.getPlatform() === 'android') {
-        // Open download URL in browser - Android will handle APK installation
-        // Use window.location for same-origin, or window.open for external
+        // For Android, use Browser plugin to open download URL in external browser
+        // This ensures proper download handling
+        try {
+          const { Browser } = await import('@capacitor/browser')
+          await Browser.open({
+            url: updateInfo.downloadUrl,
+            windowName: '_system', // Open in system browser
+          })
+          toast.success('Membuka browser untuk download APK...')
+        } catch (browserError) {
+          // Fallback: try using window.open
+          console.log('[AppUpdateChecker] Browser plugin not available, using window.open')
+          const downloadUrl = updateInfo.downloadUrl.startsWith('http')
+            ? updateInfo.downloadUrl
+            : `${window.location.origin}${updateInfo.downloadUrl}`
+          
+          // Use API endpoint if relative URL
+          const finalUrl = updateInfo.downloadUrl.startsWith('/')
+            ? `${window.location.origin}/api/app/download`
+            : downloadUrl
+          
+          window.open(finalUrl, '_blank', 'noopener,noreferrer')
+          toast.success('Membuka browser untuk download APK...')
+        }
+        
+        setShowUpdateDialog(false)
+      } else {
+        // For web, use standard download
+        const downloadUrl = updateInfo.downloadUrl.startsWith('http')
+          ? updateInfo.downloadUrl
+          : `${window.location.origin}${updateInfo.downloadUrl}`
+        
+        const finalUrl = updateInfo.downloadUrl.startsWith('/')
+          ? `${window.location.origin}/api/app/download`
+          : downloadUrl
+        
         const link = document.createElement('a')
-        link.href = updateInfo.downloadUrl
+        link.href = finalUrl
         link.download = 'TuntasinAja.apk'
         link.target = '_blank'
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
         
-        toast.success('Download dimulai. Silakan install APK setelah download selesai.')
+        toast.success('Download dimulai...')
         setShowUpdateDialog(false)
       }
     } catch (error) {
