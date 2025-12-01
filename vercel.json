@@ -1,20 +1,38 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "regions": ["sin1"],
-  "env": {
-    "PRISMA_GENERATE_DATAPROXY": "true"
-  },
-  "crons": [
+  "headers": [
     {
-      "path": "/api/cron/auto-delete-threads",
-      "schedule": "0 0 * * *"
+      "source": "/TuntasinAja.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"TuntasinAja.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     },
     {
-      "path": "/api/cron/cleanup-user-statuses",
-      "schedule": "0 2 * * *"
+      "source": "/api/app/download",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"TuntasinAja.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     }
   ]
 }

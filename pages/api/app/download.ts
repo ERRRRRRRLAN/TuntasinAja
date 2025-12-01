@@ -2,6 +2,14 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
 
+// Disable body parsing for this endpoint (we're sending binary data)
+export const config = {
+  api: {
+    responseLimit: false,
+    bodyParser: false,
+  },
+}
+
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -15,30 +23,57 @@ export default function handler(
     const apkPath = path.join(process.cwd(), 'public', 'TuntasinAja.apk')
     
     if (!fs.existsSync(apkPath)) {
-      // If file doesn't exist, redirect to external URL
-      const externalUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja.vercel.app/TuntasinAja.apk'
+      // If file doesn't exist, redirect to external URL or API endpoint
+      const externalUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/api/app/download'
+      console.log('[Download API] File not found, redirecting to:', externalUrl)
       return res.redirect(302, externalUrl)
     }
 
-    // Read file
-    const fileBuffer = fs.readFileSync(apkPath)
+    // Get file stats
     const fileStats = fs.statSync(apkPath)
+    const fileSize = fileStats.size
 
     // Set headers for download
     res.setHeader('Content-Type', 'application/vnd.android.package-archive')
     res.setHeader('Content-Disposition', 'attachment; filename="TuntasinAja.apk"')
-    res.setHeader('Content-Length', fileStats.size)
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-    res.setHeader('Pragma', 'no-cache')
-    res.setHeader('Expires', '0')
+    res.setHeader('Content-Length', fileSize)
+    res.setHeader('Accept-Ranges', 'bytes')
+    res.setHeader('Cache-Control', 'public, max-age=3600') // Cache for 1 hour
+    res.setHeader('X-Content-Type-Options', 'nosniff')
 
-    // Send file
-    res.status(200).send(fileBuffer)
+    // Handle range requests for resumable downloads
+    const range = req.headers.range
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-')
+      const start = parseInt(parts[0], 10)
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+      const chunksize = (end - start) + 1
+      const file = fs.createReadStream(apkPath, { start, end })
+      
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'application/vnd.android.package-archive',
+      })
+      
+      file.pipe(res)
+    } else {
+      // Stream file for better memory usage with large files
+      const file = fs.createReadStream(apkPath)
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': 'application/vnd.android.package-archive',
+      })
+      file.pipe(res)
+    }
   } catch (error) {
     console.error('[Download API] Error serving APK:', error)
-    // Fallback to external URL
-    const externalUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja.vercel.app/TuntasinAja.apk'
-    res.redirect(302, externalUrl)
+    // Fallback: try to redirect to public folder or external URL
+    const publicUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
+    const externalUrl = process.env.APP_DOWNLOAD_URL || publicUrl
+    console.log('[Download API] Error occurred, redirecting to:', externalUrl)
+    return res.redirect(302, externalUrl)
   }
 }
 

@@ -21,7 +21,7 @@ export default function handler(
   const latestVersion: VersionInfo = {
     versionCode: parseInt(process.env.APP_VERSION_CODE || '1'),
     versionName: process.env.APP_VERSION_NAME || '1.0',
-    downloadUrl: process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja.vercel.app/TuntasinAja.apk',
+    downloadUrl: process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/api/app/download',
     releaseNotes: process.env.APP_RELEASE_NOTES || 'Update terbaru dengan perbaikan bug dan fitur baru',
     forceUpdate: process.env.APP_FORCE_UPDATE === 'true',
   }
