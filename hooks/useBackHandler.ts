@@ -56,7 +56,11 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
 
       // Remove existing listener if any
       if (backButtonListenerRef.current) {
-        await App.removeListener('backButton', backButtonListenerRef.current)
+        try {
+          await backButtonListenerRef.current.remove()
+        } catch (e) {
+          console.error('[useBackHandler] Error removing existing listener:', e)
+        }
         backButtonListenerRef.current = null
       }
 
@@ -121,16 +125,11 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
 
       // Cleanup native handler (async cleanup)
       if (Capacitor.isNativePlatform() && backButtonListenerRef.current) {
-        loadApp().then((App) => {
-          if (App && backButtonListenerRef.current) {
-            App.removeListener('backButton', backButtonListenerRef.current).catch((e: any) => {
-              console.error('[useBackHandler] Error removing listener:', e)
-            })
-            backButtonListenerRef.current = null
-          }
-        }).catch((e) => {
-          console.error('[useBackHandler] Error loading App plugin:', e)
+        // Use remove() method on the listener object itself
+        backButtonListenerRef.current.remove().catch((e: any) => {
+          console.error('[useBackHandler] Error removing listener:', e)
         })
+        backButtonListenerRef.current = null
       }
 
       // Reset flags
