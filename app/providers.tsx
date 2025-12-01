@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
+import AppUpdateChecker from '@/components/AppUpdateChecker'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -30,6 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <StatusBarHandler />
           {children}
           <PushNotificationSetup />
+          <AppUpdateChecker />
         </SessionProvider>
       </QueryClientProvider>
     </trpc.Provider>
