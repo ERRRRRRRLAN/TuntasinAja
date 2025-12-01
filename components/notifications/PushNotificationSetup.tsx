@@ -41,9 +41,27 @@ export default function PushNotificationSetup() {
   const registerToken = trpc.notification.registerToken.useMutation()
   const unregisterToken = trpc.notification.unregisterToken.useMutation()
 
+  // Log component mount
   useEffect(() => {
+    console.log('[PushNotificationSetup] 🚀 Component mounted/updated!', {
+      status,
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userName: session?.user?.name,
+    })
+  }, [])
+
+  useEffect(() => {
+    console.log('[PushNotificationSetup] ⚡ useEffect triggered', {
+      status,
+      hasSession: !!session,
+      userId: session?.user?.id,
+      setupAttempted: setupAttempted.current,
+    })
+
     // Skip if session is not ready
     if (status === 'loading' || !session) {
+      console.log('[PushNotificationSetup] ⏸️ Skipping - session not ready', { status, hasSession: !!session })
       return
     }
 
