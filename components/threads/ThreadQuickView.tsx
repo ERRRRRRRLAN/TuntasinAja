@@ -118,9 +118,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     if (isQuickViewOpen && isVisible) {
       // Delay kecil untuk memastikan QuickView sudah fully rendered
       const timer = setTimeout(() => {
-        console.log('[ThreadQuickView] Enabling back handler')
+        console.log('[ThreadQuickView] Enabling back handler', { isQuickViewOpen, isVisible })
         setShouldHandleBack(true)
-      }, 200) // Increased delay to ensure everything is ready
+      }, 300) // Increased delay to ensure everything is ready
       return () => {
         clearTimeout(timer)
         setShouldHandleBack(false)
@@ -130,7 +130,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     }
   }, [isQuickViewOpen, isVisible])
 
-  useBackHandler(shouldHandleBack, handleCloseQuickView)
+  useBackHandler(shouldHandleBack, () => {
+    console.log('[ThreadQuickView] Back button pressed, closing QuickView')
+    handleCloseQuickView()
+  })
 
   const { data: thread, isLoading } = trpc.thread.getById.useQuery({ id: threadId })
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(

@@ -8,6 +8,7 @@ import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
+import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
@@ -31,6 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       },
     },
   }))
+
+  // Track navigation history for back button
+  useNavigationHistory()
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
