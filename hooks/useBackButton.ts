@@ -136,7 +136,15 @@ export function useBackButton(isActive: boolean, onBack: () => boolean | void) {
 }
 
 // Setup global listener on module load (for native platforms)
-if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
-  backButtonManager.setup().catch(console.error)
+// This ensures the listener is registered as soon as the module loads
+if (typeof window !== 'undefined') {
+  // Use setTimeout to ensure Capacitor is fully initialized
+  setTimeout(() => {
+    if (Capacitor.isNativePlatform()) {
+      backButtonManager.setup().catch((error) => {
+        console.error('[useBackButton] Error setting up global back button handler:', error)
+      })
+    }
+  }, 100)
 }
 
