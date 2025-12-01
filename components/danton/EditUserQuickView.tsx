@@ -8,6 +8,7 @@ import { XCloseIcon, EditIcon, TrashIcon, UserIcon } from '@/components/ui/Icons
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { useBackHandler } from '@/hooks/useBackHandler'
 
 interface EditUserQuickViewProps {
   userId: string
@@ -37,8 +38,21 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     }
   }, [user])
 
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+
+  const handleCloseQuickView = useCallback(() => {
+    setIsQuickViewOpen(false)
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
+
   useEffect(() => {
-    setIsVisible(true)
+    setIsQuickViewOpen(true)
+    setIsVisible(false)
     
     // Lock body scroll when quickview is open (mobile)
     const scrollY = window.scrollY
@@ -56,6 +70,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     })
     
     return () => {
+      setIsQuickViewOpen(false)
       setIsVisible(false)
       
       // Unlock body scroll when quickview is closed
@@ -70,26 +85,20 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   }, [])
 
   // Handle browser back button untuk quickview
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  
   useEffect(() => {
-    if (!isVisible) return
-
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault()
-      handleCloseQuickView()
+    if (isQuickViewOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
     }
+  }, [isQuickViewOpen, isVisible])
 
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [isVisible])
-
-  const handleCloseQuickView = useCallback(() => {
-    setIsVisible(false)
-    
-    // Wait for transition to complete before closing
-    setTimeout(() => {
-      onClose()
-    }, 300) // Match transition duration
-  }, [onClose])
+  useBackHandler(shouldHandleBack, handleCloseQuickView)
 
   const utils = trpc.useUtils()
 
@@ -183,12 +192,20 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
           padding: '1rem',
+          pointerEvents: isVisible ? 'auto' : 'none'
         }}
-        onClick={handleCloseQuickView}
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+          if (e.target === overlayRef.current) {
+            handleCloseQuickView()
+          }
+        }}
       >
         <div
           ref={contentRef}
           className="quickview-content"
+          onClick={(e) => e.stopPropagation()}
           style={{
             background: 'var(--card)',
             borderRadius: '0.5rem',
@@ -196,59 +213,61 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
             maxWidth: '600px',
             maxHeight: '90vh',
             overflow: 'auto',
+            opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'transform 0.3s ease-out',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
             boxShadow: 'var(--shadow-lg)',
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1.5rem',
-            borderBottom: '1px solid var(--border)',
-            position: 'sticky',
-            top: 0,
-            background: 'var(--card)',
-            zIndex: 10,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <UserIcon size={20} style={{ color: 'var(--text-light)' }} />
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-                Edit User
-              </h2>
+          <div className="quickview-header">
+            <div className="quickview-header-top">
+              <div className="quickview-header-left">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <UserIcon size={20} style={{ color: 'var(--text-light)' }} />
+                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+                    Edit User
+                  </h2>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseQuickView}
+                className="quickview-close-btn"
+                style={{
+                  background: 'var(--card)',
+                  border: '2px solid var(--border)',
+                  cursor: 'pointer',
+                  color: 'var(--text)',
+                  padding: '0.625rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '0.5rem',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.borderColor = 'var(--primary)'
+                  e.currentTarget.style.color = 'var(--primary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--card)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.color = 'var(--text)'
+                }}
+                aria-label="Tutup"
+              >
+                <XCloseIcon size={20} />
+              </button>
             </div>
-            <button
-              onClick={handleCloseQuickView}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-light)',
-                borderRadius: '0.375rem',
-                minWidth: '44px',
-                minHeight: '44px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-              }}
-              title="Tutup"
-            >
-              <XCloseIcon size={20} />
-            </button>
           </div>
 
           {/* Content */}
-          <div style={{ padding: '1.5rem' }}>
+          <div className="quickview-body" style={{ padding: '1.5rem' }}>
             {/* User Info */}
             <div style={{
               padding: '1rem',

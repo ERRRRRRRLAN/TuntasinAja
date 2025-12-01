@@ -78,7 +78,7 @@ export default function FeedbackList() {
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         marginBottom: '1.5rem',
         flexWrap: 'wrap',
         gap: '1rem'
@@ -108,7 +108,8 @@ export default function FeedbackList() {
             background: unreadCount && unreadCount.count > 0 ? 'var(--danger)' : 'var(--bg-secondary)',
             borderRadius: '0.5rem',
             border: '1px solid var(--border)',
-            color: unreadCount && unreadCount.count > 0 ? 'white' : 'var(--text)'
+            color: unreadCount && unreadCount.count > 0 ? 'white' : 'var(--text)',
+            minWidth: '120px'
           }}>
             <div style={{ fontSize: '0.75rem', marginBottom: '0.25rem', opacity: 0.9 }}>
               Belum Dibaca
@@ -123,37 +124,38 @@ export default function FeedbackList() {
         <div style={{
           display: 'flex',
           gap: '0.5rem',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          width: '100%'
         }}>
           <button
             onClick={() => setFilterRead('all')}
             className={`btn ${filterRead === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '0.875rem' }}
+            style={{ fontSize: '0.875rem', flex: '1 1 0', minWidth: 0 }}
           >
             Semua ({feedbacks?.length || 0})
           </button>
           <button
             onClick={() => setFilterRead('unread')}
             className={`btn ${filterRead === 'unread' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '0.875rem' }}
+            style={{ fontSize: '0.875rem', flex: '1 1 0', minWidth: 0 }}
           >
-            Belum Dibaca ({feedbacks?.filter(f => !f.isRead).length || 0})
+            Belum ({feedbacks?.filter(f => !f.isRead).length || 0})
           </button>
           <button
             onClick={() => setFilterRead('read')}
             className={`btn ${filterRead === 'read' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '0.875rem' }}
+            style={{ fontSize: '0.875rem', flex: '1 1 0', minWidth: 0 }}
           >
-            Sudah Dibaca ({feedbacks?.filter(f => f.isRead).length || 0})
+            Dibaca ({feedbacks?.filter(f => f.isRead).length || 0})
           </button>
         </div>
       </div>
 
       {/* Feedback List */}
       {filteredFeedbacks.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <MessageIcon size={48} style={{ color: 'var(--text-light)', margin: '0 auto 1rem' }} />
-          <p style={{ color: 'var(--text-light)' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+          <MessageIcon size={40} style={{ color: 'var(--text-light)', margin: '0 auto 1rem', display: 'block' }} />
+          <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', margin: 0 }}>
             {filterRead === 'all' 
               ? 'Belum ada feedback yang masuk.'
               : filterRead === 'read'
@@ -180,7 +182,8 @@ export default function FeedbackList() {
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
                 marginBottom: '1rem',
-                gap: '1rem'
+                gap: '1rem',
+                flexWrap: 'wrap'
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{
@@ -230,7 +233,8 @@ export default function FeedbackList() {
                 <div style={{
                   display: 'flex',
                   gap: '0.5rem',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  flexWrap: 'wrap'
                 }}>
                   {feedback.isRead ? (
                     <button
@@ -295,14 +299,15 @@ export default function FeedbackList() {
               {!feedback.isRead && (
                 <div style={{
                   position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
+                  top: '0.75rem',
+                  right: '0.75rem',
                   padding: '0.25rem 0.5rem',
                   background: 'var(--primary)',
                   color: 'white',
                   borderRadius: '0.25rem',
                   fontSize: '0.75rem',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  zIndex: 1
                 }}>
                   Baru
                 </div>

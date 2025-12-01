@@ -16,6 +16,8 @@
     "generate:secret": "node scripts/generate-secret.js",
     "create:admin": "node scripts/create-admin.js",
     "verify:admin": "node scripts/verify-admin.js",
+    "fix:admin": "node scripts/fix-admin.js",
+    "fix:admin-password": "node scripts/fix-admin-password.js",
     "create:users": "node scripts/create-users.js",
     "update:passwords": "node scripts/update-user-passwords.js",
     "migrate:history": "node scripts/migrate-history-denormalization.js",

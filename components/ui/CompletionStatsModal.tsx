@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import { XIconSmall } from './Icons'
@@ -29,6 +29,7 @@ export default function CompletionStatsModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -37,18 +38,28 @@ export default function CompletionStatsModal({
 
   useEffect(() => {
     if (isOpen) {
+      setIsModalOpen(true)
       document.body.style.overflow = 'hidden'
+      // Trigger animation in
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
+      return () => {
+        document.body.style.overflow = ''
+      }
     } else {
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        document.body.style.overflow = 'unset'
-      }, 300)
-      return () => clearTimeout(timer)
+      setIsModalOpen(false)
     }
   }, [isOpen])
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
@@ -63,11 +74,21 @@ export default function CompletionStatsModal({
     }
   }, [isOpen, isVisible])
 
-  useBackHandler(shouldHandleBack, onClose)
+  useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    // Stop event immediately to prevent bubbling to parent
+    e.stopPropagation()
+    e.preventDefault()
+    
     if (e.target === overlayRef.current) {
-      onClose()
+      // Set visible to false immediately to start close animation
+      setIsVisible(false)
+      
+      // Wait for transition to complete before closing
+      setTimeout(() => {
+        onClose()
+      }, 300) // Match transition duration
     }
   }
 
@@ -75,7 +96,27 @@ export default function CompletionStatsModal({
     e.stopPropagation()
   }
 
-  if (!isOpen || !mounted) return null
+  // Prevent click events from bubbling to parent when modal is open
+  useEffect(() => {
+    if (isModalOpen && isVisible) {
+      const preventClickBubble = (e: MouseEvent) => {
+        // Only prevent if click is outside the modal content
+        if (contentRef.current && !contentRef.current.contains(e.target as Node)) {
+          e.stopPropagation()
+          e.preventDefault()
+        }
+      }
+      
+      // Use capture phase to catch events before they bubble
+      document.addEventListener('click', preventClickBubble, true)
+      
+      return () => {
+        document.removeEventListener('click', preventClickBubble, true)
+      }
+    }
+  }, [isModalOpen, isVisible])
+
+  if (!isModalOpen || !mounted) return null
 
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
@@ -83,6 +124,8 @@ export default function CompletionStatsModal({
     <div 
       ref={overlayRef}
       onClick={handleOverlayClick}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
         top: 0,
@@ -96,23 +139,23 @@ export default function CompletionStatsModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className="card"
+        className="card completion-stats-modal-content"
         style={{
           maxWidth: '500px',
           width: '100%',
-          maxHeight: '80vh',
+          maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflow: 'hidden'
         }}
       >
@@ -124,20 +167,23 @@ export default function CompletionStatsModal({
           padding: '1.5rem',
           borderBottom: '1px solid var(--border)'
         }}>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
               Status Pengerjaan
             </h3>
             <p style={{ 
               margin: '0.5rem 0 0 0', 
               fontSize: '0.875rem', 
-              color: 'var(--text-light)' 
+              color: 'var(--text-light)',
+              wordBreak: 'break-word',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {threadTitle}
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               background: 'none',
               border: 'none',
@@ -173,7 +219,8 @@ export default function CompletionStatsModal({
             display: 'flex',
             alignItems: 'baseline',
             gap: '0.5rem',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            flexWrap: 'wrap'
           }}>
             <span style={{
               fontSize: '2rem',
@@ -228,7 +275,11 @@ export default function CompletionStatsModal({
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '1.5rem'
+          overflowX: 'hidden',
+          padding: '1.5rem',
+          minHeight: 0,
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
         }}>
           <h4 style={{
             margin: '0 0 1rem 0',
@@ -242,7 +293,8 @@ export default function CompletionStatsModal({
             <p style={{
               textAlign: 'center',
               color: 'var(--text-light)',
-              padding: '2rem 0'
+              padding: '2rem 0',
+              fontSize: '0.875rem'
             }}>
               Belum ada siswa yang menyelesaikan tugas ini
             </p>
@@ -255,13 +307,18 @@ export default function CompletionStatsModal({
               {completedUsers.map((user, index) => (
                 <div
                   key={user.id}
+                  className="completion-stats-user-item"
                   style={{
                     padding: '0.75rem',
                     background: 'var(--bg-secondary)',
                     borderRadius: '0.5rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem'
+                    gap: '0.75rem',
+                    transition: 'background 0.2s, transform 0.2s',
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? 'translateX(0)' : 'translateX(-10px)',
+                    animation: isVisible ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
                   }}
                 >
                   <span style={{
@@ -282,7 +339,8 @@ export default function CompletionStatsModal({
                   <span style={{
                     fontSize: '0.875rem',
                     color: 'var(--text)',
-                    flex: 1
+                    flex: 1,
+                    wordBreak: 'break-word'
                   }}>
                     {user.name}
                   </span>

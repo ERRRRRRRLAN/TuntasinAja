@@ -151,6 +151,8 @@ export default function ScheduleEditQuickView({
   useBackHandler(shouldHandleBack, handleCloseQuickView)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     if (e.target === overlayRef.current) {
       handleCloseQuickView()
     }
@@ -216,24 +218,26 @@ export default function ScheduleEditQuickView({
         >
           <div className="quickview-header">
             <div className="quickview-header-top">
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.75rem',
-                flex: 1
-              }}>
-                <CalendarIcon size={24} style={{ color: 'var(--primary)' }} />
-                <div>
-                  <h2 className="thread-detail-title" style={{ margin: 0 }}>
-                    Edit Jadwal
-                  </h2>
-                  <p style={{ 
-                    margin: '0.25rem 0 0 0', 
-                    fontSize: '0.875rem', 
-                    color: 'var(--text-light)' 
-                  }}>
-                    {dayName} - Jam ke-{period}
-                  </p>
+              <div className="quickview-header-left">
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.75rem',
+                  flex: 1
+                }}>
+                  <CalendarIcon size={24} style={{ color: 'var(--primary)' }} />
+                  <div>
+                    <h2 className="thread-detail-title" style={{ margin: 0 }}>
+                      Edit Jadwal
+                    </h2>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      fontSize: '0.875rem', 
+                      color: 'var(--text-light)' 
+                    }}>
+                      {dayName} - Jam ke-{period}
+                    </p>
+                  </div>
                 </div>
               </div>
               <button
@@ -252,7 +256,8 @@ export default function ScheduleEditQuickView({
                   minWidth: '44px',
                   minHeight: '44px',
                   transition: 'all 0.2s',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  flexShrink: 0
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'

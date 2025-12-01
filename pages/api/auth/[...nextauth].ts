@@ -20,22 +20,50 @@ export const authOptions: NextAuthOptions = {
           // Normalize email: trim whitespace and convert to lowercase
           const normalizedEmail = credentials.email.trim().toLowerCase()
           
+          console.log('[Auth] Login attempt:', {
+            originalEmail: credentials.email,
+            normalizedEmail: normalizedEmail,
+            passwordLength: credentials.password?.length || 0
+          })
+          
           const user = await prisma.user.findUnique({
             where: { email: normalizedEmail },
           })
 
           if (!user) {
+            console.error('[Auth] User not found:', normalizedEmail)
             throw new Error('Invalid email or password')
           }
+
+          console.log('[Auth] User found:', {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            isAdmin: user.isAdmin || false,
+            passwordHashLength: user.passwordHash?.length || 0,
+            passwordHashPrefix: user.passwordHash?.substring(0, 20) || 'N/A'
+          })
 
           const isValid = await bcrypt.compare(
             credentials.password,
             user.passwordHash
           )
 
+          console.log('[Auth] Password validation:', {
+            email: normalizedEmail,
+            isValid: isValid
+          })
+
           if (!isValid) {
+            console.error('[Auth] Invalid password for:', normalizedEmail)
             throw new Error('Invalid email or password')
           }
+
+          console.log('[Auth] Login successful:', {
+            id: user.id,
+            email: user.email,
+            name: user.name
+          })
 
           return {
             id: user.id,
@@ -43,7 +71,10 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           }
         } catch (error) {
-          console.error('Auth error:', error)
+          console.error('[Auth] Auth error:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+          })
           throw error
         }
       },

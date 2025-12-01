@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import { XIconSmall } from './Icons'
@@ -22,12 +22,22 @@ export default function FeedbackModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
 
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
       toast.success('Saran dan masukan berhasil dikirim! Terima kasih.')
       setContent('')
-      onClose()
+      handleClose()
     },
     onError: (error) => {
       toast.error(error.message || 'Gagal mengirim saran dan masukan. Silakan coba lagi.')
@@ -41,16 +51,29 @@ export default function FeedbackModal({
 
   useEffect(() => {
     if (isOpen) {
+      setIsModalOpen(true)
+      // Lock body scroll when modal is open (mobile)
+      const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      
+      // Trigger animation in
       requestAnimationFrame(() => {
         setIsVisible(true)
       })
+      
+      return () => {
+        // Unlock body scroll when modal is closed
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo(0, scrollY)
+      }
     } else {
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        document.body.style.overflow = 'unset'
-      }, 300)
-      return () => clearTimeout(timer)
+      setIsModalOpen(false)
     }
   }, [isOpen])
 
@@ -67,11 +90,11 @@ export default function FeedbackModal({
     }
   }, [isOpen, isVisible])
 
-  useBackHandler(shouldHandleBack, onClose)
+  useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
-      onClose()
+      handleClose()
     }
   }
 
@@ -90,12 +113,13 @@ export default function FeedbackModal({
     submitFeedback.mutate({ content: content.trim() })
   }
 
-  if (!isOpen || !mounted) return null
+  if (!isModalOpen || !mounted) return null
 
   const modalContent = (
     <div 
       ref={overlayRef}
       onClick={handleOverlayClick}
+      className="feedback-modal-overlay"
       style={{
         position: 'fixed',
         top: 0,
@@ -109,64 +133,74 @@ export default function FeedbackModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
-        pointerEvents: isVisible ? 'auto' : 'none'
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: isVisible ? 'auto' : 'none',
+        overflowY: 'auto'
       }}
     >
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className="card"
+        className="card feedback-modal-content"
         style={{
           maxWidth: '500px',
           width: '100%',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.5rem',
-          borderBottom: '1px solid var(--border)'
-        }}>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-            Saran dan Masukan
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '0.25rem',
-              color: 'var(--text-light)',
-              transition: 'background 0.2s, color 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-              e.currentTarget.style.color = 'var(--text)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none'
-              e.currentTarget.style.color = 'var(--text-light)'
-            }}
-            aria-label="Tutup"
-            disabled={submitFeedback.isLoading}
-          >
-            <XIconSmall size={20} />
-          </button>
+        <div className="feedback-modal-header">
+          <div className="feedback-modal-header-top">
+            <div className="feedback-modal-header-left">
+              <h3>
+                Saran dan Masukan
+              </h3>
+            </div>
+            <button
+              onClick={handleClose}
+              className="feedback-modal-close-btn"
+              style={{
+                background: 'var(--card)',
+                border: '2px solid var(--border)',
+                cursor: 'pointer',
+                color: 'var(--text)',
+                padding: '0.625rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '0.5rem',
+                minWidth: '44px',
+                minHeight: '44px',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.color = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--card)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text)'
+              }}
+              aria-label="Tutup"
+              disabled={submitFeedback.isLoading}
+            >
+              <XIconSmall size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
+        <form onSubmit={handleSubmit} className="feedback-modal-form">
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="feedback-content" style={{ 
               display: 'block', 
@@ -190,13 +224,15 @@ export default function FeedbackModal({
                 padding: '0.75rem',
                 border: '1px solid var(--border)',
                 borderRadius: '0.5rem',
-                background: 'var(--card)',
+                background: 'var(--bg-primary)',
                 color: 'var(--text)',
                 fontSize: '0.875rem',
                 fontFamily: 'inherit',
                 resize: 'vertical',
                 outline: 'none',
-                transition: 'border-color 0.2s'
+                transition: 'border-color 0.2s',
+                minHeight: '150px',
+                lineHeight: '1.5'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = 'var(--primary)'
@@ -211,18 +247,14 @@ export default function FeedbackModal({
               fontSize: '0.75rem',
               color: 'var(--text-light)'
             }}>
-              Minimal 10 karakter • {content.length} karakter
+              Minimal 10 karakter - {content.length} karakter
             </small>
           </div>
 
-          <div style={{
-            display: 'flex',
-            gap: '0.75rem',
-            justifyContent: 'flex-end'
-          }}>
+          <div className="feedback-modal-actions">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="btn btn-secondary"
               disabled={submitFeedback.isLoading}
             >
