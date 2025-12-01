@@ -21,13 +21,44 @@ export const notificationRouter = createTRPCRouter({
       })
 
       try {
+        // Check if token already exists with different user
+        const existingToken = await prisma.deviceToken.findUnique({
+          where: {
+            token: input.token,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                kelas: true,
+              },
+            },
+          },
+        })
+
+        if (existingToken && existingToken.userId !== ctx.session.user.id) {
+          console.log('[NotificationRouter] 🔄 Token exists for different user, updating:', {
+            oldUserId: existingToken.userId,
+            oldUserName: existingToken.user.name,
+            oldUserEmail: existingToken.user.email,
+            oldUserKelas: existingToken.user.kelas,
+            newUserId: ctx.session.user.id,
+            newUserName: ctx.session.user.name,
+            newUserEmail: ctx.session.user.email,
+            tokenPrefix: input.token.substring(0, 20) + '...',
+          })
+        }
+
         // Upsert device token (user can have multiple devices)
+        // This will update userId if token exists for different user
         const result = await prisma.deviceToken.upsert({
           where: {
             token: input.token,
           },
           update: {
-            userId: ctx.session.user.id,
+            userId: ctx.session.user.id, // Always update to current user
             deviceInfo: input.deviceInfo,
             updatedAt: new Date(),
           },
@@ -36,12 +67,27 @@ export const notificationRouter = createTRPCRouter({
             token: input.token,
             deviceInfo: input.deviceInfo,
           },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                kelas: true,
+              },
+            },
+          },
         })
 
-        console.log('[NotificationRouter] ✅ Device token registered successfully:', {
+        console.log('[NotificationRouter] ✅ Device token registered/updated successfully:', {
           id: result.id,
           userId: result.userId,
+          userName: result.user.name,
+          userEmail: result.user.email,
+          userKelas: result.user.kelas,
           deviceInfo: result.deviceInfo,
+          wasUpdated: !!existingToken,
+          previousUserId: existingToken?.userId,
         })
 
         return { success: true }
