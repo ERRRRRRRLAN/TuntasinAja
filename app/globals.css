@@ -3639,7 +3639,7 @@ textarea {
   }
 
   .feedback-fab-container {
-    bottom: 4.5rem !important;
+    bottom: 5.5rem !important;
     right: 1rem !important;
     z-index: 999 !important;
   }
