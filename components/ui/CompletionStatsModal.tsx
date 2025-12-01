@@ -29,7 +29,7 @@ export default function CompletionStatsModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -38,28 +38,28 @@ export default function CompletionStatsModal({
 
   useEffect(() => {
     if (isOpen) {
-      setIsClosing(false)
+      setIsModalOpen(true)
       document.body.style.overflow = 'hidden'
       // Trigger animation in
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true)
-        })
+        setIsVisible(true)
       })
       return () => {
         document.body.style.overflow = ''
       }
     } else {
-      // Trigger animation out
-      setIsClosing(true)
-      setIsVisible(false)
-      const timer = setTimeout(() => {
-        setIsClosing(false)
-        document.body.style.overflow = 'unset'
-      }, 300)
-      return () => clearTimeout(timer)
+      setIsModalOpen(false)
     }
   }, [isOpen])
+
+  const handleClose = () => {
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
@@ -74,11 +74,11 @@ export default function CompletionStatsModal({
     }
   }, [isOpen, isVisible])
 
-  useBackHandler(shouldHandleBack, onClose)
+  useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
-      onClose()
+      handleClose()
     }
   }
 
@@ -86,7 +86,7 @@ export default function CompletionStatsModal({
     e.stopPropagation()
   }
 
-  if ((!isOpen && !isClosing) || !mounted) return null
+  if (!isModalOpen || !mounted) return null
 
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
@@ -107,9 +107,7 @@ export default function CompletionStatsModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: isVisible || isClosing
-          ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          : 'none',
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -124,12 +122,8 @@ export default function CompletionStatsModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible 
-            ? 'translateY(0) scale(1)' 
-            : (isClosing ? 'translateY(20px) scale(0.95)' : 'translateY(20px) scale(0.95)'),
-          transition: isVisible || isClosing
-            ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            : 'none',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflow: 'hidden'
         }}
       >
@@ -157,7 +151,7 @@ export default function CompletionStatsModal({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               background: 'none',
               border: 'none',
@@ -292,7 +286,7 @@ export default function CompletionStatsModal({
                     transition: 'background 0.2s, transform 0.2s',
                     opacity: isVisible ? 1 : 0,
                     transform: isVisible ? 'translateX(0)' : 'translateX(-10px)',
-                    animation: isVisible && !isClosing ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
+                    animation: isVisible ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
                   }}
                 >
                   <span style={{

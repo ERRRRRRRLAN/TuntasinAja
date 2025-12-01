@@ -22,7 +22,7 @@ export default function FeedbackModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
@@ -42,7 +42,7 @@ export default function FeedbackModal({
 
   useEffect(() => {
     if (isOpen) {
-      setIsClosing(false)
+      setIsModalOpen(true)
       // Lock body scroll when modal is open (mobile)
       const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
@@ -52,9 +52,7 @@ export default function FeedbackModal({
       
       // Trigger animation in
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true)
-        })
+        setIsVisible(true)
       })
       
       return () => {
@@ -66,15 +64,18 @@ export default function FeedbackModal({
         window.scrollTo(0, scrollY)
       }
     } else {
-      // Trigger animation out
-      setIsClosing(true)
-      setIsVisible(false)
-      const timer = setTimeout(() => {
-        setIsClosing(false)
-      }, 300)
-      return () => clearTimeout(timer)
+      setIsModalOpen(false)
     }
   }, [isOpen])
+
+  const handleClose = () => {
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
@@ -89,11 +90,11 @@ export default function FeedbackModal({
     }
   }, [isOpen, isVisible])
 
-  useBackHandler(shouldHandleBack, onClose)
+  useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
-      onClose()
+      handleClose()
     }
   }
 
@@ -112,7 +113,7 @@ export default function FeedbackModal({
     submitFeedback.mutate({ content: content.trim() })
   }
 
-  if ((!isOpen && !isClosing) || !mounted) return null
+  if (!isModalOpen || !mounted) return null
 
   const modalContent = (
     <div 
@@ -132,9 +133,7 @@ export default function FeedbackModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: isVisible || isClosing
-          ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          : 'none',
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none',
         overflowY: 'auto'
       }}
@@ -151,12 +150,8 @@ export default function FeedbackModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible 
-            ? 'translateY(0) scale(1)' 
-            : (isClosing ? 'translateY(20px) scale(0.95)' : 'translateY(20px) scale(0.95)'),
-          transition: isVisible || isClosing
-            ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            : 'none',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header */}
@@ -168,7 +163,7 @@ export default function FeedbackModal({
               </h3>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="feedback-modal-close-btn"
               style={{
                 background: 'var(--card)',
@@ -259,7 +254,7 @@ export default function FeedbackModal({
           <div className="feedback-modal-actions">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="btn btn-secondary"
               disabled={submitFeedback.isLoading}
             >
