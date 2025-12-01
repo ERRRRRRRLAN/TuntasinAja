@@ -22,6 +22,7 @@ export default function FeedbackModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
 
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
@@ -41,6 +42,7 @@ export default function FeedbackModal({
 
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false)
       // Lock body scroll when modal is open (mobile)
       const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
@@ -48,8 +50,11 @@ export default function FeedbackModal({
       document.body.style.top = `-${scrollY}px`
       document.body.style.width = '100%'
       
+      // Trigger animation in
       requestAnimationFrame(() => {
-        setIsVisible(true)
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+        })
       })
       
       return () => {
@@ -61,8 +66,11 @@ export default function FeedbackModal({
         window.scrollTo(0, scrollY)
       }
     } else {
+      // Trigger animation out
+      setIsClosing(true)
+      setIsVisible(false)
       const timer = setTimeout(() => {
-        setIsVisible(false)
+        setIsClosing(false)
       }, 300)
       return () => clearTimeout(timer)
     }
@@ -104,7 +112,7 @@ export default function FeedbackModal({
     submitFeedback.mutate({ content: content.trim() })
   }
 
-  if (!isOpen || !mounted) return null
+  if ((!isOpen && !isClosing) || !mounted) return null
 
   const modalContent = (
     <div 
@@ -124,7 +132,9 @@ export default function FeedbackModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        transition: isVisible || isClosing
+          ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          : 'none',
         pointerEvents: isVisible ? 'auto' : 'none',
         overflowY: 'auto'
       }}
@@ -141,15 +151,19 @@ export default function FeedbackModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
-          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: isVisible 
+            ? 'translateY(0) scale(1)' 
+            : (isClosing ? 'translateY(20px) scale(0.95)' : 'translateY(20px) scale(0.95)'),
+          transition: isVisible || isClosing
+            ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            : 'none',
         }}
       >
         {/* Header */}
         <div className="feedback-modal-header">
           <div className="feedback-modal-header-top">
             <div className="feedback-modal-header-left">
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+              <h3>
                 Saran dan Masukan
               </h3>
             </div>

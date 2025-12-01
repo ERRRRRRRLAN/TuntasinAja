@@ -2345,37 +2345,89 @@ textarea {
     margin: 0 !important;
     border-radius: 0.75rem !important;
     box-shadow: var(--shadow-lg) !important;
-    transform: scale(1) !important;
   }
 
   .feedback-modal-header {
     padding: 1.5rem !important;
     position: relative !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .feedback-modal-header-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 1rem !important;
+  }
+
+  .feedback-modal-header-left {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
   .feedback-modal-header-left h3 {
     font-size: 1.25rem !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+  }
+
+  .feedback-modal-close-btn {
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0.5rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .feedback-modal-close-btn svg {
+    width: 20px !important;
+    height: 20px !important;
   }
 
   .feedback-modal-form {
     padding: 1.5rem !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+
+  .feedback-modal-form .form-group {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .feedback-modal-form label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    font-weight: 500 !important;
   }
 
   .feedback-modal-form textarea {
     min-height: 150px !important;
+    padding: 0.75rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .feedback-modal-form small {
+    font-size: 0.75rem !important;
+    margin-top: 0.5rem !important;
   }
 
   .feedback-modal-actions {
+    display: flex !important;
     flex-direction: row !important;
+    gap: 0.75rem !important;
     justify-content: flex-end !important;
-    border-top: none !important;
-    padding-top: 0 !important;
+    margin-top: 1.5rem !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px solid var(--border) !important;
   }
 
   .feedback-modal-actions .btn {
     width: auto !important;
     min-width: 100px !important;
-    animation: none !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    min-height: 44px !important;
   }
 
   .feedback-fab-button {

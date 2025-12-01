@@ -29,6 +29,7 @@ export default function CompletionStatsModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -37,13 +38,23 @@ export default function CompletionStatsModal({
 
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false)
       document.body.style.overflow = 'hidden'
+      // Trigger animation in
       requestAnimationFrame(() => {
-        setIsVisible(true)
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+        })
       })
+      return () => {
+        document.body.style.overflow = ''
+      }
     } else {
+      // Trigger animation out
+      setIsClosing(true)
+      setIsVisible(false)
       const timer = setTimeout(() => {
-        setIsVisible(false)
+        setIsClosing(false)
         document.body.style.overflow = 'unset'
       }, 300)
       return () => clearTimeout(timer)
@@ -75,7 +86,7 @@ export default function CompletionStatsModal({
     e.stopPropagation()
   }
 
-  if (!isOpen || !mounted) return null
+  if ((!isOpen && !isClosing) || !mounted) return null
 
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
@@ -96,7 +107,9 @@ export default function CompletionStatsModal({
         zIndex: 9999,
         padding: '1rem',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        transition: isVisible || isClosing
+          ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          : 'none',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -111,8 +124,12 @@ export default function CompletionStatsModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
-          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: isVisible 
+            ? 'translateY(0) scale(1)' 
+            : (isClosing ? 'translateY(20px) scale(0.95)' : 'translateY(20px) scale(0.95)'),
+          transition: isVisible || isClosing
+            ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            : 'none',
           overflow: 'hidden'
         }}
       >
@@ -275,7 +292,7 @@ export default function CompletionStatsModal({
                     transition: 'background 0.2s, transform 0.2s',
                     opacity: isVisible ? 1 : 0,
                     transform: isVisible ? 'translateX(0)' : 'translateX(-10px)',
-                    animation: isVisible ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
+                    animation: isVisible && !isClosing ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
                   }}
                 >
                   <span style={{
