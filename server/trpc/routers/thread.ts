@@ -332,15 +332,32 @@ export const threadRouter = createTRPCRouter({
         // Send notification for new thread
         if (userKelas && !isAdmin) {
           try {
+            // Validate and normalize kelas before sending
+            const normalizedKelas = userKelas.trim()
+            
+            // Double-check thread author's kelas matches
+            const threadAuthorKelas = thread.author.kelas?.trim()
+            if (threadAuthorKelas !== normalizedKelas) {
+              console.error('[ThreadRouter] ⚠️ Kelas mismatch detected!', {
+                userKelas: normalizedKelas,
+                threadAuthorKelas: threadAuthorKelas,
+                authorId: thread.author.id,
+                authorName: thread.author.name,
+              })
+              // Still proceed, but log the mismatch
+            }
+
             const authorName = thread.author.name
             console.log('[ThreadRouter] Sending notification for new thread:', {
-              kelas: userKelas,
+              kelas: normalizedKelas,
+              threadAuthorKelas: threadAuthorKelas,
               authorName,
+              authorId: thread.author.id,
               threadTitle: thread.title,
               threadId: thread.id,
             })
             const result = await sendNotificationToClass(
-              userKelas,
+              normalizedKelas, // Use normalized kelas
               'Tugas Baru',
               `${authorName} membuat tugas baru: ${thread.title}`,
               {
@@ -474,11 +491,21 @@ export const threadRouter = createTRPCRouter({
 
       // Send notification for new sub tugas (comment)
       // Only send if comment author is from the same class as thread author
-      const threadAuthorKelas = thread.author.kelas
-      if (threadAuthorKelas && userKelas === threadAuthorKelas && !isAdmin) {
+      const threadAuthorKelas = thread.author.kelas?.trim()
+      const normalizedUserKelas = userKelas?.trim()
+      
+      // Use exact match with trimmed values
+      if (threadAuthorKelas && normalizedUserKelas === threadAuthorKelas && !isAdmin) {
         try {
+          console.log('[ThreadRouter] Sending notification for new comment:', {
+            threadAuthorKelas: threadAuthorKelas,
+            userKelas: normalizedUserKelas,
+            matches: normalizedUserKelas === threadAuthorKelas,
+            threadId: thread.id,
+            threadTitle: thread.title,
+          })
           await sendNotificationToClass(
-            threadAuthorKelas,
+            threadAuthorKelas, // Use normalized kelas
             'Sub Tugas Baru',
             `${commentAuthor?.name || 'Seseorang'} menambahkan sub tugas baru di ${thread.title}`,
             {
@@ -488,9 +515,16 @@ export const threadRouter = createTRPCRouter({
             }
           )
         } catch (error) {
-          console.error('Error sending notification for new comment:', error)
+          console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
           // Don't throw - notification failure shouldn't break comment creation
         }
+      } else {
+        console.log('[ThreadRouter] Skipping notification for comment:', {
+          hasThreadAuthorKelas: !!threadAuthorKelas,
+          hasUserKelas: !!normalizedUserKelas,
+          matches: normalizedUserKelas === threadAuthorKelas,
+          isAdmin,
+        })
       }
 
       return comment

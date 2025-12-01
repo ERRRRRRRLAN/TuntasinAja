@@ -85,11 +85,27 @@ export async function sendNotificationToClass(
       body,
     })
 
+    // Validate kelas parameter
+    if (!kelas || typeof kelas !== 'string') {
+      console.error('[sendNotificationToClass] ❌ Invalid kelas parameter:', kelas)
+      throw new Error('Invalid kelas parameter')
+    }
+
+    // Trim and normalize kelas to ensure exact match
+    const normalizedKelas = kelas.trim()
+
+    console.log('[sendNotificationToClass] Querying device tokens for class:', {
+      originalKelas: kelas,
+      normalizedKelas: normalizedKelas,
+      kelasLength: normalizedKelas.length,
+    })
+
     // Get all device tokens for users in this class
+    // Use exact match with trimmed kelas
     const deviceTokens = await prisma.deviceToken.findMany({
       where: {
         user: {
-          kelas,
+          kelas: normalizedKelas, // Exact match with normalized kelas
           isAdmin: false, // Don't send to admin
         },
       },
@@ -100,37 +116,62 @@ export async function sendNotificationToClass(
             id: true,
             name: true,
             kelas: true,
+            email: true,
           },
         },
       },
     })
 
+    // Additional validation: filter out any tokens that don't match exactly
+    const filteredTokens = deviceTokens.filter(dt => {
+      const userKelas = dt.user.kelas?.trim()
+      const matches = userKelas === normalizedKelas
+      if (!matches) {
+        console.warn('[sendNotificationToClass] ⚠️ Filtered out token with mismatched kelas:', {
+          tokenPrefix: dt.token.substring(0, 20) + '...',
+          userName: dt.user.name,
+          expectedKelas: normalizedKelas,
+          actualKelas: userKelas,
+        })
+      }
+      return matches
+    })
+
     console.log('[sendNotificationToClass] Found device tokens:', {
-      count: deviceTokens.length,
-      tokens: deviceTokens.map(dt => ({
+      totalFound: deviceTokens.length,
+      afterFilter: filteredTokens.length,
+      tokens: filteredTokens.map(dt => ({
         tokenPrefix: dt.token.substring(0, 20) + '...',
         userName: dt.user.name,
+        userEmail: dt.user.email,
         userKelas: dt.user.kelas,
+        matches: dt.user.kelas?.trim() === normalizedKelas,
       })),
     })
 
-    if (deviceTokens.length === 0) {
-      console.warn('[sendNotificationToClass] ⚠️ No device tokens found for class:', kelas)
+    if (filteredTokens.length === 0) {
+      console.warn('[sendNotificationToClass] ⚠️ No device tokens found for class:', normalizedKelas)
       // Also check if there are users in this class without tokens
       const usersInClass = await prisma.user.findMany({
         where: {
-          kelas,
+          kelas: normalizedKelas,
           isAdmin: false,
         },
         select: {
           id: true,
           name: true,
           email: true,
+          kelas: true,
         },
       })
       console.log('[sendNotificationToClass] Users in class (without tokens):', {
         count: usersInClass.length,
-        users: usersInClass.map(u => ({ name: u.name, email: u.email })),
+        users: usersInClass.map(u => ({ 
+          name: u.name, 
+          email: u.email,
+          kelas: u.kelas,
+          matches: u.kelas?.trim() === normalizedKelas,
+        })),
       })
       
       return {
@@ -140,7 +181,8 @@ export async function sendNotificationToClass(
       }
     }
 
-    const tokens = deviceTokens.map((dt: { token: string }) => dt.token)
+    // Use filtered tokens only
+    const tokens = filteredTokens.map((dt: { token: string }) => dt.token)
     console.log('[sendNotificationToClass] Sending to', tokens.length, 'devices')
     const result = await sendPushNotification(tokens, title, body, data)
     
