@@ -3532,6 +3532,18 @@ textarea {
   }
 
 
+  .card table th:first-child {
+    min-width: 80px !important;
+    width: 80px !important;
+    left: 0 !important;
+  }
+
+  .card table td:first-child {
+    min-width: 80px !important;
+    width: 80px !important;
+    left: 0 !important;
+  }
+
   .card table th:not(:first-child) {
     min-width: 100px !important;
     font-size: 0.75rem !important;
@@ -3648,6 +3660,7 @@ textarea {
     width: 52px !important;
     height: 52px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    animation: fadeInUp 0.5s ease-out 0.2s both !important;
   }
 
   /* Feedback Modal Mobile - Fullscreen like QuickView */

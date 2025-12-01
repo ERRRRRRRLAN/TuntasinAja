@@ -117,7 +117,12 @@ export default function ProfilePage() {
                 display: 'flex', 
                 gap: '0.5rem', 
                 marginBottom: '1.5rem',
-                borderBottom: '2px solid var(--border)'
+                borderBottom: '2px solid var(--border)',
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'var(--border) transparent'
               }}>
                 <button
                   onClick={() => setActiveTab('users')}

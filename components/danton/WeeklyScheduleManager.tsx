@@ -124,10 +124,12 @@ export default function WeeklyScheduleManager() {
                 borderRight: '1px solid var(--border)',
                 borderLeft: '1px solid var(--border)',
                 position: 'sticky',
-                left: '1.5rem',
+                left: 0,
                 background: 'var(--card)',
                 zIndex: 1,
-                boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)'
+                boxShadow: '2px 0 4px rgba(0, 0, 0, 0.05)',
+                minWidth: '80px',
+                width: '80px'
               }}>
                 Jam
               </th>

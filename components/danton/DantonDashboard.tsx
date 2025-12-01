@@ -100,7 +100,7 @@ export default function DantonDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Kelas</h4>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
             {dantonKelas || '-'}
           </div>
         </div>
