@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react'
 import { trpc, trpcClient } from '@/lib/trpc'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
+import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchOnWindowFocus={true}
         >
           {children}
+          <PushNotificationSetup />
         </SessionProvider>
       </QueryClientProvider>
     </trpc.Provider>

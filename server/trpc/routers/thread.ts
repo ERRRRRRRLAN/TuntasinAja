@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
 import { getUserPermission, checkIsDanton } from '../trpc'
 import { checkClassSubscription } from './subscription'
+import { sendNotificationToClass } from './notification'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
@@ -258,6 +259,25 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
+            // Send notification for new sub tugas (comment)
+            if (userKelas && !isAdmin) {
+              try {
+                await sendNotificationToClass(
+                  userKelas,
+                  'Sub Tugas Baru',
+                  `${commentAuthor?.name || 'Seseorang'} menambahkan sub tugas baru di ${existingThread.title}`,
+                  {
+                    type: 'new_comment',
+                    threadId: existingThread.id,
+                    threadTitle: existingThread.title,
+                  }
+                )
+              } catch (error) {
+                console.error('Error sending notification for new comment:', error)
+                // Don't throw - notification failure shouldn't break comment creation
+              }
+            }
+
             return {
               type: 'comment' as const,
               thread: existingThread,
@@ -308,6 +328,26 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
+
+        // Send notification for new thread
+        if (userKelas && !isAdmin) {
+          try {
+            const authorName = thread.author.name
+            await sendNotificationToClass(
+              userKelas,
+              'Tugas Baru',
+              `${authorName} membuat tugas baru: ${thread.title}`,
+              {
+                type: 'new_thread',
+                threadId: thread.id,
+                threadTitle: thread.title,
+              }
+            )
+          } catch (error) {
+            console.error('Error sending notification for new thread:', error)
+            // Don't throw - notification failure shouldn't break thread creation
+          }
+        }
 
         return {
           type: 'thread' as const,
@@ -418,6 +458,27 @@ export const threadRouter = createTRPCRouter({
           },
         },
       })
+
+      // Send notification for new sub tugas (comment)
+      // Only send if comment author is from the same class as thread author
+      const threadAuthorKelas = thread.author.kelas
+      if (threadAuthorKelas && userKelas === threadAuthorKelas && !isAdmin) {
+        try {
+          await sendNotificationToClass(
+            threadAuthorKelas,
+            'Sub Tugas Baru',
+            `${commentAuthor?.name || 'Seseorang'} menambahkan sub tugas baru di ${thread.title}`,
+            {
+              type: 'new_comment',
+              threadId: thread.id,
+              threadTitle: thread.title,
+            }
+          )
+        } catch (error) {
+          console.error('Error sending notification for new comment:', error)
+          // Don't throw - notification failure shouldn't break comment creation
+        }
+      }
 
       return comment
     }),

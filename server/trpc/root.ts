@@ -9,6 +9,7 @@ import { scheduleRouter } from './routers/schedule'
 import { weeklyScheduleRouter } from './routers/weeklySchedule'
 import { classSubjectRouter } from './routers/classSubject'
 import { feedbackRouter } from './routers/feedback'
+import { notificationRouter } from './routers/notification'
 
 export const appRouter = createTRPCRouter({
   thread: threadRouter,
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   weeklySchedule: weeklyScheduleRouter,
   classSubject: classSubjectRouter,
   feedback: feedbackRouter,
+  notification: notificationRouter,
 })
 
 export type AppRouter = typeof appRouter
