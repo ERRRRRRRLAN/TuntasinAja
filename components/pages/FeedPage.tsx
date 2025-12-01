@@ -573,7 +573,7 @@ export default function FeedPage() {
           className="feedback-fab-container"
           style={{
             position: 'fixed',
-            bottom: '8rem',
+            bottom: '5rem',
             right: '1.5rem',
             zIndex: 999,
             display: 'flex',
