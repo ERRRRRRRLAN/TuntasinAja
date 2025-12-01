@@ -116,6 +116,8 @@ export default function CompletionStatsModal({
     <div 
       ref={overlayRef}
       onClick={handleOverlayClick}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
         top: 0,
