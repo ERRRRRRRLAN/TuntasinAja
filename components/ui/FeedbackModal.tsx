@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import { XIconSmall } from './Icons'
@@ -24,11 +24,20 @@ export default function FeedbackModal({
   const [isVisible, setIsVisible] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  const handleClose = () => {
+    setIsVisible(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }
+
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
       toast.success('Saran dan masukan berhasil dikirim! Terima kasih.')
       setContent('')
-      onClose()
+      handleClose()
     },
     onError: (error) => {
       toast.error(error.message || 'Gagal mengirim saran dan masukan. Silakan coba lagi.')
@@ -68,14 +77,14 @@ export default function FeedbackModal({
     }
   }, [isOpen])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false)
     
     // Wait for transition to complete before closing
     setTimeout(() => {
       onClose()
     }, 300) // Match transition duration
-  }
+  }, [onClose])
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   

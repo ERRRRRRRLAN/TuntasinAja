@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import { XIconSmall } from './Icons'
@@ -52,14 +52,14 @@ export default function CompletionStatsModal({
     }
   }, [isOpen])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false)
     
     // Wait for transition to complete before closing
     setTimeout(() => {
       onClose()
     }, 300) // Match transition duration
-  }
+  }, [onClose])
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
   
