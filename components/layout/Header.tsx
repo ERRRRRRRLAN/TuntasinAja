@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { BookIcon, UserIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
+import { BookIcon, UserIcon, LogOutIcon, CrownIcon, DownloadIcon } from '@/components/ui/Icons'
 import { trpc } from '@/lib/trpc'
 import { useDanton } from '@/hooks/useDanton'
 
@@ -383,6 +383,27 @@ export default function Header() {
             {link.label}
           </Link>
         ))}
+        
+        {/* Download APK Button - Mobile Only */}
+        <a
+          href="/TuntasinAja.apk"
+          download="TuntasinAja.apk"
+          className="mobile-nav-link"
+          style={{
+            color: 'var(--primary)',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            borderTop: '1px solid var(--border)',
+            marginTop: '0.5rem',
+            paddingTop: '1rem',
+          }}
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <DownloadIcon size={18} style={{ color: 'var(--primary)' }} />
+          <span>Download APK</span>
+        </a>
       </nav>
     </header>
   )
