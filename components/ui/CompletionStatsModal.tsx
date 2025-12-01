@@ -77,6 +77,8 @@ export default function CompletionStatsModal({
   useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     if (e.target === overlayRef.current) {
       handleClose()
     }
@@ -85,6 +87,26 @@ export default function CompletionStatsModal({
   const handleContentClick = (e: React.MouseEvent) => {
     e.stopPropagation()
   }
+
+  // Prevent click events from bubbling to parent when modal is open
+  useEffect(() => {
+    if (isModalOpen && isVisible) {
+      const preventClickBubble = (e: MouseEvent) => {
+        // Only prevent if click is outside the modal content
+        if (contentRef.current && !contentRef.current.contains(e.target as Node)) {
+          e.stopPropagation()
+          e.preventDefault()
+        }
+      }
+      
+      // Use capture phase to catch events before they bubble
+      document.addEventListener('click', preventClickBubble, true)
+      
+      return () => {
+        document.removeEventListener('click', preventClickBubble, true)
+      }
+    }
+  }, [isModalOpen, isVisible])
 
   if (!isModalOpen || !mounted) return null
 
