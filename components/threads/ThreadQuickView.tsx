@@ -111,18 +111,21 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     }
   }, [threadId])
 
-  // Handle browser back button untuk quickview
+  // Handle browser back button dan hardware back button untuk quickview
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  
   useEffect(() => {
-    if (!isQuickViewOpen || !isVisible) return
-
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault()
-      handleCloseQuickView()
+    if (isQuickViewOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
     }
+  }, [isQuickViewOpen, isVisible])
 
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [isQuickViewOpen, isVisible, handleCloseQuickView])
+  useBackHandler(shouldHandleBack, handleCloseQuickView)
 
   const { data: thread, isLoading } = trpc.thread.getById.useQuery({ id: threadId })
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
