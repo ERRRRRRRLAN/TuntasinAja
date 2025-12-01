@@ -113,19 +113,24 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
       webCleanup = setupWebBackButton()
     }
 
-    return async () => {
+    return () => {
       // Cleanup web handler
       if (webCleanup) {
         webCleanup()
       }
 
-      // Cleanup native handler
+      // Cleanup native handler (async cleanup)
       if (Capacitor.isNativePlatform() && backButtonListenerRef.current) {
-        const App = await loadApp()
-        if (App && backButtonListenerRef.current) {
-          await App.removeListener('backButton', backButtonListenerRef.current)
-          backButtonListenerRef.current = null
-        }
+        loadApp().then((App) => {
+          if (App && backButtonListenerRef.current) {
+            App.removeListener('backButton', backButtonListenerRef.current).catch((e: any) => {
+              console.error('[useBackHandler] Error removing listener:', e)
+            })
+            backButtonListenerRef.current = null
+          }
+        }).catch((e) => {
+          console.error('[useBackHandler] Error loading App plugin:', e)
+        })
       }
 
       // Reset flags
