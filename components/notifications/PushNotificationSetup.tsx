@@ -3,8 +3,29 @@
 import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
-import { Capacitor } from '@capacitor/core'
-import { PushNotifications } from '@capacitor/push-notifications'
+
+// Dynamic import for Capacitor (only available in native builds)
+// Use type-safe approach that won't break web builds
+let Capacitor: any = null
+let PushNotifications: any = null
+
+// Only try to load Capacitor in browser environment
+if (typeof window !== 'undefined') {
+  try {
+    // Use dynamic import to avoid webpack bundling issues
+    // @ts-ignore - Capacitor may not be available in web builds
+    const capacitorCore = require('@capacitor/core')
+    // @ts-ignore
+    const capacitorPush = require('@capacitor/push-notifications')
+    if (capacitorCore?.Capacitor && capacitorPush?.PushNotifications) {
+      Capacitor = capacitorCore.Capacitor
+      PushNotifications = capacitorPush.PushNotifications
+    }
+  } catch (e) {
+    // Capacitor not available (web build) - component will skip setup
+    // This is expected and OK for web builds
+  }
+}
 
 export default function PushNotificationSetup() {
   const { data: session, status } = useSession()
@@ -16,6 +37,12 @@ export default function PushNotificationSetup() {
   const unregisterToken = trpc.notification.unregisterToken.useMutation()
 
   useEffect(() => {
+    // Skip if Capacitor is not available (web build)
+    if (!Capacitor || !PushNotifications) {
+      console.log('[PushNotificationSetup] Capacitor not available, skipping (web build)')
+      return
+    }
+
     // Debug logging
     console.log('[PushNotificationSetup] Effect triggered', {
       isNative: Capacitor.isNativePlatform(),
