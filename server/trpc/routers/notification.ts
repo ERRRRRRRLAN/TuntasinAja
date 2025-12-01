@@ -79,6 +79,12 @@ export async function sendNotificationToClass(
   data?: Record<string, string>
 ) {
   try {
+    console.log('[sendNotificationToClass] Starting notification send:', {
+      kelas,
+      title,
+      body,
+    })
+
     // Get all device tokens for users in this class
     const deviceTokens = await prisma.deviceToken.findMany({
       where: {
@@ -89,10 +95,44 @@ export async function sendNotificationToClass(
       },
       select: {
         token: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            kelas: true,
+          },
+        },
       },
     })
 
+    console.log('[sendNotificationToClass] Found device tokens:', {
+      count: deviceTokens.length,
+      tokens: deviceTokens.map(dt => ({
+        tokenPrefix: dt.token.substring(0, 20) + '...',
+        userName: dt.user.name,
+        userKelas: dt.user.kelas,
+      })),
+    })
+
     if (deviceTokens.length === 0) {
+      console.warn('[sendNotificationToClass] ⚠️ No device tokens found for class:', kelas)
+      // Also check if there are users in this class without tokens
+      const usersInClass = await prisma.user.findMany({
+        where: {
+          kelas,
+          isAdmin: false,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
+      console.log('[sendNotificationToClass] Users in class (without tokens):', {
+        count: usersInClass.length,
+        users: usersInClass.map(u => ({ name: u.name, email: u.email })),
+      })
+      
       return {
         successCount: 0,
         failureCount: 0,
@@ -101,11 +141,17 @@ export async function sendNotificationToClass(
     }
 
     const tokens = deviceTokens.map((dt: { token: string }) => dt.token)
+    console.log('[sendNotificationToClass] Sending to', tokens.length, 'devices')
     const result = await sendPushNotification(tokens, title, body, data)
+    
+    console.log('[sendNotificationToClass] ✅ Notification send result:', {
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+    })
 
     return result
   } catch (error) {
-    console.error('Error sending notification to class:', error)
+    console.error('[sendNotificationToClass] ❌ Error sending notification to class:', error)
     throw error
   }
 }

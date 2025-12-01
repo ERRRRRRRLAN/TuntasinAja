@@ -333,7 +333,13 @@ export const threadRouter = createTRPCRouter({
         if (userKelas && !isAdmin) {
           try {
             const authorName = thread.author.name
-            await sendNotificationToClass(
+            console.log('[ThreadRouter] Sending notification for new thread:', {
+              kelas: userKelas,
+              authorName,
+              threadTitle: thread.title,
+              threadId: thread.id,
+            })
+            const result = await sendNotificationToClass(
               userKelas,
               'Tugas Baru',
               `${authorName} membuat tugas baru: ${thread.title}`,
@@ -343,10 +349,17 @@ export const threadRouter = createTRPCRouter({
                 threadTitle: thread.title,
               }
             )
+            console.log('[ThreadRouter] Notification result:', result)
           } catch (error) {
-            console.error('Error sending notification for new thread:', error)
+            console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
             // Don't throw - notification failure shouldn't break thread creation
           }
+        } else {
+          console.log('[ThreadRouter] Skipping notification:', {
+            hasKelas: !!userKelas,
+            isAdmin,
+            userKelas,
+          })
         }
 
         return {

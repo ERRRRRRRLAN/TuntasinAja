@@ -43,6 +43,13 @@ export async function sendPushNotification(
   data?: Record<string, string>
 ) {
   try {
+    console.log('[FirebaseAdmin] Sending push notification:', {
+      tokenCount: tokens.length,
+      title,
+      body,
+      data,
+    })
+
     const messaging = getFirebaseMessaging()
     
     const message = {
@@ -56,13 +63,29 @@ export async function sendPushNotification(
 
     const response = await messaging.sendEachForMulticast(message)
     
+    console.log('[FirebaseAdmin] ✅ Push notification sent:', {
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+      totalTokens: tokens.length,
+    })
+
+    // Log failures if any
+    if (response.failureCount > 0) {
+      console.error('[FirebaseAdmin] ❌ Some notifications failed:')
+      response.responses.forEach((resp, index) => {
+        if (!resp.success) {
+          console.error(`  Token ${index}: ${resp.error?.code} - ${resp.error?.message}`)
+        }
+      })
+    }
+    
     return {
       successCount: response.successCount,
       failureCount: response.failureCount,
       responses: response.responses,
     }
   } catch (error) {
-    console.error('Error sending push notification:', error)
+    console.error('[FirebaseAdmin] ❌ Error sending push notification:', error)
     throw error
   }
 }
