@@ -77,10 +77,18 @@ export default function CompletionStatsModal({
   useBackHandler(shouldHandleBack, handleClose)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    // Stop event immediately to prevent bubbling to parent
     e.stopPropagation()
     e.preventDefault()
+    
     if (e.target === overlayRef.current) {
-      handleClose()
+      // Set visible to false immediately to start close animation
+      setIsVisible(false)
+      
+      // Wait for transition to complete before closing
+      setTimeout(() => {
+        onClose()
+      }, 300) // Match transition duration
     }
   }
 
