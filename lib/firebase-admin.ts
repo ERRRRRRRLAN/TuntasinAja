@@ -52,13 +52,31 @@ export async function sendPushNotification(
 
     const messaging = getFirebaseMessaging()
     
+    // Convert data values to strings (FCM requires string values)
+    const dataPayload: Record<string, string> = {}
+    if (data) {
+      for (const [key, value] of Object.entries(data)) {
+        dataPayload[key] = String(value)
+      }
+    }
+
     const message = {
       notification: {
         title,
         body,
       },
-      data: data || {},
+      data: dataPayload,
       tokens,
+      // Add Android-specific config
+      android: {
+        priority: 'high' as const,
+      },
+      // Add APNS-specific config for iOS (if needed in future)
+      apns: {
+        headers: {
+          'apns-priority': '10',
+        },
+      },
     }
 
     const response = await messaging.sendEachForMulticast(message)

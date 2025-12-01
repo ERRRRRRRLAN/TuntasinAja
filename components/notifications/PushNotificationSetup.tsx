@@ -24,7 +24,7 @@ async function loadCapacitorModules() {
       }
     }
   } catch (e) {
-    // Capacitor not available (web build) - this is expected and OK
+    console.log('[PushNotificationSetup] Capacitor import failed (expected in web):', e)
   }
 
   return { Capacitor: null, PushNotifications: null }
@@ -35,175 +35,212 @@ export default function PushNotificationSetup() {
   const [isRegistered, setIsRegistered] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
   const setupAttempted = useRef(false)
+  const listenersRef = useRef<any[]>([])
+  const deviceTokenRef = useRef<string | null>(null)
 
   const registerToken = trpc.notification.registerToken.useMutation()
   const unregisterToken = trpc.notification.unregisterToken.useMutation()
 
   useEffect(() => {
+    // Skip if session is not ready
+    if (status === 'loading' || !session) {
+      return
+    }
+
+    // Prevent multiple setup attempts
+    if (setupAttempted.current) {
+      return
+    }
+
     let isMounted = true
-    let deviceToken: string | null = null
-    let listeners: any[] = []
+    setupAttempted.current = true
 
     const initialize = async () => {
-      // Load Capacitor modules dynamically
-      const capacitorModules = await loadCapacitorModules()
+      try {
+        console.log('[PushNotificationSetup] 🔄 Initializing push notification setup...')
+        console.log('[PushNotificationSetup] Session status:', { status, hasSession: !!session, userId: session?.user?.id })
 
-      if (!isMounted) return
+        // Load Capacitor modules dynamically
+        const capacitorModules = await loadCapacitorModules()
 
-      // Skip if Capacitor is not available (web build)
-      if (!capacitorModules?.Capacitor || !capacitorModules?.PushNotifications) {
-        console.log('[PushNotificationSetup] Capacitor not available, skipping (web build)')
-        return
+        if (!isMounted) {
+          console.log('[PushNotificationSetup] Component unmounted, aborting')
+          return
+        }
+
+        // Skip if Capacitor is not available (web build)
+        if (!capacitorModules?.Capacitor || !capacitorModules?.PushNotifications) {
+          console.log('[PushNotificationSetup] ⚠️ Capacitor not available, skipping (web build)')
+          setupAttempted.current = false // Allow retry if needed
+          return
+        }
+
+        const { Capacitor, PushNotifications } = capacitorModules
+
+        // Check platform
+        const platform = Capacitor.getPlatform()
+        const isNative = Capacitor.isNativePlatform()
+        
+        console.log('[PushNotificationSetup] Platform check:', {
+          platform,
+          isNative,
+          isAndroid: platform === 'android',
+          isIOS: platform === 'ios',
+        })
+
+        // Only run on native platforms (Android/iOS)
+        // More lenient check - if platform is android or ios, proceed
+        if (platform !== 'android' && platform !== 'ios') {
+          console.log('[PushNotificationSetup] ⚠️ Not native platform, skipping setup')
+          setupAttempted.current = false
+          return
+        }
+
+        console.log('[PushNotificationSetup] ✅ Native platform detected, proceeding with setup...')
+
+        // Setup push notifications
+        await setupPushNotifications(Capacitor, PushNotifications, session)
+      } catch (error) {
+        console.error('[PushNotificationSetup] ❌ Error in initialize:', error)
+        setRegistrationError('Failed to initialize push notifications: ' + (error instanceof Error ? error.message : 'Unknown error'))
+        setupAttempted.current = false // Allow retry on error
       }
+    }
 
-      const { Capacitor, PushNotifications } = capacitorModules
+    const setupPushNotifications = async (
+      Capacitor: any,
+      PushNotifications: any,
+      session: any
+    ) => {
+      try {
+        console.log('[PushNotificationSetup] 📱 Starting push notification setup...')
+        
+        // Check if PushNotifications is available
+        if (!PushNotifications) {
+          console.error('[PushNotificationSetup] ❌ PushNotifications plugin not available')
+          setRegistrationError('PushNotifications plugin not available')
+          return
+        }
 
-      // Debug logging
-      console.log('[PushNotificationSetup] Effect triggered', {
-        isNative: Capacitor.isNativePlatform(),
-        platform: Capacitor.getPlatform(),
-        hasSession: !!session,
-        sessionStatus: status,
-        setupAttempted: setupAttempted.current,
-      })
+        // Request permission
+        console.log('[PushNotificationSetup] 🔐 Requesting permissions...')
+        let permResult = await PushNotifications.requestPermissions()
+        
+        console.log('[PushNotificationSetup] Permission result:', permResult)
+        
+        // Handle prompt state - request again
+        if (permResult.receive === 'prompt') {
+          console.log('[PushNotificationSetup] Permission was prompted, waiting and requesting again...')
+          // Wait a bit for user to respond
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          permResult = await PushNotifications.requestPermissions()
+          console.log('[PushNotificationSetup] Permission result (retry):', permResult)
+        }
 
-      // Only run on native platforms (Android/iOS)
-      // Check both isNativePlatform and platform to be sure
-      const isNative = Capacitor.isNativePlatform() || 
-                       Capacitor.getPlatform() === 'android' || 
-                       Capacitor.getPlatform() === 'ios'
-      
-      if (!isNative) {
-        console.log('[PushNotificationSetup] Not native platform, skipping setup')
-        return
-      }
+        if (permResult.receive !== 'granted') {
+          console.warn('[PushNotificationSetup] ⚠️ Permission denied:', permResult.receive)
+          setRegistrationError('Push notification permission denied. Please enable notifications in Settings.')
+          setupAttempted.current = false // Allow retry
+          return
+        }
 
-      // Wait for session to be ready
-      if (status === 'loading' || !session) {
-        console.log('[PushNotificationSetup] Waiting for session...', { status, hasSession: !!session })
-        return
-      }
+        console.log('[PushNotificationSetup] ✅ Permission granted, registering with FCM...')
 
-      // Prevent multiple setup attempts
-      if (setupAttempted.current) {
-        console.log('[PushNotificationSetup] Setup already attempted, skipping')
-        return
-      }
+        // Register with FCM
+        await PushNotifications.register()
+        console.log('[PushNotificationSetup] 📡 Registration request sent to FCM')
 
-      setupAttempted.current = true
-
-      const setupPushNotifications = async () => {
-        try {
-          console.log('[PushNotificationSetup] Starting push notification setup...')
+        // Listen for registration - this is async, token will come later
+        const registrationListener = PushNotifications.addListener('registration', async (token: any) => {
+          if (!isMounted) return
           
-          // Check if PushNotifications is available
-          if (!PushNotifications) {
-            console.error('[PushNotificationSetup] PushNotifications plugin not available')
-            setRegistrationError('PushNotifications plugin not available')
-            return
-          }
-
-          // Request permission
-          console.log('[PushNotificationSetup] Requesting permissions...')
-          let permResult = await PushNotifications.requestPermissions()
+          const tokenValue = token.value
+          deviceTokenRef.current = tokenValue
           
-          console.log('[PushNotificationSetup] Permission result:', permResult)
+          console.log('[PushNotificationSetup] ✅ Push registration success!')
+          console.log('[PushNotificationSetup] Token:', tokenValue.substring(0, 30) + '...')
+          console.log('[PushNotificationSetup] User ID:', session?.user?.id)
+          console.log('[PushNotificationSetup] User Name:', session?.user?.name)
           
-          if (permResult.receive === 'prompt') {
-            console.log('[PushNotificationSetup] Permission was prompted, requesting again...')
-            permResult = await PushNotifications.requestPermissions()
-          }
-
-          if (permResult.receive !== 'granted') {
-            console.warn('[PushNotificationSetup] Permission denied:', permResult.receive)
-            setRegistrationError('Push notification permission denied')
-            return
-          }
-
-          console.log('[PushNotificationSetup] Permission granted, registering with FCM...')
-
-          // Register with FCM
-          await PushNotifications.register()
-          console.log('[PushNotificationSetup] Registration request sent to FCM')
-
-          // Listen for registration
-          const registrationListener = PushNotifications.addListener('registration', (token: any) => {
-            deviceToken = token.value
-            console.log('[PushNotificationSetup] ✅ Push registration success!')
-            console.log('[PushNotificationSetup] Token:', token.value.substring(0, 20) + '...')
-            console.log('[PushNotificationSetup] User ID:', session?.user?.id)
-            
-            // Register token with backend
-            console.log('[PushNotificationSetup] Sending token to backend...')
+          // Register token with backend
+          console.log('[PushNotificationSetup] 📤 Sending token to backend...')
+          try {
             registerToken.mutate({
-              token: token.value,
+              token: tokenValue,
               deviceInfo: Capacitor.getPlatform(),
             }, {
               onSuccess: (data) => {
-                console.log('[PushNotificationSetup] ✅ Token registered successfully in backend!', data)
+                console.log('[PushNotificationSetup] ✅✅ Token registered successfully in backend!', data)
                 setIsRegistered(true)
                 setRegistrationError(null)
               },
               onError: (error) => {
                 console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
+                console.error('[PushNotificationSetup] Error details:', JSON.stringify(error, null, 2))
                 setRegistrationError('Failed to register device token: ' + (error?.message || 'Unknown error'))
+                // Don't reset setupAttempted - token was received, just backend failed
               },
             })
-          })
-          listeners.push(registrationListener)
+          } catch (error) {
+            console.error('[PushNotificationSetup] ❌ Exception registering token:', error)
+            setRegistrationError('Exception registering token: ' + (error instanceof Error ? error.message : 'Unknown error'))
+          }
+        })
+        listenersRef.current.push(registrationListener)
 
-          // Listen for registration errors
-          const registrationErrorListener = PushNotifications.addListener('registrationError', (error: any) => {
-            console.error('[PushNotificationSetup] ❌ Registration error:', JSON.stringify(error))
-            setRegistrationError('Failed to register for push notifications: ' + (error?.error || 'Unknown error'))
-          })
-          listeners.push(registrationErrorListener)
-
-          // Listen for push notifications
-          const pushListener = PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
-            console.log('[PushNotificationSetup] 📬 Push notification received:', notification)
-          })
-          listeners.push(pushListener)
-
-          // Listen for push notification actions
-          const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
-            console.log('[PushNotificationSetup] 🔔 Push notification action performed:', notification.actionId, notification.inputValue)
-          })
-          listeners.push(actionListener)
-
-          console.log('[PushNotificationSetup] All listeners registered')
-
-        } catch (error) {
-          console.error('[PushNotificationSetup] ❌ Error setting up push notifications:', error)
-          setRegistrationError('Failed to setup push notifications: ' + (error instanceof Error ? error.message : 'Unknown error'))
+        // Listen for registration errors
+        const registrationErrorListener = PushNotifications.addListener('registrationError', (error: any) => {
+          console.error('[PushNotificationSetup] ❌ Registration error:', JSON.stringify(error))
+          setRegistrationError('Failed to register for push notifications: ' + (error?.error || error?.message || 'Unknown error'))
           setupAttempted.current = false // Allow retry on error
-        }
-      }
+        })
+        listenersRef.current.push(registrationErrorListener)
 
-      setupPushNotifications()
+        // Listen for push notifications received
+        const pushListener = PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+          console.log('[PushNotificationSetup] 📬 Push notification received:', notification)
+        })
+        listenersRef.current.push(pushListener)
+
+        // Listen for push notification actions
+        const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+          console.log('[PushNotificationSetup] 🔔 Push notification action performed:', notification.actionId, notification.inputValue)
+        })
+        listenersRef.current.push(actionListener)
+
+        console.log('[PushNotificationSetup] ✅ All listeners registered')
+        console.log('[PushNotificationSetup] ⏳ Waiting for FCM token...')
+
+      } catch (error) {
+        console.error('[PushNotificationSetup] ❌ Error setting up push notifications:', error)
+        setRegistrationError('Failed to setup push notifications: ' + (error instanceof Error ? error.message : 'Unknown error'))
+        setupAttempted.current = false // Allow retry on error
+      }
     }
 
+    // Start initialization
     initialize()
 
-    // Cleanup listeners on unmount
+    // Cleanup on unmount
     return () => {
       isMounted = false
-      console.log('[PushNotificationSetup] Cleaning up listeners...')
-      listeners.forEach(listener => {
+      console.log('[PushNotificationSetup] 🧹 Cleaning up...')
+      
+      // Remove all listeners
+      listenersRef.current.forEach(listener => {
         try {
           listener.remove()
         } catch (e) {
           console.error('[PushNotificationSetup] Error removing listener:', e)
         }
       })
+      listenersRef.current = []
       
-      // Unregister token when component unmounts (optional)
-      if (deviceToken) {
-        console.log('[PushNotificationSetup] Unregistering token on unmount...')
-        unregisterToken.mutate({ token: deviceToken })
-      }
+      // Note: We don't unregister token on unmount anymore
+      // Token should persist across app restarts
+      // Only unregister on explicit logout
     }
-  }, [session, status, registerToken, unregisterToken])
+  }, [session, status]) // Removed registerToken and unregisterToken from deps to prevent re-initialization
 
   // Don't render anything - this is a background component
   return null
