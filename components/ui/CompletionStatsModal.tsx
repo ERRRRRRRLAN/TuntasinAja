@@ -111,8 +111,8 @@ export default function CompletionStatsModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflow: 'hidden'
         }}
       >
@@ -264,6 +264,7 @@ export default function CompletionStatsModal({
               {completedUsers.map((user, index) => (
                 <div
                   key={user.id}
+                  className="completion-stats-user-item"
                   style={{
                     padding: '0.75rem',
                     background: 'var(--bg-secondary)',
@@ -271,7 +272,10 @@ export default function CompletionStatsModal({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
-                    transition: 'background 0.2s'
+                    transition: 'background 0.2s, transform 0.2s',
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? 'translateX(0)' : 'translateX(-10px)',
+                    animation: isVisible ? `fadeInLeft 0.3s ease-out ${index * 0.05}s both` : 'none'
                   }}
                 >
                   <span style={{

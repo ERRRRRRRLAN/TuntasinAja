@@ -632,6 +632,7 @@ export default function FeedPage() {
           {/* Feedback Button */}
           <button
             onClick={() => setShowFeedbackModal(true)}
+            className="feedback-fab-button"
             style={{
               width: '56px',
               height: '56px',
@@ -644,9 +645,10 @@ export default function FeedPage() {
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               padding: 0,
-              position: 'relative'
+              position: 'relative',
+              animation: 'fadeInUp 0.5s ease-out 0.2s both, pulse 2s ease-in-out infinite 1s'
             }}
             onMouseEnter={(e) => {
               if (window.innerWidth > 640) {

@@ -141,8 +141,8 @@ export default function FeedbackModal({
           display: 'flex',
           flexDirection: 'column',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header */}

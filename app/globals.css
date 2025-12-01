@@ -604,6 +604,39 @@ body {
   20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -2342,6 +2375,11 @@ textarea {
   .feedback-modal-actions .btn {
     width: auto !important;
     min-width: 100px !important;
+    animation: none !important;
+  }
+
+  .feedback-fab-button {
+    animation: fadeInUp 0.5s ease-out 0.2s both !important;
   }
   
   .thread-detail-meta {
@@ -3584,7 +3622,8 @@ textarea {
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
-    transform: none !important;
+    transform: translateY(0) !important;
+    animation: slideUpFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
   .feedback-modal-header {
@@ -3680,10 +3719,6 @@ textarea {
   .completion-stats-modal-content {
     max-width: calc(100vw - 2rem) !important;
     margin: 1rem !important;
-  }
-
-  /* Completion Stats Modal Mobile */
-  .completion-stats-modal-content {
     max-height: 90vh !important;
   }
 
@@ -3691,6 +3726,10 @@ textarea {
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     max-height: calc(90vh - 300px) !important;
+  }
+
+  .completion-stats-user-item {
+    animation: fadeInLeft 0.3s ease-out both;
   }
 
   /* Feedback List Mobile */
