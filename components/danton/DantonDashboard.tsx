@@ -100,7 +100,7 @@ export default function DantonDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Kelas</h4>
           </div>
-          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
+          <div className="danton-stat-value danton-kelas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
             {dantonKelas || '-'}
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function DantonDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Tugas</h4>
           </div>
-          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="danton-stat-value danton-tugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.threadCount || 0}
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function DantonDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Sub Tugas</h4>
           </div>
-          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="danton-stat-value danton-subtugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.commentCount || 0}
           </div>
         </div>

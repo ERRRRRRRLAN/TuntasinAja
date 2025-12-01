@@ -3327,18 +3327,29 @@ textarea {
 /* Mobile responsive for Danton stat cards */
 @media (max-width: 640px) {
   .danton-stat-card .danton-stat-value {
-    font-size: 2.5rem !important;
-    line-height: 1.1;
+    font-size: 3rem !important;
+    line-height: 1.1 !important;
   }
   
   .danton-stat-card h4 {
     font-size: 1.125rem !important;
   }
   
-  /* Ensure Kelas text is also larger on mobile */
-  .danton-stat-card > div:last-child {
-    font-size: 2.5rem !important;
+  /* Specifically target Kelas, Tugas, and Sub Tugas values */
+  .danton-kelas-value,
+  .danton-tugas-value,
+  .danton-subtugas-value {
+    font-size: 3rem !important;
     font-weight: 700 !important;
+    line-height: 1.1 !important;
+  }
+  
+  /* Ensure all stat values are larger on mobile - override inline styles */
+  .danton-stat-card > div:last-child.danton-stat-value,
+  .danton-stat-card > div:nth-child(2).danton-stat-value {
+    font-size: 3rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
   }
 }
 
