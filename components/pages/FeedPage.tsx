@@ -520,7 +520,7 @@ export default function FeedPage() {
           className="subscription-fade-in"
           style={{
             position: 'fixed',
-            bottom: '1.5rem',
+            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
             padding: '0.75rem 1rem',
             background: 'var(--bg-primary)',
@@ -546,7 +546,7 @@ export default function FeedPage() {
           className="subscription-fade-in"
           style={{
             position: 'fixed',
-            bottom: '1.5rem',
+            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
             padding: '0.75rem 1rem',
             background: 'var(--bg-primary)',
@@ -573,7 +573,7 @@ export default function FeedPage() {
           className="feedback-fab-container"
           style={{
             position: 'fixed',
-            bottom: '7rem',
+            bottom: 'calc(7rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
             zIndex: 999,
             display: 'flex',
@@ -684,7 +684,7 @@ export default function FeedPage() {
           className="fab-button"
           style={{
             position: 'fixed',
-            bottom: '1.5rem',
+            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
             width: '56px',
             height: '56px',

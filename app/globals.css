@@ -295,14 +295,14 @@ body {
 @media (max-width: 768px) {
   .main-content {
     padding: 1.5rem 0;
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px) + 8px);
   }
 }
 
 @media (max-width: 640px) {
   .main-content {
     padding: 1rem 0;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 8px);
   }
 }
 
@@ -2964,7 +2964,7 @@ textarea {
 /* Floating Action Button (FAB) */
 .fab-button {
   position: fixed;
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px) + 8px);
   right: 1.5rem;
   width: 56px;
   height: 56px;
@@ -2980,6 +2980,9 @@ textarea {
   z-index: 998;
   transition: all 0.3s ease;
   padding: 0;
+  /* Ensure minimum distance from navigation bar */
+  min-height: 56px;
+  touch-action: manipulation;
 }
 
 .fab-button:hover {
@@ -2994,7 +2997,7 @@ textarea {
 
 @media (max-width: 640px) {
   .fab-button {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 8px);
     right: 1rem;
     width: 56px;
     height: 56px;
@@ -3653,12 +3656,12 @@ textarea {
 
   /* FAB Buttons Mobile */
   .fab-button {
-    bottom: 1rem !important;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0)) !important;
     right: 1rem !important;
   }
 
   .feedback-fab-container {
-    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0)) !important;
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px) + 8px) !important;
     right: 1rem !important;
     z-index: 999 !important;
   }
