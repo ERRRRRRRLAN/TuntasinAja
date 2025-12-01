@@ -36,6 +36,7 @@ body {
   /* Remove tap highlight and callout on mobile */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+  /* Add padding for status bar on Android - removed from body, handled by header */
 }
 
 /* Container */
@@ -53,6 +54,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  /* Add padding for status bar on Android */
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .header-content {

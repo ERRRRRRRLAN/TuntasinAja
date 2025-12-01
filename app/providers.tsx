@@ -5,6 +5,7 @@ import { trpc, trpcClient } from '@/lib/trpc'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
+import StatusBarHandler from '@/components/StatusBarHandler'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchInterval={5 * 60}
           refetchOnWindowFocus={true}
         >
+          <StatusBarHandler />
           {children}
           <PushNotificationSetup />
         </SessionProvider>

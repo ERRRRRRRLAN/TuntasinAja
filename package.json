@@ -28,6 +28,7 @@
   "dependencies": {
     "@capacitor/core": "^7.4.4",
     "@capacitor/push-notifications": "^7.0.3",
+    "@capacitor/status-bar": "^7.0.3",
     "@prisma/client": "^5.7.1",
     "@tanstack/react-query": "^4.36.1",
     "@trpc/client": "^10.45.0",
