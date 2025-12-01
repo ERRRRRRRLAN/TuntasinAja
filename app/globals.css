@@ -3323,6 +3323,24 @@ textarea {
   line-height: 1.2;
 }
 
+/* Mobile responsive for Danton stat cards */
+@media (max-width: 640px) {
+  .danton-stat-card .danton-stat-value {
+    font-size: 2.5rem !important;
+    line-height: 1.1;
+  }
+  
+  .danton-stat-card h4 {
+    font-size: 1.125rem !important;
+  }
+  
+  /* Ensure Kelas text is also larger on mobile */
+  .danton-stat-card > div:last-child {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+  }
+}
+
 .danton-stat-label {
   font-size: 1rem;
   font-weight: 600;

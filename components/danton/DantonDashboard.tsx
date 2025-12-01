@@ -80,12 +80,12 @@ export default function DantonDashboard() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
         gap: '1rem'
       }}>
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <UserIcon size={24} />
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Siswa</h4>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.userCount || 0}
             <span style={{ fontSize: '1rem', color: 'var(--text-light)', fontWeight: 400 }}>
               {' '}/ {stats?.maxUsers || 40}
@@ -96,29 +96,29 @@ export default function DantonDashboard() {
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Kelas</h4>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
+          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
             {dantonKelas || '-'}
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Tugas</h4>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.threadCount || 0}
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Sub Tugas</h4>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.commentCount || 0}
           </div>
         </div>
