@@ -11,7 +11,10 @@ async function loadStatusBar() {
 
   try {
     const statusBar = await import('@capacitor/status-bar')
-    return statusBar.StatusBar
+    return {
+      StatusBar: statusBar.StatusBar,
+      Style: statusBar.Style,
+    }
   } catch (e) {
     return null
   }
@@ -25,15 +28,17 @@ export default function StatusBarHandler() {
         return
       }
 
-      const StatusBar = await loadStatusBar()
-      if (!StatusBar) {
+      const statusBarModule = await loadStatusBar()
+      if (!statusBarModule) {
         return
       }
+
+      const { StatusBar, Style } = statusBarModule
 
       try {
         // Set status bar style
         await StatusBar.setStyle({
-          style: 'dark', // or 'light' depending on your preference
+          style: Style.Dark, // Use enum instead of string
         })
 
         // Set status bar background color (transparent)
