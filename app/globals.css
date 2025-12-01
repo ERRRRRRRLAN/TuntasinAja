@@ -365,6 +365,7 @@ body {
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
   padding: 1.25rem 0;
+  padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
   position: relative;
   z-index: 1;
 }
