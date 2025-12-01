@@ -71,6 +71,11 @@ export function useNavigationHistory() {
 
   // Track navigation
   useEffect(() => {
+    // Skip if pathname is null
+    if (!pathname) {
+      return
+    }
+
     // Skip initial mount
     if (isInitialMount.current) {
       isInitialMount.current = false
