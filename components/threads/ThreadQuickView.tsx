@@ -116,10 +116,15 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   
   useEffect(() => {
     if (isQuickViewOpen && isVisible) {
+      // Delay kecil untuk memastikan QuickView sudah fully rendered
       const timer = setTimeout(() => {
+        console.log('[ThreadQuickView] Enabling back handler')
         setShouldHandleBack(true)
-      }, 100)
-      return () => clearTimeout(timer)
+      }, 200) // Increased delay to ensure everything is ready
+      return () => {
+        clearTimeout(timer)
+        setShouldHandleBack(false)
+      }
     } else {
       setShouldHandleBack(false)
     }

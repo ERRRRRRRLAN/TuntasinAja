@@ -26,6 +26,14 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
   const hasPushedState = useRef(false)
   const handlerId = useRef<string | null>(null)
   const backButtonListenerRef = useRef<any>(null)
+  const isActiveRef = useRef(isActive)
+  const onBackRef = useRef(onBack)
+
+  // Keep refs in sync with props
+  useEffect(() => {
+    isActiveRef.current = isActive
+    onBackRef.current = onBack
+  }, [isActive, onBack])
 
   useEffect(() => {
     if (!isActive) {
@@ -34,6 +42,13 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
         // Hanya remove listener, jangan cleanup history karena bisa trigger popstate
         hasPushedState.current = false
         handlerId.current = null
+      }
+      // Remove native listener when inactive
+      if (Capacitor.isNativePlatform() && backButtonListenerRef.current) {
+        backButtonListenerRef.current.remove().catch((e: any) => {
+          console.error('[useBackHandler] Error removing listener when inactive:', e)
+        })
+        backButtonListenerRef.current = null
       }
       return
     }
@@ -65,14 +80,23 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
       }
 
       // Add listener for hardware back button
+      // Use refs to always get latest values (avoid stale closure)
       const listener = await App.addListener('backButton', ({ canGoBack }) => {
-        if (isActive) {
+        console.log('[useBackHandler] Hardware back button pressed', { 
+          isActive: isActiveRef.current, 
+          canGoBack 
+        })
+        if (isActiveRef.current) {
           // Prevent default back behavior
-          onBack()
+          console.log('[useBackHandler] Calling onBack callback')
+          onBackRef.current()
+        } else {
+          console.log('[useBackHandler] Handler is not active, ignoring')
         }
       })
 
       backButtonListenerRef.current = listener
+      console.log('[useBackHandler] Native back button listener registered', { isActive: isActiveRef.current })
     }
 
     // Setup untuk web browser - popstate event
@@ -111,9 +135,13 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
 
     if (Capacitor.isNativePlatform()) {
       // Native platform: use Capacitor App plugin
-      setupNativeBackButton()
+      console.log('[useBackHandler] Setting up native back button handler')
+      setupNativeBackButton().catch((e) => {
+        console.error('[useBackHandler] Error setting up native back button:', e)
+      })
     } else {
       // Web platform: use popstate event
+      console.log('[useBackHandler] Setting up web back button handler')
       webCleanup = setupWebBackButton()
     }
 
