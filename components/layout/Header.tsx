@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react'
 import { BookIcon, UserIcon, LogOutIcon, CrownIcon, DownloadIcon } from '@/components/ui/Icons'
 import { trpc } from '@/lib/trpc'
 import { useDanton } from '@/hooks/useDanton'
+import { Capacitor } from '@capacitor/core'
 
 export default function Header() {
   const { data: session } = useSession()
@@ -384,26 +385,28 @@ export default function Header() {
           </Link>
         ))}
         
-        {/* Download APK Button - Mobile Only */}
-        <a
-          href="/TuntasinAja.apk"
-          download="TuntasinAja.apk"
-          className="mobile-nav-link"
-          style={{
-            color: 'var(--primary)',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            borderTop: '1px solid var(--border)',
-            marginTop: '0.5rem',
-            paddingTop: '1rem',
-          }}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <DownloadIcon size={18} style={{ color: 'var(--primary)' }} />
-          <span>Download APK</span>
-        </a>
+        {/* Download APK Button - Mobile Web Only (not in native APK) */}
+        {!Capacitor.isNativePlatform() && (
+          <a
+            href="/TuntasinAja.apk"
+            download="TuntasinAja.apk"
+            className="mobile-nav-link"
+            style={{
+              color: 'var(--primary)',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              borderTop: '1px solid var(--border)',
+              marginTop: '0.5rem',
+              paddingTop: '1rem',
+            }}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <DownloadIcon size={18} style={{ color: 'var(--primary)' }} />
+            <span>Download APK</span>
+          </a>
+        )}
       </nav>
     </header>
   )
