@@ -218,7 +218,6 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
             transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
             boxShadow: 'var(--shadow-lg)',
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="quickview-header">
