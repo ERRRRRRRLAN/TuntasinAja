@@ -37,7 +37,9 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   /* Add padding for navigation bar on Android */
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  /* Ensure minimum safe area for interactive elements */
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 
 /* Container */
@@ -287,7 +289,7 @@ body {
 .main-content {
   min-height: calc(100vh - 80px);
   padding: 2rem 0;
-  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0));
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 8px);
   width: 100%;
   animation: fadeIn 0.5s ease-out;
 }
