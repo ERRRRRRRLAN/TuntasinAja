@@ -2733,6 +2733,7 @@ textarea {
   /* Header - Sticky di atas */
   .quickview-header {
     padding: 1rem !important;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px)) !important;
     border-bottom: 1px solid var(--border);
     background: var(--card);
     flex-shrink: 0;
