@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace "com.tuntasinaja.app"
@@ -54,6 +55,22 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+        }
+    }
+    
+    // Customize APK output filename
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            def versionName = variant.versionName
+            def versionCode = variant.versionCode
+            def buildType = variant.buildType.name
+            def flavor = variant.flavorName
+            
+            if (buildType == "release") {
+                outputFileName = "TuntasinAja.apk"
+            } else {
+                outputFileName = "TuntasinAja-${buildType}-v${versionName}.apk"
+            }
         }
     }
 }
