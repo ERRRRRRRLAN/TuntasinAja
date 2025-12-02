@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import Header from '@/components/layout/Header'
 import ThreadCard from '@/components/threads/ThreadCard'
@@ -35,11 +36,14 @@ const generateKelasOptions = () => {
 
 export default function FeedPage() {
   const { data: session, status: sessionStatus } = useSession()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [selectedKelas, setSelectedKelas] = useState<string>('all')
+  const [filteredSubjects, setFilteredSubjects] = useState<string[]>([]) // For multiple subject filter from URL
   const [isDataValidated, setIsDataValidated] = useState(false)
   const [previousUserId, setPreviousUserId] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
@@ -98,6 +102,23 @@ export default function FeedPage() {
     }
   }, [isLoading, threads, isDataValidated, isAdmin, isLoadingUserData, userData])
 
+  // Handle filter from URL (deep link from notification)
+  useEffect(() => {
+    const filterParam = searchParams.get('filter')
+    if (filterParam) {
+      // Parse filter subjects from URL (comma-separated)
+      const subjects = filterParam.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      if (subjects.length > 0) {
+        setFilteredSubjects(subjects)
+        // Remove filter from URL after applying
+        const newSearchParams = new URLSearchParams(searchParams.toString())
+        newSearchParams.delete('filter')
+        const newUrl = newSearchParams.toString() ? `/?${newSearchParams.toString()}` : '/'
+        router.replace(newUrl, { scroll: false })
+      }
+    }
+  }, [searchParams, router])
+
   // Invalidate cache when user changes
   useEffect(() => {
     if (session?.user?.id && session.user.id !== previousUserId) {
@@ -109,6 +130,7 @@ export default function FeedPage() {
       setIsDataValidated(false)
       setIsInitialLoad(true) // Reset initial load state when user changes
       setHasCheckedReminder(false) // Reset reminder check when user changes
+      setFilteredSubjects([]) // Reset filter when user changes
     }
   }, [session?.user?.id, previousUserId, utils])
 
@@ -196,8 +218,17 @@ export default function FeedPage() {
       })
     }
 
-    // Filter by subject (mata pelajaran)
-    if (selectedSubject !== 'all') {
+    // Filter by multiple subjects from URL (deep link from notification)
+    if (filteredSubjects.length > 0) {
+      filtered = filtered.filter(thread => {
+        const titleUpper = thread.title.toUpperCase()
+        return filteredSubjects.some(subject => {
+          const subjectUpper = subject.toUpperCase()
+          return titleUpper.includes(subjectUpper)
+        })
+      })
+    } else if (selectedSubject !== 'all') {
+      // Filter by single subject (from dropdown)
       filtered = filtered.filter(thread => thread.title === selectedSubject)
     }
 
@@ -221,7 +252,13 @@ export default function FeedPage() {
     }
 
     return filtered
-  }, [threads, selectedSubject, selectedKelas, searchQuery, isAdmin, userKelas, isDataValidated])
+  }, [threads, selectedSubject, selectedKelas, searchQuery, filteredSubjects, isAdmin, userKelas, isDataValidated])
+
+  // Clear filter function
+  const clearFilter = () => {
+    setFilteredSubjects([])
+    setSelectedSubject('all')
+  }
 
   return (
     <>
@@ -282,6 +319,56 @@ export default function FeedPage() {
               </div>
             </div>
           </div>
+
+          {/* Filter Badge (from notification deep link) */}
+          {filteredSubjects.length > 0 && (
+            <div style={{
+              marginBottom: '1rem',
+              padding: '0.75rem 1rem',
+              background: 'var(--primary)',
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flex: 1 }}>
+                <BellIcon size={18} style={{ color: 'white' }} />
+                <span style={{ color: 'white', fontWeight: 600, fontSize: '0.875rem' }}>
+                  Filter Aktif: Tugas untuk besok ({filteredSubjects.join(', ')})
+                </span>
+              </div>
+              <button
+                onClick={clearFilter}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  padding: '0.5rem 0.75rem',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '0.375rem',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <XIconSmall size={16} />
+                Hapus Filter
+              </button>
+            </div>
+          )}
 
           {/* Search and Filter Section */}
           <div className="search-filter-container" style={{ 

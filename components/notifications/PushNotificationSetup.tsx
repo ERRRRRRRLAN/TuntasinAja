@@ -274,9 +274,37 @@ export default function PushNotificationSetup() {
         })
         listenersRef.current.push(pushListener)
 
-        // Listen for push notification actions
+        // Listen for push notification actions (when user taps notification)
         const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
           console.log('[PushNotificationSetup] 🔔 Push notification action performed:', notification.actionId, notification.inputValue)
+          console.log('[PushNotificationSetup] Notification data:', notification.notification?.data)
+          
+          // Handle deep link from notification
+          const data = notification.notification?.data
+          if (data?.deepLink) {
+            // Navigate to deep link
+            const deepLink = data.deepLink
+            console.log('[PushNotificationSetup] Navigating to deep link:', deepLink)
+            
+            // Use window.location for navigation (works in both web and native)
+            if (typeof window !== 'undefined') {
+              // If deep link is relative, use current origin
+              if (deepLink.startsWith('/')) {
+                window.location.href = deepLink
+              } else {
+                window.location.href = deepLink
+              }
+            }
+          } else if (data?.filter) {
+            // Handle filter from schedule reminder
+            const filterSubjects = data.filter
+            console.log('[PushNotificationSetup] Applying filter from notification:', filterSubjects)
+            
+            // Navigate to home with filter
+            if (typeof window !== 'undefined') {
+              window.location.href = `/?filter=${encodeURIComponent(filterSubjects)}`
+            }
+          }
         })
         listenersRef.current.push(actionListener)
 
