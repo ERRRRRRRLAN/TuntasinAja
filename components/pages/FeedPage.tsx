@@ -152,11 +152,11 @@ export default function FeedPage() {
     }
   )
 
-  // Get overdue tasks for reminder (for all users) - always fetch to show badge
+  // Get overdue tasks for reminder (disabled for admin users)
   const { data: overdueData } = trpc.userStatus.getOverdueTasks.useQuery(
     undefined,
     {
-      enabled: !!session && isDataValidated,
+      enabled: !!session && isDataValidated && !isAdmin, // Disable for admin
     }
   )
 
@@ -164,11 +164,13 @@ export default function FeedPage() {
   const uncompletedCount = uncompletedData?.uncompletedCount || 0
   const overdueTasks = overdueData?.overdueTasks || []
 
-  // Show reminder modal automatically when user logs in and there are overdue tasks (for all users)
+  // Show reminder modal automatically when user logs in and there are overdue tasks
+  // Disabled for admin users (admin doesn't have kelas)
   // Only show once per session
   useEffect(() => {
     if (
       session &&
+      !isAdmin && // Disable for admin
       isDataValidated &&
       !hasCheckedReminder &&
       overdueTasks.length > 0
@@ -176,7 +178,7 @@ export default function FeedPage() {
       setShowReminderModal(true)
       setHasCheckedReminder(true)
     }
-  }, [session, isDataValidated, hasCheckedReminder, overdueTasks.length])
+  }, [session, isAdmin, isDataValidated, hasCheckedReminder, overdueTasks.length])
 
 
 
@@ -247,7 +249,7 @@ export default function FeedPage() {
                     {uncompletedCount} belum selesai
                   </span>
                 )}
-                {session && overdueTasks.length > 0 && (
+                {session && !isAdmin && overdueTasks.length > 0 && (
                   <button
                     onClick={() => setShowReminderModal(true)}
                     style={{
@@ -484,36 +486,38 @@ export default function FeedPage() {
         <CreateThreadQuickView onClose={() => setShowCreateForm(false)} />
       )}
 
-      {/* Reminder Modal - For all users */}
-      <ReminderModal
-        isOpen={showReminderModal}
-        onClose={() => {
-          setShowReminderModal(false)
-          // Invalidate overdue tasks query so it can be checked again next time
-          utils.userStatus.getOverdueTasks.invalidate()
-        }}
-        overdueTasks={overdueTasks.map((task) => ({
-          threadId: task.threadId,
-          threadTitle: task.threadTitle,
-          threadDate: new Date(task.threadDate),
-          authorName: task.authorName,
-          daysOverdue: task.daysOverdue,
-        }))}
-        onTasksUpdated={() => {
-          // Invalidate queries when tasks are updated
-          utils.userStatus.getOverdueTasks.invalidate()
-          utils.userStatus.getUncompletedCount.invalidate()
-          utils.thread.getAll.invalidate()
-        }}
-        onTaskClick={(threadId) => {
-          // Open thread detail when task is clicked
-          // Set flag bahwa thread dibuka dari reminder
-          setThreadOpenedFromReminder(true)
-          setSelectedThreadId(threadId)
-          // Tutup reminder modal sementara
-          setShowReminderModal(false)
-        }}
-      />
+      {/* Reminder Modal - Disabled for admin users */}
+      {!isAdmin && (
+        <ReminderModal
+          isOpen={showReminderModal}
+          onClose={() => {
+            setShowReminderModal(false)
+            // Invalidate overdue tasks query so it can be checked again next time
+            utils.userStatus.getOverdueTasks.invalidate()
+          }}
+          overdueTasks={overdueTasks.map((task) => ({
+            threadId: task.threadId,
+            threadTitle: task.threadTitle,
+            threadDate: new Date(task.threadDate),
+            authorName: task.authorName,
+            daysOverdue: task.daysOverdue,
+          }))}
+          onTasksUpdated={() => {
+            // Invalidate queries when tasks are updated
+            utils.userStatus.getOverdueTasks.invalidate()
+            utils.userStatus.getUncompletedCount.invalidate()
+            utils.thread.getAll.invalidate()
+          }}
+          onTaskClick={(threadId) => {
+            // Open thread detail when task is clicked
+            // Set flag bahwa thread dibuka dari reminder
+            setThreadOpenedFromReminder(true)
+            setSelectedThreadId(threadId)
+            // Tutup reminder modal sementara
+            setShowReminderModal(false)
+          }}
+        />
+      )}
 
       {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
       {/* Permission Indicator */}

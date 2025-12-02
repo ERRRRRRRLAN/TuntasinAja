@@ -673,24 +673,35 @@ export const userStatusRouter = createTRPCRouter({
   }),
 
   // Get overdue tasks (uncompleted tasks older than 7 days)
+  // Disabled for admin users (admin doesn't have kelas)
   getOverdueTasks: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { kelas: true },
+      select: { kelas: true, isAdmin: true },
     })
+    
+    // Return empty array for admin users (admin doesn't have kelas)
+    if ((user as any)?.isAdmin) {
+      return { overdueTasks: [] }
+    }
+    
     const userKelas = user?.kelas || null
+    
+    // If user doesn't have kelas, return empty array
+    if (!userKelas) {
+      return { overdueTasks: [] }
+    }
+    
     const sevenDaysAgo = getUTCDate()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
     const threads = await prisma.thread.findMany({
-      where: userKelas
-        ? {
-            author: {
-              kelas: userKelas,
-            },
-          }
-        : undefined,
+      where: {
+        author: {
+          kelas: userKelas,
+        },
+      },
       include: {
         author: {
           select: { id: true, name: true, kelas: true },
