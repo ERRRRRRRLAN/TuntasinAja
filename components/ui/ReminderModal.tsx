@@ -51,6 +51,12 @@ export default function ReminderModal({
 
   const toggleThreadMutation = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
+      toast.success('Tugas berhasil ditandai sebagai selesai!')
+      
+      // Small delay to ensure server has processed history entry creation
+      // This ensures the 24-hour timer system works correctly
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // Invalidate first to mark as stale
       await Promise.all([
         utils.userStatus.getUncompletedCount.invalidate(),
@@ -61,13 +67,12 @@ export default function ReminderModal({
       ])
       
       // Force immediate refetch to update feed
+      // Thread will remain visible for 24 hours after completion (handled by server filter)
       await Promise.all([
         utils.thread.getAll.refetch(),
         utils.userStatus.getUncompletedCount.refetch(),
         utils.userStatus.getOverdueTasks.refetch(),
       ])
-      
-      toast.success('Tugas berhasil ditandai sebagai selesai!')
       
       // Refetch overdue tasks to update the list
       const result = await refetchOverdue()
