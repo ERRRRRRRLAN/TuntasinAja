@@ -12,6 +12,7 @@ import SubscriptionList from '@/components/admin/SubscriptionList'
 import ClassSubjectList from '@/components/admin/ClassSubjectList'
 import FeedbackList from '@/components/admin/FeedbackList'
 import AppSettingsControl from '@/components/admin/AppSettingsControl'
+import TestingReminderButton from '@/components/admin/TestingReminderButton'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -302,6 +303,7 @@ export default function ProfilePage() {
 
               {activeTab === 'settings' && (
                 <div>
+                  <TestingReminderButton />
                   <AppSettingsControl />
                 </div>
               )}
