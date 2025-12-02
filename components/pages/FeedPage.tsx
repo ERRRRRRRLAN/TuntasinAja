@@ -229,13 +229,22 @@ export default function FeedPage() {
     }
 
     // Filter by multiple subjects from URL (deep link from notification)
+    // This filter works as OR condition: show threads that match ANY of the subjects
     if (filteredSubjects.length > 0) {
       filtered = filtered.filter(thread => {
         const titleUpper = thread.title.toUpperCase()
+        // Check if thread title contains ANY of the filtered subjects
         return filteredSubjects.some(subject => {
-          const subjectUpper = subject.toUpperCase()
+          const subjectUpper = subject.toUpperCase().trim()
+          // Use includes for substring matching (case-insensitive)
+          // This allows matching "IPAS" in "IPAS - Kerjakan PR" or "PR IPAS"
           return titleUpper.includes(subjectUpper)
         })
+      })
+      console.log('[FeedPage] Filtered threads by subjects:', {
+        filteredSubjects,
+        totalThreads: threads.length,
+        filteredCount: filtered.length,
       })
     } else if (selectedSubject !== 'all') {
       // Filter by single subject (from dropdown)
