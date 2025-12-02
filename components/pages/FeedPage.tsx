@@ -74,9 +74,11 @@ export default function FeedPage() {
 
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
-  const { data: threads, isLoading, isFetching, isRefetching } = trpc.thread.getAll.useQuery(undefined, {
-    refetchInterval: 3000, // Auto refresh every 3 seconds (faster) - works in background
-    refetchOnWindowFocus: true, // Refetch when user returns to tab - works in background
+  const { data: threads, isLoading, isFetching, isRefetching, refetch: refetchThreads } = trpc.thread.getAll.useQuery(undefined, {
+    refetchInterval: 2000, // Auto refresh every 2 seconds (faster background polling)
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnReconnect: true, // Refetch when network reconnects
     enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
     staleTime: 0, // Always consider data stale
     cacheTime: 0, // Don't cache data

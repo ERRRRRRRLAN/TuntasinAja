@@ -237,7 +237,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
       setShowConfirmDialog(false)
-      // Invalidate and refetch immediately - include thread.getAll for feed refresh
+      // Invalidate first to mark as stale
       await Promise.all([
         utils.userStatus.getThreadStatuses.invalidate({ threadId }),
         utils.thread.getById.invalidate(),
@@ -246,12 +246,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.userStatus.getUncompletedCount.invalidate(),
         utils.userStatus.getOverdueTasks.invalidate(),
       ])
-      // Force immediate refetch
+      // Force immediate refetch with cancelRefetch: false to ensure it runs
       await Promise.all([
-        utils.userStatus.getThreadStatuses.refetch({ threadId }),
-        utils.thread.getById.refetch(),
-        utils.thread.getAll.refetch(), // Refetch feed list
-        utils.history.getUserHistory.refetch(),
+        utils.userStatus.getThreadStatuses.refetch({ threadId }, { cancelRefetch: false }),
+        utils.thread.getById.refetch(undefined, { cancelRefetch: false }),
+        utils.thread.getAll.refetch(undefined, { cancelRefetch: false }), // Refetch feed list immediately
+        utils.history.getUserHistory.refetch(undefined, { cancelRefetch: false }),
       ])
     },
     onError: (error: any) => {
@@ -302,7 +302,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
     onSuccess: async () => {
-      // Invalidate and refetch immediately - include thread.getAll for feed refresh
+      // Invalidate first to mark as stale
       await Promise.all([
         utils.userStatus.getThreadStatuses.invalidate({ threadId }),
         utils.thread.getById.invalidate(),
@@ -311,12 +311,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.userStatus.getUncompletedCount.invalidate(),
         utils.userStatus.getOverdueTasks.invalidate(),
       ])
-      // Force immediate refetch
+      // Force immediate refetch with cancelRefetch: false to ensure it runs
       await Promise.all([
-        utils.userStatus.getThreadStatuses.refetch({ threadId }),
-        utils.thread.getById.refetch(),
-        utils.thread.getAll.refetch(), // Refetch feed list
-        utils.history.getUserHistory.refetch(),
+        utils.userStatus.getThreadStatuses.refetch({ threadId }, { cancelRefetch: false }),
+        utils.thread.getById.refetch(undefined, { cancelRefetch: false }),
+        utils.thread.getAll.refetch(undefined, { cancelRefetch: false }), // Refetch feed list immediately
+        utils.history.getUserHistory.refetch(undefined, { cancelRefetch: false }),
       ])
     },
     onError: (error: any) => {

@@ -110,17 +110,19 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
       setShowConfirmDialog(false)
-      // Invalidate and refetch immediately
+      // Invalidate first to mark as stale
       await Promise.all([
         utils.userStatus.getThreadStatuses.invalidate({ threadId: thread.id }),
         utils.thread.getAll.invalidate(),
         utils.history.getUserHistory.invalidate(),
+        utils.userStatus.getUncompletedCount.invalidate(),
+        utils.userStatus.getOverdueTasks.invalidate(),
       ])
-      // Force immediate refetch
+      // Force immediate refetch with cancelRefetch: false to ensure it runs
       await Promise.all([
-        utils.userStatus.getThreadStatuses.refetch({ threadId: thread.id }),
-        utils.thread.getAll.refetch(),
-        utils.history.getUserHistory.refetch(),
+        utils.userStatus.getThreadStatuses.refetch({ threadId: thread.id }, { cancelRefetch: false }),
+        utils.thread.getAll.refetch(undefined, { cancelRefetch: false }),
+        utils.history.getUserHistory.refetch(undefined, { cancelRefetch: false }),
       ])
     },
     onError: (error: any) => {
