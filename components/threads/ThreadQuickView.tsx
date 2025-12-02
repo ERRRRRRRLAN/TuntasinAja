@@ -27,7 +27,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [commentContent, setCommentContent] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showDeleteThreadDialog, setShowDeleteThreadDialog] = useState(false)
   const [showCompletionStatsModal, setShowCompletionStatsModal] = useState(false)
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState<string | null>(null)
@@ -263,23 +262,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const handleThreadCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (session && isQuickViewOpen) {
-      // If unchecking, show confirmation dialog about timer reset
-      if (isThreadCompleted) {
-        setShowUncheckDialog(true)
-      } else {
-        // If checking, show confirmation dialog (only if quickview is open)
-        setShowConfirmDialog(true)
-      }
+    if (session && isQuickViewOpen && !isThreadCompleted) {
+      // Only allow checking, not unchecking
+      // If checking, show confirmation dialog (only if quickview is open)
+      setShowConfirmDialog(true)
     }
-  }
-
-  const handleConfirmUncheck = () => {
-    setShowUncheckDialog(false)
-    toggleThread.mutate({
-      threadId,
-      isCompleted: false,
-    })
   }
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
@@ -669,7 +656,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   checked={isThreadCompleted}
                   onClick={handleThreadCheckboxClick}
                   isLoading={toggleThread.isLoading}
-                  disabled={toggleThread.isLoading}
+                  disabled={toggleThread.isLoading || isThreadCompleted}
                   size={28}
                 />
               </div>
@@ -1154,17 +1141,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             )}
           </div>
         </div>
-        {isQuickViewOpen && thread && (
-          <QuickViewConfirmDialog
-            isOpen={showUncheckDialog}
-            title="Uncentang PR?"
-            message={`Apakah Anda yakin ingin menguncentang PR "${thread.title}"? Jika Anda mencentang lagi nanti, timer auto-hapus akan direset ke 1 hari lagi dari waktu centang tersebut.`}
-            confirmText="Ya, Uncentang"
-            cancelText="Batal"
-            onConfirm={handleConfirmUncheck}
-            onCancel={() => setShowUncheckDialog(false)}
-          />
-        )}
         <QuickViewConfirmDialog
           isOpen={showDeleteThreadDialog}
           title="Hapus PR?"
