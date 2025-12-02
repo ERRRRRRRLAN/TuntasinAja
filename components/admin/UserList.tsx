@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
@@ -40,6 +40,21 @@ export default function UserList() {
   const [selectedKelas, setSelectedKelas] = useState<string>('')
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768) // 768px breakpoint for tablet/mobile
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
@@ -257,14 +272,16 @@ export default function UserList() {
           gap: '1rem', 
           marginBottom: '1.5rem',
           flexWrap: 'wrap',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
         }}>
           {/* Search Bar */}
           <div style={{ 
             position: 'relative', 
-            flex: '1', 
-            minWidth: '200px',
-            maxWidth: '400px'
+            flex: isMobile ? '1 1 100%' : '1', 
+            width: isMobile ? '100%' : 'auto',
+            minWidth: isMobile ? '100%' : '200px',
+            maxWidth: isMobile ? '100%' : '400px'
           }}>
             <SearchIcon 
               size={18} 
@@ -334,7 +351,10 @@ export default function UserList() {
           </div>
 
           {/* Kelas Filter */}
-          <div style={{ minWidth: '180px' }}>
+          <div style={{ 
+            width: isMobile ? '100%' : 'auto',
+            minWidth: isMobile ? '100%' : '180px' 
+          }}>
             <ComboBox
               value={selectedKelas}
               onChange={setSelectedKelas}
@@ -356,7 +376,9 @@ export default function UserList() {
             padding: '0.5rem 0.75rem',
             background: 'var(--bg-secondary)',
             borderRadius: '0.5rem',
-            border: '1px solid var(--border)'
+            border: '1px solid var(--border)',
+            width: isMobile ? '100%' : 'auto',
+            textAlign: isMobile ? 'center' : 'left',
           }}>
             {filteredUsers.length} dari {users.length} user
           </div>
@@ -370,7 +392,313 @@ export default function UserList() {
           }}>
             <p>Tidak ada user yang sesuai dengan filter.</p>
           </div>
+        ) : isMobile ? (
+          // Mobile Card View
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {filteredUsers.map((user) => {
+              const isCurrentUser = user.id === session?.user?.id
+              const isSelected = selectedUserIds.has(user.id)
+              return (
+                <div
+                  key={user.id}
+                  style={{
+                    padding: '1rem',
+                    background: isCurrentUser 
+                      ? 'var(--bg-secondary)' 
+                      : isSelected 
+                      ? 'rgba(var(--primary-rgb), 0.1)' 
+                      : 'var(--card)',
+                    borderRadius: '0.75rem',
+                    border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  {/* Header: Checkbox + Name */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {!isCurrentUser && (
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleUser(user.id)}
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          cursor: 'pointer',
+                          accentColor: 'var(--primary)',
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        flexWrap: 'wrap',
+                      }}>
+                        <h4 style={{ 
+                          margin: 0, 
+                          fontSize: '1rem', 
+                          fontWeight: 600,
+                          color: 'var(--text)',
+                          wordBreak: 'break-word',
+                        }}>
+                          {user.name}
+                        </h4>
+                        {isCurrentUser && (
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            color: 'var(--primary)',
+                            fontWeight: 600
+                          }}>
+                            (Anda)
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ 
+                        fontSize: '0.875rem', 
+                        color: 'var(--text-light)',
+                        marginTop: '0.25rem',
+                        wordBreak: 'break-all',
+                      }}>
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Grid */}
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '0.75rem',
+                    fontSize: '0.875rem',
+                  }}>
+                    {/* Role */}
+                    <div>
+                      <div style={{ 
+                        color: 'var(--text-light)', 
+                        fontSize: '0.75rem',
+                        marginBottom: '0.25rem',
+                      }}>
+                        Role
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {user.isAdmin ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}>
+                            <CrownIcon size={12} />
+                            Admin
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-light)',
+                            fontSize: '0.75rem'
+                          }}>
+                            User
+                          </span>
+                        )}
+                        {(user as any).isDanton && !user.isAdmin && (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: '#fbbf24',
+                            color: '#78350f',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}>
+                            Danton
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Kelas */}
+                    <div>
+                      <div style={{ 
+                        color: 'var(--text-light)', 
+                        fontSize: '0.75rem',
+                        marginBottom: '0.25rem',
+                      }}>
+                        Kelas
+                      </div>
+                      {user.kelas ? (
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          background: 'var(--primary)',
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          fontWeight: 600
+                        }}>
+                          {user.kelas}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-light)', fontStyle: 'italic', fontSize: '0.875rem' }}>
+                          -
+                        </span>
+                      )}
+                    </div>
+
+                    {/* PR Count */}
+                    <div>
+                      <div style={{ 
+                        color: 'var(--text-light)', 
+                        fontSize: '0.75rem',
+                        marginBottom: '0.25rem',
+                      }}>
+                        PR
+                      </div>
+                      <div style={{ color: 'var(--text)', fontWeight: 600 }}>
+                        {user._count.threads}
+                      </div>
+                    </div>
+
+                    {/* Sub Tugas Count */}
+                    <div>
+                      <div style={{ 
+                        color: 'var(--text-light)', 
+                        fontSize: '0.75rem',
+                        marginBottom: '0.25rem',
+                      }}>
+                        Sub Tugas
+                      </div>
+                      <div style={{ color: 'var(--text)', fontWeight: 600 }}>
+                        {user._count.comments}
+                      </div>
+                    </div>
+
+                    {/* Terdaftar */}
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <div style={{ 
+                        color: 'var(--text-light)', 
+                        fontSize: '0.75rem',
+                        marginBottom: '0.25rem',
+                      }}>
+                        Terdaftar
+                      </div>
+                      <div style={{ color: 'var(--text)', fontSize: '0.875rem' }}>
+                        {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: id })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  {!isCurrentUser && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '0.5rem', 
+                      marginTop: '0.5rem',
+                      paddingTop: '0.75rem',
+                      borderTop: '1px solid var(--border)',
+                    }}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setEditingUserId(user.id)
+                        }}
+                        type="button"
+                        style={{
+                          flex: 1,
+                          background: 'var(--primary)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--primary-hover)'
+                          e.currentTarget.style.transform = 'scale(1.02)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--primary)'
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      >
+                        <EditIcon size={16} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteClick(user.id, user.name, user.email)
+                        }}
+                        disabled={deleteUser.isLoading}
+                        style={{
+                          flex: 1,
+                          background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem',
+                          cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          opacity: deleteUser.isLoading ? 0.6 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!deleteUser.isLoading) {
+                            e.currentTarget.style.background = '#b91c1c'
+                            e.currentTarget.style.transform = 'scale(1.02)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!deleteUser.isLoading) {
+                            e.currentTarget.style.background = '#dc2626'
+                            e.currentTarget.style.transform = 'scale(1)'
+                          }
+                        }}
+                      >
+                        {deleteUser.isLoading ? (
+                          <>
+                            <LoadingSpinner size={16} color="white" />
+                            <span>Menghapus...</span>
+                          </>
+                        ) : (
+                          <>
+                            <TrashIcon size={16} />
+                            <span>Hapus</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         ) : (
+          // Desktop Table View
           <div className="user-table" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
