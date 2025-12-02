@@ -8,6 +8,7 @@ import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
+import NetworkStatus from '@/components/NetworkStatus'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 
 // Setup global back button handler for Android
@@ -25,10 +26,39 @@ export function Providers({ children }: { children: React.ReactNode }) {
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
-        retry: 1,
+        retry: (failureCount, error: any) => {
+          // Retry network errors up to 3 times
+          const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                               error?.message?.includes('Failed to fetch') ||
+                               error?.message?.includes('NetworkError') ||
+                               error?.message?.includes('Network request failed') ||
+                               error?.name === 'NetworkError' ||
+                               error?.name === 'TypeError'
+          
+          if (isNetworkError) {
+            return failureCount < 3
+          }
+          // For other errors, retry once
+          return failureCount < 1
+        },
+        retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 30000), // Exponential backoff, max 30s
       },
       mutations: {
-        retry: 1,
+        retry: (failureCount, error: any) => {
+          // Retry network errors once
+          const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                               error?.message?.includes('Failed to fetch') ||
+                               error?.message?.includes('NetworkError') ||
+                               error?.message?.includes('Network request failed') ||
+                               error?.name === 'NetworkError' ||
+                               error?.name === 'TypeError'
+          
+          if (isNetworkError) {
+            return failureCount < 1
+          }
+          return false
+        },
+        retryDelay: 1000,
       },
     },
   }))
@@ -44,6 +74,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchOnWindowFocus={true}
         >
           <StatusBarHandler />
+          <NetworkStatus />
           {children}
           <PushNotificationSetup />
           <AppUpdateChecker />

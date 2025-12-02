@@ -26,11 +26,54 @@ export const trpcClient = trpc.createClient({
     httpBatchLink({
       url: `${getBaseUrl()}/api/trpc`,
       // Ensure cookies are sent with requests
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        return fetch(input, {
-          ...init,
-          credentials: 'include', // Important: include cookies
-        })
+      fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        const maxRetries = 3
+        let lastError: Error | null = null
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            const response = await fetch(input, {
+              ...init,
+              credentials: 'include', // Important: include cookies
+            })
+            
+            // If response is ok, return it
+            if (response.ok || attempt === maxRetries) {
+              return response
+            }
+            
+            // If not ok and not last attempt, throw to trigger retry
+            if (!response.ok && attempt < maxRetries) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            return response
+          } catch (error: any) {
+            lastError = error
+            
+            // Check if it's a network error
+            const isNetworkError = error.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                                 error.message?.includes('Failed to fetch') ||
+                                 error.message?.includes('NetworkError') ||
+                                 error.message?.includes('Network request failed') ||
+                                 error.name === 'NetworkError' ||
+                                 error.name === 'TypeError'
+
+            // Only retry network errors
+            if (isNetworkError && attempt < maxRetries) {
+              // Exponential backoff: 1s, 2s, 4s
+              const delay = Math.min(1000 * Math.pow(2, attempt), 4000)
+              await new Promise(resolve => setTimeout(resolve, delay))
+              continue
+            }
+            
+            // For non-network errors or max retries reached, throw
+            throw error
+          }
+        }
+        
+        // Should never reach here, but just in case
+        throw lastError || new Error('Failed to fetch')
       },
     }),
   ],
