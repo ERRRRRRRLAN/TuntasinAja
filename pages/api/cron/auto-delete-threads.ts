@@ -32,8 +32,9 @@ export default async function handler(
 
   try {
     const { getUTCDate } = await import('@/lib/date-utils')
-    const oneDayAgo = getUTCDate()
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+    const now = getUTCDate()
+    // Calculate 24 hours ago (exactly 24 hours, not just 1 day from date)
+    const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
 
     // Find all threads that have at least one history entry older than 24 hours
     // We need to check if ALL users in the same kelas have completed the thread

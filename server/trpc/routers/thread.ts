@@ -75,29 +75,14 @@ export const threadRouter = createTRPCRouter({
       },
     })
 
-    // Filter out threads that are already completed by this user
-    // Check both userStatus (immediate) and history (for threads completed > 24 hours ago)
+    // Filter out threads that are already completed by this user AND completion date > 24 hours
     // Thread remains visible in dashboard for 24 hours after completion
     // Thread remains in database until ALL users in the same kelas complete it
     if (userId && !isAdmin) {
       const { getUTCDate } = await import('@/lib/date-utils')
-      const oneDayAgo = getUTCDate()
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1)
-
-      // Get all completed thread IDs from userStatus (immediate check - for newly completed threads)
-      const completedUserStatuses = await prisma.userStatus.findMany({
-        where: {
-          userId: userId,
-          threadId: {
-            not: null,
-          },
-          commentId: null, // Only thread statuses, not comment statuses
-          isCompleted: true,
-        },
-        select: {
-          threadId: true,
-        },
-      })
+      const now = getUTCDate()
+      // Calculate 24 hours ago (exactly 24 hours, not just 1 day from date)
+      const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
 
       // Get all completed thread IDs from history for this user where completion > 24 hours
       const completedThreadIds = await prisma.history.findMany({
@@ -107,7 +92,7 @@ export const threadRouter = createTRPCRouter({
             not: null, // Only threads that still exist
           },
           completedDate: {
-            lt: oneDayAgo, // Completed more than 24 hours ago
+            lt: twentyFourHoursAgo, // Completed more than 24 hours ago
           },
         },
         select: {
@@ -115,20 +100,13 @@ export const threadRouter = createTRPCRouter({
         },
       })
 
-      // Combine both sets of completed thread IDs
-      const completedIds = new Set<string>()
-      completedUserStatuses.forEach((status) => {
-        if (status.threadId) {
-          completedIds.add(status.threadId)
-        }
-      })
-      completedThreadIds.forEach((h) => {
-        if (h.threadId) {
-          completedIds.add(h.threadId)
-        }
-      })
+      const completedIds = new Set(
+        completedThreadIds
+          .map((h) => h.threadId)
+          .filter((id): id is string => id !== null)
+      )
 
-      // Filter out completed threads for this user
+      // Filter out completed threads for this user (only if completion > 24 hours)
       return threads.filter((thread) => !completedIds.has(thread.id))
     }
 

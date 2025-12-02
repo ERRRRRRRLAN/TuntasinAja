@@ -132,7 +132,117 @@ export const userStatusRouter = createTRPCRouter({
                 threadAuthorName: thread.author.name,
               },
             })
-          } else {
+          }
+
+          // Check if this user is the last one to complete the thread
+          // If yes and oldest completion > 24 hours, delete thread immediately
+          // This check applies to both new and existing history
+          const threadWithAuthor = await prisma.thread.findUnique({
+            where: { id: input.threadId },
+            include: {
+              author: {
+                select: {
+                  kelas: true,
+                },
+              },
+              histories: {
+                select: {
+                  userId: true,
+                  completedDate: true,
+                },
+              },
+            },
+          })
+
+          if (threadWithAuthor && (threadWithAuthor.author as any)?.kelas) {
+            const authorKelas = (threadWithAuthor.author as any).kelas
+
+            // Get all users in the same kelas
+            const usersInSameKelas = await prisma.user.findMany({
+              where: {
+                kelas: authorKelas,
+                isAdmin: false,
+              } as any,
+              select: {
+                id: true,
+              },
+            })
+
+            const userIdsInKelas = new Set(usersInSameKelas.map((u) => u.id))
+            const completedUserIds = new Set(
+              threadWithAuthor.histories.map((h: { userId: string }) => h.userId)
+            )
+
+            // Check if ALL users in the same kelas have completed the thread
+            const allUsersCompleted = Array.from(userIdsInKelas).every((userId) =>
+              completedUserIds.has(userId)
+            )
+
+            if (allUsersCompleted) {
+              // Get oldest completion date
+              const completionDates = threadWithAuthor.histories.map(
+                (h: { completedDate: Date }) => new Date(h.completedDate)
+              )
+              const oldestCompletion =
+                completionDates.length > 0
+                  ? new Date(Math.min(...completionDates.map((d) => d.getTime())))
+                  : null
+
+              // Calculate 24 hours ago
+              const now = getUTCDate()
+              const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+              // If oldest completion is older than 24 hours, delete thread immediately
+              if (oldestCompletion && oldestCompletion < twentyFourHoursAgo) {
+                // Update all histories to set threadId to null
+                await prisma.history.updateMany({
+                  where: {
+                    threadId: input.threadId,
+                  },
+                  data: {
+                    threadId: null as any,
+                  },
+                })
+
+                // Get comment IDs
+                const threadWithComments = await prisma.thread.findUnique({
+                  where: { id: input.threadId },
+                  select: {
+                    comments: {
+                      select: { id: true },
+                    },
+                  },
+                })
+
+                const commentIds = threadWithComments?.comments.map((c) => c.id) || []
+
+                // Delete UserStatus related to this thread
+                await prisma.userStatus.deleteMany({
+                  where: {
+                    threadId: input.threadId,
+                  },
+                })
+
+                // Delete UserStatus related to comments
+                if (commentIds.length > 0) {
+                  await prisma.userStatus.deleteMany({
+                    where: {
+                      commentId: {
+                        in: commentIds,
+                      },
+                    },
+                  })
+                }
+
+                // Delete the thread (histories remain with threadId = null)
+                await prisma.thread.delete({
+                  where: { id: input.threadId },
+                })
+              }
+            }
+          }
+
+          if (!existingHistory) {
             // Create new history - always create when thread is checked for the first time
             // This ensures the 24-hour hide feature works correctly
             await prisma.history.create({
