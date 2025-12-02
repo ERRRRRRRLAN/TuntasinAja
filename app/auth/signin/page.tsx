@@ -124,6 +124,33 @@ export default function SignInPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={(e) => {
+                    // Ensure value is saved when user leaves field (Android clipboard fix)
+                    const inputValue = e.target.value
+                    if (inputValue !== email) {
+                      setEmail(inputValue)
+                    }
+                  }}
+                  onPaste={(e) => {
+                    // Handle paste event explicitly for Android
+                    e.preventDefault()
+                    const pastedText = e.clipboardData.getData('text')
+                    if (pastedText) {
+                      setEmail(pastedText)
+                      // Also update the input value directly for Android WebView
+                      const target = e.target as HTMLInputElement
+                      if (target) {
+                        target.value = pastedText
+                      }
+                    }
+                  }}
+                  onInput={(e) => {
+                    // Fallback handler for Android WebView
+                    const target = e.target as HTMLInputElement
+                    if (target && target.value !== email) {
+                      setEmail(target.value)
+                    }
+                  }}
                   className="signin-form-input"
                   placeholder="nama@email.com"
                   required
@@ -141,6 +168,33 @@ export default function SignInPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onBlur={(e) => {
+                      // Ensure value is saved when user leaves field (Android clipboard fix)
+                      const inputValue = e.target.value
+                      if (inputValue !== password) {
+                        setPassword(inputValue)
+                      }
+                    }}
+                    onPaste={(e) => {
+                      // Handle paste event explicitly for Android
+                      e.preventDefault()
+                      const pastedText = e.clipboardData.getData('text')
+                      if (pastedText) {
+                        setPassword(pastedText)
+                        // Also update the input value directly for Android WebView
+                        const target = e.target as HTMLInputElement
+                        if (target) {
+                          target.value = pastedText
+                        }
+                      }
+                    }}
+                    onInput={(e) => {
+                      // Fallback handler for Android WebView
+                      const target = e.target as HTMLInputElement
+                      if (target && target.value !== password) {
+                        setPassword(target.value)
+                      }
+                    }}
                     className="signin-form-input"
                     placeholder="Masukkan password Anda"
                     required
