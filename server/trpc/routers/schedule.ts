@@ -138,6 +138,96 @@ export const scheduleRouter = createTRPCRouter({
     return grouped
   }),
 
+  // Sync schedules from weekly_schedules to class_schedules (Admin only)
+  // This ensures class_schedules is populated from existing weekly_schedules data
+  syncFromWeeklySchedule: adminProcedure.mutation(async () => {
+    try {
+      // Get all weekly schedules
+      const weeklySchedules = await (prisma as any).weeklySchedule.findMany({
+        select: {
+          kelas: true,
+          dayOfWeek: true,
+          subject: true,
+        },
+      })
+
+      if (weeklySchedules.length === 0) {
+        return {
+          success: true,
+          message: 'No weekly schedules found to sync',
+          syncedCount: 0,
+          skippedCount: 0,
+          totalWeeklySchedules: 0,
+        }
+      }
+
+      // Get unique combinations using a Set
+      const uniqueSchedules = new Set<string>()
+      const scheduleList: Array<{ kelas: string; dayOfWeek: string; subject: string }> = []
+
+      weeklySchedules.forEach((schedule: { kelas: string; dayOfWeek: string; subject: string }) => {
+        const key = `${schedule.kelas}|${schedule.dayOfWeek}|${schedule.subject}`
+        if (!uniqueSchedules.has(key)) {
+          uniqueSchedules.add(key)
+          scheduleList.push(schedule)
+        }
+      })
+
+      let syncedCount = 0
+      let skippedCount = 0
+
+      // Insert each unique combination into class_schedules
+      for (const schedule of scheduleList) {
+        try {
+          await (prisma as any).classSchedule.upsert({
+            where: {
+              kelas_dayOfWeek_subject: {
+                kelas: schedule.kelas,
+                dayOfWeek: schedule.dayOfWeek,
+                subject: schedule.subject,
+              },
+            },
+            create: {
+              kelas: schedule.kelas,
+              dayOfWeek: schedule.dayOfWeek,
+              subject: schedule.subject,
+            },
+            update: {
+              // Update timestamp if already exists
+              updatedAt: getUTCDate(),
+            },
+          })
+          syncedCount++
+        } catch (error: any) {
+          // Skip if unique constraint violation (already exists)
+          if (error?.code === 'P2002') {
+            skippedCount++
+            continue
+          }
+          throw error
+        }
+      }
+
+      return {
+        success: true,
+        message: `Synced ${syncedCount} schedules from weekly_schedules to class_schedules`,
+        syncedCount,
+        skippedCount,
+        totalWeeklySchedules: weeklySchedules.length,
+        uniqueSchedules: scheduleList.length,
+      }
+    } catch (error: any) {
+      // Table doesn't exist - need to run migration
+      if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Tabel weekly_schedules atau class_schedules belum ada di database. Silakan jalankan migration SQL terlebih dahulu.',
+        })
+      }
+      throw error
+    }
+  }),
+
   // Create schedule (Danton only)
   create: protectedProcedure
     .input(

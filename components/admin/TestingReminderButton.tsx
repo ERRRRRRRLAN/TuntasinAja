@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import { BellIcon } from '@/components/ui/Icons'
+import { BellIcon, RotateCcwIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '../ui/ToastContainer'
 
 export default function TestingReminderButton() {
   const [testingMaghrib, setTestingMaghrib] = useState(false)
   const [testingMalam, setTestingMalam] = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   const testMaghrib = trpc.schedule.testReminderMaghrib.useMutation({
     onSuccess: (data) => {
@@ -44,6 +45,23 @@ export default function TestingReminderButton() {
     },
   })
 
+  const syncSchedules = trpc.schedule.syncFromWeeklySchedule.useMutation({
+    onSuccess: (data) => {
+      toast.success(
+        `✅ Sync berhasil!\n` +
+        `Data yang di-sync: ${data.syncedCount}\n` +
+        `Data yang dilewati: ${data.skippedCount}\n` +
+        `Total jadwal: ${data.totalWeeklySchedules}`,
+        5000
+      )
+      setSyncing(false)
+    },
+    onError: (error) => {
+      toast.error(`❌ Error: ${error.message}`, 5000)
+      setSyncing(false)
+    },
+  })
+
   const handleTestMaghrib = () => {
     if (window.confirm('Kirim test reminder Maghrib sekarang? Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.')) {
       setTestingMaghrib(true)
@@ -55,6 +73,13 @@ export default function TestingReminderButton() {
     if (window.confirm('Kirim test reminder Malam sekarang? Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.')) {
       setTestingMalam(true)
       testMalam.mutate()
+    }
+  }
+
+  const handleSyncSchedules = () => {
+    if (window.confirm('Sync jadwal dari weekly_schedules ke class_schedules? Ini akan mengisi tabel class_schedules dengan data dari jadwal yang sudah ada di aplikasi.')) {
+      setSyncing(true)
+      syncSchedules.mutate()
     }
   }
 
@@ -85,6 +110,16 @@ export default function TestingReminderButton() {
         Gunakan tombol di bawah untuk test mengirim reminder notification secara manual. 
         Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.
       </p>
+      <div style={{
+        marginBottom: '1rem',
+        padding: '0.75rem',
+        background: 'var(--bg-secondary)',
+        borderRadius: '0.375rem',
+        fontSize: '0.8125rem',
+      }}>
+        <strong>💡 Tips:</strong> Jika notifikasi tidak muncul, pastikan tabel <code>class_schedules</code> sudah terisi. 
+        Klik tombol "Sync Jadwal" di bawah untuk mengisi tabel dari jadwal yang sudah ada di aplikasi.
+      </div>
       <div style={{
         display: 'flex',
         gap: '1rem',
@@ -169,6 +204,47 @@ export default function TestingReminderButton() {
             <>
               <BellIcon size={16} />
               <span>Test Reminder Malam</span>
+            </>
+          )}
+        </button>
+        <button
+          onClick={handleSyncSchedules}
+          disabled={syncing || testingMaghrib || testingMalam}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1.5rem',
+            background: syncing ? 'var(--bg-secondary)' : '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            cursor: syncing || testingMaghrib || testingMalam ? 'not-allowed' : 'pointer',
+            opacity: syncing || testingMaghrib || testingMalam ? 0.6 : 1,
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            if (!syncing && !testingMaghrib && !testingMalam) {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
+          {syncing ? (
+            <>
+              <LoadingSpinner size={16} color="white" />
+              <span>Mensinkronkan...</span>
+            </>
+          ) : (
+            <>
+              <RotateCcwIcon size={16} />
+              <span>Sync Jadwal</span>
             </>
           )}
         </button>
