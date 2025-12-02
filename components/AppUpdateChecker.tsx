@@ -11,6 +11,7 @@ interface VersionInfo {
   downloadUrl: string
   releaseNotes?: string
   forceUpdate: boolean
+  updateEnabled: boolean
 }
 
 export default function AppUpdateChecker() {
@@ -86,11 +87,16 @@ export default function AppUpdateChecker() {
 
       const latestVersion: VersionInfo = await response.json()
 
-      // Compare versions
-      if (latestVersion.versionCode > currentVersion.versionCode) {
+      // Check if update is enabled and compare versions
+      if (
+        latestVersion.updateEnabled &&
+        latestVersion.versionCode > currentVersion.versionCode
+      ) {
         setUpdateInfo(latestVersion)
         setShowUpdateDialog(true)
         setLastCheckTime(now)
+      } else if (!latestVersion.updateEnabled) {
+        console.log('[AppUpdateChecker] Update notifications are disabled by server')
       }
     } catch (error) {
       console.error('[AppUpdateChecker] Error checking for updates:', error)
