@@ -8,7 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TuntasinAja - Social Homework Thread',
+  title: 'TuntasinAja',
   description: 'Platform sosial berbasis thread untuk berbagi dan melacak tugas sekolah harian',
   manifest: '/manifest.json',
   appleWebApp: {
