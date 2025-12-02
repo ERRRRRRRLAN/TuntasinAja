@@ -75,13 +75,29 @@ export const threadRouter = createTRPCRouter({
       },
     })
 
-    // Filter out threads that are already completed by this user AND completion date > 24 hours
+    // Filter out threads that are already completed by this user
+    // Check both userStatus (immediate) and history (for threads completed > 24 hours ago)
     // Thread remains visible in dashboard for 24 hours after completion
     // Thread remains in database until ALL users in the same kelas complete it
     if (userId && !isAdmin) {
       const { getUTCDate } = await import('@/lib/date-utils')
       const oneDayAgo = getUTCDate()
       oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+
+      // Get all completed thread IDs from userStatus (immediate check - for newly completed threads)
+      const completedUserStatuses = await prisma.userStatus.findMany({
+        where: {
+          userId: userId,
+          threadId: {
+            not: null,
+          },
+          commentId: null, // Only thread statuses, not comment statuses
+          isCompleted: true,
+        },
+        select: {
+          threadId: true,
+        },
+      })
 
       // Get all completed thread IDs from history for this user where completion > 24 hours
       const completedThreadIds = await prisma.history.findMany({
@@ -99,13 +115,20 @@ export const threadRouter = createTRPCRouter({
         },
       })
 
-      const completedIds = new Set(
-        completedThreadIds
-          .map((h) => h.threadId)
-          .filter((id): id is string => id !== null)
-      )
+      // Combine both sets of completed thread IDs
+      const completedIds = new Set<string>()
+      completedUserStatuses.forEach((status) => {
+        if (status.threadId) {
+          completedIds.add(status.threadId)
+        }
+      })
+      completedThreadIds.forEach((h) => {
+        if (h.threadId) {
+          completedIds.add(h.threadId)
+        }
+      })
 
-      // Filter out completed threads for this user (only if completion > 24 hours)
+      // Filter out completed threads for this user
       return threads.filter((thread) => !completedIds.has(thread.id))
     }
 
