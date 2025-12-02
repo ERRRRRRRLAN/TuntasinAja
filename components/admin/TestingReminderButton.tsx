@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { BellIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { toast } from 'react-toastify'
+import { toast } from '../ui/ToastContainer'
 
 export default function TestingReminderButton() {
   const [testingMaghrib, setTestingMaghrib] = useState(false)
