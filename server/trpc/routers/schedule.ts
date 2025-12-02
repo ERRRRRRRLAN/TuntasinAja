@@ -31,6 +31,106 @@ async function initializeScheduleTemplate(kelas: string) {
   return true
 }
 
+// Helper function to sync class_schedules for a specific kelas from weekly_schedules
+async function syncClassScheduleForKelas(kelas: string) {
+  try {
+    // Get all weekly schedules for this kelas
+    const weeklySchedules = await (prisma as any).weeklySchedule.findMany({
+      where: { kelas },
+      select: {
+        dayOfWeek: true,
+        subject: true,
+      },
+    })
+
+    if (weeklySchedules.length === 0) {
+      // If no weekly schedules, remove all class_schedules for this kelas
+      await (prisma as any).classSchedule.deleteMany({
+        where: { kelas },
+      })
+      return { synced: 0, deleted: 0 }
+    }
+
+    // Get unique combinations using a Set
+    const uniqueSchedules = new Set<string>()
+    const scheduleList: Array<{ dayOfWeek: string; subject: string }> = []
+
+    weeklySchedules.forEach((schedule: { dayOfWeek: string; subject: string }) => {
+      const key = `${schedule.dayOfWeek}|${schedule.subject}`
+      if (!uniqueSchedules.has(key)) {
+        uniqueSchedules.add(key)
+        scheduleList.push(schedule)
+      }
+    })
+
+    // Get existing class_schedules for this kelas
+    const existingSchedules = await (prisma as any).classSchedule.findMany({
+      where: { kelas },
+      select: {
+        dayOfWeek: true,
+        subject: true,
+      },
+    })
+
+    // Find schedules to delete (exist in class_schedules but not in weekly_schedules)
+    const schedulesToDelete = existingSchedules.filter((existing: { dayOfWeek: string; subject: string }) => {
+      const key = `${existing.dayOfWeek}|${existing.subject}`
+      return !uniqueSchedules.has(key)
+    })
+
+    // Delete schedules that no longer exist in weekly_schedules
+    for (const schedule of schedulesToDelete) {
+      await (prisma as any).classSchedule.deleteMany({
+        where: {
+          kelas,
+          dayOfWeek: schedule.dayOfWeek,
+          subject: schedule.subject,
+        },
+      })
+    }
+
+    // Upsert schedules from weekly_schedules
+    let syncedCount = 0
+    for (const schedule of scheduleList) {
+      try {
+        await (prisma as any).classSchedule.upsert({
+          where: {
+            kelas_dayOfWeek_subject: {
+              kelas,
+              dayOfWeek: schedule.dayOfWeek,
+              subject: schedule.subject,
+            },
+          },
+          create: {
+            kelas,
+            dayOfWeek: schedule.dayOfWeek,
+            subject: schedule.subject,
+          },
+          update: {
+            updatedAt: getUTCDate(),
+          },
+        })
+        syncedCount++
+      } catch (error: any) {
+        // Skip if error (shouldn't happen with upsert)
+        console.error(`[syncClassScheduleForKelas] Error syncing schedule for ${kelas}:`, error)
+      }
+    }
+
+    return {
+      synced: syncedCount,
+      deleted: schedulesToDelete.length,
+    }
+  } catch (error: any) {
+    // Table doesn't exist - silently fail (migration not run yet)
+    if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
+      console.warn(`[syncClassScheduleForKelas] Table doesn't exist yet, skipping sync for ${kelas}`)
+      return { synced: 0, deleted: 0 }
+    }
+    throw error
+  }
+}
+
 export const scheduleRouter = createTRPCRouter({
   // Get schedule for a kelas (all users can view)
   // Returns schedule grouped by day of week (Monday-Friday)
