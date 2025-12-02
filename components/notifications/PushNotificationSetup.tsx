@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 
 // Helper to safely load Capacitor modules (only available in native builds)
@@ -32,6 +33,7 @@ async function loadCapacitorModules() {
 
 export default function PushNotificationSetup() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [isRegistered, setIsRegistered] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
   const setupAttempted = useRef(false)
@@ -281,28 +283,36 @@ export default function PushNotificationSetup() {
           
           // Handle deep link from notification
           const data = notification.notification?.data
-          if (data?.deepLink) {
-            // Navigate to deep link
-            const deepLink = data.deepLink
-            console.log('[PushNotificationSetup] Navigating to deep link:', deepLink)
-            
-            // Use window.location for navigation (works in both web and native)
-            if (typeof window !== 'undefined') {
-              // If deep link is relative, use current origin
-              if (deepLink.startsWith('/')) {
-                window.location.href = deepLink
-              } else {
-                window.location.href = deepLink
-              }
-            }
-          } else if (data?.filter) {
+          
+          // Priority: filter > deepLink
+          if (data?.filter) {
             // Handle filter from schedule reminder
             const filterSubjects = data.filter
             console.log('[PushNotificationSetup] Applying filter from notification:', filterSubjects)
             
-            // Navigate to home with filter
+            // Navigate to home with filter using Next.js router
+            // This works better in Android WebView
+            const filterUrl = `/?filter=${encodeURIComponent(filterSubjects)}`
+            console.log('[PushNotificationSetup] Navigating to:', filterUrl)
+            
+            // Use router.push for better navigation in Next.js
             if (typeof window !== 'undefined') {
-              window.location.href = `/?filter=${encodeURIComponent(filterSubjects)}`
+              // Small delay to ensure app is ready
+              setTimeout(() => {
+                router.push(filterUrl)
+              }, 100)
+            }
+          } else if (data?.deepLink) {
+            // Navigate to deep link
+            const deepLink = data.deepLink
+            console.log('[PushNotificationSetup] Navigating to deep link:', deepLink)
+            
+            // Use router.push for better navigation in Next.js
+            if (typeof window !== 'undefined') {
+              const finalUrl = deepLink.startsWith('/') ? deepLink : `/${deepLink}`
+              setTimeout(() => {
+                router.push(finalUrl)
+              }, 100)
             }
           }
         })
