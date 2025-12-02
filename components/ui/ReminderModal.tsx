@@ -51,8 +51,22 @@ export default function ReminderModal({
 
   const toggleThreadMutation = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
-      utils.userStatus.getUncompletedCount.invalidate()
-      utils.thread.getAll.invalidate()
+      // Invalidate first to mark as stale
+      await Promise.all([
+        utils.userStatus.getUncompletedCount.invalidate(),
+        utils.thread.getAll.invalidate(),
+        utils.userStatus.getThreadStatuses.invalidate(),
+        utils.history.getUserHistory.invalidate(),
+        utils.userStatus.getOverdueTasks.invalidate(),
+      ])
+      
+      // Force immediate refetch to update feed
+      await Promise.all([
+        utils.thread.getAll.refetch(),
+        utils.userStatus.getUncompletedCount.refetch(),
+        utils.userStatus.getOverdueTasks.refetch(),
+      ])
+      
       toast.success('Tugas berhasil ditandai sebagai selesai!')
       
       // Refetch overdue tasks to update the list
@@ -376,57 +390,36 @@ export default function ReminderModal({
                       </div>
                     </div>
 
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '0.5rem',
-                    }}>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleMarkComplete(task.threadId)
-                        }}
-                        disabled={isProcessing}
-                        className="btn btn-primary"
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          fontSize: '0.875rem',
-                          padding: '0.625rem 1rem',
-                        }}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <LoadingSpinner size={16} />
-                            Memproses...
-                          </>
-                        ) : (
-                          <>
-                            <CheckIcon size={16} />
-                            Sudah Selesai
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleCloseClick(e)
-                        }}
-                        disabled={isProcessing}
-                        className="btn btn-secondary"
-                        style={{
-                          flex: 1,
-                          fontSize: '0.875rem',
-                          padding: '0.625rem 1rem',
-                        }}
-                      >
-                        Belum Selesai
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleMarkComplete(task.threadId)
+                      }}
+                      disabled={isProcessing}
+                      className="btn btn-primary"
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        padding: '0.625rem 1rem',
+                      }}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <LoadingSpinner size={16} />
+                          Memproses...
+                        </>
+                      ) : (
+                        <>
+                          <CheckIcon size={16} />
+                          Sudah Selesai
+                        </>
+                      )}
+                    </button>
                   </div>
                 )
               })}
