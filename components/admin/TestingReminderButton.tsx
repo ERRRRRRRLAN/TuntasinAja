@@ -17,12 +17,12 @@ export default function TestingReminderButton() {
         `Dikirim ke ${data.totalSent} device\n` +
         `Kelas yang diproses: ${data.processedClasses}\n` +
         `Besok: ${data.tomorrow}`,
-        { autoClose: 5000 }
+        5000
       )
       setTestingMaghrib(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, { autoClose: 5000 })
+      toast.error(`❌ Error: ${error.message}`, 5000)
       setTestingMaghrib(false)
     },
   })
@@ -34,12 +34,12 @@ export default function TestingReminderButton() {
         `Dikirim ke ${data.totalSent} device\n` +
         `Kelas yang diproses: ${data.processedClasses}\n` +
         `Besok: ${data.tomorrow}`,
-        { autoClose: 5000 }
+        5000
       )
       setTestingMalam(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, { autoClose: 5000 })
+      toast.error(`❌ Error: ${error.message}`, 5000)
       setTestingMalam(false)
     },
   })
