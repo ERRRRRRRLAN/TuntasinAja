@@ -109,14 +109,22 @@ export default function FeedPage() {
     const filterParam = searchParams.get('filter')
     if (filterParam) {
       // Parse filter subjects from URL (comma-separated)
-      const subjects = filterParam.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      // Decode URL-encoded subjects
+      const decodedFilter = decodeURIComponent(filterParam)
+      const subjects = decodedFilter.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      
+      console.log('[FeedPage] Filter from URL:', { filterParam, decodedFilter, subjects })
+      
       if (subjects.length > 0) {
         setFilteredSubjects(subjects)
-        // Remove filter from URL after applying
-        const newSearchParams = new URLSearchParams(searchParams.toString())
-        newSearchParams.delete('filter')
-        const newUrl = newSearchParams.toString() ? `/?${newSearchParams.toString()}` : '/'
-        router.replace(newUrl, { scroll: false })
+        // Remove filter from URL after applying (but keep it in state)
+        // Don't remove from URL immediately - let user see the filter in URL
+        // Only remove when user manually clears filter
+      }
+    } else {
+      // If no filter param, clear filtered subjects (user navigated away or cleared filter)
+      if (filteredSubjects.length > 0) {
+        setFilteredSubjects([])
       }
     }
   }, [searchParams, router])
@@ -260,6 +268,8 @@ export default function FeedPage() {
   const clearFilter = () => {
     setFilteredSubjects([])
     setSelectedSubject('all')
+    // Remove filter from URL
+    router.replace('/', { scroll: false })
   }
 
   return (
