@@ -11,13 +11,14 @@ import UserList from '@/components/admin/UserList'
 import SubscriptionList from '@/components/admin/SubscriptionList'
 import ClassSubjectList from '@/components/admin/ClassSubjectList'
 import FeedbackList from '@/components/admin/FeedbackList'
+import AppSettingsControl from '@/components/admin/AppSettingsControl'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
   const [showBulkAddUser, setShowBulkAddUser] = useState(false)
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings'>('users')
   const utils = trpc.useUtils()
   
   // Get unread feedback count for admin
@@ -108,6 +109,11 @@ export default function ProfilePage() {
                 {activeTab === 'feedback' && (
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
                     Kelola saran dan masukan dari user
+                  </div>
+                )}
+                {activeTab === 'settings' && (
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    Pengaturan aplikasi
                   </div>
                 )}
               </div>
@@ -221,6 +227,25 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'settings' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'settings' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'settings' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'settings' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}
+                >
+                  ⚙️ Pengaturan
+                </button>
               </div>
 
               {/* Tab Content */}
@@ -272,6 +297,12 @@ export default function ProfilePage() {
               {activeTab === 'feedback' && (
                 <div>
                   <FeedbackList />
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div>
+                  <AppSettingsControl />
                 </div>
               )}
             </div>
