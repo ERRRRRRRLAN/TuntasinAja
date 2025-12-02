@@ -364,7 +364,10 @@ export const scheduleRouter = createTRPCRouter({
     const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
 
     // Get all classes that have schedules for tomorrow
-    const schedules = await (prisma as any).classSchedule.findMany({
+    // Check if table exists first
+    let schedules
+    try {
+      schedules = await (prisma as any).classSchedule.findMany({
       where: {
         dayOfWeek: tomorrowDayName,
       },
@@ -487,15 +490,28 @@ export const scheduleRouter = createTRPCRouter({
     const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
 
     // Get all classes that have schedules for tomorrow
-    const schedules = await (prisma as any).classSchedule.findMany({
-      where: {
-        dayOfWeek: tomorrowDayName,
-      },
-      select: {
-        kelas: true,
-        subject: true,
-      },
-    })
+    // Check if table exists first
+    let schedules
+    try {
+      schedules = await (prisma as any).classSchedule.findMany({
+        where: {
+          dayOfWeek: tomorrowDayName,
+        },
+        select: {
+          kelas: true,
+          subject: true,
+        },
+      })
+    } catch (error: any) {
+      // Table doesn't exist - need to run migration
+      if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Tabel class_schedules belum ada di database. Silakan jalankan migration SQL terlebih dahulu. Lihat file: scripts/migrate-class-schedule-production.sql',
+        })
+      }
+      throw error
+    }
 
     if (schedules.length === 0) {
       return {
