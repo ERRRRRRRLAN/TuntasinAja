@@ -37,8 +37,23 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
+  const [isMobile, setIsMobile] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport and lock it
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const handleCloseQuickView = useCallback(() => {
     setShowConfirmDialog(false)
@@ -222,16 +237,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const toggleThread = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
       setShowConfirmDialog(false)
-      // Invalidate and refetch immediately
+      // Invalidate and refetch immediately - include thread.getAll for feed refresh
       await Promise.all([
         utils.userStatus.getThreadStatuses.invalidate({ threadId }),
         utils.thread.getById.invalidate(),
+        utils.thread.getAll.invalidate(), // Invalidate feed list
         utils.history.getUserHistory.invalidate(),
+        utils.userStatus.getUncompletedCount.invalidate(),
+        utils.userStatus.getOverdueTasks.invalidate(),
       ])
       // Force immediate refetch
       await Promise.all([
         utils.userStatus.getThreadStatuses.refetch({ threadId }),
         utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(), // Refetch feed list
         utils.history.getUserHistory.refetch(),
       ])
     },
@@ -283,16 +302,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const toggleComment = trpc.userStatus.toggleComment.useMutation({
     onSuccess: async () => {
-      // Invalidate and refetch immediately
+      // Invalidate and refetch immediately - include thread.getAll for feed refresh
       await Promise.all([
         utils.userStatus.getThreadStatuses.invalidate({ threadId }),
         utils.thread.getById.invalidate(),
+        utils.thread.getAll.invalidate(), // Invalidate feed list
         utils.history.getUserHistory.invalidate(),
+        utils.userStatus.getUncompletedCount.invalidate(),
+        utils.userStatus.getOverdueTasks.invalidate(),
       ])
       // Force immediate refetch
       await Promise.all([
         utils.userStatus.getThreadStatuses.refetch({ threadId }),
         utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(), // Refetch feed list
         utils.history.getUserHistory.refetch(),
       ])
     },
@@ -494,7 +517,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       style={{
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: isVisible ? 'auto' : 'none'
+        pointerEvents: isVisible ? 'auto' : 'none',
+        // Force mobile overlay style - prevent desktop layout shift
+        ...(isMobile ? {
+          padding: 0,
+          background: 'var(--card)',
+          alignItems: 'flex-start',
+          overflow: 'hidden',
+        } : {})
       }}
     >
       <div 
@@ -505,7 +535,22 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           position: 'relative',
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          // Force mobile view - prevent desktop layout shift after update
+          ...(isMobile ? {
+            width: '100%',
+            maxWidth: '100%',
+            height: '100vh',
+            maxHeight: '100vh',
+            margin: 0,
+            borderRadius: 0,
+            padding: 0,
+            boxShadow: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          } : {})
         }}
       >
         {/* Only show QuickViewConfirmDialog when quickview is open and thread is loaded */}
