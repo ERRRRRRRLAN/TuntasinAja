@@ -246,12 +246,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.userStatus.getUncompletedCount.invalidate(),
         utils.userStatus.getOverdueTasks.invalidate(),
       ])
-      // Force immediate refetch with cancelRefetch: false to ensure it runs
+      // Force immediate refetch
       await Promise.all([
-        utils.userStatus.getThreadStatuses.refetch({ threadId }, { cancelRefetch: false }),
-        utils.thread.getById.refetch(undefined, { cancelRefetch: false }),
-        utils.thread.getAll.refetch(undefined, { cancelRefetch: false }), // Refetch feed list immediately
-        utils.history.getUserHistory.refetch(undefined, { cancelRefetch: false }),
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(), // Refetch feed list immediately
+        utils.history.getUserHistory.refetch(),
       ])
     },
     onError: (error: any) => {
@@ -311,12 +311,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.userStatus.getUncompletedCount.invalidate(),
         utils.userStatus.getOverdueTasks.invalidate(),
       ])
-      // Force immediate refetch with cancelRefetch: false to ensure it runs
+      // Force immediate refetch
       await Promise.all([
-        utils.userStatus.getThreadStatuses.refetch({ threadId }, { cancelRefetch: false }),
-        utils.thread.getById.refetch(undefined, { cancelRefetch: false }),
-        utils.thread.getAll.refetch(undefined, { cancelRefetch: false }), // Refetch feed list immediately
-        utils.history.getUserHistory.refetch(undefined, { cancelRefetch: false }),
+        utils.userStatus.getThreadStatuses.refetch({ threadId }),
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(), // Refetch feed list immediately
+        utils.history.getUserHistory.refetch(),
       ])
     },
     onError: (error: any) => {
