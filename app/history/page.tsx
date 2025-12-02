@@ -9,13 +9,14 @@ import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toJakartaDate } from '@/lib/date-utils'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { CheckIcon, ClockIcon, TrashIcon } from '@/components/ui/Icons'
+import { CheckIcon, ClockIcon, TrashIcon, RotateCcwIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function HistoryPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [deleteHistoryId, setDeleteHistoryId] = useState<string | null>(null)
+  const [recoverHistoryId, setRecoverHistoryId] = useState<string | null>(null)
   
   const { data: histories, isLoading } = trpc.history.getUserHistory.useQuery(undefined, {
     refetchInterval: 5000, // Auto refresh every 5 seconds
@@ -34,7 +35,30 @@ export default function HistoryPage() {
   const deleteHistory = trpc.history.deleteHistory.useMutation({
     onSuccess: () => {
       utils.history.getUserHistory.invalidate()
+      utils.thread.getAll.invalidate()
+      utils.userStatus.getThreadStatuses.invalidate()
       setDeleteHistoryId(null)
+    },
+  })
+
+  const recoverHistory = trpc.history.recoverHistory.useMutation({
+    onSuccess: async () => {
+      // Invalidate and refetch to update feed
+      await Promise.all([
+        utils.history.getUserHistory.invalidate(),
+        utils.thread.getAll.invalidate(),
+        utils.userStatus.getThreadStatuses.invalidate(),
+        utils.userStatus.getUncompletedCount.invalidate(),
+        utils.userStatus.getOverdueTasks.invalidate(),
+      ])
+      await Promise.all([
+        utils.history.getUserHistory.refetch(),
+        utils.thread.getAll.refetch(),
+      ])
+      setRecoverHistoryId(null)
+    },
+    onError: (error) => {
+      console.error('Error recovering history:', error)
     },
   })
 
@@ -134,6 +158,9 @@ export default function HistoryPage() {
                   name: (history as any).threadAuthorName || 'Unknown'
                 } : null)
                 
+                // Check if thread still exists in database (from server flag)
+                const threadExists = (history as any).threadExists === true
+                
                 return (
                   <div key={history.id} className="history-item">
                     <div className="history-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
@@ -158,23 +185,45 @@ export default function HistoryPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="history-item-actions" style={{ marginTop: '1rem' }}>
+                    <div className="history-item-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => setRecoverHistoryId(history.id)}
+                        className="btn btn-primary"
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 1rem',
+                          fontSize: '0.875rem',
+                          opacity: threadExists ? 1 : 0.5,
+                          cursor: threadExists ? 'pointer' : 'not-allowed',
+                          backgroundColor: threadExists ? undefined : 'var(--bg-secondary)',
+                          color: threadExists ? undefined : 'var(--text-light)',
+                        }}
+                        disabled={recoverHistory.isLoading || !threadExists}
+                        title={!threadExists ? 'Thread sudah tidak ada' : 'Kembalikan tugas ke feed'}
+                      >
+                        {recoverHistory.isLoading && recoverHistoryId === history.id ? 'Memulihkan...' : (
+                          <>
+                            <RotateCcwIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                            Recovery
+                          </>
+                        )}
+                      </button>
                       <button
                         onClick={() => handleDeleteHistory(history.id)}
                         className="btn btn-danger"
                         style={{
-                          width: '100%',
+                          flex: 1,
                           padding: '0.5rem 1rem',
                           fontSize: '0.875rem'
                         }}
                         disabled={deleteHistory.isLoading}
                       >
-                      {deleteHistory.isLoading ? 'Menghapus...' : (
-                        <>
-                          <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                          Hapus History
-                        </>
-                      )}
+                        {deleteHistory.isLoading ? 'Menghapus...' : (
+                          <>
+                            <TrashIcon size={16} style={{ marginRight: '0.375rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                            Hapus History
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -197,6 +246,25 @@ export default function HistoryPage() {
         onCancel={() => {
           if (!deleteHistory.isLoading) {
             setDeleteHistoryId(null)
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        isOpen={recoverHistoryId !== null}
+        title="Recovery Tugas?"
+        message="Apakah Anda yakin ingin mengembalikan tugas ini ke feed? Tugas akan kembali muncul di feed dan history akan dihapus."
+        confirmText={recoverHistory.isLoading ? 'Memulihkan...' : 'Ya, Recovery'}
+        cancelText="Batal"
+        disabled={recoverHistory.isLoading}
+        onConfirm={() => {
+          if (recoverHistoryId) {
+            recoverHistory.mutate({ historyId: recoverHistoryId })
+          }
+        }}
+        onCancel={() => {
+          if (!recoverHistory.isLoading) {
+            setRecoverHistoryId(null)
           }
         }}
       />
