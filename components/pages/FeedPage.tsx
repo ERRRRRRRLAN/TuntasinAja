@@ -104,6 +104,8 @@ export default function FeedPage() {
 
   // Handle filter from URL (deep link from notification)
   useEffect(() => {
+    if (!searchParams) return
+    
     const filterParam = searchParams.get('filter')
     if (filterParam) {
       // Parse filter subjects from URL (comma-separated)
