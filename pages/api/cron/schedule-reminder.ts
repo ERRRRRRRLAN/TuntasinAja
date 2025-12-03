@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
-import { sendNotificationToClass } from '@/server/trpc/routers/notification'
+import { sendPushNotification } from '@/lib/firebase-admin'
 import { addDays, getDay, format, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { getUTCDate } from '@/lib/date-utils'
@@ -8,15 +8,18 @@ import { getUTCDate } from '@/lib/date-utils'
 // Helper function to get tomorrow's day name
 const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
-// This API route can be called by Vercel Cron Jobs
-// Sends schedule reminder notifications at 6 PM (maghrib) and 9 PM (WIB)
-// To set up Vercel Cron, add this to vercel.json:
-// {
-//   "crons": [{
-//     "path": "/api/cron/schedule-reminder",
-//     "schedule": "0 11,14 * * *" // 11:00 UTC = 18:00 WIB, 14:00 UTC = 21:00 WIB
-//   }]
-// }
+// This API route is called by external cron service (cron-job.org)
+// Sends schedule reminder notifications every 3 hours
+// Setup in cron-job.org: Schedule 0 */3 * * * (every 3 hours UTC)
+// WIB is UTC+7, so:
+// - 00:00 UTC = 07:00 WIB
+// - 03:00 UTC = 10:00 WIB
+// - 06:00 UTC = 13:00 WIB
+// - 09:00 UTC = 16:00 WIB
+// - 12:00 UTC = 19:00 WIB
+// - 15:00 UTC = 22:00 WIB
+// - 18:00 UTC = 01:00 WIB (next day)
+// - 21:00 UTC = 04:00 WIB (next day)
 
 export default async function handler(
   req: NextApiRequest,
@@ -39,38 +42,6 @@ export default async function handler(
     const tomorrowDay = getDay(tomorrow) // 0 = Sunday, 1 = Monday, etc.
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
     const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
-
-    // Get current hour in Jakarta timezone to determine notification time
-    // Use Intl.DateTimeFormat to get Jakarta time accurately
-    const jakartaTimeString = now.toLocaleString('en-US', { 
-      timeZone: 'Asia/Jakarta',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    })
-    const [jakartaHourStr, jakartaMinuteStr] = jakartaTimeString.split(':')
-    const jakartaHour = parseInt(jakartaHourStr, 10)
-    const jakartaMinute = parseInt(jakartaMinuteStr, 10)
-    
-    // Check if it's 6 PM (maghrib) or 9 PM (malam)
-    // Allow 5 minutes window (17:55 - 18:05 for maghrib, 20:55 - 21:05 for malam)
-    // This handles cases where cron runs slightly off schedule
-    const isMaghrib = (jakartaHour === 18 && jakartaMinute <= 5) || 
-                      (jakartaHour === 17 && jakartaMinute >= 55) ||
-                      jakartaHour === 18
-    const isNight = (jakartaHour === 21 && jakartaMinute <= 5) || 
-                    (jakartaHour === 20 && jakartaMinute >= 55) ||
-                    jakartaHour === 21
-
-    if (!isMaghrib && !isNight) {
-      return res.status(200).json({
-        success: true,
-        message: 'Not the right time for schedule reminder',
-        currentHour: jakartaHour,
-        currentMinute: jakartaMinute,
-        jakartaTime: jakartaTimeString,
-      })
-    }
 
     // Get all classes that have schedules for tomorrow
     const schedules = await (prisma as any).classSchedule.findMany({
@@ -103,14 +74,36 @@ export default async function handler(
 
     let totalSent = 0
     let totalFailed = 0
+    const today = startOfDay(now)
+    const tomorrowStart = startOfDay(tomorrow)
 
     // Process each kelas
     for (const [kelas, subjects] of Object.entries(schedulesByKelas)) {
       try {
-        // Get today's threads for this kelas
-        const today = startOfDay(now)
-        const tomorrowStart = startOfDay(tomorrow)
+        // Get all device tokens for users in this kelas
+        const deviceTokens = await prisma.deviceToken.findMany({
+          where: {
+            user: {
+              kelas: kelas,
+              isAdmin: false,
+            },
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        })
 
+        if (deviceTokens.length === 0) {
+          console.log(`[ScheduleReminder] No device tokens found for kelas ${kelas}`)
+          continue
+        }
+
+        // Get today's threads for this kelas
         const threads = await prisma.thread.findMany({
           where: {
             author: {
@@ -128,11 +121,16 @@ export default async function handler(
                 name: true,
               },
             },
+            comments: {
+              select: {
+                id: true,
+              },
+            },
           },
         })
 
         // Filter threads that match tomorrow's subjects
-        const relevantTasks = threads.filter((thread) => {
+        const relevantThreads = threads.filter((thread) => {
           const titleUpper = thread.title.toUpperCase()
           return subjects.some((subject: string) => {
             const subjectUpper = subject.toUpperCase()
@@ -140,55 +138,154 @@ export default async function handler(
           })
         })
 
-        // Check if there are any incomplete tasks in the class (for any user)
-        // We'll send the same notification to all users, but mention if there are incomplete tasks
-        const hasAnyIncompleteTasks = relevantTasks.length > 0
-
-        // Build notification message
-        const subjectsList = subjects.join(', ')
-        const notificationTime = isMaghrib ? 'Maghrib' : 'Malam'
-
-        let title = ''
-        let body = ''
-
-        if (hasAnyIncompleteTasks) {
-          title = `⏰ Reminder ${notificationTime}: Besok Ada Pelajaran!`
-          body = `Besok (${tomorrowFormatted}) ada pelajaran: ${subjectsList}. Cek PR yang belum selesai dan segera selesaikan!`
-        } else {
-          title = `📅 Reminder ${notificationTime}: Besok Ada Pelajaran`
-          body = `Besok (${tomorrowFormatted}) ada pelajaran: ${subjectsList}. Jangan lupa persiapkan!`
+        if (relevantThreads.length === 0) {
+          // No relevant threads, skip notification for this class
+          console.log(`[ScheduleReminder] No relevant threads found for kelas ${kelas}`)
+          continue
         }
 
-        // Create deep link with filter
-        // Format: /?filter=subject1,subject2
-        const filterSubjects = subjects.join(',')
-        const deepLink = `/?filter=${encodeURIComponent(filterSubjects)}`
-        
-        // Send notification to class
-        const result = await sendNotificationToClass(
-          kelas,
-          title,
-          body,
-          {
-            type: 'schedule_reminder',
-            filter: filterSubjects,
-            deepLink: deepLink,
-            tomorrow: tomorrowFormatted,
-            subjects: subjectsList,
-            hasIncompleteTasks: hasAnyIncompleteTasks ? 'true' : 'false',
+        // Process each user individually to check their incomplete PRs
+        // Group device tokens by user
+        const tokensByUser = new Map<string, string[]>()
+        deviceTokens.forEach((dt) => {
+          const userId = dt.user.id
+          if (!tokensByUser.has(userId)) {
+            tokensByUser.set(userId, [])
           }
-        )
-
-        totalSent += result.successCount || 0
-        totalFailed += result.failureCount || 0
-
-        console.log(`[ScheduleReminder] Sent to ${kelas}:`, {
-          subjects: subjectsList,
-          hasIncompleteTasks: hasAnyIncompleteTasks,
-          relevantTasksCount: relevantTasks.length,
-          successCount: result.successCount,
-          failureCount: result.failureCount,
+          tokensByUser.get(userId)!.push(dt.token)
         })
+
+        for (const [userId, tokens] of tokensByUser.entries()) {
+          const user = deviceTokens.find(dt => dt.user.id === userId)!.user
+
+          try {
+            // Get all comment IDs from relevant threads
+            const allCommentIds = relevantThreads.flatMap((thread) =>
+              thread.comments.map((comment) => comment.id)
+            )
+
+            if (allCommentIds.length === 0) {
+              continue // No comments to check
+            }
+
+            // Get completed comment statuses for this user
+            const completedStatuses = await prisma.userStatus.findMany({
+              where: {
+                userId: user.id,
+                commentId: {
+                  in: allCommentIds,
+                },
+                isCompleted: true,
+              },
+              select: {
+                commentId: true,
+              },
+            })
+
+            const completedCommentIds = new Set(
+              completedStatuses.map((s) => s.commentId).filter((id): id is string => id !== null)
+            )
+
+            // Find incomplete PRs (threads with at least one incomplete comment)
+            const incompletePRs = relevantThreads.filter((thread) => {
+              // Check if thread has at least one incomplete comment
+              return thread.comments.some((comment) => !completedCommentIds.has(comment.id))
+            })
+
+            if (incompletePRs.length === 0) {
+              // All PRs are completed, skip notification for this user
+              continue
+            }
+
+            // Group incomplete PRs by subject
+            const prsBySubject: Record<string, Array<{ title: string; authorName: string }>> = {}
+            const subjectsWithPR: string[] = []
+
+            incompletePRs.forEach((thread) => {
+              // Find which subject(s) this thread belongs to
+              const titleUpper = thread.title.toUpperCase()
+              subjects.forEach((subject: string) => {
+                const subjectUpper = subject.toUpperCase()
+                if (titleUpper.includes(subjectUpper)) {
+                  if (!prsBySubject[subject]) {
+                    prsBySubject[subject] = []
+                    subjectsWithPR.push(subject)
+                  }
+                  // Avoid duplicates
+                  if (!prsBySubject[subject].some(pr => pr.title === thread.title)) {
+                    prsBySubject[subject].push({
+                      title: thread.title,
+                      authorName: thread.author.name,
+                    })
+                  }
+                }
+              })
+            })
+
+            if (subjectsWithPR.length === 0) {
+              continue
+            }
+
+            // Build detailed notification message
+            const subjectsList = subjectsWithPR.join(', ')
+            const totalPRs = incompletePRs.length
+
+            // Create detailed body with PR list
+            let body = `Besok (${tomorrowFormatted}) ada pelajaran: ${subjectsList}.\n\n`
+            body += `📋 Ada ${totalPRs} PR yang belum selesai:\n\n`
+
+            // Add PR details grouped by subject
+            subjectsWithPR.forEach((subject, index) => {
+              const prs = prsBySubject[subject]
+              if (prs.length > 0) {
+                body += `📚 ${subject}:\n`
+                prs.forEach((pr) => {
+                  body += `  • ${pr.title} (oleh ${pr.authorName})\n`
+                })
+                if (index < subjectsWithPR.length - 1) {
+                  body += '\n'
+                }
+              }
+            })
+
+            body += '\n⏰ Segera selesaikan PR sebelum pelajaran besok!'
+
+            const title = `⏰ Reminder: Ada PR yang Belum Selesai!`
+
+            // Create deep link with filter only for subjects that have incomplete PRs
+            const filterSubjects = subjectsWithPR.join(',')
+            const deepLink = `/?filter=${encodeURIComponent(filterSubjects)}`
+
+            // Send notification to this user (all their devices)
+            const result = await sendPushNotification(
+              tokens,
+              title,
+              body,
+              {
+                type: 'schedule_reminder',
+                filter: filterSubjects,
+                deepLink: deepLink,
+                tomorrow: tomorrowFormatted,
+                subjects: subjectsList,
+                hasIncompleteTasks: 'true',
+                incompletePRsCount: String(totalPRs),
+              }
+            )
+
+            totalSent += result.successCount
+            totalFailed += result.failureCount
+
+            console.log(`[ScheduleReminder] Sent to user ${user.name} (${kelas}):`, {
+              subjects: subjectsList,
+              incompletePRsCount: totalPRs,
+              success: result.successCount > 0,
+            })
+          } catch (error) {
+            console.error(`[ScheduleReminder] Error processing user ${user.id}:`, error)
+            totalFailed++
+            // Continue with other users
+          }
+        }
       } catch (error) {
         console.error(`[ScheduleReminder] Error processing kelas ${kelas}:`, error)
         // Continue with other classes
@@ -197,7 +294,7 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      message: `Schedule reminder notifications sent`,
+      message: `Schedule reminder notifications sent (every 3 hours)`,
       tomorrow: tomorrowFormatted,
       totalSent,
       totalFailed,
@@ -211,4 +308,3 @@ export default async function handler(
     })
   }
 }
-

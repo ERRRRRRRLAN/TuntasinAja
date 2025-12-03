@@ -7,41 +7,24 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '../ui/ToastContainer'
 
 export default function TestingReminderButton() {
-  const [testingMaghrib, setTestingMaghrib] = useState(false)
-  const [testingMalam, setTestingMalam] = useState(false)
+  const [testing, setTesting] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
-  const testMaghrib = trpc.schedule.testReminderMaghrib.useMutation({
+  const testReminder = trpc.schedule.testReminder.useMutation({
     onSuccess: (data) => {
       toast.success(
-        `✅ Test Reminder Maghrib berhasil!\n` +
+        `✅ Test Reminder berhasil!\n` +
         `Dikirim ke ${data.totalSent} device\n` +
+        `Gagal: ${data.totalFailed} device\n` +
         `Kelas yang diproses: ${data.processedClasses}\n` +
         `Besok: ${data.tomorrow}`,
         5000
       )
-      setTestingMaghrib(false)
+      setTesting(false)
     },
     onError: (error) => {
       toast.error(`❌ Error: ${error.message}`, 5000)
-      setTestingMaghrib(false)
-    },
-  })
-
-  const testMalam = trpc.schedule.testReminderMalam.useMutation({
-    onSuccess: (data) => {
-      toast.success(
-        `✅ Test Reminder Malam berhasil!\n` +
-        `Dikirim ke ${data.totalSent} device\n` +
-        `Kelas yang diproses: ${data.processedClasses}\n` +
-        `Besok: ${data.tomorrow}`,
-        5000
-      )
-      setTestingMalam(false)
-    },
-    onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, 5000)
-      setTestingMalam(false)
+      setTesting(false)
     },
   })
 
@@ -62,17 +45,10 @@ export default function TestingReminderButton() {
     },
   })
 
-  const handleTestMaghrib = () => {
-    if (window.confirm('Kirim test reminder Maghrib sekarang? Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.')) {
-      setTestingMaghrib(true)
-      testMaghrib.mutate()
-    }
-  }
-
-  const handleTestMalam = () => {
-    if (window.confirm('Kirim test reminder Malam sekarang? Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.')) {
-      setTestingMalam(true)
-      testMalam.mutate()
+  const handleTestReminder = () => {
+    if (window.confirm('Kirim test reminder sekarang? Notifikasi akan dikirim ke user yang memiliki PR yang belum selesai untuk pelajaran besok. Setiap user akan mendapat notifikasi detail dengan daftar PR mereka.')) {
+      setTesting(true)
+      testReminder.mutate()
     }
   }
 
@@ -108,7 +84,8 @@ export default function TestingReminderButton() {
         marginBottom: '1rem',
       }}>
         Gunakan tombol di bawah untuk test mengirim reminder notification secara manual. 
-        Notifikasi akan dikirim ke semua user di kelas yang memiliki jadwal untuk besok.
+        Notifikasi akan dikirim ke user yang memiliki PR yang belum selesai untuk pelajaran besok.
+        Setiap user akan mendapat notifikasi detail dengan daftar PR mereka yang belum selesai.
       </p>
       <div style={{
         marginBottom: '1rem',
@@ -126,25 +103,25 @@ export default function TestingReminderButton() {
         flexWrap: 'wrap',
       }}>
         <button
-          onClick={handleTestMaghrib}
-          disabled={testingMaghrib || testingMalam}
+          onClick={handleTestReminder}
+          disabled={testing || syncing}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
             padding: '0.75rem 1.5rem',
-            background: testingMaghrib ? 'var(--bg-secondary)' : 'var(--primary)',
+            background: testing ? 'var(--bg-secondary)' : 'var(--primary)',
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
             fontWeight: 500,
-            cursor: testingMaghrib || testingMalam ? 'not-allowed' : 'pointer',
-            opacity: testingMaghrib || testingMalam ? 0.6 : 1,
+            cursor: testing || syncing ? 'not-allowed' : 'pointer',
+            opacity: testing || syncing ? 0.6 : 1,
             transition: 'all 0.2s',
           }}
           onMouseEnter={(e) => {
-            if (!testingMaghrib && !testingMalam) {
+            if (!testing && !syncing) {
               e.currentTarget.style.transform = 'scale(1.05)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)'
             }
@@ -154,62 +131,21 @@ export default function TestingReminderButton() {
             e.currentTarget.style.boxShadow = 'none'
           }}
         >
-          {testingMaghrib ? (
+          {testing ? (
             <>
               <LoadingSpinner size={16} color="white" />
-              <span>Mengirim Reminder Maghrib...</span>
+              <span>Mengirim Reminder...</span>
             </>
           ) : (
             <>
               <BellIcon size={16} />
-              <span>Test Reminder Maghrib</span>
-            </>
-          )}
-        </button>
-        <button
-          onClick={handleTestMalam}
-          disabled={testingMaghrib || testingMalam}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.5rem',
-            background: testingMalam ? 'var(--bg-secondary)' : '#6366f1',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.375rem',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            cursor: testingMaghrib || testingMalam ? 'not-allowed' : 'pointer',
-            opacity: testingMaghrib || testingMalam ? 0.6 : 1,
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            if (!testingMaghrib && !testingMalam) {
-              e.currentTarget.style.transform = 'scale(1.05)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = 'none'
-          }}
-        >
-          {testingMalam ? (
-            <>
-              <LoadingSpinner size={16} color="white" />
-              <span>Mengirim Reminder Malam...</span>
-            </>
-          ) : (
-            <>
-              <BellIcon size={16} />
-              <span>Test Reminder Malam</span>
+              <span>Test Reminder</span>
             </>
           )}
         </button>
         <button
           onClick={handleSyncSchedules}
-          disabled={syncing || testingMaghrib || testingMalam}
+          disabled={syncing || testing}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -221,12 +157,12 @@ export default function TestingReminderButton() {
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
             fontWeight: 500,
-            cursor: syncing || testingMaghrib || testingMalam ? 'not-allowed' : 'pointer',
-            opacity: syncing || testingMaghrib || testingMalam ? 0.6 : 1,
+            cursor: syncing || testing ? 'not-allowed' : 'pointer',
+            opacity: syncing || testing ? 0.6 : 1,
             transition: 'all 0.2s',
           }}
           onMouseEnter={(e) => {
-            if (!syncing && !testingMaghrib && !testingMalam) {
+            if (!syncing && !testing) {
               e.currentTarget.style.transform = 'scale(1.05)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
             }
