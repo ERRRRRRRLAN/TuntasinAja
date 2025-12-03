@@ -103,16 +103,15 @@ export default async function handler(
           continue
         }
 
-        // Get today's threads for this kelas
+        // Get threads for this kelas (not just today, but all active threads)
+        // We'll filter by completion status per user later
         const threads = await prisma.thread.findMany({
           where: {
             author: {
               kelas: kelas,
             },
-            date: {
-              gte: today,
-              lt: tomorrowStart,
-            },
+            // Don't filter by date - check all threads that might be relevant
+            // We'll filter by subject match and completion status per user
           },
           include: {
             author: {
@@ -129,18 +128,27 @@ export default async function handler(
           },
         })
 
+        console.log(`[ScheduleReminder] Found ${threads.length} threads for kelas ${kelas}`)
+        console.log(`[ScheduleReminder] Looking for subjects: ${subjects.join(', ')}`)
+
         // Filter threads that match tomorrow's subjects
         const relevantThreads = threads.filter((thread) => {
           const titleUpper = thread.title.toUpperCase()
-          return subjects.some((subject: string) => {
+          const matches = subjects.some((subject: string) => {
             const subjectUpper = subject.toUpperCase()
             return titleUpper.includes(subjectUpper)
           })
+          if (matches) {
+            console.log(`[ScheduleReminder] Thread matches: "${thread.title}" matches subjects`)
+          }
+          return matches
         })
+
+        console.log(`[ScheduleReminder] Found ${relevantThreads.length} relevant threads for kelas ${kelas}`)
 
         if (relevantThreads.length === 0) {
           // No relevant threads, skip notification for this class
-          console.log(`[ScheduleReminder] No relevant threads found for kelas ${kelas}`)
+          console.log(`[ScheduleReminder] No relevant threads found for kelas ${kelas}. Total threads: ${threads.length}, Subjects: ${subjects.join(', ')}`)
           continue
         }
 
