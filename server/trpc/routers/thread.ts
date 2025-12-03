@@ -1,10 +1,12 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
-import { getJakartaTodayAsUTC, getUTCDate } from '@/lib/date-utils'
+import { getJakartaTodayAsUTC, getUTCDate, toJakartaDate } from '@/lib/date-utils'
 import { getUserPermission, checkIsDanton } from '../trpc'
 import { checkClassSubscription } from './subscription'
 import { sendNotificationToClass } from './notification'
+import { format, formatDistanceToNow } from 'date-fns'
+import { id } from 'date-fns/locale'
 
 export const threadRouter = createTRPCRouter({
   // Get all threads
@@ -263,14 +265,34 @@ export const threadRouter = createTRPCRouter({
             // Send notification for new sub tugas (comment)
             if (userKelas && !isAdmin) {
               try {
+                // Format tanggal tugas
+                const threadDateJakarta = toJakartaDate(existingThread.date)
+                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
+                
+                // Format waktu komentar dibuat
+                const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
+                const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
+                  addSuffix: true, 
+                  locale: id 
+                })
+                
+                // Preview komentar (sub tugas)
+                const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
+                
+                // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
+                const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
+                
                 await sendNotificationToClass(
                   userKelas,
-                  'Sub Tugas Baru',
-                  `${commentAuthor?.name || 'Seseorang'} menambahkan sub tugas baru di ${existingThread.title}`,
+                  '📝 Sub Tugas Baru',
+                  notificationBody,
                   {
                     type: 'new_comment',
                     threadId: existingThread.id,
                     threadTitle: existingThread.title,
+                    commentId: comment.id,
+                    commentContent: comment.content,
+                    threadDate: existingThread.date.toISOString(),
                   }
                 )
               } catch (error) {
@@ -349,6 +371,26 @@ export const threadRouter = createTRPCRouter({
             }
 
             const authorName = thread.author.name
+            const threadTitle = thread.title
+            
+            // Format waktu dibuat (Jakarta time)
+            const createdAtJakarta = toJakartaDate(thread.createdAt)
+            const timeAgo = formatDistanceToNow(createdAtJakarta, { 
+              addSuffix: true, 
+              locale: id 
+            })
+            
+            // Cek apakah ada komentar pertama
+            const hasFirstComment = thread.comments && thread.comments.length > 0
+            const firstCommentPreview = hasFirstComment 
+              ? thread.comments[0].content.substring(0, 80) + (thread.comments[0].content.length > 80 ? '...' : '')
+              : null
+            
+            // Format notifikasi: Nama → Mata Pelajaran → First Comment
+            const notificationBody = firstCommentPreview
+              ? `${authorName} - ${threadTitle} ${timeAgo}. ${firstCommentPreview}`
+              : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
+            
             console.log('[ThreadRouter] Sending notification for new thread:', {
               kelas: normalizedKelas,
               threadAuthorKelas: threadAuthorKelas,
@@ -356,11 +398,13 @@ export const threadRouter = createTRPCRouter({
               authorId: thread.author.id,
               threadTitle: thread.title,
               threadId: thread.id,
+              hasFirstComment,
             })
+            
             const result = await sendNotificationToClass(
               normalizedKelas, // Use normalized kelas
-              'Tugas Baru',
-              `${authorName} membuat tugas baru: ${thread.title}`,
+              '✨ Tugas Baru',
+              notificationBody,
               {
                 type: 'new_thread',
                 threadId: thread.id,
@@ -498,21 +542,44 @@ export const threadRouter = createTRPCRouter({
       // Use exact match with trimmed values
       if (threadAuthorKelas && normalizedUserKelas === threadAuthorKelas && !isAdmin) {
         try {
+          // Format tanggal tugas
+          const threadDateJakarta = toJakartaDate(thread.date)
+          const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
+          
+          // Format waktu komentar dibuat
+          const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
+          const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
+            addSuffix: true, 
+            locale: id 
+          })
+          
+          // Preview komentar (sub tugas)
+          const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
+          
+          // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
+          const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
+          
           console.log('[ThreadRouter] Sending notification for new comment:', {
             threadAuthorKelas: threadAuthorKelas,
             userKelas: normalizedUserKelas,
             matches: normalizedUserKelas === threadAuthorKelas,
             threadId: thread.id,
             threadTitle: thread.title,
+            threadDate: dateFormatted,
+            commentPreview,
           })
+          
           await sendNotificationToClass(
             threadAuthorKelas, // Use normalized kelas
-            'Sub Tugas Baru',
-            `${commentAuthor?.name || 'Seseorang'} menambahkan sub tugas baru di ${thread.title}`,
+            '📝 Sub Tugas Baru',
+            notificationBody,
             {
               type: 'new_comment',
               threadId: thread.id,
               threadTitle: thread.title,
+              commentId: comment.id,
+              commentContent: comment.content,
+              threadDate: thread.date.toISOString(),
             }
           )
         } catch (error) {
