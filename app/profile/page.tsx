@@ -13,6 +13,7 @@ import ClassSubjectList from '@/components/admin/ClassSubjectList'
 import FeedbackList from '@/components/admin/FeedbackList'
 import AppSettingsControl from '@/components/admin/AppSettingsControl'
 import TestingReminderButton from '@/components/admin/TestingReminderButton'
+import DatabaseHealth from '@/components/admin/DatabaseHealth'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -303,8 +304,13 @@ export default function ProfilePage() {
 
               {activeTab === 'settings' && (
                 <div>
-                  <TestingReminderButton />
-                  <AppSettingsControl />
+                  <DatabaseHealth />
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <TestingReminderButton />
+                  </div>
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <AppSettingsControl />
+                  </div>
                 </div>
               )}
             </div>

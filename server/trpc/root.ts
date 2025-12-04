@@ -11,6 +11,7 @@ import { classSubjectRouter } from './routers/classSubject'
 import { feedbackRouter } from './routers/feedback'
 import { notificationRouter } from './routers/notification'
 import { appSettingsRouter } from './routers/appSettings'
+import { databaseRouter } from './routers/database'
 
 export const appRouter = createTRPCRouter({
   thread: threadRouter,
@@ -25,6 +26,7 @@ export const appRouter = createTRPCRouter({
   feedback: feedbackRouter,
   notification: notificationRouter,
   appSettings: appSettingsRouter,
+  database: databaseRouter,
 })
 
 export type AppRouter = typeof appRouter
