@@ -447,7 +447,7 @@ export const scheduleRouter = createTRPCRouter({
       userId,
       kelas: user.kelas,
       now: now.toISOString(),
-      tomorrow: tomorrow.toISOString(),
+      tomorrow: tomorrowJakarta.toISOString(),
       tomorrowDay,
       tomorrowDayName,
     })
