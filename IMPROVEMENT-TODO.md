@@ -2,8 +2,296 @@
 
 Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang direkomendasikan untuk meningkatkan aplikasi TuntasinAja.
 
-**Last Updated**: 2025-01-27  
+**Last Updated**: 2025-12-03  
 **Status**: 🟡 Planning
+
+---
+
+## 🎯 FITUR ADMIN BARU - Saran Penambahan
+
+### 📊 1. Dashboard Analytics & Statistics (Prioritas Tinggi)
+**Manfaat**: Monitoring kesehatan aplikasi, insight penggunaan user, identifikasi masalah lebih cepat
+
+#### Detail Fitur:
+- [ ] **Overview Stats**
+  - Total Users (dengan breakdown per kelas)
+  - Total Threads (hari ini, minggu ini, bulan ini)
+  - Total Comments (hari ini, minggu ini, bulan ini)
+  - Active Users (login dalam 7 hari terakhir)
+  - Completion Rate (rata-rata % tugas selesai)
+- [ ] **Per-Kelas Statistics**
+  - User count per kelas
+  - Thread count per kelas
+  - Completion rate per kelas
+  - Most active kelas
+- [ ] **Activity Trends**
+  - Thread creation trend (7 hari, 30 hari)
+  - Comment creation trend
+  - User registration trend
+  - Completion rate trend
+- [ ] **Quick Actions**
+  - Kelas dengan subscription expiring soon
+  - Kelas dengan aktivitas rendah
+  - User yang belum login > 30 hari
+
+**File yang perlu dibuat:**
+- `components/admin/AnalyticsDashboard.tsx` - Dashboard utama
+- `server/trpc/routers/analytics.ts` - Router untuk analytics queries
+- `components/admin/StatsCard.tsx` - Component untuk statistik card
+- `components/admin/ActivityChart.tsx` - Component untuk chart trends
+
+---
+
+### 💾 2. Database Monitoring & Health (Prioritas Tinggi)
+**Manfaat**: Mencegah database penuh, monitoring performa, early warning system
+
+#### Detail Fitur:
+- [ ] **Size Monitoring**
+  - Total database size
+  - Size per table
+  - Growth rate (MB/hari)
+  - Alert jika > 80% limit (400MB dari 500MB)
+- [ ] **Table Statistics**
+  - Rows count per table
+  - Oldest records
+  - Largest tables
+  - Growth trends
+- [ ] **Cleanup Recommendations**
+  - History > 30 hari: X records
+  - Inactive threads > 90 hari: X records
+  - Orphaned user statuses: X records
+- [ ] **Performance Metrics**
+  - Average query time
+  - Slow queries (> 1 detik)
+  - Connection pool usage
+
+**File yang perlu dibuat:**
+- `components/admin/DatabaseHealth.tsx` - Database monitoring dashboard
+- `pages/api/admin/database-stats.ts` - API endpoint untuk database stats
+- `server/trpc/routers/database.ts` - Router untuk database queries
+
+---
+
+### 📝 3. Activity Logs & Audit Trail (Prioritas Tinggi)
+**Manfaat**: Tracking perubahan penting, security audit, troubleshooting
+
+#### Detail Fitur:
+- [ ] **Admin Actions Log**
+  - User created/deleted/edited
+  - Subscription set/extended
+  - Settings changed
+  - Bulk operations
+- [ ] **User Activity Log**
+  - Login attempts (failed/success)
+  - Permission changes
+  - Danton actions
+  - Suspicious activities
+- [ ] **System Events Log**
+  - Cron job executions
+  - Notification sends
+  - Database cleanup
+  - Errors/warnings
+- [ ] **Filters & Search**
+  - Filter by date range
+  - Filter by action type
+  - Filter by user
+  - Export logs (CSV/JSON)
+
+**File yang perlu dibuat:**
+- `components/admin/ActivityLogs.tsx` - Activity logs viewer
+- `server/trpc/routers/activityLog.ts` - Router untuk activity logs
+- `prisma/schema.prisma` - Model ActivityLog baru
+- `scripts/create-activity-log-table.sql` - Migration SQL
+
+---
+
+### 🔧 4. Bulk Operations & Tools (Prioritas Sedang)
+**Manfaat**: Efisiensi manajemen, hemat waktu, konsistensi data
+
+#### Detail Fitur:
+- [ ] **User Management Bulk**
+  - Bulk edit kelas
+  - Bulk set permission
+  - Bulk activate/deactivate
+  - Bulk delete (dengan safety checks)
+- [ ] **Subscription Management Bulk**
+  - Bulk extend subscription (multiple kelas)
+  - Bulk set subscription (multiple kelas)
+  - Bulk expire subscription
+- [ ] **Content Management Bulk**
+  - Bulk delete threads (by date range, kelas)
+  - Bulk delete comments
+  - Bulk archive old content
+- [ ] **Data Migration**
+  - Move users between kelas
+  - Merge duplicate users
+  - Cleanup orphaned data
+
+**File yang perlu dibuat:**
+- `components/admin/BulkOperations.tsx` - Bulk operations panel
+- `server/trpc/routers/bulkOperations.ts` - Router untuk bulk operations
+
+---
+
+### 📤 5. Export/Import Data (Prioritas Sedang)
+**Manfaat**: Backup manual, data portability, reporting
+
+#### Detail Fitur:
+- [ ] **Export Data**
+  - Export users (CSV/Excel)
+  - Export threads (JSON/CSV)
+  - Export statistics (PDF/Excel)
+  - Export subscription data
+- [ ] **Import Data**
+  - Import users from CSV
+  - Import subjects per kelas
+  - Import schedules
+- [ ] **Templates**
+  - User import template
+  - Subject import template
+  - Schedule import template
+
+**File yang perlu dibuat:**
+- `components/admin/DataExportImport.tsx` - Export/import panel
+- `server/trpc/routers/exportImport.ts` - Router untuk export/import
+- `lib/export-utils.ts` - Utility functions untuk export
+- `lib/import-utils.ts` - Utility functions untuk import
+
+---
+
+### 🔔 6. Notification Management (Prioritas Sedang)
+**Manfaat**: Kontrol notifikasi, testing & debugging, monitoring delivery
+
+#### Detail Fitur:
+- [ ] **Notification History**
+  - List semua notifikasi yang dikirim
+  - Filter by type, date, kelas
+  - Success/failure rate
+  - Delivery status per user
+- [ ] **Notification Testing**
+  - Send test notification ke user tertentu
+  - Send test ke kelas tertentu
+  - Preview notification content
+- [ ] **Notification Settings**
+  - Enable/disable notification types
+  - Set notification schedule
+  - Configure notification templates
+- [ ] **Device Token Management**
+  - List semua device tokens
+  - Invalid token cleanup
+  - Token statistics per kelas
+
+**File yang perlu dibuat:**
+- `components/admin/NotificationManagement.tsx` - Notification management panel
+- `server/trpc/routers/notificationAdmin.ts` - Router untuk notification admin
+- `prisma/schema.prisma` - Model NotificationLog baru
+
+---
+
+### 🛡️ 7. Content Moderation Tools (Prioritas Sedang)
+**Manfaat**: Kontrol konten lebih baik, quick actions, reporting
+
+#### Detail Fitur:
+- [ ] **Reported Content**
+  - Thread/comment yang dilaporkan user
+  - Auto-flag suspicious content
+  - Review & action queue
+- [ ] **Quick Actions**
+  - Bulk approve/reject
+  - Bulk delete with reason
+  - Bulk hide/unhide
+- [ ] **Content Search**
+  - Search threads/comments by keyword
+  - Search by user
+  - Search by date range
+- [ ] **Moderation Logs**
+  - History of moderation actions
+  - Who moderated what
+  - Reason for actions
+
+**File yang perlu dibuat:**
+- `components/admin/ContentModeration.tsx` - Content moderation panel
+- `server/trpc/routers/moderation.ts` - Router untuk moderation
+- `prisma/schema.prisma` - Model ContentReport baru
+
+---
+
+### 👥 8. User Activity Tracking (Prioritas Rendah)
+**Manfaat**: Insight user behavior, identifikasi power users, engagement metrics
+
+#### Detail Fitur:
+- [ ] **User Engagement**
+  - Most active users
+  - Users dengan completion rate tertinggi
+  - Users yang jarang login
+  - Power users (most threads/comments)
+- [ ] **Per-User Statistics**
+  - Threads created
+  - Comments created
+  - Completion rate
+  - Last login
+  - Device count
+- [ ] **Engagement Trends**
+  - Daily active users
+  - Weekly active users
+  - Monthly active users
+
+**File yang perlu dibuat:**
+- `components/admin/UserActivity.tsx` - User activity tracking
+- `server/trpc/routers/userActivity.ts` - Router untuk user activity
+
+---
+
+### ⚡ 9. System Health & Performance (Prioritas Rendah)
+**Manfaat**: Proactive monitoring, performance optimization, issue detection
+
+#### Detail Fitur:
+- [ ] **API Performance**
+  - Response time per endpoint
+  - Error rate per endpoint
+  - Request volume
+- [ ] **Database Performance**
+  - Query performance
+  - Connection pool status
+  - Slow query alerts
+- [ ] **Server Resources**
+  - Memory usage
+  - CPU usage (jika available)
+  - Disk usage
+- [ ] **Cron Jobs Status**
+  - Last execution time
+  - Success/failure rate
+  - Execution duration
+  - Next scheduled run
+
+**File yang perlu dibuat:**
+- `components/admin/SystemHealth.tsx` - System health dashboard
+- `server/trpc/routers/systemHealth.ts` - Router untuk system health
+
+---
+
+### 🔍 10. Advanced Search & Filter (Prioritas Rendah)
+**Manfaat**: Mencari data lebih cepat, filter kompleks, analisis data
+
+#### Detail Fitur:
+- [ ] **User Search**
+  - Search by name, email, kelas
+  - Filter by permission, danton status
+  - Filter by last login
+  - Filter by activity level
+- [ ] **Content Search**
+  - Search threads/comments by content
+  - Filter by date range
+  - Filter by kelas
+  - Filter by author
+- [ ] **Saved Searches**
+  - Save frequently used searches
+  - Quick access to saved searches
+  - Share searches with other admins
+
+**File yang perlu dibuat:**
+- `components/admin/AdvancedSearch.tsx` - Advanced search panel
+- `server/trpc/routers/search.ts` - Router untuk advanced search
 
 ---
 
