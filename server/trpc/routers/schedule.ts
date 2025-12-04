@@ -470,8 +470,14 @@ export const scheduleRouter = createTRPCRouter({
     const subjects = schedules.map((s: any) => s.subject)
 
     // Get threads from today (tasks that were created today)
-    const today = startOfDay(now)
-    const tomorrowStart = startOfDay(tomorrow)
+    // Use Jakarta timezone for date calculations
+    const todayJakarta = startOfDay(nowJakarta)
+    const tomorrowStartJakarta = startOfDay(tomorrowJakarta)
+    
+    // For database queries, we need UTC dates
+    // Convert Jakarta midnight to UTC (subtract 7 hours)
+    const today = new Date(todayJakarta.getTime() - (7 * 60 * 60 * 1000))
+    const tomorrowStart = new Date(tomorrowStartJakarta.getTime() - (7 * 60 * 60 * 1000))
 
     const threads = await prisma.thread.findMany({
       where: {
