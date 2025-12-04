@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/firebase-admin'
 import { addDays, getDay, format, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { getUTCDate } from '@/lib/date-utils'
+import { getUTCDate, toJakartaDate } from '@/lib/date-utils'
 
 // Helper function to get tomorrow's day name
 const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
@@ -37,11 +37,20 @@ export default async function handler(
   }
 
   try {
+    // Get current time in Jakarta timezone
     const now = getUTCDate()
-    const tomorrow = addDays(now, 1)
-    const tomorrowDay = getDay(tomorrow) // 0 = Sunday, 1 = Monday, etc.
+    const nowJakarta = toJakartaDate(now)
+    
+    // Calculate tomorrow in Jakarta timezone
+    // Add 1 day to Jakarta date, then create a new Date object
+    const tomorrowJakarta = addDays(nowJakarta, 1)
+    
+    // Get day of week for tomorrow (in Jakarta timezone)
+    const tomorrowDay = getDay(tomorrowJakarta) // 0 = Sunday, 1 = Monday, etc.
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
-    const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
+    
+    // Format tomorrow date in Jakarta timezone
+    const tomorrowFormatted = format(tomorrowJakarta, 'EEEE, d MMMM yyyy', { locale: id })
 
     // Get all classes that have schedules for tomorrow
     const schedules = await (prisma as any).classSchedule.findMany({
@@ -74,8 +83,16 @@ export default async function handler(
 
     let totalSent = 0
     let totalFailed = 0
-    const today = startOfDay(now)
-    const tomorrowStart = startOfDay(tomorrow)
+    
+    // Use Jakarta timezone for date calculations
+    // Get today at midnight in Jakarta, then convert to UTC for database queries
+    const todayJakarta = startOfDay(nowJakarta)
+    const tomorrowStartJakarta = startOfDay(tomorrowJakarta)
+    
+    // For database queries, we need UTC dates
+    // Convert Jakarta midnight to UTC (subtract 7 hours)
+    const today = new Date(todayJakarta.getTime() - (7 * 60 * 60 * 1000))
+    const tomorrowStart = new Date(tomorrowStartJakarta.getTime() - (7 * 60 * 60 * 1000))
 
     // Process each kelas
     for (const [kelas, subjects] of Object.entries(schedulesByKelas)) {
@@ -131,7 +148,6 @@ export default async function handler(
         console.log(`[ScheduleReminder] Found ${threads.length} threads for kelas ${kelas}`)
         console.log(`[ScheduleReminder] Looking for subjects: ${subjects.join(', ')}`)
 
-        // Filter threads that match tomorrow's subjects
         const relevantThreads = threads.filter((thread) => {
           const titleUpper = thread.title.toUpperCase()
           const matches = subjects.some((subject: string) => {

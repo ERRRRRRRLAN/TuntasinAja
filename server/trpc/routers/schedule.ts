@@ -5,7 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { checkIsDanton } from '../trpc'
 import { addDays, format, getDay, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { getUTCDate } from '@/lib/date-utils'
+import { getUTCDate, toJakartaDate } from '@/lib/date-utils'
 import { sendNotificationToClass } from './notification'
 import { sendPushNotification } from '@/lib/firebase-admin'
 
@@ -549,11 +549,19 @@ export const scheduleRouter = createTRPCRouter({
   // Test reminder notification (Admin only) - for testing purposes
   // Uses the same logic as the cron job: checks incomplete PRs per user and sends detailed notifications
   testReminder: adminProcedure.mutation(async () => {
+    // Get current time in Jakarta timezone
     const now = getUTCDate()
-    const tomorrow = addDays(now, 1)
-    const tomorrowDay = getDay(tomorrow)
+    const nowJakarta = toJakartaDate(now)
+    
+    // Calculate tomorrow in Jakarta timezone
+    const tomorrowJakarta = addDays(nowJakarta, 1)
+    
+    // Get day of week for tomorrow (in Jakarta timezone)
+    const tomorrowDay = getDay(tomorrowJakarta)
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
-    const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
+    
+    // Format tomorrow date in Jakarta timezone
+    const tomorrowFormatted = format(tomorrowJakarta, 'EEEE, d MMMM yyyy', { locale: id })
 
     // Get all classes that have schedules for tomorrow
     // Check if table exists first
