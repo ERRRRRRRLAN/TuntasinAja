@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure } from '../trpc'
+import { createTRPCRouter, publicProcedure, adminProcedure, protectedProcedure, rateLimitedProcedure, rateLimitedProtectedProcedure, rateLimitedAdminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { getUTCDate } from '@/lib/date-utils'
@@ -7,7 +7,7 @@ import { getUserPermission } from '../trpc'
 
 export const authRouter = createTRPCRouter({
   // Register
-  register: publicProcedure
+  register: rateLimitedProcedure
     .input(
       z.object({
         name: z.string().min(3),
@@ -237,7 +237,7 @@ export const authRouter = createTRPCRouter({
   }),
 
   // Update user (Admin only)
-  updateUser: adminProcedure
+  updateUser: rateLimitedAdminProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -355,7 +355,7 @@ export const authRouter = createTRPCRouter({
     }),
 
   // Delete user (Admin only)
-  deleteUser: adminProcedure
+  deleteUser: rateLimitedAdminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       // Prevent admin from deleting themselves
@@ -381,7 +381,7 @@ export const authRouter = createTRPCRouter({
     }),
 
   // Bulk create users (Admin only)
-  bulkCreateUsers: adminProcedure
+  bulkCreateUsers: rateLimitedAdminProcedure
     .input(
       z.object({
         names: z.array(z.string().min(1)).min(1),
@@ -478,7 +478,7 @@ export const authRouter = createTRPCRouter({
     }),
 
   // Bulk delete users (Admin only)
-  bulkDeleteUsers: adminProcedure
+  bulkDeleteUsers: rateLimitedAdminProcedure
     .input(
       z.object({
         userIds: z.array(z.string()).min(1),

@@ -306,6 +306,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Limit: 10 requests per 10 detik per user/IP
   - Apply ke semua mutation endpoints
   - Error code: `TOO_MANY_REQUESTS`
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat middleware yang membatasi jumlah request per user/IP dalam waktu tertentu
+  - **Gunanya untuk apa**: Mencegah abuse, spam, dan serangan DDoS. Melindungi server dari overload akibat terlalu banyak request dalam waktu singkat
+  - **Supaya apa**: Server tetap stabil, performa terjaga, dan mencegah user melakukan aksi berulang-ulang yang tidak perlu (seperti spam create thread/comment)
 
 #### 1.2 Input Validation
 - [ ] **Perkuat Zod validation schema**
@@ -322,6 +327,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `lib/logger.ts` (baru)
   - Log level: error, warn, info, debug
   - Environment-based logging (tidak log di production kecuali error)
+  
+  **Keterangan:**
+  - **Buat apa**: Mengganti semua console.log dengan logging library yang lebih profesional dan terstruktur
+  - **Gunanya untuk apa**: Logging yang lebih terorganisir, bisa filter berdasarkan level (error/warn/info/debug), dan tidak spam log di production
+  - **Supaya apa**: Lebih mudah debug masalah, log production lebih bersih (hanya error), dan performa lebih baik karena tidak log semua hal di production
 
 #### 1.4 CSRF Protection
 - [ ] **Implementasi CSRF token untuk mutation operations**
@@ -329,6 +339,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Generate CSRF token saat login
   - Validate CSRF token untuk semua POST/PUT/DELETE requests
   - Store token di session/cookie
+  
+  **Keterangan:**
+  - **Buat apa**: Menambahkan CSRF (Cross-Site Request Forgery) token untuk melindungi mutation operations
+  - **Gunanya untuk apa**: Mencegah serangan CSRF dimana attacker bisa membuat user melakukan aksi tanpa sepengetahuan user (seperti delete thread, update data, dll)
+  - **Supaya apa**: Keamanan aplikasi meningkat, user terlindungi dari serangan CSRF, dan data tidak bisa diubah oleh request dari website lain
 
 ### 2. Database Management
 
@@ -341,6 +356,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - Oldest records
     - Database size usage
   - Alert jika size > 80% dari limit (400MB dari 500MB)
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat sistem monitoring untuk melihat penggunaan database secara real-time
+  - **Gunanya untuk apa**: Admin bisa melihat seberapa besar database, table mana yang paling besar, dan kapan perlu cleanup
+  - **Supaya apa**: Admin bisa proaktif melakukan cleanup sebelum database penuh, mencegah error karena database limit, dan lebih mudah planning untuk upgrade jika diperlukan
 
 #### 2.3 Database Backup Strategy
 - [ ] **Dokumentasi backup strategy**
@@ -348,6 +368,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Setup automated backup (Supabase sudah punya)
   - Retention policy: 7 hari daily, 4 minggu weekly
   - Test restore procedure
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat dokumentasi lengkap tentang strategi backup database dan cara restore
+  - **Gunanya untuk apa**: Memastikan data bisa di-restore jika terjadi masalah (corrupt, deleted by mistake, dll)
+  - **Supaya apa**: Data aman, bisa recover dengan cepat jika terjadi disaster, dan tim tahu cara restore jika diperlukan
 
 ### 3. Performance Optimization
 
@@ -361,6 +386,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
       return 5000 // 5 detik lebih reasonable
     }
     ```
+  
+  **Keterangan:**
+  - **Buat apa**: Mengoptimasi interval refetch data agar tidak terlalu sering dan hanya fetch saat tab aktif
+  - **Gunanya untuk apa**: Mengurangi beban server, menghemat bandwidth, dan menghemat baterai di mobile
+  - **Supaya apa**: Server tidak overload, performa aplikasi lebih baik, dan user experience lebih smooth (tidak lag karena terlalu banyak request)
 
 #### 3.2 Pagination
 - [ ] **Implementasi pagination untuk thread list**
@@ -369,6 +399,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Return: `{ threads, total, page, totalPages }`
   - File: `components/pages/FeedPage.tsx`
   - Tambahkan pagination controls (prev/next, page numbers)
+  
+  **Keterangan:**
+  - **Buat apa**: Membagi thread list menjadi beberapa halaman (pagination) daripada load semua sekaligus
+  - **Gunanya untuk apa**: Mengurangi waktu loading, mengurangi memory usage, dan query database lebih efisien
+  - **Supaya apa**: Aplikasi lebih cepat saat load feed, terutama jika ada banyak thread, dan performa lebih baik di mobile device dengan memory terbatas
 
 #### 3.3 Query Optimization
 - [ ] **Fix N+1 query problems**
@@ -376,6 +411,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Gunakan `include` atau `select` yang tepat
   - Batch queries jika memungkinkan
   - Review semua router untuk query optimization
+  
+  **Keterangan:**
+  - **Buat apa**: Memperbaiki query database yang tidak efisien (N+1 problem) dimana query di-loop berkali-kali
+  - **Gunanya untuk apa**: Mengurangi jumlah query ke database, mempercepat response time, dan mengurangi beban database
+  - **Supaya apa**: Aplikasi lebih cepat, database tidak overload, dan user experience lebih baik karena data load lebih cepat
 
 #### 3.4 Caching Strategy
 - [ ] **Implementasi caching yang lebih baik**
@@ -384,6 +424,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - `staleTime: 30000` (30 detik untuk queries)
     - `cacheTime: 300000` (5 menit)
   - Invalidate cache dengan lebih tepat (tidak semua invalidate)
+  
+  **Keterangan:**
+  - **Buat apa**: Mengoptimasi caching strategy untuk menyimpan data di memory dan mengurangi request ke server
+  - **Gunanya untuk apa**: Data yang sudah di-fetch tidak perlu di-fetch lagi dalam waktu tertentu, mengurangi beban server
+  - **Supaya apa**: Aplikasi lebih cepat (data langsung dari cache), server lebih efisien, dan user experience lebih baik karena tidak perlu menunggu loading setiap kali
 
 #### 3.5 Database Indexing
 - [ ] **Review dan tambahkan database indexes**
@@ -395,6 +440,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - `user_statuses.userId` (sudah ada)
     - `histories.userId` (sudah ada)
     - `histories.completedDate` (untuk cleanup queries)
+  
+  **Keterangan:**
+  - **Buat apa**: Menambahkan index pada kolom database yang sering digunakan untuk filter/search
+  - **Gunanya untuk apa**: Mempercepat query database, terutama untuk WHERE clause dan JOIN operations
+  - **Supaya apa**: Query lebih cepat, aplikasi lebih responsif, dan database bisa handle lebih banyak data tanpa slowdown
 
 ### 4. Error Handling dan Logging
 
@@ -404,6 +454,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Class `AppError` dengan code, statusCode, userMessage
   - Error mapping untuk user-friendly messages
   - Error logging ke external service (Sentry)
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat sistem error handling terpusat yang menangani semua error dengan cara yang konsisten
+  - **Gunanya untuk apa**: Error message lebih user-friendly, error tracking lebih mudah, dan debugging lebih efisien
+  - **Supaya apa**: User tidak bingung dengan error message teknis, developer bisa track error dengan mudah, dan aplikasi lebih robust dalam handle error
 
 #### 4.2 Error Tracking
 - [ ] **Setup error tracking dengan Sentry**
@@ -411,6 +466,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `sentry.client.config.ts`, `sentry.server.config.ts` (baru)
   - Setup di `app/providers.tsx`
   - Track errors, performance, user sessions
+  
+  **Keterangan:**
+  - **Buat apa**: Mengintegrasikan Sentry untuk tracking error dan performance monitoring secara real-time
+  - **Gunanya untuk apa**: Developer bisa langsung tahu jika ada error di production, termasuk stack trace, user info, dan context
+  - **Supaya apa**: Error bisa di-fix lebih cepat, performa issue bisa di-detect lebih awal, dan aplikasi lebih reliable karena masalah cepat terdeteksi
 
 #### 4.3 User-Friendly Error Messages
 - [ ] **Improve error messages untuk user**

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
+import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure, rateLimitedProtectedProcedure, rateLimitedAdminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { getJakartaTodayAsUTC, getUTCDate, toJakartaDate } from '@/lib/date-utils'
 import { getUserPermission, checkIsDanton } from '../trpc'
@@ -160,7 +160,7 @@ export const threadRouter = createTRPCRouter({
     }),
 
   // Create thread
-  create: protectedProcedure
+  create: rateLimitedProtectedProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -454,7 +454,7 @@ export const threadRouter = createTRPCRouter({
     }),
 
   // Add comment to thread
-  addComment: protectedProcedure
+  addComment: rateLimitedProtectedProcedure
     .input(
       z.object({
         threadId: z.string(),
@@ -771,7 +771,7 @@ export const threadRouter = createTRPCRouter({
     }),
 
   // Delete comment (Author of comment OR author of thread OR Admin)
-  deleteComment: protectedProcedure
+  deleteComment: rateLimitedProtectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Get comment with thread and authors info

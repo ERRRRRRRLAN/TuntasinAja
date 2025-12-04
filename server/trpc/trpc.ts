@@ -141,6 +141,16 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
 
 export const adminProcedure = t.procedure.use(isAuthenticated).use(isAdmin)
 
+// Import rate limiting middleware
+import { mutationRateLimit, queryRateLimit, adminRateLimit } from './middleware/rateLimit'
+
+// Rate-limited procedures
+// Use these instead of publicProcedure/protectedProcedure/adminProcedure for mutations
+export const rateLimitedProcedure = t.procedure.use(mutationRateLimit)
+export const rateLimitedProtectedProcedure = t.procedure.use(isAuthenticated).use(mutationRateLimit)
+export const rateLimitedQueryProcedure = t.procedure.use(queryRateLimit)
+export const rateLimitedAdminProcedure = t.procedure.use(isAuthenticated).use(isAdmin).use(adminRateLimit)
+
 // Helper function to check if user is danton
 export const checkIsDanton = async (userId: string): Promise<{ isDanton: boolean; kelas: string | null }> => {
   const user = await prisma.user.findUnique({
