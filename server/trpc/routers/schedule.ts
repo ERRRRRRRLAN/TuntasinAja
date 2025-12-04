@@ -417,9 +417,11 @@ export const scheduleRouter = createTRPCRouter({
   // Get reminder tasks (tasks for tomorrow's subjects)
   getReminderTasks: publicProcedure.query(async ({ ctx }) => {
     // Get tomorrow's date first (needed for all return statements)
+    // Use Jakarta timezone for correct date calculation
     const now = getUTCDate()
-    const tomorrow = addDays(now, 1)
-    const tomorrowFormatted = format(tomorrow, 'EEEE, d MMMM yyyy', { locale: id })
+    const nowJakarta = toJakartaDate(now)
+    const tomorrowJakarta = addDays(nowJakarta, 1)
+    const tomorrowFormatted = format(tomorrowJakarta, 'EEEE, d MMMM yyyy', { locale: id })
 
     if (!ctx.session?.user) {
       return { tasks: [], subjects: [], tomorrow: tomorrowFormatted }
@@ -437,7 +439,7 @@ export const scheduleRouter = createTRPCRouter({
     }
 
     // Get tomorrow's day of week (using Jakarta time)
-    const tomorrowDay = getDay(tomorrow) // 0 = Sunday, 1 = Monday, etc.
+    const tomorrowDay = getDay(tomorrowJakarta) // 0 = Sunday, 1 = Monday, etc.
     const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
 
     // Debug logging
