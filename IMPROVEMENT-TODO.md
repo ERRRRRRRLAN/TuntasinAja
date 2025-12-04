@@ -312,8 +312,6 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `server/trpc/routers/*.ts`
   - Tambahkan validasi lebih ketat untuk:
     - Email format (regex validation)
-    - Password strength (min 8 chars, uppercase, lowercase, number)
-    - Thread title (max length, sanitize HTML)
     - Comment content (max 5000 chars, sanitize HTML)
   - Tambahkan `z.string().trim()` untuk semua string inputs
 
@@ -333,18 +331,6 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Store token di session/cookie
 
 ### 2. Database Management
-
-#### 2.1 Complete Cleanup Tasks
-- [ ] **Implementasi semua task dari DATABASE-MANAGEMENT-TODO.md**
-  - File: `pages/api/cron/cleanup-history.ts` (baru)
-  - File: `pages/api/cron/cleanup-inactive-threads.ts` (baru)
-  - File: `pages/api/admin/database-stats.ts` (baru)
-  - Update `vercel.json` dengan cron jobs baru
-  - Schedule:
-    - `00:00` - auto-delete-threads (sudah ada)
-    - `02:00` - cleanup-user-statuses (sudah ada)
-    - `03:00` - cleanup-history (baru)
-    - `04:00` - cleanup-inactive-threads (baru)
 
 #### 2.2 Database Monitoring
 - [ ] **Setup database size monitoring**

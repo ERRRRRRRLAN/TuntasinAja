@@ -14,6 +14,7 @@ import FeedbackList from '@/components/admin/FeedbackList'
 import AppSettingsControl from '@/components/admin/AppSettingsControl'
 import TestingReminderButton from '@/components/admin/TestingReminderButton'
 import DatabaseHealth from '@/components/admin/DatabaseHealth'
+import BulkOperations from '@/components/admin/BulkOperations'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -305,6 +306,9 @@ export default function ProfilePage() {
               {activeTab === 'settings' && (
                 <div>
                   <DatabaseHealth />
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <BulkOperations />
+                  </div>
                   <div style={{ marginTop: '1.5rem' }}>
                     <TestingReminderButton />
                   </div>
