@@ -610,8 +610,15 @@ export const scheduleRouter = createTRPCRouter({
 
     let totalSent = 0
     let totalFailed = 0
-    const today = startOfDay(now)
-    const tomorrowStart = startOfDay(tomorrow)
+    
+    // Use Jakarta timezone for date calculations
+    const todayJakarta = startOfDay(nowJakarta)
+    const tomorrowStartJakarta = startOfDay(tomorrowJakarta)
+    
+    // For database queries, we need UTC dates
+    // Convert Jakarta midnight to UTC (subtract 7 hours)
+    const today = new Date(todayJakarta.getTime() - (7 * 60 * 60 * 1000))
+    const tomorrowStart = new Date(tomorrowStartJakarta.getTime() - (7 * 60 * 60 * 1000))
 
     // Process each kelas
     for (const [kelas, subjects] of Object.entries(schedulesByKelas)) {
