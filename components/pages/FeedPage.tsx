@@ -52,6 +52,8 @@ export default function FeedPage() {
   const [threadOpenedFromReminder, setThreadOpenedFromReminder] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(20) // Default 20 threads per page
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -76,9 +78,11 @@ export default function FeedPage() {
   // User can only post/edit if: has permission AND subscription is active (or admin)
   const canActuallyPostEdit = canPostEdit && (isAdmin || isSubscriptionActive)
 
-  // Get threads - invalidate cache when user changes
+  // Get threads with pagination - invalidate cache when user changes
   const utils = trpc.useUtils()
-  const { data: threads, isLoading, isFetching, isRefetching, refetch: refetchThreads } = trpc.thread.getAll.useQuery(undefined, {
+  const { data: threadsData, isLoading, isFetching, isRefetching, refetch: refetchThreads } = trpc.thread.getAll.useQuery(
+    { page: currentPage, limit: pageSize },
+    {
     refetchInterval: (query) => {
       // Stop polling jika tab tidak aktif (hidden)
       if (typeof document !== 'undefined' && document.hidden) {
@@ -90,10 +94,23 @@ export default function FeedPage() {
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchOnMount: true, // Always refetch when component mounts
     refetchOnReconnect: true, // Refetch when network reconnects
-    enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
-    staleTime: 0, // Always consider data stale
-    cacheTime: 0, // Don't cache data
-  })
+      enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
+      staleTime: 0, // Always consider data stale
+      cacheTime: 0, // Don't cache data
+    }
+  )
+
+  // Extract threads and pagination info from response
+  const threads = threadsData?.threads || []
+  const totalThreads = threadsData?.total || 0
+  const totalPages = threadsData?.totalPages || 1
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    }
+  }, [selectedSubject, selectedKelas, searchQuery, filteredSubjects])
 
   // Track initial load completion
   useEffect(() => {
@@ -534,7 +551,10 @@ export default function FeedPage() {
               fontSize: '0.875rem',
               color: 'var(--text-light)'
             }}>
-              Menampilkan {filteredThreads.length} dari {threads?.length || 0} PR
+              Menampilkan {filteredThreads.length} dari {totalThreads} PR
+              {totalPages > 1 && (
+                <span> • Halaman {currentPage} dari {totalPages}</span>
+              )}
               {searchQuery && (
                 <span> • Pencarian: "{searchQuery}"</span>
               )}
@@ -577,15 +597,102 @@ export default function FeedPage() {
               </p>
             </div>
           ) : (
-            <div className="threads-container">
-              {filteredThreads.map((thread) => (
-                <ThreadCard 
-                  key={thread.id} 
-                  thread={thread}
-                  onThreadClick={(threadId) => setSelectedThreadId(threadId)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="threads-container">
+                {filteredThreads.map((thread) => (
+                  <ThreadCard 
+                    key={thread.id} 
+                    thread={thread}
+                    onThreadClick={(threadId) => setSelectedThreadId(threadId)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginTop: '2rem',
+                  flexWrap: 'wrap',
+                }}>
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1 || isLoading}
+                    className="btn"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      minWidth: '80px',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    ← Sebelumnya
+                  </button>
+
+                  {/* Page Numbers */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.25rem',
+                    alignItems: 'center',
+                  }}>
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number
+                      if (totalPages <= 5) {
+                        // Show all pages if 5 or less
+                        pageNum = i + 1
+                      } else if (currentPage <= 3) {
+                        // Show first 5 pages
+                        pageNum = i + 1
+                      } else if (currentPage >= totalPages - 2) {
+                        // Show last 5 pages
+                        pageNum = totalPages - 4 + i
+                      } else {
+                        // Show pages around current page
+                        pageNum = currentPage - 2 + i
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          disabled={isLoading}
+                          className="btn"
+                          style={{
+                            padding: '0.5rem 0.75rem',
+                            minWidth: '40px',
+                            background: currentPage === pageNum ? 'var(--primary)' : 'var(--bg-secondary)',
+                            color: currentPage === pageNum ? 'white' : 'var(--text)',
+                            border: currentPage === pageNum ? '1px solid var(--primary)' : '1px solid var(--border)',
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages || isLoading}
+                    className="btn"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      minWidth: '80px',
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Selanjutnya →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

@@ -9,31 +9,40 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { id } from 'date-fns/locale'
 
 export const threadRouter = createTRPCRouter({
-  // Get all threads
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    // Get user info if logged in
-    let userKelas: string | null = null
-    let isAdmin = false
-    let userId: string | null = null
+  // Get all threads with pagination
+  getAll: publicProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).default(1).optional(),
+        limit: z.number().min(1).max(50).default(20).optional(),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      // Get user info if logged in
+      let userKelas: string | null = null
+      let isAdmin = false
+      let userId: string | null = null
 
-    if (ctx.session?.user) {
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: {
-          kelas: true,
-          isAdmin: true,
-        },
-      })
-      userKelas = user?.kelas || null
-      isAdmin = user?.isAdmin || false
-      userId = ctx.session.user.id
-    }
+      if (ctx.session?.user) {
+        const user = await prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
+            isAdmin: true,
+          },
+        })
+        userKelas = user?.kelas || null
+        isAdmin = user?.isAdmin || false
+        userId = ctx.session.user.id
+      }
 
-    // If user is admin, show all threads
-    // If user is logged in with kelas, filter by kelas
-    // If user is not logged in, show all threads (public view)
-    const threads = await prisma.thread.findMany({
-      where: isAdmin
+      // Pagination parameters
+      const page = input?.page || 1
+      const limit = Math.min(input?.limit || 20, 50) // Max 50
+      const skip = (page - 1) * limit
+
+      // Build where clause for filtering
+      const whereClause = isAdmin
         ? undefined // Admin sees all
         : userKelas
         ? {
@@ -42,78 +51,101 @@ export const threadRouter = createTRPCRouter({
               kelas: userKelas,
             },
           }
-        : undefined, // Public sees all
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            kelas: true,
-          },
-        },
-        comments: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                kelas: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        : undefined // Public sees all
 
-    // Filter out threads that are already completed by this user AND completion date > 24 hours
-    // Thread remains visible in dashboard for 24 hours after completion
-    // Thread remains in database until ALL users in the same kelas complete it
-    if (userId && !isAdmin) {
-      const { getUTCDate } = await import('@/lib/date-utils')
-      const now = getUTCDate()
-      // Calculate 24 hours ago (exactly 24 hours, not just 1 day from date)
-      const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
-
-      // Get all completed thread IDs from history for this user where completion > 24 hours
-      const completedThreadIds = await prisma.history.findMany({
-        where: {
-          userId: userId,
-          threadId: {
-            not: null, // Only threads that still exist
-          },
-          completedDate: {
-            lt: twentyFourHoursAgo, // Completed more than 24 hours ago
-          },
-        },
-        select: {
-          threadId: true,
-        },
+      // Get total count before filtering by completion (for pagination)
+      const totalCount = await prisma.thread.count({
+        where: whereClause,
       })
 
-      const completedIds = new Set(
-        completedThreadIds
-          .map((h) => h.threadId)
-          .filter((id): id is string => id !== null)
-      )
+      // Get threads with pagination
+      const threads = await prisma.thread.findMany({
+        where: whereClause,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              kelas: true,
+            },
+          },
+          comments: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  kelas: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take: limit,
+      })
 
-      // Filter out completed threads for this user (only if completion > 24 hours)
-      return threads.filter((thread) => !completedIds.has(thread.id))
-    }
+      // Filter out threads that are already completed by this user AND completion date > 24 hours
+      // Thread remains visible in dashboard for 24 hours after completion
+      // Thread remains in database until ALL users in the same kelas complete it
+      let filteredThreads = threads
+      if (userId && !isAdmin) {
+        const { getUTCDate } = await import('@/lib/date-utils')
+        const now = getUTCDate()
+        // Calculate 24 hours ago (exactly 24 hours, not just 1 day from date)
+        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
 
-    return threads
-  }),
+        // Get all completed thread IDs from history for this user where completion > 24 hours
+        const completedThreadIds = await prisma.history.findMany({
+          where: {
+            userId: userId,
+            threadId: {
+              not: null, // Only threads that still exist
+            },
+            completedDate: {
+              lt: twentyFourHoursAgo, // Completed more than 24 hours ago
+            },
+          },
+          select: {
+            threadId: true,
+          },
+        })
+
+        const completedIds = new Set(
+          completedThreadIds
+            .map((h) => h.threadId)
+            .filter((id): id is string => id !== null)
+        )
+
+        // Filter out completed threads for this user (only if completion > 24 hours)
+        filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
+      }
+
+      // Calculate total pages based on total count (before filtering by completion)
+      // Note: This is an approximation since we filter by completion after pagination
+      // For exact count, we would need to count after filtering, but that's expensive
+      const totalPages = Math.ceil(totalCount / limit)
+
+      return {
+        threads: filteredThreads,
+        total: totalCount,
+        page,
+        limit,
+        totalPages,
+      }
+    }),
 
   // Get thread by ID
   getById: publicProcedure

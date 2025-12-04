@@ -450,13 +450,13 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - **Gunanya untuk apa**: Mengurangi beban server, menghemat bandwidth, dan menghemat baterai di mobile
   - **Supaya apa**: Server tidak overload, performa aplikasi lebih baik, dan user experience lebih smooth (tidak lag karena terlalu banyak request)
 
-#### 3.2 Pagination
-- [ ] **Implementasi pagination untuk thread list**
-  - File: `server/trpc/routers/thread.ts`
-  - Tambahkan input: `page`, `limit` (default: 20, max: 50)
-  - Return: `{ threads, total, page, totalPages }`
-  - File: `components/pages/FeedPage.tsx`
-  - Tambahkan pagination controls (prev/next, page numbers)
+#### 3.2 Pagination ✅
+- [x] **Implementasi pagination untuk thread list**
+  - File: `server/trpc/routers/thread.ts` ✅
+  - Tambahkan input: `page`, `limit` (default: 20, max: 50) ✅
+  - Return: `{ threads, total, page, totalPages }` ✅
+  - File: `components/pages/FeedPage.tsx` ✅
+  - Tambahkan pagination controls (prev/next, page numbers) ✅
   
   **Keterangan:**
   - **Buat apa**: Membagi thread list menjadi beberapa halaman (pagination) daripada load semua sekaligus
