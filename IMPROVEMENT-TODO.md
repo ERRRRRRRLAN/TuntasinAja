@@ -670,6 +670,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Enable: `strict: true`, `noImplicitAny: true`, `strictNullChecks: true`
   - Fix semua type errors
   - Remove semua `as any` type assertions
+  
+  **Keterangan:**
+  - **Buat apa**: Mengaktifkan TypeScript strict mode untuk type checking yang lebih ketat
+  - **Gunanya untuk apa**: Mencegah type errors, memaksa developer untuk handle null/undefined dengan benar, dan kode lebih type-safe
+  - **Supaya apa**: Bug bisa di-detect lebih cepat di compile time, kode lebih maintainable, dan refactoring lebih aman
 
 #### 7.2 Code Splitting
 - [ ] **Split large components**
@@ -679,6 +684,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - ThreadList component
     - ReminderHandler component
   - Lazy load heavy components
+  
+  **Keterangan:**
+  - **Buat apa**: Memecah komponen besar menjadi komponen-komponen kecil yang lebih fokus dan lazy load komponen berat
+  - **Gunanya untuk apa**: Initial load lebih cepat, bundle size lebih kecil, dan kode lebih mudah di-maintain
+  - **Supaya apa**: Aplikasi load lebih cepat, performa lebih baik, dan developer lebih mudah memahami dan maintain kode
 
 #### 7.3 Extract Common Logic
 - [ ] **Create utility functions untuk common logic**
@@ -686,6 +696,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `lib/utils/user-helpers.ts` (baru)
   - File: `lib/utils/date-helpers.ts` (baru)
   - Extract duplicate code
+  
+  **Keterangan:**
+  - **Buat apa**: Mengekstrak logic yang duplikat atau sering digunakan menjadi utility functions yang reusable
+  - **Gunanya untuk apa**: DRY (Don't Repeat Yourself), kode lebih konsisten, dan lebih mudah di-test
+  - **Supaya apa**: Kode lebih maintainable, bug fix lebih mudah (fix sekali, semua tempat ter-update), dan kode lebih clean
 
 #### 7.4 Code Formatting
 - [ ] **Setup Prettier dan ESLint**
@@ -693,6 +708,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `.eslintrc.json` (update)
   - Pre-commit hooks dengan Husky
   - Auto-format on save
+  
+  **Keterangan:**
+  - **Buat apa**: Setup code formatter (Prettier) dan linter (ESLint) dengan auto-format dan pre-commit hooks
+  - **Gunanya untuk apa**: Kode lebih konsisten, format otomatis, dan catch potential bugs sebelum commit
+  - **Supaya apa**: Kode lebih rapi dan konsisten, developer tidak perlu manual format, dan kualitas kode lebih terjaga
 
 ---
 
@@ -708,6 +728,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - Page views
     - User actions (create thread, add comment, etc.)
     - Feature usage
+  
+  **Keterangan:**
+  - **Buat apa**: Mengintegrasikan analytics service untuk tracking penggunaan aplikasi
+  - **Gunanya untuk apa**: Admin bisa melihat bagaimana aplikasi digunakan, feature mana yang populer, dan user behavior
+  - **Supaya apa**: Keputusan development lebih data-driven, bisa fokus ke feature yang benar-benar digunakan, dan memahami user needs
 
 #### 8.2 Performance Monitoring
 - [ ] **Track Web Vitals**
@@ -715,6 +740,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Track: LCP, FID, CLS
   - Send to analytics service
   - Alert jika performance degradation
+  
+  **Keterangan:**
+  - **Buat apa**: Tracking Web Vitals (Core Web Vitals) untuk mengukur performa aplikasi dari sudut pandang user
+  - **Gunanya untuk apa**: Monitor performa aplikasi, detect performance regression, dan memastikan user experience optimal
+  - **Supaya apa**: Aplikasi tetap cepat, SEO lebih baik (Google menggunakan Web Vitals), dan user experience lebih baik
 
 #### 8.3 Uptime Monitoring
 - [ ] **Setup uptime monitoring**
@@ -722,6 +752,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Monitor: Main API endpoint
   - Alert: Email/SMS jika down
   - Status page untuk public
+  
+  **Keterangan:**
+  - **Buat apa**: Setup monitoring service untuk mengecek apakah aplikasi masih online/accessible
+  - **Gunanya untuk apa**: Admin langsung tahu jika aplikasi down, bisa cepat response, dan user tahu status aplikasi
+  - **Supaya apa**: Downtime bisa di-detect dan di-handle lebih cepat, user tidak bingung jika aplikasi down, dan reliability lebih baik
 
 ### 9. Fitur Tambahan
 
@@ -731,6 +766,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Use PostgreSQL full-text search atau external service (Algolia/Meilisearch)
   - Search by: title, content, author
   - Highlight search results
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat fitur search yang bisa mencari konten di dalam thread dan comment
+  - **Gunanya untuk apa**: User bisa mencari thread/comment berdasarkan keyword, lebih mudah menemukan tugas tertentu
+  - **Supaya apa**: User lebih mudah menemukan informasi, aplikasi lebih user-friendly, dan produktivitas user meningkat
 
 #### 9.2 Advanced Filters
 - [ ] **Advanced filter untuk threads**
@@ -741,6 +781,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - Subject
     - Completion status
     - Class
+  
+  **Keterangan:**
+  - **Buat apa**: Menambahkan filter yang lebih advanced dengan multiple criteria untuk mencari thread
+  - **Gunanya untuk apa**: User bisa filter thread berdasarkan berbagai kriteria sekaligus, lebih mudah menemukan thread tertentu
+  - **Supaya apa**: User lebih mudah menemukan thread yang dicari, workflow lebih efisien, dan aplikasi lebih powerful
 
 #### 9.3 In-App Notifications
 - [ ] **In-app notifications center**
@@ -749,6 +794,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Store notifications di database
   - Real-time updates dengan polling atau WebSocket
   - Mark as read functionality
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat notification center di dalam aplikasi untuk menampilkan semua notifikasi
+  - **Gunanya untuk apa**: User bisa melihat semua notifikasi di satu tempat, tidak perlu push notification untuk semua hal
+  - **Supaya apa**: User tidak ketinggalan informasi penting, notifikasi lebih terorganisir, dan user experience lebih baik
 
 #### 9.4 Email Notifications
 - [ ] **Email notifications untuk important events**
@@ -758,6 +808,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
     - New comment on your thread
     - Subscription expiring soon
   - Email preferences per user
+  
+  **Keterangan:**
+  - **Buat apa**: Mengirim email notification untuk event penting (bukan hanya push notification)
+  - **Gunanya untuk apa**: User tetap informed meskipun tidak buka aplikasi, penting untuk event yang sangat penting
+  - **Supaya apa**: User tidak ketinggalan informasi penting, engagement lebih baik, dan aplikasi lebih reliable dalam komunikasi
 
 #### 9.5 Export Data
 - [ ] **Export history ke PDF/CSV**
@@ -765,6 +820,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - File: `components/history/ExportButton.tsx` (baru)
   - Format: PDF (dengan library seperti `pdfkit` atau `jspdf`)
   - Format: CSV (simple CSV generation)
+  
+  **Keterangan:**
+  - **Buat apa**: Membuat fitur untuk export history tugas ke file PDF atau CSV
+  - **Gunanya untuk apa**: User bisa menyimpan history tugas mereka, bisa digunakan untuk reporting atau dokumentasi
+  - **Supaya apa**: User bisa backup data mereka sendiri, bisa digunakan untuk keperluan lain (seperti laporan), dan data lebih portable
 
 #### 9.6 Collaboration Features
 - [ ] **@mention users dalam comments**
@@ -772,6 +832,11 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
   - Autocomplete untuk @mentions
   - Notifikasi untuk mentioned users
   - Highlight mentions di comments
+  
+  **Keterangan:**
+  - **Buat apa**: Menambahkan fitur @mention untuk mention user lain dalam comment
+  - **Gunanya untuk apa**: User bisa mention user lain untuk menarik perhatian, kolaborasi lebih baik
+  - **Supaya apa**: Kolaborasi lebih efektif, user yang di-mention langsung dapat notifikasi, dan engagement lebih baik
 
 #### 9.7 Threaded Comments
 - [ ] **Reply to specific comments**
