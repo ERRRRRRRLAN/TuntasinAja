@@ -9,7 +9,14 @@ export default function AppSettingsControl() {
   
   // Get current update enabled status
   const { data: updateEnabled, isLoading, refetch } = trpc.appSettings.getUpdateEnabled.useQuery(undefined, {
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: (query) => {
+      // Stop polling jika tab tidak aktif (hidden)
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false
+      }
+      // 30 detik untuk app settings (cukup untuk monitoring)
+      return 30000
+    },
   })
 
   // Mutation to toggle update enabled

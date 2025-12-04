@@ -79,7 +79,14 @@ export default function FeedPage() {
   // Get threads - invalidate cache when user changes
   const utils = trpc.useUtils()
   const { data: threads, isLoading, isFetching, isRefetching, refetch: refetchThreads } = trpc.thread.getAll.useQuery(undefined, {
-    refetchInterval: 2000, // Auto refresh every 2 seconds (faster background polling)
+    refetchInterval: (query) => {
+      // Stop polling jika tab tidak aktif (hidden)
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false
+      }
+      // 5 detik lebih reasonable untuk mengurangi beban server
+      return 5000
+    },
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchOnMount: true, // Always refetch when component mounts
     refetchOnReconnect: true, // Refetch when network reconnects
@@ -179,7 +186,14 @@ export default function FeedPage() {
     undefined,
     {
       enabled: !!session && isDataValidated,
-      refetchInterval: 3000, // Auto refresh every 3 seconds
+      refetchInterval: (query) => {
+        // Stop polling jika tab tidak aktif (hidden)
+        if (typeof document !== 'undefined' && document.hidden) {
+          return false
+        }
+        // 5 detik lebih reasonable untuk mengurangi beban server
+        return 5000
+      },
       refetchOnWindowFocus: true,
     }
   )

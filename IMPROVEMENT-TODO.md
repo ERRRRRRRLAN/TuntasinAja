@@ -431,13 +431,16 @@ Dokumentasi lengkap untuk semua saran, masukan, penambahan, dan perbaikan yang d
 
 ### 3. Performance Optimization
 
-#### 3.1 Refetch Interval Optimization
-- [ ] **Optimasi refetch interval yang terlalu agresif**
-  - File: `components/pages/FeedPage.tsx`
+#### 3.1 Refetch Interval Optimization ✅
+- [x] **Optimasi refetch interval yang terlalu agresif**
+  - File: `components/pages/FeedPage.tsx` ✅
+  - File: `hooks/useClassSubscription.ts` ✅
+  - File: `components/admin/DatabaseHealth.tsx` ✅
+  - File: `components/admin/AppSettingsControl.tsx` ✅
   - Ubah `refetchInterval: 2000` menjadi conditional:
     ```typescript
     refetchInterval: (query) => {
-      if (document.hidden) return false // Stop polling jika tab tidak aktif
+      if (typeof document !== 'undefined' && document.hidden) return false // Stop polling jika tab tidak aktif
       return 5000 // 5 detik lebih reasonable
     }
     ```

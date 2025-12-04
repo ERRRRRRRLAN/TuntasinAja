@@ -11,7 +11,14 @@ export const useClassSubscription = (kelas?: string) => {
     {
       enabled: !!session?.user,
       refetchOnWindowFocus: true,
-      refetchInterval: 60000, // Refetch every minute to update remaining time
+      refetchInterval: (query) => {
+        // Stop polling jika tab tidak aktif (hidden)
+        if (typeof document !== 'undefined' && document.hidden) {
+          return false
+        }
+        // 60 detik untuk subscription status (tidak perlu terlalu sering)
+        return 60000
+      },
     }
   )
 

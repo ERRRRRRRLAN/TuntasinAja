@@ -11,7 +11,14 @@ export default function DatabaseHealth() {
   const [refreshing, setRefreshing] = useState(false)
 
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = trpc.database.getStats.useQuery(undefined, {
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: (query) => {
+      // Stop polling jika tab tidak aktif (hidden)
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false
+      }
+      // 60 detik untuk database stats (tidak perlu terlalu sering)
+      return 60000
+    },
   })
 
   const { data: tableSizes, isLoading: sizesLoading, refetch: refetchSizes } = trpc.database.getTableSizes.useQuery(undefined, {
