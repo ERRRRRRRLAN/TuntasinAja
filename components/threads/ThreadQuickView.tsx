@@ -13,6 +13,7 @@ import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, 
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import DateTimePicker from '@/components/ui/DateTimePicker'
 import { useDanton } from '@/hooks/useDanton'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
@@ -793,13 +794,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 <label htmlFor="commentDeadline" className="form-label">
                   Deadline (Opsional)
                 </label>
-                <input
-                  type="datetime-local"
-                  id="commentDeadline"
+                <DateTimePicker
                   value={commentDeadline}
-                  onChange={(e) => setCommentDeadline(e.target.value)}
-                  className="form-input"
+                  onChange={setCommentDeadline}
+                  placeholder="Pilih deadline sub tugas"
                   disabled={addComment.isLoading}
+                  min={new Date().toISOString().slice(0, 16)}
                 />
                 <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
                   Tentukan kapan sub tugas harus selesai (opsional)
