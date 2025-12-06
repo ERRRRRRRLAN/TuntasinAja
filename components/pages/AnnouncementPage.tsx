@@ -18,6 +18,7 @@ export default function AnnouncementPage() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { canCreateAnnouncement } = useUserPermission()
   
   // Get user data to check if admin/danton
@@ -55,11 +56,13 @@ export default function AnnouncementPage() {
 
   const deleteAnnouncement = trpc.announcement.delete.useMutation({
     onSuccess: () => {
+      setShowDeleteDialog(false)
       setDeleteId(null)
       refetch()
     },
     onError: (error) => {
       toast.error(`Gagal menghapus pengumuman: ${error.message}`)
+      setShowDeleteDialog(false)
     },
   })
 
@@ -203,6 +206,7 @@ export default function AnnouncementPage() {
                         onClick={(e) => {
                           e.stopPropagation()
                           setDeleteId(announcement.id)
+                          setShowDeleteDialog(true)
                         }}
                         style={{
                           position: 'absolute',
@@ -382,15 +386,26 @@ export default function AnnouncementPage() {
         {/* Delete Confirmation Dialog */}
         {deleteId && (
           <ConfirmDialog
-            isOpen={!!deleteId}
+            isOpen={showDeleteDialog}
             title="Hapus Pengumuman"
             message="Apakah Anda yakin ingin menghapus pengumuman ini? Tindakan ini tidak dapat dibatalkan."
-            confirmText="Hapus"
+            confirmText={deleteAnnouncement.isLoading ? 'Menghapus...' : 'Hapus'}
             cancelText="Batal"
+            disabled={deleteAnnouncement.isLoading}
             onConfirm={() => {
-              deleteAnnouncement.mutate({ id: deleteId })
+              if (!deleteAnnouncement.isLoading) {
+                deleteAnnouncement.mutate({ id: deleteId })
+              }
             }}
-            onCancel={() => setDeleteId(null)}
+            onCancel={() => {
+              if (!deleteAnnouncement.isLoading) {
+                setShowDeleteDialog(false)
+                // Clear deleteId after animation completes
+                setTimeout(() => {
+                  setDeleteId(null)
+                }, 500)
+              }
+            }}
             danger={true}
           />
         )}
