@@ -43,24 +43,29 @@ export default function ConfirmDialog({
     if (isOpen) {
       // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
-      // Immediately show overlay
+      // Immediately show overlay (open animation starts)
       setIsVisible(true)
-      // Small delay for content to create stagger effect
+      // Small delay for content to create stagger effect (30ms)
       const timer = setTimeout(() => {
         setContentVisible(true)
-      }, 30) // Reduced delay for faster appearance
+      }, 30)
       return () => clearTimeout(timer)
-    } else {
-      // Close animation: hide content first, then overlay
+    } else if (isVisible) {
+      // Close animation: reverse of open
+      // 1. Buttons fade out first (0ms delay)
+      // 2. Message fade out (50ms delay)
+      // 3. Title fade out (100ms delay)
+      // 4. Content fade out (150ms delay)
+      // 5. Overlay fade out (180ms delay)
       setContentVisible(false)
-      // Wait for content to fade out before hiding overlay
+      // Wait for all animations to complete before hiding overlay and unmounting
       const timer = setTimeout(() => {
         setIsVisible(false)
         document.body.style.overflow = 'unset'
-      }, 300) // Wait for content fade out (300ms)
+      }, 480) // Total: 150ms (content delay) + 300ms (content fade) + 30ms buffer
       return () => clearTimeout(timer)
     }
-  }, [isOpen])
+  }, [isOpen, isVisible])
 
   // Handle browser back button - hanya aktif ketika dialog benar-benar visible
   // Tambahkan delay kecil untuk memastikan dialog sudah fully rendered
@@ -130,7 +135,9 @@ export default function ConfirmDialog({
         opacity: isVisible ? 1 : 0,
         backdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
         WebkitBackdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
-        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: isOpen
+          ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.18s, backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.18s',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -143,7 +150,9 @@ export default function ConfirmDialog({
           transform: contentVisible 
             ? 'translateY(0) scale(1)' 
             : 'translateY(20px) scale(0.95)',
-          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: isOpen
+            ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.03s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.03s'
+            : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
         }}
       >
         <h3 
@@ -151,9 +160,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
-            transition: contentVisible
+            transition: isOpen
               ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.05s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
+              : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
           }}
         >
           {title}
@@ -163,9 +172,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
-            transition: contentVisible
+            transition: isOpen
               ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
+              : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.05s'
           }}
         >
           {message}
@@ -175,9 +184,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(10px)',
-            transition: contentVisible
+            transition: isOpen
               ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
+              : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0s'
           }}
         >
           <button
