@@ -440,6 +440,55 @@ export default function FeedPage() {
             </div>
           )}
 
+          {/* WhatsApp Channel Info Banner */}
+          <div style={{
+            marginBottom: '1rem',
+            padding: '0.875rem 1rem',
+            background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+            borderRadius: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            boxShadow: '0 2px 8px rgba(37, 211, 102, 0.2)',
+          }}>
+            <MessageIcon 
+              size={20} 
+              style={{ 
+                color: 'white', 
+                flexShrink: 0 
+              }} 
+            />
+            <div style={{ flex: 1, color: 'white' }}>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                fontWeight: 500,
+                lineHeight: 1.4
+              }}>
+                TuntasinAja menginformasikan update melalui channel WhatsApp{' '}
+                <a
+                  href="https://whatsapp.com/channel/0029VbC91BjD38CKIiir6932"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'white',
+                    textDecoration: 'underline',
+                    fontWeight: 600,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.8'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                >
+                  @TuntasinAja Info
+                </a>
+              </p>
+            </div>
+          </div>
+
           {/* Search and Filter Section */}
           <div className="search-filter-container" style={{ 
             display: 'flex', 
