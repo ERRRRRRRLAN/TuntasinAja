@@ -48,7 +48,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
           5000
         )
       } else {
-        toast.success('PR berhasil dibuat!')
+        // Toast notification removed: User requested to remove UI notifications
       }
       setTitle('')
       setComment('')
