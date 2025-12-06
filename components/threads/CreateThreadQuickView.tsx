@@ -60,7 +60,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           5000
         )
       } else {
-        toast.success('PR berhasil dibuat!')
+        // Toast notification removed: User requested to remove UI notifications
       }
       setTitle('')
       setComment('')

@@ -295,8 +295,44 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
-            // Notification disabled: User requested to remove notifications after creating content
-            // Previously sent notification: 📝 Sub Tugas Baru
+            // Send notification for new sub tugas (comment)
+            if (userKelas && !isAdmin) {
+              try {
+                // Format tanggal tugas
+                const threadDateJakarta = toJakartaDate(existingThread.date)
+                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
+                
+                // Format waktu komentar dibuat
+                const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
+                const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
+                  addSuffix: true, 
+                  locale: id 
+                })
+                
+                // Preview komentar (sub tugas)
+                const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
+                
+                // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
+                const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
+                
+                await sendNotificationToClass(
+                  userKelas,
+                  '📝 Sub Tugas Baru',
+                  notificationBody,
+                  {
+                    type: 'new_comment',
+                    threadId: existingThread.id,
+                    threadTitle: existingThread.title,
+                    commentId: comment.id,
+                    commentContent: comment.content,
+                    threadDate: existingThread.date.toISOString(),
+                  }
+                )
+              } catch (error) {
+                console.error('Error sending notification for new comment:', error)
+                // Don't throw - notification failure shouldn't break comment creation
+              }
+            }
 
             return {
               type: 'comment' as const,
@@ -389,11 +425,57 @@ export const threadRouter = createTRPCRouter({
               ? `${authorName} - ${threadTitle} ${timeAgo}. ${firstCommentPreview}`
               : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
             
-            // Notification disabled: User requested to remove notifications after creating content
-            // Previously sent notification: ✨ Tugas Baru
-          } catch (error) {
-            // Notification code removed - no longer sending notifications
-          }
+            // Send notification to class about new thread
+            if (normalizedKelas && !isAdmin) {
+              try {
+                // Get author info for notification
+                const author = await prisma.user.findUnique({
+                  where: { id: ctx.session.user.id },
+                  select: {
+                    name: true,
+                  },
+                })
+
+                // Format tanggal tugas
+                const threadDateJakarta = toJakartaDate(thread.date)
+                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
+                
+                // Format waktu thread dibuat
+                const threadCreatedAtJakarta = toJakartaDate(thread.createdAt)
+                const timeAgo = formatDistanceToNow(threadCreatedAtJakarta, { 
+                  addSuffix: true, 
+                  locale: id 
+                })
+                
+                // Get first comment preview if exists
+                let commentPreview = ''
+                if (thread.comments && thread.comments.length > 0) {
+                  const firstComment = thread.comments[0]
+                  commentPreview = firstComment.content.substring(0, 80) + (firstComment.content.length > 80 ? '...' : '')
+                }
+                
+                // Format notifikasi: Nama - Mata Pelajaran - Waktu - Preview Komentar
+                let notificationBody = `${author?.name || 'Seseorang'} - ${thread.title} ${timeAgo}`
+                if (commentPreview) {
+                  notificationBody += `. ${commentPreview}`
+                }
+                
+                const result = await sendNotificationToClass(
+                  normalizedKelas, // Use normalized kelas
+                  '✨ Tugas Baru',
+                  notificationBody,
+                  {
+                    type: 'new_thread',
+                    threadId: thread.id,
+                    threadTitle: thread.title,
+                  }
+                )
+                console.log('[ThreadRouter] Notification result:', result)
+              } catch (error) {
+                console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
+                // Don't throw - notification failure shouldn't break thread creation
+              }
+            }
         } else {
           console.log('[ThreadRouter] Skipping notification:', {
             hasKelas: !!userKelas,
@@ -539,11 +621,44 @@ export const threadRouter = createTRPCRouter({
           // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
           const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
           
-          // Notification disabled: User requested to remove notifications after creating content
-          // Previously sent notification: 📝 Sub Tugas Baru
-        } catch (error) {
-          // Notification code removed - no longer sending notifications
-        }
+          // Send notification for new sub tugas (comment)
+          if (threadAuthorKelas && !isAdmin) {
+            try {
+              // Format tanggal tugas
+              const threadDateJakarta = toJakartaDate(thread.date)
+              const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
+              
+              // Format waktu komentar dibuat
+              const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
+              const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
+                addSuffix: true, 
+                locale: id 
+              })
+              
+              // Preview komentar (sub tugas)
+              const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
+              
+              // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
+              const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
+              
+              await sendNotificationToClass(
+                threadAuthorKelas, // Use normalized kelas
+                '📝 Sub Tugas Baru',
+                notificationBody,
+                {
+                  type: 'new_comment',
+                  threadId: thread.id,
+                  threadTitle: thread.title,
+                  commentId: comment.id,
+                  commentContent: comment.content,
+                  threadDate: thread.date.toISOString(),
+                }
+              )
+            } catch (error) {
+              console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
+              // Don't throw - notification failure shouldn't break comment creation
+            }
+          }
       } else {
         console.log('[ThreadRouter] Skipping notification for comment:', {
           hasThreadAuthorKelas: !!threadAuthorKelas,
