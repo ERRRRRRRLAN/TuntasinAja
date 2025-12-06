@@ -9,6 +9,7 @@ import PushNotificationSetup from '@/components/notifications/PushNotificationSe
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
 import NetworkStatus from '@/components/NetworkStatus'
+import NetworkErrorHandler from '@/components/NetworkErrorHandler'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
@@ -77,6 +78,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <ServiceWorkerRegistration />
           <StatusBarHandler />
           <NetworkStatus />
+          <NetworkErrorHandler />
           {children}
           <PushNotificationSetup />
           <AppUpdateChecker />
