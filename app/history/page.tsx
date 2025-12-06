@@ -18,9 +18,12 @@ export default function HistoryPage() {
   const [deleteHistoryId, setDeleteHistoryId] = useState<string | null>(null)
   const [recoverHistoryId, setRecoverHistoryId] = useState<string | null>(null)
   
-  const { data: histories, isLoading } = trpc.history.getUserHistory.useQuery(undefined, {
+  const { data: histories, isLoading, error: historyError } = trpc.history.getUserHistory.useQuery(undefined, {
     refetchInterval: 5000, // Auto refresh every 5 seconds
     enabled: !!session, // Only fetch if session exists
+    onError: (error) => {
+      console.error('[HistoryPage] Error fetching history:', error)
+    },
   })
 
   // Redirect jika belum login
