@@ -141,6 +141,19 @@ export default function HistoryPage() {
               <LoadingSpinner size={32} />
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>Memuat history...</p>
             </div>
+          ) : historyError ? (
+            <div className="card" style={{ textAlign: 'center', padding: '3rem', border: '1px solid var(--danger)' }}>
+              <p style={{ color: 'var(--danger)', marginBottom: '1rem', fontWeight: 600 }}>Error memuat history</p>
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                {historyError.message || 'Terjadi kesalahan saat memuat data'}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn btn-primary"
+              >
+                Muat Ulang
+              </button>
+            </div>
           ) : !histories || histories.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p style={{ color: 'var(--text-light)' }}>

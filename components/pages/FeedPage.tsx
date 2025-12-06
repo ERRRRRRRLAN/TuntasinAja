@@ -80,7 +80,7 @@ export default function FeedPage() {
 
   // Get threads with pagination - invalidate cache when user changes
   const utils = trpc.useUtils()
-  const { data: threadsData, isLoading, isFetching, isRefetching, refetch: refetchThreads } = trpc.thread.getAll.useQuery(
+  const { data: threadsData, isLoading, isFetching, isRefetching, error: threadsError, refetch: refetchThreads } = trpc.thread.getAll.useQuery(
     { page: currentPage, limit: pageSize },
     {
     refetchInterval: (query) => {
@@ -97,6 +97,9 @@ export default function FeedPage() {
       enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
       staleTime: 0, // Always consider data stale
       cacheTime: 0, // Don't cache data
+      onError: (error) => {
+        console.error('[FeedPage] Error fetching threads:', error)
+      },
     }
   )
 
@@ -596,6 +599,22 @@ export default function FeedPage() {
               <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
                 {isLoadingUserData ? 'Memuat data user...' : 'Memuat PR...'}
               </p>
+            </div>
+          ) : threadsError ? (
+            <div className="card" style={{ textAlign: 'center', padding: '3rem', border: '1px solid var(--danger)' }}>
+              <p style={{ color: 'var(--danger)', marginBottom: '1rem', fontWeight: 600 }}>Error memuat tugas</p>
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                {threadsError.message || 'Terjadi kesalahan saat memuat data'}
+              </p>
+              <button
+                onClick={() => {
+                  refetchThreads()
+                  window.location.reload()
+                }}
+                className="btn btn-primary"
+              >
+                Muat Ulang
+              </button>
             </div>
           ) : !threads || threads.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
