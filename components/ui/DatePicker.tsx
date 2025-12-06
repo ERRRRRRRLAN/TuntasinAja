@@ -470,7 +470,7 @@ export default function DatePicker({
                   const isCurrentMonth = isSameMonth(day, currentMonth)
                   const isSelected = selectedDate && isSameDay(day, selectedDate)
                   const isToday = dayStr === todayStr
-                  const isDisabled = (min && dayStr < min) || (max && dayStr > max)
+                  const isDisabled = Boolean((min && dayStr < min) || (max && dayStr > max))
 
                   return (
                     <button
