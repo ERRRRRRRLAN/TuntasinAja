@@ -315,23 +315,8 @@ export const announcementRouter = createTRPCRouter({
         },
       })
 
-      // Send push notification to target users
-      if (input.targetType === 'global') {
-        // Send to all users (admin only)
-        // This would require getting all device tokens
-        // For now, we'll skip global notifications or implement separately
-      } else if (input.targetType === 'class' && input.targetKelas) {
-        await sendNotificationToClass(
-          input.targetKelas,
-          `📢 ${input.title}`,
-          input.content.substring(0, 100) + (input.content.length > 100 ? '...' : ''),
-          {
-            type: 'announcement',
-            announcementId: announcement.id,
-            priority: input.priority,
-          }
-        )
-      }
+      // Notification disabled: User requested to remove notifications after creating announcements
+      // Previously sent notification: 📢 ${input.title}
 
       return announcement
     }),

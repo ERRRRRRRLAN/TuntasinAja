@@ -295,44 +295,8 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
-            // Send notification for new sub tugas (comment)
-            if (userKelas && !isAdmin) {
-              try {
-                // Format tanggal tugas
-                const threadDateJakarta = toJakartaDate(existingThread.date)
-                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
-                
-                // Format waktu komentar dibuat
-                const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
-                const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
-                  addSuffix: true, 
-                  locale: id 
-                })
-                
-                // Preview komentar (sub tugas)
-                const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
-                
-                // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
-                const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
-                
-                await sendNotificationToClass(
-                  userKelas,
-                  '📝 Sub Tugas Baru',
-                  notificationBody,
-                  {
-                    type: 'new_comment',
-                    threadId: existingThread.id,
-                    threadTitle: existingThread.title,
-                    commentId: comment.id,
-                    commentContent: comment.content,
-                    threadDate: existingThread.date.toISOString(),
-                  }
-                )
-              } catch (error) {
-                console.error('Error sending notification for new comment:', error)
-                // Don't throw - notification failure shouldn't break comment creation
-              }
-            }
+            // Notification disabled: User requested to remove notifications after creating content
+            // Previously sent notification: 📝 Sub Tugas Baru
 
             return {
               type: 'comment' as const,
