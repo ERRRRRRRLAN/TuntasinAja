@@ -8,11 +8,13 @@ import { BookIcon, UserIcon, LogOutIcon, CrownIcon, DownloadIcon } from '@/compo
 import { trpc } from '@/lib/trpc'
 import { useDanton } from '@/hooks/useDanton'
 import { Capacitor } from '@capacitor/core'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function Header() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
@@ -110,18 +112,51 @@ export default function Header() {
     }
   }, [isProfileDropdownOpen])
 
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
   const handleLogout = async () => {
+    if (isLoggingOut) return // Prevent multiple clicks
+    
+    setIsLoggingOut(true)
+    setIsProfileDropdownOpen(false)
+    
     try {
+      // Clear all React Query cache
+      queryClient.clear()
+      
+      // Clear tRPC cache
+      const utils = trpc.useUtils()
+      utils.invalidate()
+      
+      // Sign out from NextAuth
       await signOut({
         redirect: false,
         callbackUrl: '/auth/signin',
       })
-      router.push('/auth/signin')
-      router.refresh()
+      
+      // Clear any cached data
+      if (typeof window !== 'undefined') {
+        // Clear localStorage if needed (be careful with this)
+        // localStorage.clear() // Uncomment if you want to clear all localStorage
+        // Clear sessionStorage
+        sessionStorage.clear()
+      }
+      
+      // Wait a bit to ensure signOut completes
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Force a hard redirect to clear all state
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin'
+      }
     } catch (error) {
       console.error('Logout error:', error)
-      router.push('/auth/signin')
-      router.refresh()
+      setIsLoggingOut(false)
+      
+      // Even if there's an error, try to redirect
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin'
+      }
     }
   }
 
@@ -259,13 +294,14 @@ export default function Header() {
 
                   <button
                     onClick={handleLogout}
+                    disabled={isLoggingOut}
                     style={{
                       width: '100%',
                       padding: '0.75rem 1rem',
                       background: 'transparent',
                       border: 'none',
                       borderRadius: '0.375rem',
-                      cursor: 'pointer',
+                      cursor: isLoggingOut ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.75rem',
@@ -273,16 +309,19 @@ export default function Header() {
                       fontSize: '0.875rem',
                       transition: 'background 0.2s',
                       textAlign: 'left',
+                      opacity: isLoggingOut ? 0.6 : 1,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'var(--bg-secondary)'
+                      if (!isLoggingOut) {
+                        e.currentTarget.style.background = 'var(--bg-secondary)'
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent'
                     }}
                   >
                     <LogOutIcon size={18} />
-                    <span>Logout</span>
+                    <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
                   </button>
 
                   {isDanton && (
