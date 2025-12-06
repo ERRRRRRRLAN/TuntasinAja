@@ -472,18 +472,25 @@ export const announcementRouter = createTRPCRouter({
 
       // Admin can delete any announcement
       // Danton can only delete their own class announcements
+      // Author can delete their own announcements
       if (!user.isAdmin) {
-        if (!user.isDanton) {
+        // Check if user is the author
+        if (announcement.authorId === userId) {
+          // Author can delete their own announcement
+          // No additional checks needed
+        } else if (user.isDanton) {
+          // Danton can only delete their own class announcements
+          if (announcement.targetKelas !== user.kelas) {
+            throw new TRPCError({
+              code: 'FORBIDDEN',
+              message: 'Danton can only delete announcements for their own class',
+            })
+          }
+        } else {
+          // Regular users cannot delete announcements they didn't create
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Only admin or danton can delete announcements',
-          })
-        }
-
-        if (announcement.targetKelas !== user.kelas) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Danton can only delete announcements for their own class',
+            message: 'Only admin, danton, or the announcement author can delete announcements',
           })
         }
       }

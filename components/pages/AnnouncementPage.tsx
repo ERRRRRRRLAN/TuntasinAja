@@ -7,7 +7,8 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toJakartaDate } from '@/lib/date-utils'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon } from '@/components/ui/Icons'
+import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import CreateAnnouncementQuickView from '@/components/announcements/CreateAnnouncementQuickView'
@@ -16,6 +17,7 @@ export default function AnnouncementPage() {
   const { data: session } = useSession()
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const { canCreateAnnouncement } = useUserPermission()
   
   // Get user data to check if admin/danton
@@ -48,6 +50,16 @@ export default function AnnouncementPage() {
   const markAsRead = trpc.announcement.markAsRead.useMutation({
     onSuccess: () => {
       refetch()
+    },
+  })
+
+  const deleteAnnouncement = trpc.announcement.delete.useMutation({
+    onSuccess: () => {
+      setDeleteId(null)
+      refetch()
+    },
+    onError: (error) => {
+      toast.error(`Gagal menghapus pengumuman: ${error.message}`)
     },
   })
 
@@ -116,24 +128,6 @@ export default function AnnouncementPage() {
             </p>
           )}
         </div>
-        {(isAdmin || isDanton || canCreateAnnouncement) && (
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="btn btn-primary"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <PlusIcon size={20} />
-            Buat Pengumuman
-          </button>
-        )}
       </div>
 
       {!announcements || announcements.length === 0 ? (
@@ -203,6 +197,41 @@ export default function AnnouncementPage() {
                         />
                       )}
                     </div>
+                    {/* Delete button for author */}
+                    {session && announcement.authorId === session.user.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteId(announcement.id)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '1rem',
+                          right: '1rem',
+                          background: 'var(--danger)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.375rem',
+                          padding: '0.5rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--danger-dark)'
+                          e.currentTarget.style.transform = 'scale(1.1)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--danger)'
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                        aria-label="Hapus pengumuman"
+                      >
+                        <TrashIcon size={16} />
+                      </button>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
                         <UserIcon size={14} />
