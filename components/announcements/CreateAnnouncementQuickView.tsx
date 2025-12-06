@@ -84,7 +84,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
   const createAnnouncement = trpc.announcement.create.useMutation({
     onSuccess: async () => {
-      toast.success('Pengumuman berhasil dibuat!')
+      // Toast notification removed: User requested to remove UI notifications
       setTitle('')
       setContent('')
       setTargetType('class')
