@@ -238,6 +238,12 @@ export const authRouter = createTRPCRouter({
         isDanton: true,
         kelas: true,
         createdAt: true,
+        permission: {
+          select: {
+            permission: true,
+            canCreateAnnouncement: true,
+          },
+        },
         _count: {
           select: {
             threads: true,
@@ -264,6 +270,8 @@ export const authRouter = createTRPCRouter({
         isAdmin: z.boolean().optional(),
         isDanton: z.boolean().optional(),
         kelas: z.string().optional().nullable(),
+        permission: z.enum(['only_read', 'read_and_post_edit']).optional(),
+        canCreateAnnouncement: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -367,6 +375,25 @@ export const authRouter = createTRPCRouter({
           createdAt: true,
         },
       }) as any
+
+      // Update permission if provided
+      if (input.permission !== undefined || input.canCreateAnnouncement !== undefined) {
+        // Only update permission for non-admin users
+        if (!willBeAdmin) {
+          await prisma.userPermission.upsert({
+            where: { userId },
+            create: {
+              userId,
+              permission: input.permission || 'read_and_post_edit',
+              canCreateAnnouncement: input.canCreateAnnouncement ?? false,
+            },
+            update: {
+              ...(input.permission !== undefined && { permission: input.permission }),
+              ...(input.canCreateAnnouncement !== undefined && { canCreateAnnouncement: input.canCreateAnnouncement }),
+            },
+          })
+        }
+      }
 
       return updatedUser
     }),

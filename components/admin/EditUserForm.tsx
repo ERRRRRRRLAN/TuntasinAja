@@ -14,6 +14,10 @@ interface EditUserFormProps {
     isAdmin: boolean
     isDanton?: boolean
     kelas: string | null
+    permission?: {
+      permission: 'only_read' | 'read_and_post_edit'
+      canCreateAnnouncement: boolean
+    }
   }
   onSuccess?: () => void
   onCancel?: () => void
@@ -44,6 +48,12 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
   const [isAdmin, setIsAdmin] = useState(user.isAdmin)
   const [isDanton, setIsDanton] = useState(user.isDanton || false)
   const [kelas, setKelas] = useState(user.kelas || '')
+  const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>(
+    user.permission?.permission || 'read_and_post_edit'
+  )
+  const [canCreateAnnouncement, setCanCreateAnnouncement] = useState(
+    user.permission?.canCreateAnnouncement || false
+  )
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const utils = trpc.useUtils()
@@ -56,6 +66,8 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
     setIsAdmin(user.isAdmin)
     setIsDanton(user.isDanton || false)
     setKelas(user.kelas || '')
+    setPermission(user.permission?.permission || 'read_and_post_edit')
+    setCanCreateAnnouncement(user.permission?.canCreateAnnouncement || false)
     setPassword('')
     setError('')
     setSuccess('')
@@ -128,6 +140,12 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
     // Only include password if it's provided
     if (password) {
       updateData.password = password
+    }
+
+    // Only include permission if user is not admin
+    if (!isAdmin) {
+      updateData.permission = permission
+      updateData.canCreateAnnouncement = canCreateAnnouncement
     }
 
     updateUser.mutate(updateData)
@@ -337,6 +355,65 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                 </p>
               </div>
             )}
+
+            {/* Permission Settings */}
+            <div className="form-group" style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+              <label className="form-label" style={{ marginBottom: '0.75rem', display: 'block', fontWeight: 500 }}>
+                Permission
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="permission"
+                    value="read_and_post_edit"
+                    checked={permission === 'read_and_post_edit'}
+                    onChange={(e) => setPermission(e.target.value as 'read_and_post_edit')}
+                    disabled={updateUser.isLoading}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 500 }}>Read & Post/Edit</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                      User dapat membaca, membuat, dan mengedit tugas/sub tugas
+                    </div>
+                  </div>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="permission"
+                    value="only_read"
+                    checked={permission === 'only_read'}
+                    onChange={(e) => setPermission(e.target.value as 'only_read')}
+                    disabled={updateUser.isLoading}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 500 }}>Only Read</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                      User hanya dapat membaca, tidak dapat membuat atau mengedit
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={canCreateAnnouncement}
+                  onChange={(e) => setCanCreateAnnouncement(e.target.checked)}
+                  disabled={updateUser.isLoading}
+                  style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 500 }}>Bisa Membuat Pengumuman</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    User dapat membuat pengumuman untuk kelas mereka sendiri
+                  </div>
+                </div>
+              </label>
+            </div>
           </>
         )}
 
