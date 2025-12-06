@@ -7,6 +7,7 @@ import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
+import DateTimePicker from '@/components/ui/DateTimePicker'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useBackHandler } from '@/hooks/useBackHandler'
@@ -285,18 +286,11 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
             <div className="form-group">
               <label htmlFor="threadDeadline">Deadline (Opsional)</label>
-              <input
-                type="datetime-local"
-                id="threadDeadline"
+              <DateTimePicker
                 value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid var(--border)',
-                  fontSize: '0.9375rem',
-                }}
+                onChange={setDeadline}
+                placeholder="Pilih deadline tugas"
+                min={new Date().toISOString().slice(0, 16)}
               />
               <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
             </div>
