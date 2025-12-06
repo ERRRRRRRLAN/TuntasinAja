@@ -113,50 +113,54 @@ export default function Header() {
   }, [isProfileDropdownOpen])
 
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const utils = trpc.useUtils() // Move to top level
 
-  const handleLogout = async () => {
+  const handleLogout = async (e?: React.MouseEvent) => {
+    // Prevent default behavior and stop propagation
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
     if (isLoggingOut) return // Prevent multiple clicks
     
     setIsLoggingOut(true)
     setIsProfileDropdownOpen(false)
     
-    try {
-      // Clear all React Query cache
-      queryClient.clear()
+    // Clear all caches immediately
+    queryClient.clear()
+    utils.invalidate()
+    
+    // Clear all storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.clear()
       
-      // Clear tRPC cache
-      const utils = trpc.useUtils()
-      utils.invalidate()
-      
-      // Sign out from NextAuth
-      await signOut({
-        redirect: false,
-        callbackUrl: '/auth/signin',
-      })
-      
-      // Clear any cached data
-      if (typeof window !== 'undefined') {
-        // Clear localStorage if needed (be careful with this)
-        // localStorage.clear() // Uncomment if you want to clear all localStorage
-        // Clear sessionStorage
-        sessionStorage.clear()
+      // Clear all cookies manually (including NextAuth cookies)
+      const cookies = document.cookie.split(";")
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i]
+        const eqPos = cookie.indexOf("=")
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+        // Clear cookie for current domain
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+        // Also try to clear for parent domain
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
       }
-      
-      // Wait a bit to ensure signOut completes
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      // Force a hard redirect to clear all state
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/signin'
-      }
-    } catch (error) {
-      console.error('Logout error:', error)
-      setIsLoggingOut(false)
-      
-      // Even if there's an error, try to redirect
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/signin'
-      }
+    }
+    
+    // Sign out from NextAuth (fire and forget - don't wait)
+    signOut({
+      redirect: false,
+      callbackUrl: '/auth/signin',
+    }).catch((err) => {
+      console.error('SignOut error:', err)
+    })
+    
+    // Force immediate redirect - don't wait for anything
+    // This ensures logout happens immediately
+    if (typeof window !== 'undefined') {
+      // Use replace to prevent back button from going back to logged-in state
+      window.location.replace('/auth/signin')
     }
   }
 
