@@ -10,6 +10,7 @@ import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
 import NetworkStatus from '@/components/NetworkStatus'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
@@ -73,6 +74,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchInterval={5 * 60}
           refetchOnWindowFocus={true}
         >
+          <ServiceWorkerRegistration />
           <StatusBarHandler />
           <NetworkStatus />
           {children}
