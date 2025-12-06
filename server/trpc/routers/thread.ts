@@ -426,57 +426,23 @@ export const threadRouter = createTRPCRouter({
               : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
             
             // Send notification to class about new thread
-            if (normalizedKelas && !isAdmin) {
-              try {
-                // Get author info for notification
-                const author = await prisma.user.findUnique({
-                  where: { id: ctx.session.user.id },
-                  select: {
-                    name: true,
-                  },
-                })
-
-                // Format tanggal tugas
-                const threadDateJakarta = toJakartaDate(thread.date)
-                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
-                
-                // Format waktu thread dibuat
-                const threadCreatedAtJakarta = toJakartaDate(thread.createdAt)
-                const timeAgo = formatDistanceToNow(threadCreatedAtJakarta, { 
-                  addSuffix: true, 
-                  locale: id 
-                })
-                
-                // Get first comment preview if exists
-                let commentPreview = ''
-                if (thread.comments && thread.comments.length > 0) {
-                  const firstComment = thread.comments[0]
-                  commentPreview = firstComment.content.substring(0, 80) + (firstComment.content.length > 80 ? '...' : '')
+            try {
+              const result = await sendNotificationToClass(
+                normalizedKelas, // Use normalized kelas
+                '✨ Tugas Baru',
+                notificationBody,
+                {
+                  type: 'new_thread',
+                  threadId: thread.id,
+                  threadTitle: thread.title,
                 }
-                
-                // Format notifikasi: Nama - Mata Pelajaran - Waktu - Preview Komentar
-                let notificationBody = `${author?.name || 'Seseorang'} - ${thread.title} ${timeAgo}`
-                if (commentPreview) {
-                  notificationBody += `. ${commentPreview}`
-                }
-                
-                const result = await sendNotificationToClass(
-                  normalizedKelas, // Use normalized kelas
-                  '✨ Tugas Baru',
-                  notificationBody,
-                  {
-                    type: 'new_thread',
-                    threadId: thread.id,
-                    threadTitle: thread.title,
-                  }
-                )
-                console.log('[ThreadRouter] Notification result:', result)
-              } catch (error) {
-                console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
-                // Don't throw - notification failure shouldn't break thread creation
-              }
+              )
+              console.log('[ThreadRouter] Notification result:', result)
+            } catch (error) {
+              console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
+              // Don't throw - notification failure shouldn't break thread creation
             }
-        } else {
+          } else {
           console.log('[ThreadRouter] Skipping notification:', {
             hasKelas: !!userKelas,
             isAdmin,
