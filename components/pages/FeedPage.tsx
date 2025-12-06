@@ -39,6 +39,28 @@ export default function FeedPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [hasSessionCookie, setHasSessionCookie] = useState(false)
+
+  // Check if session cookie exists (even if session data not loaded yet)
+  useEffect(() => {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+
+    checkSessionCookie()
+    
+    // Check periodically in case cookie is restored
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
@@ -898,7 +920,7 @@ export default function FeedPage() {
       )}
 
       {/* Feedback FAB - Above Create Thread Button */}
-      {session && (
+      {(session || hasSessionCookie) && (
         <div 
           className="feedback-fab-container"
           style={{
@@ -1008,7 +1030,7 @@ export default function FeedPage() {
       )}
 
       {/* Floating Action Button - Create Thread */}
-      {session && canActuallyPostEdit && (
+      {(session || hasSessionCookie) && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"

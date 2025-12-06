@@ -20,9 +20,31 @@ export default function Header() {
   const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
   const [isProfileAnimating, setIsProfileAnimating] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(64)
+  const [hasSessionCookie, setHasSessionCookie] = useState(false)
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const profileContentRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLElement>(null)
+
+  // Check if session cookie exists (even if session data not loaded yet)
+  useEffect(() => {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+
+    checkSessionCookie()
+    
+    // Check periodically in case cookie is restored
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -193,22 +215,20 @@ export default function Header() {
     router.push('/danton')
   }
 
-  // Only hide if session is definitely not authenticated
-  // Keep showing header while loading to prevent flickering
-  // This ensures header stays visible even when session is being refreshed
-  if (sessionStatus === 'unauthenticated') {
+  // Only hide if session is definitely not authenticated AND no cookie exists
+  // Keep showing header if cookie exists (session might be loading)
+  if (sessionStatus === 'unauthenticated' && !hasSessionCookie) {
     return null
   }
 
-  // Always show header if we have a session, even if status is loading
-  // This prevents header from disappearing during session refresh
-  if (session) {
-    // We have a session, show header
-  } else if (sessionStatus === 'loading') {
-    // Still loading, show header to prevent flicker
-    // SessionProvider will eventually resolve
+  // Show header if:
+  // 1. We have a session, OR
+  // 2. Session is loading (might be refreshing), OR
+  // 3. Session cookie exists (session might be restored)
+  if (session || sessionStatus === 'loading' || hasSessionCookie) {
+    // Show header - session exists or is being loaded
   } else {
-    // No session and not loading - user is logged out
+    // No session, not loading, and no cookie - user is logged out
     return null
   }
 

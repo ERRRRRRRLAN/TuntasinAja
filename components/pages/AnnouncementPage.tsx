@@ -20,6 +20,28 @@ export default function AnnouncementPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { canCreateAnnouncement } = useUserPermission()
+  const [hasSessionCookie, setHasSessionCookie] = useState(false)
+
+  // Check if session cookie exists (even if session data not loaded yet)
+  useEffect(() => {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+
+    checkSessionCookie()
+    
+    // Check periodically in case cookie is restored
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
   
   // Get user data to check if admin/danton
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {

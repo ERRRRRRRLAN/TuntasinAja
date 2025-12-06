@@ -15,10 +15,10 @@ export default function SessionRefreshHandler() {
   const hiddenStartTime = useRef<number | null>(null)
 
   useEffect(() => {
-    // Minimum time between refreshes (1 minute - more frequent)
-    const MIN_REFRESH_INTERVAL = 60 * 1000
-    // Minimum time app was hidden before refreshing (30 seconds)
-    const MIN_HIDDEN_TIME = 30 * 1000
+    // Minimum time between refreshes (30 seconds - more frequent)
+    const MIN_REFRESH_INTERVAL = 30 * 1000
+    // Minimum time app was hidden before refreshing (10 seconds - less strict)
+    const MIN_HIDDEN_TIME = 10 * 1000
 
     // Handle visibility change (when app comes back to foreground)
     const handleVisibilityChange = async () => {
@@ -31,26 +31,36 @@ export default function SessionRefreshHandler() {
           ? now - hiddenStartTime.current 
           : 0
 
+        // Check if session cookie exists
+        const hasCookie = typeof document !== 'undefined' && document.cookie.split(';').some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+
         // Refresh if:
-        // 1. App was previously hidden
-        // 2. App was hidden for at least MIN_HIDDEN_TIME
-        // 3. Enough time has passed since last refresh
-        if (
-          wasHidden.current && 
-          hiddenDuration > MIN_HIDDEN_TIME &&
-          timeSinceLastRefresh > MIN_REFRESH_INTERVAL
-        ) {
+        // 1. App was previously hidden, OR
+        // 2. Session cookie exists but no session data (session might be lost)
+        // 3. App was hidden for at least MIN_HIDDEN_TIME (if was hidden)
+        // 4. Enough time has passed since last refresh
+        const shouldRefresh = (
+          (wasHidden.current && hiddenDuration > MIN_HIDDEN_TIME) ||
+          (hasCookie && !session && status !== 'loading')
+        ) && timeSinceLastRefresh > MIN_REFRESH_INTERVAL
+
+        if (shouldRefresh) {
           // Clear any pending refresh
           if (refreshTimeoutRef.current) {
             clearTimeout(refreshTimeoutRef.current)
           }
 
           // Force refresh session immediately (don't wait)
-          console.log('[SessionRefreshHandler] App resumed after being hidden, force refreshing session...', {
+          console.log('[SessionRefreshHandler] App resumed, force refreshing session...', {
             hiddenDuration: Math.round(hiddenDuration / 1000) + 's',
             timeSinceLastRefresh: Math.round(timeSinceLastRefresh / 1000) + 's',
             currentStatus: status,
-            hasSession: !!session
+            hasSession: !!session,
+            hasCookie
           })
 
           // Try to get session first (force refresh)
