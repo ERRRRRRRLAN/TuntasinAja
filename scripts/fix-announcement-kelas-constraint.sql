@@ -1,5 +1,5 @@
--- Fix: Check and fix kelas constraint issue in announcements table
--- This script checks if there's a 'kelas' field (not target_kelas) causing the issue
+-- Fix: Check and fix constraint issues in announcements table
+-- This script fixes null constraint violations for kelas, target_kelas, and expires_at
 
 -- 1. Check if 'kelas' column exists (should not exist, only target_kelas should exist)
 DO $$
@@ -45,7 +45,24 @@ BEGIN
     END IF;
 END $$;
 
--- 3. Show current schema of announcements table
+-- 3. Verify expires_at is nullable (should be)
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_name = 'announcements' 
+        AND column_name = 'expires_at' 
+        AND is_nullable = 'NO'
+    ) THEN
+        -- Make expires_at nullable if it's not
+        ALTER TABLE announcements ALTER COLUMN expires_at DROP NOT NULL;
+        RAISE NOTICE 'Made expires_at column nullable';
+    ELSE
+        RAISE NOTICE 'expires_at is already nullable - this is correct.';
+    END IF;
+END $$;
+
+-- 4. Show current schema of announcements table
 SELECT 
     column_name, 
     data_type, 

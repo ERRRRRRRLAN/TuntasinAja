@@ -274,6 +274,7 @@ export const announcementRouter = createTRPCRouter({
       // Prepare data for announcement creation
       // For global announcements, targetKelas and targetSubject must be null
       // For class/subject announcements, ensure targetKelas is set
+      // Only include expiresAt if it's provided (to avoid null constraint violation)
       const announcementData: {
         title: string
         content: string
@@ -283,7 +284,7 @@ export const announcementRouter = createTRPCRouter({
         targetSubject: string | null
         priority: 'urgent' | 'normal' | 'low'
         isPinned: boolean
-        expiresAt: Date | null
+        expiresAt?: Date | null
       } = {
         title: input.title,
         content: input.content,
@@ -293,7 +294,11 @@ export const announcementRouter = createTRPCRouter({
         targetSubject: input.targetType === 'subject' ? (input.targetSubject || null) : null,
         priority: input.priority,
         isPinned: input.isPinned,
-        expiresAt: input.expiresAt || null,
+      }
+
+      // Only include expiresAt if it's provided
+      if (input.expiresAt) {
+        announcementData.expiresAt = input.expiresAt
       }
 
       // Create announcement
