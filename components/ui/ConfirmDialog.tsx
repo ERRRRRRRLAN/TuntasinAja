@@ -41,6 +41,9 @@ export default function ConfirmDialog({
 
   useEffect(() => {
     if (isOpen) {
+      // Reset states when opening
+      setIsVisible(false)
+      setContentVisible(false)
       // Prevent body scroll when dialog is open
       document.body.style.overflow = 'hidden'
       // Small delay to ensure DOM is ready before showing
@@ -51,18 +54,25 @@ export default function ConfirmDialog({
           setContentVisible(true)
         }, 50)
       })
-    } else {
+    } else if (isVisible) {
+      // Only trigger close animation if dialog is currently visible
       // Smooth close animation: hide content first with reverse stagger
       // Buttons disappear first, then message, then title, then content, then overlay
       setContentVisible(false)
       // Wait for content animation to complete before hiding overlay
-      const timer = setTimeout(() => {
+      const timer1 = setTimeout(() => {
         setIsVisible(false)
+      }, 300) // Wait for content to fade out
+      // Wait for overlay to fade out before unmounting
+      const timer2 = setTimeout(() => {
         document.body.style.overflow = 'unset'
-      }, 400) // Slightly longer to ensure all animations complete
-      return () => clearTimeout(timer)
+      }, 600) // Total: 300ms content + 300ms overlay
+      return () => {
+        clearTimeout(timer1)
+        clearTimeout(timer2)
+      }
     }
-  }, [isOpen])
+  }, [isOpen, isVisible])
 
   // Handle browser back button - hanya aktif ketika dialog benar-benar visible
   // Tambahkan delay kecil untuk memastikan dialog sudah fully rendered
@@ -91,7 +101,9 @@ export default function ConfirmDialog({
   }
 
   // Keep dialog in DOM during close animation
-  if (!mounted || (!isOpen && !isVisible)) return null
+  // Only unmount when both isOpen is false AND isVisible is false (animation complete)
+  if (!mounted) return null
+  if (!isOpen && !isVisible) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
@@ -128,9 +140,9 @@ export default function ConfirmDialog({
         opacity: isVisible ? 1 : 0,
         backdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
         WebkitBackdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
-        transition: isVisible
+        transition: isOpen && isVisible
           ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-          : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s, backdrop-filter 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s',
+          : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1), backdrop-filter 0.3s cubic-bezier(0.4, 0, 1, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -143,9 +155,9 @@ export default function ConfirmDialog({
           transform: contentVisible 
             ? 'translateY(0) scale(1)' 
             : 'translateY(20px) scale(0.95)',
-          transition: contentVisible
+          transition: contentVisible && isOpen
             ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-            : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s'
+            : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1), transform 0.3s cubic-bezier(0.4, 0, 1, 1)'
         }}
       >
         <h3 
@@ -153,9 +165,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
-            transition: contentVisible 
+            transition: contentVisible && isOpen
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
           }}
         >
           {title}
@@ -165,9 +177,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
-            transition: contentVisible 
+            transition: contentVisible && isOpen
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
           }}
         >
           {message}
@@ -177,9 +189,9 @@ export default function ConfirmDialog({
           style={{
             opacity: contentVisible ? 1 : 0,
             transform: contentVisible ? 'translateY(0)' : 'translateY(10px)',
-            transition: contentVisible 
+            transition: contentVisible && isOpen
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s'
-              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1), transform 0.25s cubic-bezier(0.4, 0, 1, 1)'
           }}
         >
           <button
