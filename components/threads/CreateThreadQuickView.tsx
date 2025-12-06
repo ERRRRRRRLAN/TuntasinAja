@@ -22,12 +22,16 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  // Default deadline: 1 week from today at 00:00 (midnight)
+  // Default deadline: 7 days from today at 00:00 (midnight)
+  // Calculate when form is opened, not when component mounts
   const getDefaultDeadline = () => {
-    const oneWeekLater = addWeeks(new Date(), 1)
+    const today = new Date()
+    // Add 7 days
+    const sevenDaysLater = new Date(today)
+    sevenDaysLater.setDate(today.getDate() + 7)
     // Set time to 00:00:00
-    oneWeekLater.setHours(0, 0, 0, 0)
-    return oneWeekLater.toISOString().slice(0, 16)
+    sevenDaysLater.setHours(0, 0, 0, 0)
+    return sevenDaysLater.toISOString().slice(0, 16)
   }
   const [deadline, setDeadline] = useState<string>(getDefaultDeadline())
   const [isVisible, setIsVisible] = useState(false)
@@ -99,8 +103,12 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   }, [onClose])
 
   // Lock body scroll when quickview is open (mobile)
+  // Also reset deadline to current date + 7 days when form opens
   useEffect(() => {
     setIsQuickViewOpen(true)
+    // Reset deadline to 7 days from today when form opens
+    setDeadline(getDefaultDeadline())
+    
     const scrollY = window.scrollY
     document.body.style.overflow = 'hidden'
     document.body.style.position = 'fixed'
