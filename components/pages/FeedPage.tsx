@@ -232,19 +232,31 @@ export default function FeedPage() {
 
   // Show reminder modal automatically when user logs in and there are overdue tasks
   // Disabled for admin users (admin doesn't have kelas)
-  // Only show once per session
+  // Only show once per application session (using sessionStorage)
   useEffect(() => {
+    // Skip for admin users
+    if (isAdmin) return
+    
+    // Check if reminder has been shown in this session
+    const reminderShownKey = `reminder_shown_${session?.user?.id || 'anonymous'}`
+    const hasShownReminder = typeof window !== 'undefined' && sessionStorage.getItem(reminderShownKey) === 'true'
+    
+    // Only check once per session (when component first mounts and data is validated)
+    // And only if reminder hasn't been shown in this session
     if (
       session &&
-      !isAdmin && // Disable for admin
+      !hasShownReminder &&
       isDataValidated &&
-      !hasCheckedReminder &&
       overdueTasks.length > 0
     ) {
       setShowReminderModal(true)
       setHasCheckedReminder(true)
+      // Mark reminder as shown in sessionStorage
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(reminderShownKey, 'true')
+      }
     }
-  }, [session, isAdmin, isDataValidated, hasCheckedReminder, overdueTasks.length])
+  }, [session, isAdmin, isDataValidated, overdueTasks.length])
 
 
 
