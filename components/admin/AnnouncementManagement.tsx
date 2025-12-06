@@ -204,7 +204,7 @@ export default function AnnouncementManagement() {
           message="Apakah Anda yakin ingin menghapus pengumuman ini? Tindakan ini tidak dapat dibatalkan."
           confirmText="Hapus"
           cancelText="Batal"
-          confirmStyle={{ background: 'var(--danger)', color: 'white' }}
+          danger={true}
         />
       )}
     </div>
