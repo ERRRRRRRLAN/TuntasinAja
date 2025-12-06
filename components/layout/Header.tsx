@@ -127,40 +127,59 @@ export default function Header() {
     setIsLoggingOut(true)
     setIsProfileDropdownOpen(false)
     
-    // Clear all caches immediately
-    queryClient.clear()
-    utils.invalidate()
-    
-    // Clear all storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.clear()
+    try {
+      // Clear all caches first
+      queryClient.clear()
+      utils.invalidate()
       
-      // Clear all cookies manually (including NextAuth cookies)
-      const cookies = document.cookie.split(";")
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i]
-        const eqPos = cookie.indexOf("=")
-        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
-        // Clear cookie for current domain
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
-        // Also try to clear for parent domain
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
+      // Clear all storage
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear()
       }
-    }
-    
-    // Sign out from NextAuth (fire and forget - don't wait)
-    signOut({
-      redirect: false,
-      callbackUrl: '/auth/signin',
-    }).catch((err) => {
-      console.error('SignOut error:', err)
-    })
-    
-    // Force immediate redirect - don't wait for anything
-    // This ensures logout happens immediately
-    if (typeof window !== 'undefined') {
-      // Use replace to prevent back button from going back to logged-in state
-      window.location.replace('/auth/signin')
+      
+      // Call custom logout API to clear server-side session
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      } catch (apiError) {
+        console.error('Logout API error:', apiError)
+        // Continue with client-side logout even if API fails
+      }
+      
+      // Sign out from NextAuth
+      await signOut({
+        redirect: false,
+        callbackUrl: '/auth/signin',
+      })
+      
+      // Clear cookies manually as additional measure
+      if (typeof window !== 'undefined') {
+        const cookies = document.cookie.split(";")
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i]
+          const eqPos = cookie.indexOf("=")
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+          // Clear cookie with all possible combinations
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
+        }
+      }
+      
+      // Force redirect to signin page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin'
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+      
+      // Force redirect even on error
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin'
+      }
     }
   }
 
