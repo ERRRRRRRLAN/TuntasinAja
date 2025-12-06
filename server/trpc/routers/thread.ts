@@ -426,22 +426,21 @@ export const threadRouter = createTRPCRouter({
               : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
             
             // Send notification to class about new thread
-            try {
-              const result = await sendNotificationToClass(
-                normalizedKelas, // Use normalized kelas
-                '✨ Tugas Baru',
-                notificationBody,
-                {
-                  type: 'new_thread',
-                  threadId: thread.id,
-                  threadTitle: thread.title,
-                }
-              )
-              console.log('[ThreadRouter] Notification result:', result)
-            } catch (error) {
-              console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
-              // Don't throw - notification failure shouldn't break thread creation
-            }
+            const result = await sendNotificationToClass(
+              normalizedKelas, // Use normalized kelas
+              '✨ Tugas Baru',
+              notificationBody,
+              {
+                type: 'new_thread',
+                threadId: thread.id,
+                threadTitle: thread.title,
+              }
+            )
+            console.log('[ThreadRouter] Notification result:', result)
+          } catch (error) {
+            console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
+            // Don't throw - notification failure shouldn't break thread creation
+          }
         } else {
           console.log('[ThreadRouter] Skipping notification:', {
             hasKelas: !!userKelas,
