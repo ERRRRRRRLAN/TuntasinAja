@@ -5,51 +5,65 @@ import { useEffect } from 'react'
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      // Hanya register di production atau jika diperlukan
+      // Skip di development untuk menghindari masalah
+      if (process.env.NODE_ENV === 'development') {
+        // Unregister service worker jika ada di development
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => {
+            registration.unregister()
+          })
+        })
+        return
+      }
+
       // Register service worker
       navigator.serviceWorker
         .register('/sw.js', {
           scope: '/',
+          updateViaCache: 'none', // Selalu cek update dari server
         })
         .then((registration) => {
           console.log('[Service Worker] Registered successfully:', registration.scope)
 
-          // Check for updates every hour
-          setInterval(() => {
-            registration.update()
+          // Check for updates setiap 1 jam
+          const updateInterval = setInterval(() => {
+            registration.update().catch((err) => {
+              console.error('[Service Worker] Update check failed:', err)
+            })
           }, 60 * 60 * 1000)
 
-          // Handle updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing
-
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New service worker available, prompt user to reload
-                  console.log('[Service Worker] New version available')
-                  
-                  // Optionally show a notification to user
-                  if (confirm('Versi baru tersedia. Muat ulang halaman?')) {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' })
-                    window.location.reload()
-                  }
-                }
-              })
-            }
-          })
+          // Cleanup interval saat component unmount
+          return () => {
+            clearInterval(updateInterval)
+          }
+        })
+        .then((cleanup) => {
+          // Store cleanup function
+          if (cleanup) {
+            // Cleanup akan dipanggil saat component unmount
+          }
         })
         .catch((error) => {
           console.error('[Service Worker] Registration failed:', error)
+          // Jangan crash app jika service worker gagal
         })
 
-      // Handle service worker controller change (when new SW takes control)
-      let refreshing = false
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true
-          window.location.reload()
-        }
-      })
+      // Handle service worker updates
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          // Reload page saat service worker baru mengambil kontrol
+          // Tapi jangan reload terlalu sering
+          if (!window.location.reload) {
+            return
+          }
+          
+          // Delay reload sedikit untuk menghindari loop
+          setTimeout(() => {
+            window.location.reload()
+          }, 100)
+        })
+      }
     }
   }, [])
 
