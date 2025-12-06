@@ -18,6 +18,8 @@ export default function ServiceWorkerRegistration() {
       }
 
       // Register service worker
+      let updateInterval: NodeJS.Timeout | null = null
+
       navigator.serviceWorker
         .register('/sw.js', {
           scope: '/',
@@ -27,22 +29,11 @@ export default function ServiceWorkerRegistration() {
           console.log('[Service Worker] Registered successfully:', registration.scope)
 
           // Check for updates setiap 1 jam
-          const updateInterval = setInterval(() => {
+          updateInterval = setInterval(() => {
             registration.update().catch((err) => {
               console.error('[Service Worker] Update check failed:', err)
             })
           }, 60 * 60 * 1000)
-
-          // Cleanup interval saat component unmount
-          return () => {
-            clearInterval(updateInterval)
-          }
-        })
-        .then((cleanup) => {
-          // Store cleanup function
-          if (cleanup) {
-            // Cleanup akan dipanggil saat component unmount
-          }
         })
         .catch((error) => {
           console.error('[Service Worker] Registration failed:', error)
@@ -63,6 +54,13 @@ export default function ServiceWorkerRegistration() {
             window.location.reload()
           }, 100)
         })
+      }
+
+      // Cleanup function untuk useEffect
+      return () => {
+        if (updateInterval) {
+          clearInterval(updateInterval)
+        }
       }
     }
   }, [])
