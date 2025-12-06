@@ -272,14 +272,15 @@ export const announcementRouter = createTRPCRouter({
       }
 
       // Create announcement
+      // Only include targetKelas if targetType is not 'global'
       const announcement = await prisma.announcement.create({
         data: {
           title: input.title,
           content: input.content,
           authorId: userId,
           targetType: input.targetType,
-          targetKelas: input.targetKelas || null,
-          targetSubject: input.targetSubject || null,
+          targetKelas: input.targetType === 'global' ? null : (input.targetKelas || null),
+          targetSubject: input.targetType === 'subject' ? (input.targetSubject || null) : null,
           priority: input.priority,
           isPinned: input.isPinned,
           expiresAt: input.expiresAt || null,
