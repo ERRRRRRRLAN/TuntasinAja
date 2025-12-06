@@ -84,13 +84,14 @@ export default function ConfirmDialog({
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
-    if (e.target === overlayRef.current && !isOpen) {
-      setIsVisible(false)
+    if (e.target === overlayRef.current && !isOpen && !isVisible) {
+      // Animation complete, safe to cleanup
       document.body.style.overflow = 'unset'
     }
   }
 
-  if (!isOpen || !mounted) return null
+  // Keep dialog in DOM during close animation
+  if (!mounted || (!isOpen && !isVisible)) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content

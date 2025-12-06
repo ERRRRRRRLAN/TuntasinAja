@@ -31,6 +31,7 @@ export default function QuickViewConfirmDialog({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -44,13 +45,20 @@ export default function QuickViewConfirmDialog({
       // Small delay to ensure DOM is ready before showing
       requestAnimationFrame(() => {
         setIsVisible(true)
+        // Stagger animation: show content after overlay starts fading in
+        setTimeout(() => {
+          setContentVisible(true)
+        }, 50)
       })
     } else {
-      // Wait for transition to complete before hiding
+      // Smooth close animation: hide content first with reverse stagger
+      // Buttons disappear first, then message, then title, then content, then overlay
+      setContentVisible(false)
+      // Wait for content animation to complete before hiding overlay
       const timer = setTimeout(() => {
         setIsVisible(false)
         document.body.style.overflow = 'unset'
-      }, 300) // Match transition duration
+      }, 400) // Slightly longer to ensure all animations complete
       return () => clearTimeout(timer)
     }
   }, [isOpen])
@@ -75,13 +83,14 @@ export default function QuickViewConfirmDialog({
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     // Only handle transition end for opacity (not child elements)
-    if (e.target === overlayRef.current && !isOpen) {
-      setIsVisible(false)
+    if (e.target === overlayRef.current && !isOpen && !isVisible) {
+      // Animation complete, safe to cleanup
       document.body.style.overflow = 'unset'
     }
   }
 
-  if (!isOpen || !mounted) return null
+  // Keep dialog in DOM during close animation
+  if (!mounted || (!isOpen && !isVisible)) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
@@ -116,7 +125,11 @@ export default function QuickViewConfirmDialog({
       onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        backdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
+        WebkitBackdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
+        transition: isVisible
+          ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+          : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s, backdrop-filter 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -125,14 +138,49 @@ export default function QuickViewConfirmDialog({
         className="quickview-confirm-dialog-content"
         onClick={handleContentClick}
         style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          opacity: contentVisible ? 1 : 0,
+          transform: contentVisible 
+            ? 'translateY(0) scale(1)' 
+            : 'translateY(20px) scale(0.95)',
+          transition: contentVisible
+            ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+            : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s'
         }}
       >
-        <h3 className="confirm-dialog-title quickview-confirm-dialog-title">{title}</h3>
-        <p className="confirm-dialog-message quickview-confirm-dialog-message">{message}</p>
-        <div className="confirm-dialog-actions quickview-confirm-dialog-actions">
+        <h3 
+          className="confirm-dialog-title quickview-confirm-dialog-title"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0s'
+          }}
+        >
+          {title}
+        </h3>
+        <p 
+          className="confirm-dialog-message quickview-confirm-dialog-message"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s'
+          }}
+        >
+          {message}
+        </p>
+        <div 
+          className="confirm-dialog-actions quickview-confirm-dialog-actions"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s'
+          }}
+        >
           <button
             type="button"
             onClick={handleCancelClick}
