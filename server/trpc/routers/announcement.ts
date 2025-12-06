@@ -271,20 +271,34 @@ export const announcementRouter = createTRPCRouter({
         })
       }
 
+      // Prepare data for announcement creation
+      // For global announcements, targetKelas and targetSubject must be null
+      // For class/subject announcements, ensure targetKelas is set
+      const announcementData: {
+        title: string
+        content: string
+        authorId: string
+        targetType: 'global' | 'class' | 'subject'
+        targetKelas: string | null
+        targetSubject: string | null
+        priority: 'urgent' | 'normal' | 'low'
+        isPinned: boolean
+        expiresAt: Date | null
+      } = {
+        title: input.title,
+        content: input.content,
+        authorId: userId,
+        targetType: input.targetType,
+        targetKelas: input.targetType === 'global' ? null : (input.targetKelas || null),
+        targetSubject: input.targetType === 'subject' ? (input.targetSubject || null) : null,
+        priority: input.priority,
+        isPinned: input.isPinned,
+        expiresAt: input.expiresAt || null,
+      }
+
       // Create announcement
-      // Only include targetKelas if targetType is not 'global'
       const announcement = await prisma.announcement.create({
-        data: {
-          title: input.title,
-          content: input.content,
-          authorId: userId,
-          targetType: input.targetType,
-          targetKelas: input.targetType === 'global' ? null : (input.targetKelas || null),
-          targetSubject: input.targetType === 'subject' ? (input.targetSubject || null) : null,
-          priority: input.priority,
-          isPinned: input.isPinned,
-          expiresAt: input.expiresAt || null,
-        },
+        data: announcementData,
         include: {
           author: {
             select: {
