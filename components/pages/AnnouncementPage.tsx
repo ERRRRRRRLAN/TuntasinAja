@@ -375,6 +375,22 @@ export default function AnnouncementPage() {
             <PlusIcon size={24} />
           </button>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        {deleteId && (
+          <ConfirmDialog
+            isOpen={!!deleteId}
+            title="Hapus Pengumuman"
+            message="Apakah Anda yakin ingin menghapus pengumuman ini? Tindakan ini tidak dapat dibatalkan."
+            confirmText="Hapus"
+            cancelText="Batal"
+            onConfirm={() => {
+              deleteAnnouncement.mutate({ id: deleteId })
+            }}
+            onCancel={() => setDeleteId(null)}
+            danger={true}
+          />
+        )}
       </div>
 
       <style jsx>{`
