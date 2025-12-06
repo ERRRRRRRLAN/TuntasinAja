@@ -491,6 +491,26 @@ export function DownloadIcon({ className = '', size = 16, style }: IconProps) {
   )
 }
 
+export function PinIcon({ className = '', size = 16, style }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+    >
+      <path d="M12 17v5" />
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 7 15.66V20a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4.34a2 2 0 0 0 .89-1.21l1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3.76z" />
+    </svg>
+  )
+}
+
 export function RotateCcwIcon({ className = '', size = 16, style }: IconProps) {
   return (
     <svg

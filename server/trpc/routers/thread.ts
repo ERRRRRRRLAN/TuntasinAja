@@ -197,6 +197,7 @@ export const threadRouter = createTRPCRouter({
       z.object({
         title: z.string().min(1),
         comment: z.string().optional(),
+        deadline: z.date().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -352,6 +353,7 @@ export const threadRouter = createTRPCRouter({
             authorId: ctx.session.user.id,
             date: today,
             createdAt: now,
+            deadline: input.deadline || null,
             comments: input.comment
               ? {
                   create: {
@@ -491,6 +493,7 @@ export const threadRouter = createTRPCRouter({
       z.object({
         threadId: z.string(),
         content: z.string().min(1),
+        deadline: z.date().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -554,6 +557,7 @@ export const threadRouter = createTRPCRouter({
           threadId: input.threadId,
           authorId: ctx.session.user.id,
           content: input.content,
+          deadline: input.deadline || null,
           createdAt: now,
         },
         include: {

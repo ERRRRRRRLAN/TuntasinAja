@@ -20,6 +20,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
+  const [deadline, setDeadline] = useState<string>('')
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
@@ -62,6 +63,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
+      setDeadline('')
       setIsSubmitting(false)
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
@@ -169,7 +171,11 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     }
     
     setIsSubmitting(true)
-    createThread.mutate({ title, comment: comment || undefined })
+    createThread.mutate({ 
+      title, 
+      comment: comment || undefined,
+      deadline: deadline ? new Date(deadline) : undefined
+    })
   }
 
   return (
@@ -275,6 +281,24 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 rows={3}
                 placeholder="Contoh: Kerjakan halaman 42-45"
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="threadDeadline">Deadline (Opsional)</label>
+              <input
+                type="datetime-local"
+                id="threadDeadline"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border)',
+                  fontSize: '0.9375rem',
+                }}
+              />
+              <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
             </div>
 
             <div className="form-actions">

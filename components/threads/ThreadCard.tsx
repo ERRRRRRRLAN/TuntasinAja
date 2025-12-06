@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
+import { format, differenceInHours, differenceInMinutes, addDays, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
+import { toJakartaDate, getUTCDate } from '@/lib/date-utils'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
@@ -18,6 +19,7 @@ interface ThreadCardProps {
     title: string
     date: Date
     createdAt: Date
+    deadline?: Date | null
     author: {
       id: string
       name: string
@@ -26,6 +28,7 @@ interface ThreadCardProps {
     comments: Array<{
       id: string
       content: string
+      deadline?: Date | null
       author: {
         id: string
         name: string
@@ -169,6 +172,58 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
+  // Calculate deadline badge
+  const getDeadlineBadge = () => {
+    if (!thread.deadline) return null
+
+    const now = getUTCDate()
+    const deadlineUTC = new Date(thread.deadline)
+    const deadlineJakarta = toJakartaDate(deadlineUTC)
+    const nowJakarta = toJakartaDate(now)
+
+    const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+    const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+    if (hoursUntilDeadline < 0) {
+      // Deadline sudah lewat
+      return {
+        text: 'Deadline lewat',
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 2) {
+      // Kurang dari 2 jam
+      return {
+        text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 24) {
+      // Kurang dari 24 jam
+      return {
+        text: `${hoursUntilDeadline}j lagi`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (daysUntilDeadline < 3) {
+      // Kurang dari 3 hari
+      return {
+        text: `${daysUntilDeadline}d lagi`,
+        color: 'var(--warning)',
+        bg: 'var(--warning)20',
+      }
+    } else {
+      // Lebih dari 3 hari
+      return {
+        text: format(deadlineJakarta, 'd MMM', { locale: id }),
+        color: 'var(--text-light)',
+        bg: 'var(--bg-secondary)',
+      }
+    }
+  }
+
+  const deadlineBadge = getDeadlineBadge()
+
 
   return (
     <div 
@@ -266,6 +321,24 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
           </span>
+          {deadlineBadge && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: deadlineBadge.color,
+                background: deadlineBadge.bg,
+              }}
+            >
+              <ClockIcon size={14} />
+              {deadlineBadge.text}
+            </span>
+          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
             <span>{thread._count.comments} sub tugas</span>

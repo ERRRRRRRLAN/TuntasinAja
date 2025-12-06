@@ -301,6 +301,21 @@ export default function FeedPage() {
       })
     }
 
+    // Sort by deadline (nearest first), then by createdAt (newest first)
+    filtered.sort((a, b) => {
+      // If both have deadlines, sort by deadline (nearest first)
+      if (a.deadline && b.deadline) {
+        const deadlineA = new Date(a.deadline).getTime()
+        const deadlineB = new Date(b.deadline).getTime()
+        return deadlineA - deadlineB
+      }
+      // If only one has deadline, prioritize it
+      if (a.deadline && !b.deadline) return -1
+      if (!a.deadline && b.deadline) return 1
+      // If neither has deadline, sort by createdAt (newest first)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+
     return filtered
   }, [threads, selectedSubject, selectedKelas, searchQuery, filteredSubjects, isAdmin, userKelas, isDataValidated])
 

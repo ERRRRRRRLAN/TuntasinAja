@@ -15,13 +15,14 @@ import AppSettingsControl from '@/components/admin/AppSettingsControl'
 import TestingReminderButton from '@/components/admin/TestingReminderButton'
 import DatabaseHealth from '@/components/admin/DatabaseHealth'
 import BulkOperations from '@/components/admin/BulkOperations'
+import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
   const [showBulkAddUser, setShowBulkAddUser] = useState(false)
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings' | 'announcements'>('users')
   const utils = trpc.useUtils()
   
   // Get unread feedback count for admin
@@ -112,6 +113,11 @@ export default function ProfilePage() {
                 {activeTab === 'feedback' && (
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
                     Kelola saran dan masukan dari user
+                  </div>
+                )}
+                {activeTab === 'announcements' && (
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    Kelola pengumuman untuk kelas
                   </div>
                 )}
                 {activeTab === 'settings' && (
@@ -300,6 +306,12 @@ export default function ProfilePage() {
               {activeTab === 'feedback' && (
                 <div>
                   <FeedbackList />
+                </div>
+              )}
+
+              {activeTab === 'announcements' && (
+                <div>
+                  <AnnouncementManagement />
                 </div>
               )}
 

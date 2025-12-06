@@ -35,6 +35,7 @@ export default function Header() {
     { href: '/', label: 'Tugas' },
     { href: '/history', label: 'History' },
     { href: '/schedule', label: 'Jadwal' },
+    { href: '/announcement', label: 'Pengumuman' },
     ...(isDanton ? [{ href: '/danton', label: 'Danton' }] : []),
   ]
 

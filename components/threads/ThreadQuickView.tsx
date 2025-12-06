@@ -25,6 +25,7 @@ interface ThreadQuickViewProps {
 export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewProps) {
   const { data: session } = useSession()
   const [commentContent, setCommentContent] = useState('')
+  const [commentDeadline, setCommentDeadline] = useState<string>('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
@@ -328,6 +329,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const addComment = trpc.thread.addComment.useMutation({
     onSuccess: async () => {
       setCommentContent('')
+      setCommentDeadline('')
       setIsSubmittingComment(false)
       // Invalidate and refetch immediately
       await Promise.all([
@@ -362,6 +364,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     addComment.mutate({
       threadId,
       content: commentContent.trim(),
+      deadline: commentDeadline ? new Date(commentDeadline) : undefined,
     })
   }
 
@@ -785,6 +788,22 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   required
                   disabled={addComment.isLoading}
                 />
+              </div>
+              <div className="form-group">
+                <label htmlFor="commentDeadline" className="form-label">
+                  Deadline (Opsional)
+                </label>
+                <input
+                  type="datetime-local"
+                  id="commentDeadline"
+                  value={commentDeadline}
+                  onChange={(e) => setCommentDeadline(e.target.value)}
+                  className="form-input"
+                  disabled={addComment.isLoading}
+                />
+                <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                  Tentukan kapan sub tugas harus selesai (opsional)
+                </small>
               </div>
               <button
                 type="submit"

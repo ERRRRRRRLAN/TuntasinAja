@@ -28,6 +28,8 @@ model User {
   permission    UserPermission?
   feedbacks     Feedback[]
   deviceTokens  DeviceToken[]
+  announcements Announcement[]
+  announcementReads AnnouncementRead[]
 
   @@map("users")
 }
@@ -37,6 +39,7 @@ model Thread {
   title       String    @map("judul_mapel")
   authorId    String    @map("user_id_pembuat")
   date        DateTime  @default(now())
+  deadline    DateTime? @map("deadline") // Optional deadline untuk tugas
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -55,6 +58,7 @@ model Comment {
   threadId    String    @map("thread_id")
   authorId    String    @map("user_id_pembuat")
   content     String    @map("isi_tugas")
+  deadline    DateTime? @map("deadline") // Optional deadline untuk sub-tugas
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -219,4 +223,57 @@ model AppSettings {
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@map("app_settings")
+}
+
+enum AnnouncementTargetType {
+  global
+  class
+  subject
+}
+
+enum AnnouncementPriority {
+  urgent
+  normal
+  low
+}
+
+model Announcement {
+  id            String                 @id @default(cuid())
+  title         String                 @map("title")
+  content       String                 @map("content")
+  authorId      String                 @map("author_id")
+  targetType    AnnouncementTargetType @map("target_type")
+  targetKelas   String?                @map("target_kelas")
+  targetSubject String?                @map("target_subject")
+  priority      AnnouncementPriority   @default(normal) @map("priority")
+  isPinned      Boolean                @default(false) @map("is_pinned")
+  expiresAt     DateTime?              @map("expires_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+
+  author        User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reads         AnnouncementRead[]
+
+  @@index([targetType])
+  @@index([targetKelas])
+  @@index([isPinned])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id            String       @id @default(cuid())
+  announcementId String      @map("announcement_id")
+  userId        String       @map("user_id")
+  readAt        DateTime    @default(now()) @map("read_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+  @@index([announcementId])
+  @@map("announcement_reads")
 }
