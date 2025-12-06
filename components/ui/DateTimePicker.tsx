@@ -24,10 +24,10 @@ export default function DateTimePicker({
   min,
   max,
 }: DateTimePickerProps) {
-  const [isOpen, setIsOpen] = useState(false)
   const [dateValue, setDateValue] = useState(value ? value.split('T')[0] : '')
   const [timeValue, setTimeValue] = useState(value ? value.split('T')[1] || '00:00' : '00:00')
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [isTimeOpen, setIsTimeOpen] = useState(false)
+  const timeContainerRef = useRef<HTMLDivElement>(null)
 
   // Update internal state when value prop changes
   useEffect(() => {
@@ -41,27 +41,28 @@ export default function DateTimePicker({
     }
   }, [value])
 
-  // Close dropdown when clicking outside
+  // Close time dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (timeContainerRef.current && !timeContainerRef.current.contains(event.target as Node)) {
+        setIsTimeOpen(false)
       }
     }
 
-    if (isOpen) {
+    if (isTimeOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isOpen])
+  }, [isTimeOpen])
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
+  const handleDateChange = (newDate: string) => {
     setDateValue(newDate)
     if (newDate && timeValue) {
       onChange(`${newDate}T${timeValue}`)
+    } else if (newDate) {
+      onChange(`${newDate}T00:00`)
     }
   }
 
@@ -73,141 +74,83 @@ export default function DateTimePicker({
     }
   }
 
-  const handleClear = () => {
-    setDateValue('')
-    setTimeValue('00:00')
-    onChange('')
-    setIsOpen(false)
-  }
-
   const displayValue = value
     ? format(toJakartaDate(new Date(value)), 'd MMM yyyy, HH:mm', { locale: id })
     : ''
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
-      <div
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          border: '2px solid var(--border)',
-          borderRadius: '0.5rem',
-          background: disabled ? 'var(--bg-secondary)' : 'var(--card)',
-          color: disabled ? 'var(--text-light)' : 'var(--text)',
-          fontSize: '1rem',
-          fontFamily: 'inherit',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          transition: 'border-color 0.2s',
-          minHeight: '44px',
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) {
-            e.currentTarget.style.borderColor = 'var(--primary)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled) {
-            e.currentTarget.style.borderColor = 'var(--border)'
-          }
-        }}
-      >
-        <ClockIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
-        <span style={{ flex: 1, textAlign: 'left' }}>
-          {displayValue || placeholder}
-        </span>
-        {value && !disabled && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleClear()
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-light)',
-              cursor: 'pointer',
-              padding: '0.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '0.25rem',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-              e.currentTarget.style.color = 'var(--danger)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none'
-              e.currentTarget.style.color = 'var(--text-light)'
-            }}
-            aria-label="Hapus"
-          >
-            ✕
-          </button>
-        )}
+    <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* Date Picker */}
+      <div>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
+          Tanggal
+        </label>
+        <DatePicker
+          value={dateValue}
+          onChange={handleDateChange}
+          placeholder="Pilih tanggal"
+          disabled={disabled}
+          min={min?.split('T')[0]}
+          max={max?.split('T')[0]}
+        />
       </div>
 
-      {isOpen && !disabled && (
+      {/* Time Picker */}
+      <div ref={timeContainerRef} style={{ position: 'relative' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
+          Waktu
+        </label>
         <div
+          onClick={() => !disabled && setIsTimeOpen(!isTimeOpen)}
           style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            marginTop: '0.5rem',
-            background: 'var(--card)',
+            width: '100%',
+            padding: '0.75rem',
             border: '2px solid var(--border)',
             borderRadius: '0.5rem',
-            padding: '1rem',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            zIndex: 1000,
+            background: disabled ? 'var(--bg-secondary)' : 'var(--card)',
+            color: disabled ? 'var(--text-light)' : 'var(--text)',
+            fontSize: '1rem',
+            fontFamily: 'inherit',
+            cursor: disabled ? 'not-allowed' : 'pointer',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'border-color 0.2s',
+            minHeight: '44px',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => {
+            if (!disabled) {
+              e.currentTarget.style.borderColor = 'var(--primary)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!disabled) {
+              e.currentTarget.style.borderColor = 'var(--border)'
+            }
+          }}
         >
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
-              Tanggal
-            </label>
-            <input
-              type="date"
-              value={dateValue}
-              onChange={handleDateChange}
-              min={min?.split('T')[0]}
-              max={max?.split('T')[0]}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '2px solid var(--border)',
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                background: 'var(--card)',
-                color: 'var(--text)',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)'
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
-              Waktu
-            </label>
+          <ClockIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+          <span style={{ flex: 1, textAlign: 'left' }}>
+            {timeValue || '00:00'}
+          </span>
+        </div>
+
+        {isTimeOpen && !disabled && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 0.5rem)',
+              left: 0,
+              right: 0,
+              background: 'var(--card)',
+              border: '2px solid var(--border)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              zIndex: 1000,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <input
               type="time"
               value={timeValue}
@@ -232,20 +175,19 @@ export default function DateTimePicker({
                 e.currentTarget.style.boxShadow = 'none'
               }}
             />
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setIsTimeOpen(false)}
+                className="btn"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+              >
+                Tutup
+              </button>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="btn"
-              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
-
