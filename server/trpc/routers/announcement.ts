@@ -73,9 +73,20 @@ export const announcementRouter = createTRPCRouter({
     // Mark which announcements are read
     const announcementsWithReadStatus = announcements.map((announcement) => {
       const isRead = userId ? announcement.reads.length > 0 : false
-      const { reads, ...announcementWithoutReads } = announcement
       return {
-        ...announcementWithoutReads,
+        id: announcement.id,
+        title: announcement.title,
+        content: announcement.content,
+        authorId: announcement.authorId,
+        author: announcement.author, // Explicitly include author
+        targetType: announcement.targetType,
+        targetKelas: announcement.targetKelas,
+        targetSubject: announcement.targetSubject,
+        priority: announcement.priority,
+        isPinned: announcement.isPinned,
+        expiresAt: announcement.expiresAt,
+        createdAt: announcement.createdAt,
+        updatedAt: announcement.updatedAt,
         isRead,
       }
     })
