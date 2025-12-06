@@ -1,32 +1,26 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useSession, getSession } from 'next-auth/react'
 
 /**
- * Component to handle session refresh when app resumes from background
- * This ensures session is refreshed when user returns to the app after being idle
+ * Component to handle auto reload when app resumes from background
+ * This ensures app state is fresh when user returns after being idle
  */
 export default function SessionRefreshHandler() {
-  const { data: session, status, update } = useSession()
-  const lastRefreshTime = useRef<number>(0)
   const wasHidden = useRef<boolean>(false)
-  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hiddenStartTime = useRef<number | null>(null)
+  const reloadTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const hasReloadedRef = useRef<boolean>(false)
 
   useEffect(() => {
-    // Minimum time between refreshes (30 seconds - more frequent)
-    const MIN_REFRESH_INTERVAL = 30 * 1000
-    // Minimum time app was hidden before refreshing (10 seconds - less strict)
-    const MIN_HIDDEN_TIME = 10 * 1000
+    // Minimum time app was hidden before reloading (30 seconds)
+    const MIN_HIDDEN_TIME = 30 * 1000
 
     // Handle visibility change (when app comes back to foreground)
-    const handleVisibilityChange = async () => {
-      const now = Date.now()
-      const timeSinceLastRefresh = now - lastRefreshTime.current
-
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         // Check if app was hidden long enough
+        const now = Date.now()
         const hiddenDuration = hiddenStartTime.current 
           ? now - hiddenStartTime.current 
           : 0
@@ -38,41 +32,41 @@ export default function SessionRefreshHandler() {
                  trimmed.startsWith('__Secure-next-auth.session-token=')
         })
 
-        // Refresh if:
-        // 1. App was previously hidden, OR
-        // 2. Session cookie exists but no session data (session might be lost)
-        // 3. App was hidden for at least MIN_HIDDEN_TIME (if was hidden)
-        // 4. Enough time has passed since last refresh
-        const shouldRefresh = (
-          (wasHidden.current && hiddenDuration > MIN_HIDDEN_TIME) ||
-          (hasCookie && !session && status !== 'loading')
-        ) && timeSinceLastRefresh > MIN_REFRESH_INTERVAL
-
-        if (shouldRefresh) {
-          // Clear any pending refresh
-          if (refreshTimeoutRef.current) {
-            clearTimeout(refreshTimeoutRef.current)
+        // Reload if:
+        // 1. App was previously hidden
+        // 2. App was hidden for at least MIN_HIDDEN_TIME
+        // 3. Session cookie exists (user was logged in)
+        // 4. Haven't reloaded yet in this session
+        if (
+          wasHidden.current && 
+          hiddenDuration > MIN_HIDDEN_TIME &&
+          hasCookie &&
+          !hasReloadedRef.current
+        ) {
+          // Clear any pending reload
+          if (reloadTimeoutRef.current) {
+            clearTimeout(reloadTimeoutRef.current)
           }
 
-          // Force refresh session immediately (don't wait)
-          console.log('[SessionRefreshHandler] App resumed, force refreshing session...', {
+          console.log('[SessionRefreshHandler] App resumed after being hidden, reloading page...', {
             hiddenDuration: Math.round(hiddenDuration / 1000) + 's',
-            timeSinceLastRefresh: Math.round(timeSinceLastRefresh / 1000) + 's',
-            currentStatus: status,
-            hasSession: !!session,
             hasCookie
           })
 
-          // Try to get session first (force refresh)
-          try {
-            await getSession()
-          } catch (error) {
-            console.error('[SessionRefreshHandler] Error getting session:', error)
-          }
+          // Mark as reloaded to prevent multiple reloads
+          hasReloadedRef.current = true
 
-          // Also trigger update
-          lastRefreshTime.current = Date.now()
-          update()
+          // Small delay to ensure visibility change is complete
+          reloadTimeoutRef.current = setTimeout(() => {
+            // Clear caches before reload
+            if (typeof window !== 'undefined') {
+              // Clear sessionStorage
+              sessionStorage.clear()
+              
+              // Reload page
+              window.location.reload()
+            }
+          }, 500) // 500ms delay
         }
         
         wasHidden.current = false
@@ -82,10 +76,14 @@ export default function SessionRefreshHandler() {
         wasHidden.current = true
         hiddenStartTime.current = Date.now()
         
-        // Clear any pending refresh when app goes to background
-        if (refreshTimeoutRef.current) {
-          clearTimeout(refreshTimeoutRef.current)
-          refreshTimeoutRef.current = null
+        // Reset reload flag when app goes to background
+        // This allows reload on next resume
+        hasReloadedRef.current = false
+        
+        // Clear any pending reload when app goes to background
+        if (reloadTimeoutRef.current) {
+          clearTimeout(reloadTimeoutRef.current)
+          reloadTimeoutRef.current = null
         }
       }
     }
@@ -98,16 +96,14 @@ export default function SessionRefreshHandler() {
       wasHidden.current = true
       hiddenStartTime.current = Date.now()
     }
-    // Don't auto refresh on mount - let SessionProvider handle initial session
-    // Only refresh when app actually resumes from background
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current)
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current)
       }
     }
-  }, [session, status, update])
+  }, [])
 
   return null
 }
