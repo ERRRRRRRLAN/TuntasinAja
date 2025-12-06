@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
+import DateTimePicker from '@/components/ui/DateTimePicker'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useBackHandler } from '@/hooks/useBackHandler'
@@ -315,16 +316,18 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
             <div className="form-group">
               <label htmlFor="announcementTarget">Target</label>
-              <select
-                id="announcementTarget"
+              <ComboBox
                 value={targetType}
-                onChange={(e) => setTargetType(e.target.value as 'global' | 'class' | 'subject')}
+                onChange={(value) => setTargetType(value as 'global' | 'class' | 'subject')}
+                options={[
+                  { value: 'global', label: 'Global (Semua Kelas)' },
+                  { value: 'class', label: 'Kelas Tertentu' },
+                  { value: 'subject', label: 'Mata Pelajaran Tertentu' },
+                ]}
+                placeholder="Pilih Target"
+                showAllOption={false}
                 disabled={!isAdmin}
-              >
-                <option value="global">Global (Semua Kelas)</option>
-                <option value="class">Kelas Tertentu</option>
-                <option value="subject">Mata Pelajaran Tertentu</option>
-              </select>
+              />
               {!isAdmin && (
                 <small className="form-hint">Hanya admin yang bisa membuat pengumuman global</small>
               )}
@@ -339,7 +342,11 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                   options={kelasOptions}
                   placeholder="Pilih Kelas"
                   showAllOption={false}
+                  disabled={!isAdmin && !!userKelas} // Disable for danton/non-admin
                 />
+                {!isAdmin && userKelas && (
+                  <small className="form-hint">Pengumuman akan dibuat untuk kelas Anda: {userKelas}</small>
+                )}
               </div>
             )}
 
@@ -353,7 +360,11 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                     options={kelasOptions}
                     placeholder="Pilih Kelas"
                     showAllOption={false}
+                    disabled={!isAdmin && !!userKelas} // Disable for danton/non-admin
                   />
+                  {!isAdmin && userKelas && (
+                    <small className="form-hint">Pengumuman akan dibuat untuk kelas Anda: {userKelas}</small>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="announcementSubject">Mata Pelajaran *</label>
@@ -370,15 +381,17 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
             <div className="form-group">
               <label htmlFor="announcementPriority">Prioritas</label>
-              <select
-                id="announcementPriority"
+              <ComboBox
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as 'urgent' | 'normal' | 'low')}
-              >
-                <option value="urgent">Urgent</option>
-                <option value="normal">Normal</option>
-                <option value="low">Rendah</option>
-              </select>
+                onChange={(value) => setPriority(value as 'urgent' | 'normal' | 'low')}
+                options={[
+                  { value: 'urgent', label: 'Urgent' },
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'low', label: 'Rendah' },
+                ]}
+                placeholder="Pilih Prioritas"
+                showAllOption={false}
+              />
             </div>
 
             <div className="form-group">
@@ -396,11 +409,11 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
             <div className="form-group">
               <label htmlFor="announcementExpiresAt">Berakhir Pada (Opsional)</label>
-              <input
-                type="datetime-local"
-                id="announcementExpiresAt"
+              <DateTimePicker
                 value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
+                onChange={setExpiresAt}
+                placeholder="Pilih tanggal dan waktu berakhir"
+                min={new Date().toISOString().slice(0, 16)}
               />
               <small className="form-hint">Pengumuman akan otomatis tidak terlihat setelah tanggal ini</small>
             </div>

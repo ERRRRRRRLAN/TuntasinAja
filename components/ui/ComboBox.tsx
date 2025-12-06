@@ -25,17 +25,23 @@ const MATA_PELAJARAN = [
   'IPAS',
 ]
 
+interface ComboBoxOption {
+  value: string
+  label: string
+}
+
 interface ComboBoxProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
-  options?: string[]
+  options?: string[] | ComboBoxOption[]
   showAllOption?: boolean
   allValue?: string
   allLabel?: string
   searchPlaceholder?: string
   icon?: React.ReactNode
   emptyMessage?: string
+  disabled?: boolean
 }
 
 export default function ComboBox({ 
@@ -48,7 +54,8 @@ export default function ComboBox({
   allLabel = 'Semua Mata Pelajaran',
   searchPlaceholder = 'Cari mata pelajaran...',
   icon,
-  emptyMessage = 'Tidak ada mata pelajaran yang ditemukan'
+  emptyMessage = 'Tidak ada mata pelajaran yang ditemukan',
+  disabled = false
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,13 +65,25 @@ export default function ComboBox({
   const [shouldRender, setShouldRender] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
+  // Normalize options to ComboBoxOption format
+  const normalizedOptions: ComboBoxOption[] = options.map(opt => {
+    if (typeof opt === 'string') {
+      return { value: opt, label: opt }
+    }
+    return opt
+  })
+
   // Filter options based on search query
-  const filteredOptions = options.filter(option =>
-    option.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOptions = normalizedOptions.filter(option =>
+    option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    option.value.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   // Get display value
-  const displayValue = value === allValue && showAllOption ? allLabel : value || placeholder
+  const selectedOption = normalizedOptions.find(opt => opt.value === value)
+  const displayValue = value === allValue && showAllOption 
+    ? allLabel 
+    : selectedOption?.label || value || placeholder
 
   // Handle render and animation state
   useEffect(() => {
@@ -130,8 +149,9 @@ export default function ComboBox({
     }
   }, [isOpen])
 
-  const handleSelect = (option: string) => {
-    onChange(option)
+  const handleSelect = (optionValue: string) => {
+    if (disabled) return
+    onChange(optionValue)
     setIsOpen(false)
     setSearchQuery('')
   }
@@ -148,6 +168,7 @@ export default function ComboBox({
       <button
         type="button"
         onClick={() => {
+          if (disabled) return
           if (isOpen) {
             setIsOpen(false)
             setSearchQuery('')
@@ -155,29 +176,31 @@ export default function ComboBox({
             setIsOpen(true)
           }
         }}
+        disabled={disabled}
         style={{
           width: '100%',
           padding: '0.625rem 0.75rem 0.625rem 2.5rem',
           border: '1px solid var(--border)',
           borderRadius: '0.5rem',
-          background: 'var(--card)',
-          color: value === allValue && showAllOption ? 'var(--text-light)' : 'var(--text)',
+          background: disabled ? 'var(--bg-secondary)' : 'var(--card)',
+          color: disabled ? 'var(--text-light)' : (value === allValue && showAllOption ? 'var(--text-light)' : 'var(--text)'),
           fontSize: '0.875rem',
           textAlign: 'left',
-          cursor: 'pointer',
+          cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           transition: 'all 0.2s',
-          minHeight: '42px'
+          minHeight: '42px',
+          opacity: disabled ? 0.6 : 1
         }}
         onMouseEnter={(e) => {
-          if (!isOpen) {
+          if (!isOpen && !disabled) {
             e.currentTarget.style.borderColor = 'var(--primary)'
           }
         }}
         onMouseLeave={(e) => {
-          if (!isOpen) {
+          if (!isOpen && !disabled) {
             e.currentTarget.style.borderColor = 'var(--border)'
           }
         }}
@@ -346,15 +369,15 @@ export default function ComboBox({
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <button
-                  key={option}
+                  key={option.value}
                   type="button"
-                  onClick={() => handleSelect(option)}
+                  onClick={() => handleSelect(option.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
                     border: 'none',
-                    background: value === option ? 'var(--bg-secondary)' : 'transparent',
-                    color: value === option ? 'var(--primary)' : 'var(--text)',
+                    background: value === option.value ? 'var(--bg-secondary)' : 'transparent',
+                    color: value === option.value ? 'var(--primary)' : 'var(--text)',
                     fontSize: '0.875rem',
                     textAlign: 'left',
                     cursor: 'pointer',
@@ -362,22 +385,22 @@ export default function ComboBox({
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     transition: 'background 0.15s',
-                    fontWeight: value === option ? 600 : 400,
+                    fontWeight: value === option.value ? 600 : 400,
                     borderTop: showAllOption || filteredOptions.indexOf(option) > 0 ? '1px solid var(--border)' : 'none'
                   }}
                   onMouseEnter={(e) => {
-                    if (value !== option) {
+                    if (value !== option.value) {
                       e.currentTarget.style.background = 'var(--bg-secondary)'
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (value !== option) {
+                    if (value !== option.value) {
                       e.currentTarget.style.background = 'transparent'
                     }
                   }}
                 >
-                  <span>{option}</span>
-                  {value === option && (
+                  <span>{option.label}</span>
+                  {value === option.value && (
                     <CheckIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
                   )}
                 </button>
