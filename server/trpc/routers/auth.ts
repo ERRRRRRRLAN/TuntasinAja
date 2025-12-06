@@ -135,11 +135,28 @@ export const authRouter = createTRPCRouter({
   // Get user permission (only_read or read_and_post_edit)
   getUserPermission: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return { permission: 'read_and_post_edit' as const }
+      return { permission: 'read_and_post_edit' as const, canCreateAnnouncement: false }
     }
 
     const permission = await getUserPermission(ctx.session.user.id)
-    return { permission }
+    
+    // Get user data to check if admin/danton
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: {
+        isAdmin: true,
+        isDanton: true,
+        permission: {
+          select: {
+            canCreateAnnouncement: true,
+          },
+        },
+      },
+    })
+
+    const canCreateAnnouncement = user?.isAdmin || user?.isDanton || user?.permission?.canCreateAnnouncement === true
+
+    return { permission, canCreateAnnouncement }
   }),
 
   // Create user (Admin only)

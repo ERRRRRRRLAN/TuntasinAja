@@ -10,11 +10,13 @@ export function useUserPermission() {
   const permission = permissionData?.permission || 'read_and_post_edit'
   const canPostEdit = permission === 'read_and_post_edit'
   const isOnlyRead = permission === 'only_read'
+  const canCreateAnnouncement = permissionData?.canCreateAnnouncement || false
 
   return {
     permission,
     canPostEdit,
     isOnlyRead,
+    canCreateAnnouncement,
     isLoading,
     error,
   }

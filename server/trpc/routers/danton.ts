@@ -28,6 +28,7 @@ export const dantonRouter = createTRPCRouter({
           select: {
             id: true,
             permission: true,
+            canCreateAnnouncement: true,
           },
         },
       },
@@ -40,6 +41,7 @@ export const dantonRouter = createTRPCRouter({
     return users.map(user => ({
       ...user,
       permission: user.permission?.permission || 'read_and_post_edit' as const,
+      canCreateAnnouncement: user.permission?.canCreateAnnouncement || false,
     }))
   }),
 
@@ -88,6 +90,7 @@ export const dantonRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         permission: z.enum(['only_read', 'read_and_post_edit']),
+        canCreateAnnouncement: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -141,9 +144,11 @@ export const dantonRouter = createTRPCRouter({
         create: {
           userId: input.userId,
           permission: input.permission,
+          canCreateAnnouncement: input.canCreateAnnouncement ?? false,
         },
         update: {
           permission: input.permission,
+          ...(input.canCreateAnnouncement !== undefined && { canCreateAnnouncement: input.canCreateAnnouncement }),
         },
       })
 

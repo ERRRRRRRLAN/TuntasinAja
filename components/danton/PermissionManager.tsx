@@ -13,6 +13,7 @@ interface PermissionManagerProps {
 
 export default function PermissionManager({ userId, onClose, onSuccess }: PermissionManagerProps) {
   const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>('read_and_post_edit')
+  const [canCreateAnnouncement, setCanCreateAnnouncement] = useState(false)
 
   const { data: users } = trpc.danton.getClassUsers.useQuery()
   const user = users?.find(u => u.id === userId)
@@ -20,6 +21,7 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
   useEffect(() => {
     if (user) {
       setPermission(user.permission)
+      setCanCreateAnnouncement(user.canCreateAnnouncement || false)
     }
   }, [user])
 
@@ -41,6 +43,7 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
     updatePermission.mutate({
       userId,
       permission,
+      canCreateAnnouncement,
     })
   }
 
@@ -122,6 +125,23 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
                 </div>
               </label>
             </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
+              <input
+                type="checkbox"
+                checked={canCreateAnnouncement}
+                onChange={(e) => setCanCreateAnnouncement(e.target.checked)}
+                style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+              />
+              <div>
+                <div style={{ fontWeight: 500 }}>Bisa Membuat Pengumuman</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  User dapat membuat pengumuman untuk kelas mereka sendiri
+                </div>
+              </div>
+            </label>
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>

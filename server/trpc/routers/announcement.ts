@@ -184,7 +184,7 @@ export const announcementRouter = createTRPCRouter({
       return { success: true, alreadyRead: false }
     }),
 
-  // Create announcement (Admin or Danton)
+  // Create announcement (Admin, Danton, or User with permission)
   create: protectedProcedure
     .input(
       z.object({
@@ -201,13 +201,18 @@ export const announcementRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id
 
-      // Check if user is admin or danton
+      // Check if user is admin, danton, or has permission
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           isAdmin: true,
           isDanton: true,
           kelas: true,
+          permission: {
+            select: {
+              canCreateAnnouncement: true,
+            },
+          },
         },
       })
 
@@ -218,29 +223,36 @@ export const announcementRouter = createTRPCRouter({
         })
       }
 
-      // Admin can create global or any class announcement
-      // Danton can only create class-specific announcement for their class
-      if (!user.isAdmin) {
-        if (!user.isDanton) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Only admin or danton can create announcements',
-          })
-        }
+      const canCreate = user.isAdmin || user.isDanton || user.permission?.canCreateAnnouncement === true
 
-        // Danton can only create for their own class
-        if (input.targetType === 'class' && input.targetKelas !== user.kelas) {
+      if (!canCreate) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Anda tidak memiliki izin untuk membuat pengumuman. Hubungi admin atau danton untuk mendapatkan izin.',
+        })
+      }
+
+      // Admin can create global or any class announcement
+      // Danton and users with permission can only create class-specific announcement for their class
+      if (!user.isAdmin) {
+        // Danton and users with permission can only create for their own class
+        if (input.targetType === 'class' && input.targetKelas && input.targetKelas !== user.kelas) {
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Danton can only create announcements for their own class',
+            message: 'Anda hanya dapat membuat pengumuman untuk kelas Anda sendiri',
           })
         }
 
         if (input.targetType === 'global') {
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Danton cannot create global announcements',
+            message: 'Hanya admin yang dapat membuat pengumuman global',
           })
+        }
+
+        // Ensure targetKelas is set to user's kelas if not provided
+        if (!input.targetKelas && user.kelas) {
+          input.targetKelas = user.kelas
         }
       }
 
@@ -474,6 +486,11 @@ export const announcementRouter = createTRPCRouter({
         isAdmin: true,
         isDanton: true,
         kelas: true,
+        permission: {
+          select: {
+            canCreateAnnouncement: true,
+          },
+        },
       },
     })
 
@@ -484,10 +501,12 @@ export const announcementRouter = createTRPCRouter({
       })
     }
 
-    if (!user.isAdmin && !user.isDanton) {
+    const canManage = user.isAdmin || user.isDanton || user.permission?.canCreateAnnouncement === true
+
+    if (!canManage) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Only admin or danton can view management list',
+        message: 'Anda tidak memiliki izin untuk melihat daftar pengumuman',
       })
     }
 

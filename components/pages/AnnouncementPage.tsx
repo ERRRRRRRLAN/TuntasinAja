@@ -7,12 +7,23 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toJakartaDate } from '@/lib/date-utils'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon } from '@/components/ui/Icons'
+import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon } from '@/components/ui/Icons'
 import { toast } from '@/components/ui/ToastContainer'
+import { useUserPermission } from '@/hooks/useUserPermission'
+import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
 
 export default function AnnouncementPage() {
   const { data: session } = useSession()
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const { canCreateAnnouncement } = useUserPermission()
+  
+  // Get user data to check if admin/danton
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isAdmin = userData?.isAdmin || false
+  const isDanton = userData?.isDanton || false
 
   const { data: announcements, isLoading, refetch } = trpc.announcement.getAll.useQuery(undefined, {
     refetchInterval: (query) => {
@@ -83,16 +94,57 @@ export default function AnnouncementPage() {
 
   const unreadCount = unreadData?.unreadCount || 0
 
+  // Show management interface if admin/danton or has permission
+  if ((isAdmin || isDanton || canCreateAnnouncement) && showCreateForm) {
+    return (
+      <div>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>
+            Pengumuman
+          </h1>
+          <button
+            onClick={() => setShowCreateForm(false)}
+            className="btn"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            ← Kembali ke Daftar
+          </button>
+        </div>
+        <AnnouncementManagement />
+      </div>
+    )
+  }
+
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          Pengumuman
-        </h1>
-        {unreadCount > 0 && (
-          <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>
-            {unreadCount} pengumuman belum dibaca
-          </p>
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Pengumuman
+          </h1>
+          {unreadCount > 0 && (
+            <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>
+              {unreadCount} pengumuman belum dibaca
+            </p>
+          )}
+        </div>
+        {(isAdmin || isDanton || canCreateAnnouncement) && (
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="btn btn-primary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1.5rem',
+              fontSize: '1rem',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <PlusIcon size={20} />
+            Buat Pengumuman
+          </button>
         )}
       </div>
 
