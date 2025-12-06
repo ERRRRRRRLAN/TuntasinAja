@@ -145,13 +145,16 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   }, [])
 
   // Handle back button (Android)
-  useBackHandler(() => {
-    if (isQuickViewOpen) {
-      handleClose()
-      return true // Prevent default back behavior
-    }
-    return false
-  })
+  useBackHandler(
+    () => {
+      if (isQuickViewOpen) {
+        handleClose()
+        return true // Prevent default back behavior
+      }
+      return false
+    },
+    [isQuickViewOpen, handleClose]
+  )
 
   // Handle popstate (browser back button)
   useEffect(() => {
