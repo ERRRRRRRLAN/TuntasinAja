@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon } from '@/components/ui/Icons'
 import { toast } from '@/components/ui/ToastContainer'
 import { useUserPermission } from '@/hooks/useUserPermission'
-import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
+import CreateAnnouncementQuickView from '@/components/announcements/CreateAnnouncementQuickView'
 
 export default function AnnouncementPage() {
   const { data: session } = useSession()
@@ -94,28 +94,16 @@ export default function AnnouncementPage() {
 
   const unreadCount = unreadData?.unreadCount || 0
 
-  // Show management interface if admin/danton or has permission
-  if ((isAdmin || isDanton || canCreateAnnouncement) && showCreateForm) {
-    return (
-      <div>
-        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>
-            Pengumuman
-          </h1>
-          <button
-            onClick={() => setShowCreateForm(false)}
-            className="btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            ← Kembali ke Daftar
-          </button>
-        </div>
-        <AnnouncementManagement />
-      </div>
-    )
-  }
-
   return (
+    <>
+      {showCreateForm && (isAdmin || isDanton || canCreateAnnouncement) && (
+        <CreateAnnouncementQuickView
+          onClose={() => {
+            setShowCreateForm(false)
+            refetch()
+          }}
+        />
+      )}
     <div>
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
         <div style={{ flex: 1 }}>
@@ -311,6 +299,7 @@ export default function AnnouncementPage() {
         </div>
       )}
     </div>
+    </>
   )
 }
 
