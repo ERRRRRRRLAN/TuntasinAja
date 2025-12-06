@@ -442,7 +442,6 @@ export const threadRouter = createTRPCRouter({
               console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
               // Don't throw - notification failure shouldn't break thread creation
             }
-          }
         } else {
           console.log('[ThreadRouter] Skipping notification:', {
             hasKelas: !!userKelas,
@@ -625,15 +624,14 @@ export const threadRouter = createTRPCRouter({
               console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
               // Don't throw - notification failure shouldn't break comment creation
             }
-          }
-      } else {
-        console.log('[ThreadRouter] Skipping notification for comment:', {
-          hasThreadAuthorKelas: !!threadAuthorKelas,
-          hasUserKelas: !!normalizedUserKelas,
-          matches: normalizedUserKelas === threadAuthorKelas,
-          isAdmin,
-        })
-      }
+        } else {
+          console.log('[ThreadRouter] Skipping notification for comment:', {
+            hasThreadAuthorKelas: !!threadAuthorKelas,
+            hasUserKelas: !!normalizedUserKelas,
+            matches: normalizedUserKelas === threadAuthorKelas,
+            isAdmin,
+          })
+        }
 
       return comment
     }),
