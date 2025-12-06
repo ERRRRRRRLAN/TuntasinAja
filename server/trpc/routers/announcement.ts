@@ -27,18 +27,18 @@ export const announcementRouter = createTRPCRouter({
 
       // Get announcements that match user's context
       const announcements = await prisma.announcement.findMany({
-        where: {
-          AND: [
-            {
-              OR: [
-                // Global announcements
-                { targetType: 'global' },
-                // Class-specific announcements (if user has kelas)
-                ...(userKelas ? [{ targetType: 'class', targetKelas: userKelas }] : []),
-                // Subject-specific announcements (if user has kelas)
-                ...(userKelas ? [{ targetType: 'subject', targetKelas: userKelas }] : []),
-              ],
-            },
+      where: {
+        AND: [
+          {
+            OR: [
+              // Global announcements
+              { targetType: 'global' as const },
+              // Class-specific announcements (if user has kelas)
+              ...(userKelas ? [{ targetType: 'class' as const, targetKelas: userKelas }] : []),
+              // Subject-specific announcements (if user has kelas)
+              ...(userKelas ? [{ targetType: 'subject' as const, targetKelas: userKelas }] : []),
+            ],
+          },
             {
               OR: [
                 { expiresAt: null },
@@ -116,9 +116,9 @@ export const announcementRouter = createTRPCRouter({
         AND: [
           {
             OR: [
-              { targetType: 'global' },
-              ...(userKelas ? [{ targetType: 'class', targetKelas: userKelas }] : []),
-              ...(userKelas ? [{ targetType: 'subject', targetKelas: userKelas }] : []),
+              { targetType: 'global' as const },
+              ...(userKelas ? [{ targetType: 'class' as const, targetKelas: userKelas }] : []),
+              ...(userKelas ? [{ targetType: 'subject' as const, targetKelas: userKelas }] : []),
             ],
           },
           {
