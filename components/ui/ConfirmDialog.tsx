@@ -52,13 +52,14 @@ export default function ConfirmDialog({
         }, 50)
       })
     } else {
-      // Hide content first, then overlay
+      // Smooth close animation: hide content first with reverse stagger
+      // Buttons disappear first, then message, then title, then content, then overlay
       setContentVisible(false)
-      // Wait for transition to complete before hiding
+      // Wait for content animation to complete before hiding overlay
       const timer = setTimeout(() => {
         setIsVisible(false)
         document.body.style.overflow = 'unset'
-      }, 350) // Match transition duration
+      }, 400) // Slightly longer to ensure all animations complete
       return () => clearTimeout(timer)
     }
   }, [isOpen])
@@ -126,7 +127,9 @@ export default function ConfirmDialog({
         opacity: isVisible ? 1 : 0,
         backdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
         WebkitBackdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
-        transition: 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: isVisible
+          ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+          : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s, backdrop-filter 0.3s cubic-bezier(0.4, 0, 1, 1) 0.2s',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -139,7 +142,9 @@ export default function ConfirmDialog({
           transform: contentVisible 
             ? 'translateY(0) scale(1)' 
             : 'translateY(20px) scale(0.95)',
-          transition: 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: contentVisible
+            ? 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+            : 'opacity 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 1, 1) 0.15s'
         }}
       >
         <h3 
@@ -149,7 +154,7 @@ export default function ConfirmDialog({
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
             transition: contentVisible 
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
-              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0s'
           }}
         >
           {title}
@@ -161,7 +166,7 @@ export default function ConfirmDialog({
             transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
             transition: contentVisible 
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
-              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.05s'
           }}
         >
           {message}
@@ -173,7 +178,7 @@ export default function ConfirmDialog({
             transform: contentVisible ? 'translateY(0)' : 'translateY(10px)',
             transition: contentVisible 
               ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s'
-              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+              : 'opacity 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s, transform 0.25s cubic-bezier(0.4, 0, 1, 1) 0.1s'
           }}
         >
           <button
