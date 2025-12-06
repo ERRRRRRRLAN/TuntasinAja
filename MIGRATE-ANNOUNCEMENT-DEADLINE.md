@@ -15,6 +15,20 @@ Ini berarti migration belum dijalankan di database production.
 
 ## 📋 Cara Menjalankan Migration
 
+### ⚠️ PENTING: Pilih Script yang Tepat!
+
+Ada 2 versi migration script:
+
+1. **`migrate-announcement-deadline.sql`** - **HAPUS semua data announcements** (jika tabel sudah ada)
+   - Gunakan jika Anda **TIDAK** punya data announcements penting
+   - Atau jika ini pertama kali setup
+
+2. **`migrate-announcement-deadline-safe.sql`** - **MEMPERTAHANKAN data** yang sudah ada
+   - Gunakan jika Anda **SUDAH** punya data announcements yang ingin dipertahankan
+   - Script ini akan menambahkan kolom yang hilang tanpa menghapus data
+
+---
+
 ### Opsi 1: Menggunakan Supabase SQL Editor (Recommended)
 
 1. **Buka Supabase Dashboard**:
@@ -22,8 +36,12 @@ Ini berarti migration belum dijalankan di database production.
    - Pilih project Anda
    - Klik **SQL Editor** di sidebar kiri
 
-2. **Jalankan Migration Script**:
-   - Buka file `scripts/migrate-announcement-deadline.sql`
+2. **Pilih Script yang Tepat**:
+   - **Jika TIDAK ada data penting**: Gunakan `scripts/migrate-announcement-deadline.sql`
+   - **Jika ADA data penting**: Gunakan `scripts/migrate-announcement-deadline-safe.sql`
+
+3. **Jalankan Migration Script**:
+   - Buka file script yang dipilih
    - Copy **SEMUA** isi file tersebut
    - Paste ke SQL Editor di Supabase
    - Klik **Run** atau tekan `Ctrl+Enter` (Windows) / `Cmd+Enter` (Mac)
