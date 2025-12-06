@@ -389,30 +389,10 @@ export const threadRouter = createTRPCRouter({
               ? `${authorName} - ${threadTitle} ${timeAgo}. ${firstCommentPreview}`
               : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
             
-            console.log('[ThreadRouter] Sending notification for new thread:', {
-              kelas: normalizedKelas,
-              threadAuthorKelas: threadAuthorKelas,
-              authorName,
-              authorId: thread.author.id,
-              threadTitle: thread.title,
-              threadId: thread.id,
-              hasFirstComment,
-            })
-            
-            const result = await sendNotificationToClass(
-              normalizedKelas, // Use normalized kelas
-              '✨ Tugas Baru',
-              notificationBody,
-              {
-                type: 'new_thread',
-                threadId: thread.id,
-                threadTitle: thread.title,
-              }
-            )
-            console.log('[ThreadRouter] Notification result:', result)
+            // Notification disabled: User requested to remove notifications after creating content
+            // Previously sent notification: ✨ Tugas Baru
           } catch (error) {
-            console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
-            // Don't throw - notification failure shouldn't break thread creation
+            // Notification code removed - no longer sending notifications
           }
         } else {
           console.log('[ThreadRouter] Skipping notification:', {
@@ -559,32 +539,10 @@ export const threadRouter = createTRPCRouter({
           // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
           const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
           
-          console.log('[ThreadRouter] Sending notification for new comment:', {
-            threadAuthorKelas: threadAuthorKelas,
-            userKelas: normalizedUserKelas,
-            matches: normalizedUserKelas === threadAuthorKelas,
-            threadId: thread.id,
-            threadTitle: thread.title,
-            threadDate: dateFormatted,
-            commentPreview,
-          })
-          
-          await sendNotificationToClass(
-            threadAuthorKelas, // Use normalized kelas
-            '📝 Sub Tugas Baru',
-            notificationBody,
-            {
-              type: 'new_comment',
-              threadId: thread.id,
-              threadTitle: thread.title,
-              commentId: comment.id,
-              commentContent: comment.content,
-              threadDate: thread.date.toISOString(),
-            }
-          )
+          // Notification disabled: User requested to remove notifications after creating content
+          // Previously sent notification: 📝 Sub Tugas Baru
         } catch (error) {
-          console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
-          // Don't throw - notification failure shouldn't break comment creation
+          // Notification code removed - no longer sending notifications
         }
       } else {
         console.log('[ThreadRouter] Skipping notification for comment:', {
