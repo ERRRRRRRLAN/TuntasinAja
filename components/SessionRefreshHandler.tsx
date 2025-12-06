@@ -1,49 +1,77 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, getSession } from 'next-auth/react'
 
 /**
  * Component to handle session refresh when app resumes from background
  * This ensures session is refreshed when user returns to the app after being idle
  */
 export default function SessionRefreshHandler() {
-  const { data: session, update } = useSession()
+  const { data: session, status, update } = useSession()
   const lastRefreshTime = useRef<number>(0)
   const wasHidden = useRef<boolean>(false)
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const hiddenStartTime = useRef<number | null>(null)
 
   useEffect(() => {
-    // Minimum time between refreshes (5 minutes)
-    const MIN_REFRESH_INTERVAL = 5 * 60 * 1000
+    // Minimum time between refreshes (1 minute - more frequent)
+    const MIN_REFRESH_INTERVAL = 60 * 1000
+    // Minimum time app was hidden before refreshing (30 seconds)
+    const MIN_HIDDEN_TIME = 30 * 1000
 
     // Handle visibility change (when app comes back to foreground)
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       const now = Date.now()
       const timeSinceLastRefresh = now - lastRefreshTime.current
 
       if (document.visibilityState === 'visible') {
-        // Only refresh if:
-        // 1. App was previously hidden (not just tab switch)
-        // 2. Enough time has passed since last refresh
-        // 3. Session exists
-        if (wasHidden.current && timeSinceLastRefresh > MIN_REFRESH_INTERVAL && session) {
+        // Check if app was hidden long enough
+        const hiddenDuration = hiddenStartTime.current 
+          ? now - hiddenStartTime.current 
+          : 0
+
+        // Refresh if:
+        // 1. App was previously hidden
+        // 2. App was hidden for at least MIN_HIDDEN_TIME
+        // 3. Enough time has passed since last refresh
+        if (
+          wasHidden.current && 
+          hiddenDuration > MIN_HIDDEN_TIME &&
+          timeSinceLastRefresh > MIN_REFRESH_INTERVAL
+        ) {
           // Clear any pending refresh
           if (refreshTimeoutRef.current) {
             clearTimeout(refreshTimeoutRef.current)
           }
 
-          // Debounce: wait 2 seconds before refreshing to avoid flickering
-          refreshTimeoutRef.current = setTimeout(() => {
-            console.log('[SessionRefreshHandler] App resumed after being hidden, refreshing session...')
-            lastRefreshTime.current = Date.now()
-            update()
-          }, 2000) // 2 second delay
+          // Force refresh session immediately (don't wait)
+          console.log('[SessionRefreshHandler] App resumed after being hidden, force refreshing session...', {
+            hiddenDuration: Math.round(hiddenDuration / 1000) + 's',
+            timeSinceLastRefresh: Math.round(timeSinceLastRefresh / 1000) + 's',
+            currentStatus: status,
+            hasSession: !!session
+          })
+
+          // Try to get session first (force refresh)
+          try {
+            await getSession()
+          } catch (error) {
+            console.error('[SessionRefreshHandler] Error getting session:', error)
+          }
+
+          // Also trigger update
+          lastRefreshTime.current = Date.now()
+          update()
         }
+        
         wasHidden.current = false
+        hiddenStartTime.current = null
       } else if (document.visibilityState === 'hidden') {
-        // Mark that app was hidden
+        // Mark that app was hidden and record time
         wasHidden.current = true
+        hiddenStartTime.current = Date.now()
+        
         // Clear any pending refresh when app goes to background
         if (refreshTimeoutRef.current) {
           clearTimeout(refreshTimeoutRef.current)
@@ -58,6 +86,21 @@ export default function SessionRefreshHandler() {
     // Initialize: check if app was hidden when component mounts
     if (document.visibilityState === 'hidden') {
       wasHidden.current = true
+      hiddenStartTime.current = Date.now()
+    } else {
+      // If app is visible on mount, refresh session to ensure it's up to date
+      // This handles the case when app is opened from history
+      const timer = setTimeout(async () => {
+        console.log('[SessionRefreshHandler] App visible on mount, checking session...')
+        try {
+          await getSession()
+          update()
+        } catch (error) {
+          console.error('[SessionRefreshHandler] Error refreshing session on mount:', error)
+        }
+      }, 500) // Small delay to let app initialize
+
+      return () => clearTimeout(timer)
     }
 
     return () => {
@@ -66,7 +109,7 @@ export default function SessionRefreshHandler() {
         clearTimeout(refreshTimeoutRef.current)
       }
     }
-  }, [session, update])
+  }, [session, status, update])
 
   return null
 }

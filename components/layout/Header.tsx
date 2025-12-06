@@ -194,15 +194,22 @@ export default function Header() {
   }
 
   // Only hide if session is definitely not authenticated
-  // Don't hide while loading to prevent flickering during refresh
+  // Keep showing header while loading to prevent flickering
+  // This ensures header stays visible even when session is being refreshed
   if (sessionStatus === 'unauthenticated') {
     return null
   }
 
-  // Show header even if session is loading (to prevent flickering)
-  // SessionProvider will handle the loading state
-  if (!session && sessionStatus === 'loading') {
-    return null // Only hide if we're sure there's no session and still loading
+  // Always show header if we have a session, even if status is loading
+  // This prevents header from disappearing during session refresh
+  if (session) {
+    // We have a session, show header
+  } else if (sessionStatus === 'loading') {
+    // Still loading, show header to prevent flicker
+    // SessionProvider will eventually resolve
+  } else {
+    // No session and not loading - user is logged out
+    return null
   }
 
   return (
