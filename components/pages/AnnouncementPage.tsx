@@ -336,7 +336,7 @@ export default function AnnouncementPage() {
         )}
 
         {/* FAB Button - Buat Pengumuman */}
-        {sessionStatus !== 'loading' && (isAdmin || isDanton || canCreateAnnouncement) && (
+        {(isAdmin || isDanton || canCreateAnnouncement) && (
           <button
             onClick={() => setShowCreateForm(true)}
             className="fab-button"

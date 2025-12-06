@@ -193,15 +193,16 @@ export default function Header() {
     router.push('/danton')
   }
 
-  // Wait for session to load before rendering
-  // Don't hide header while session is loading to prevent flickering
-  if (sessionStatus === 'loading') {
-    return null // Or return a loading skeleton if preferred
+  // Only hide if session is definitely not authenticated
+  // Don't hide while loading to prevent flickering during refresh
+  if (sessionStatus === 'unauthenticated') {
+    return null
   }
 
-  // Only hide if session is definitely not authenticated
-  if (sessionStatus === 'unauthenticated' || !session) {
-    return null
+  // Show header even if session is loading (to prevent flickering)
+  // SessionProvider will handle the loading state
+  if (!session && sessionStatus === 'loading') {
+    return null // Only hide if we're sure there's no session and still loading
   }
 
   return (
