@@ -208,7 +208,7 @@ export default function AnnouncementPage() {
                           position: 'absolute',
                           top: '1rem',
                           right: '1rem',
-                          background: 'var(--danger)',
+                          background: '#ef4444',
                           color: 'white',
                           border: 'none',
                           borderRadius: '0.375rem',
@@ -218,14 +218,17 @@ export default function AnnouncementPage() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           transition: 'all 0.2s',
+                          zIndex: 10,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--danger-dark)'
+                          e.currentTarget.style.background = '#dc2626'
                           e.currentTarget.style.transform = 'scale(1.1)'
+                          e.currentTarget.style.color = 'white'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'var(--danger)'
+                          e.currentTarget.style.background = '#ef4444'
                           e.currentTarget.style.transform = 'scale(1)'
+                          e.currentTarget.style.color = 'white'
                         }}
                         aria-label="Hapus pengumuman"
                       >
