@@ -586,51 +586,31 @@ export const threadRouter = createTRPCRouter({
           // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
           const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
           
-          // Send notification for new sub tugas (comment)
-          if (threadAuthorKelas && !isAdmin) {
-            try {
-              // Format tanggal tugas
-              const threadDateJakarta = toJakartaDate(thread.date)
-              const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
-              
-              // Format waktu komentar dibuat
-              const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
-              const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
-                addSuffix: true, 
-                locale: id 
-              })
-              
-              // Preview komentar (sub tugas)
-              const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
-              
-              // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
-              const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
-              
-              await sendNotificationToClass(
-                threadAuthorKelas, // Use normalized kelas
-                '📝 Sub Tugas Baru',
-                notificationBody,
-                {
-                  type: 'new_comment',
-                  threadId: thread.id,
-                  threadTitle: thread.title,
-                  commentId: comment.id,
-                  commentContent: comment.content,
-                  threadDate: thread.date.toISOString(),
-                }
-              )
-            } catch (error) {
-              console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
-              // Don't throw - notification failure shouldn't break comment creation
+          await sendNotificationToClass(
+            threadAuthorKelas, // Use normalized kelas
+            '📝 Sub Tugas Baru',
+            notificationBody,
+            {
+              type: 'new_comment',
+              threadId: thread.id,
+              threadTitle: thread.title,
+              commentId: comment.id,
+              commentContent: comment.content,
+              threadDate: thread.date.toISOString(),
             }
-        } else {
-          console.log('[ThreadRouter] Skipping notification for comment:', {
-            hasThreadAuthorKelas: !!threadAuthorKelas,
-            hasUserKelas: !!normalizedUserKelas,
-            matches: normalizedUserKelas === threadAuthorKelas,
-            isAdmin,
-          })
+          )
+        } catch (error) {
+          console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
+          // Don't throw - notification failure shouldn't break comment creation
         }
+      } else {
+        console.log('[ThreadRouter] Skipping notification for comment:', {
+          hasThreadAuthorKelas: !!threadAuthorKelas,
+          hasUserKelas: !!normalizedUserKelas,
+          matches: normalizedUserKelas === threadAuthorKelas,
+          isAdmin,
+        })
+      }
 
       return comment
     }),
