@@ -22,16 +22,25 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  // Default deadline: 7 days from today at 00:00 (midnight)
+  // Default deadline: 7 days from today at 00:00 (midnight) in local timezone
   // Calculate when form is opened, not when component mounts
   const getDefaultDeadline = () => {
     const today = new Date()
     // Add 7 days
     const sevenDaysLater = new Date(today)
     sevenDaysLater.setDate(today.getDate() + 7)
-    // Set time to 00:00:00
+    // Set time to 00:00:00 in local timezone
     sevenDaysLater.setHours(0, 0, 0, 0)
-    return sevenDaysLater.toISOString().slice(0, 16)
+    
+    // Format as local date-time string (YYYY-MM-DDTHH:mm)
+    // Don't use toISOString() as it converts to UTC which can change the date
+    const year = sevenDaysLater.getFullYear()
+    const month = String(sevenDaysLater.getMonth() + 1).padStart(2, '0')
+    const day = String(sevenDaysLater.getDate()).padStart(2, '0')
+    const hours = String(sevenDaysLater.getHours()).padStart(2, '0')
+    const minutes = String(sevenDaysLater.getMinutes()).padStart(2, '0')
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`
   }
   const [deadline, setDeadline] = useState<string>(getDefaultDeadline())
   const [isVisible, setIsVisible] = useState(false)
