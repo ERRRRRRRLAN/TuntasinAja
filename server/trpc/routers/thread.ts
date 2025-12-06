@@ -442,7 +442,8 @@ export const threadRouter = createTRPCRouter({
               console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
               // Don't throw - notification failure shouldn't break thread creation
             }
-          } else {
+          }
+        } else {
           console.log('[ThreadRouter] Skipping notification:', {
             hasKelas: !!userKelas,
             isAdmin,
