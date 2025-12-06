@@ -73,9 +73,9 @@ export const announcementRouter = createTRPCRouter({
     // Mark which announcements are read
     const announcementsWithReadStatus = announcements.map((announcement) => {
       const isRead = userId ? announcement.reads.length > 0 : false
+      const { reads, ...announcementWithoutReads } = announcement
       return {
-        ...announcement,
-        reads: undefined, // Remove reads from response
+        ...announcementWithoutReads,
         isRead,
       }
     })
