@@ -24,7 +24,10 @@ export default function WeeklyScheduleManager() {
   const savedScrollPositionRef = useRef<number>(0)
   const shouldRestoreScrollRef = useRef<boolean>(false)
 
-  const { data: scheduleData, isLoading } = trpc.weeklySchedule.getSchedule.useQuery()
+  const { data: scheduleData, isLoading } = trpc.weeklySchedule.getSchedule.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
 
   // Restore scroll position after data is updated
   useEffect(() => {

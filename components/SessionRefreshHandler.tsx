@@ -87,21 +87,9 @@ export default function SessionRefreshHandler() {
     if (document.visibilityState === 'hidden') {
       wasHidden.current = true
       hiddenStartTime.current = Date.now()
-    } else {
-      // If app is visible on mount, refresh session to ensure it's up to date
-      // This handles the case when app is opened from history
-      const timer = setTimeout(async () => {
-        console.log('[SessionRefreshHandler] App visible on mount, checking session...')
-        try {
-          await getSession()
-          update()
-        } catch (error) {
-          console.error('[SessionRefreshHandler] Error refreshing session on mount:', error)
-        }
-      }, 500) // Small delay to let app initialize
-
-      return () => clearTimeout(timer)
     }
+    // Don't auto refresh on mount - let SessionProvider handle initial session
+    // Only refresh when app actually resumes from background
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)

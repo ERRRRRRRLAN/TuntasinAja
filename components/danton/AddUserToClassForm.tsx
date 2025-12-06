@@ -15,7 +15,10 @@ export default function AddUserToClassForm({ onClose, onSuccess }: AddUserToClas
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { data: stats } = trpc.danton.getClassStats.useQuery()
+  const { data: stats } = trpc.danton.getClassStats.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
   const utils = trpc.useUtils()
 
   const addUser = trpc.danton.addUserToClass.useMutation({

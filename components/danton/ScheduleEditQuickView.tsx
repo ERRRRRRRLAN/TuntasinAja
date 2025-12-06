@@ -34,7 +34,10 @@ export default function ScheduleEditQuickView({
   const contentRef = useRef<HTMLDivElement>(null)
 
   const utils = trpc.useUtils()
-  const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery()
+  const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
 
   const setSchedule = trpc.weeklySchedule.setSchedule.useMutation({
     onSuccess: () => {

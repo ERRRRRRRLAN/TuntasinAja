@@ -16,7 +16,10 @@ export default function EditClassUserForm({ userId, onClose, onSuccess }: EditCl
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { data: users } = trpc.danton.getClassUsers.useQuery()
+  const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
   const user = users?.find(u => u.id === userId)
 
   useEffect(() => {

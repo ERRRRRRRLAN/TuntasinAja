@@ -15,7 +15,10 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
   const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>('read_and_post_edit')
   const [canCreateAnnouncement, setCanCreateAnnouncement] = useState(false)
 
-  const { data: users } = trpc.danton.getClassUsers.useQuery()
+  const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
   const user = users?.find(u => u.id === userId)
 
   useEffect(() => {

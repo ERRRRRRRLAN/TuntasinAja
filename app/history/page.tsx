@@ -19,7 +19,14 @@ export default function HistoryPage() {
   const [recoverHistoryId, setRecoverHistoryId] = useState<string | null>(null)
   
   const { data: histories, isLoading, error: historyError } = trpc.history.getUserHistory.useQuery(undefined, {
-    refetchInterval: 5000, // Auto refresh every 5 seconds
+    refetchInterval: (query) => {
+      // Stop polling jika tab tidak aktif (hidden)
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false
+      }
+      return 60000 // 60 seconds - less frequent to prevent flickering
+    },
+    refetchOnWindowFocus: false, // Disable to prevent flickering
     enabled: !!session, // Only fetch if session exists
     onError: (error) => {
       console.error('[HistoryPage] Error fetching history:', error)

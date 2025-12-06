@@ -13,7 +13,10 @@ import EditUserQuickView from './EditUserQuickView'
 export default function ClassUserList() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
-  const { data: users, isLoading, refetch } = trpc.danton.getClassUsers.useQuery()
+  const { data: users, isLoading, refetch } = trpc.danton.getClassUsers.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
   const utils = trpc.useUtils()
 
   const handleSuccess = () => {

@@ -20,6 +20,8 @@ export default function DantonDashboard() {
 
   const { data: stats, isLoading: isStatsLoading } = trpc.danton.getClassStats.useQuery(undefined, {
     enabled: isDanton,
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
   })
 
   if (isDantonLoading || isStatsLoading || isSubscriptionLoading) {

@@ -33,9 +33,9 @@ export default function AnnouncementPage() {
       if (typeof document !== 'undefined' && document.hidden) {
         return false
       }
-      return 30000 // 30 seconds
+      return 60000 // 60 seconds - less frequent to prevent flickering
     },
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // Disable to prevent flickering
   })
 
   const { data: unreadData } = trpc.announcement.getUnreadCount.useQuery(undefined, {
@@ -44,8 +44,9 @@ export default function AnnouncementPage() {
       if (typeof document !== 'undefined' && document.hidden) {
         return false
       }
-      return 30000
+      return 60000 // 60 seconds - less frequent to prevent flickering
     },
+    refetchOnWindowFocus: false, // Disable to prevent flickering
   })
 
   const markAsRead = trpc.announcement.markAsRead.useMutation({
