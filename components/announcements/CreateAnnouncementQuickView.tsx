@@ -224,115 +224,115 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
-          maxWidth: '600px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
         }}
       >
-        <div className="quickview-header" style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-          paddingBottom: '1rem',
-          borderBottom: '1px solid var(--border)'
-        }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>Buat Pengumuman Baru</h2>
-          <button
-            onClick={handleClose}
-            className="btn btn-icon"
-            style={{
-              padding: '0.5rem',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="Tutup"
-          >
-            <XCloseIcon size={24} />
-          </button>
+        <div className="quickview-header">
+          <div className="quickview-header-top">
+            <div className="quickview-header-left">
+              {/* Empty left section */}
+            </div>
+            <button
+              onClick={handleClose}
+              className="quickview-close-btn"
+              style={{
+                background: 'var(--card)',
+                border: '2px solid var(--border)',
+                cursor: 'pointer',
+                color: 'var(--text)',
+                padding: '0.625rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '0.5rem',
+                minWidth: '44px',
+                minHeight: '44px',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.color = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--card)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text)'
+              }}
+              aria-label="Tutup"
+            >
+              <XCloseIcon size={22} />
+            </button>
+          </div>
+          
+          <div className="quickview-title-section">
+            <h2 className="thread-detail-title" style={{ 
+              margin: 0,
+              flex: 1,
+              lineHeight: 1.4
+            }}>
+              <span style={{
+                color: 'var(--text)',
+                wordBreak: 'break-word'
+              }}>
+                Buat Pengumuman Baru
+              </span>
+            </h2>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-              Judul *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Masukkan judul pengumuman"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.9375rem' }}
-              maxLength={200}
-              required
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-              Konten *
-            </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Masukkan isi pengumuman"
-              rows={6}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontFamily: 'inherit', fontSize: '0.9375rem', resize: 'vertical' }}
-              maxLength={5000}
-              required
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-              Target
-            </label>
-            <select
-              value={targetType}
-              onChange={(e) => setTargetType(e.target.value as 'global' | 'class' | 'subject')}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.9375rem' }}
-              disabled={!isAdmin}
-            >
-              <option value="global">Global (Semua Kelas)</option>
-              <option value="class">Kelas Tertentu</option>
-              <option value="subject">Mata Pelajaran Tertentu</option>
-            </select>
-            {!isAdmin && (
-              <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
-                Hanya admin yang bisa membuat pengumuman global
-              </p>
-            )}
-          </div>
-
-          {targetType === 'class' && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-                Kelas *
-              </label>
-              <ComboBox
-                value={targetKelas}
-                onChange={setTargetKelas}
-                options={kelasOptions}
-                placeholder="Pilih Kelas"
-                showAllOption={false}
+        <div className="comments-section">
+          <form onSubmit={handleSubmit} style={{ padding: '0' }}>
+            <div className="form-group">
+              <label htmlFor="announcementTitle">Judul *</label>
+              <input
+                type="text"
+                id="announcementTitle"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Masukkan judul pengumuman"
+                maxLength={200}
+                required
+                autoFocus
               />
+              <small className="form-hint">Maksimal 200 karakter</small>
             </div>
-          )}
 
-          {targetType === 'subject' && (
-            <>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-                  Kelas *
-                </label>
+            <div className="form-group">
+              <label htmlFor="announcementContent">Konten *</label>
+              <textarea
+                id="announcementContent"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Masukkan isi pengumuman"
+                rows={6}
+                maxLength={5000}
+                required
+              />
+              <small className="form-hint">Maksimal 5000 karakter</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="announcementTarget">Target</label>
+              <select
+                id="announcementTarget"
+                value={targetType}
+                onChange={(e) => setTargetType(e.target.value as 'global' | 'class' | 'subject')}
+                disabled={!isAdmin}
+              >
+                <option value="global">Global (Semua Kelas)</option>
+                <option value="class">Kelas Tertentu</option>
+                <option value="subject">Mata Pelajaran Tertentu</option>
+              </select>
+              {!isAdmin && (
+                <small className="form-hint">Hanya admin yang bisa membuat pengumuman global</small>
+              )}
+            </div>
+
+            {targetType === 'class' && (
+              <div className="form-group">
+                <label htmlFor="announcementKelas">Kelas *</label>
                 <ComboBox
                   value={targetKelas}
                   onChange={setTargetKelas}
@@ -341,88 +341,94 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                   showAllOption={false}
                 />
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-                  Mata Pelajaran *
-                </label>
-                <ComboBox
-                  value={targetSubject}
-                  onChange={setTargetSubject}
-                  options={subjectOptions}
-                  placeholder="Pilih Mata Pelajaran"
-                  showAllOption={false}
+            )}
+
+            {targetType === 'subject' && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="announcementKelas">Kelas *</label>
+                  <ComboBox
+                    value={targetKelas}
+                    onChange={setTargetKelas}
+                    options={kelasOptions}
+                    placeholder="Pilih Kelas"
+                    showAllOption={false}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="announcementSubject">Mata Pelajaran *</label>
+                  <ComboBox
+                    value={targetSubject}
+                    onChange={setTargetSubject}
+                    options={subjectOptions}
+                    placeholder="Pilih Mata Pelajaran"
+                    showAllOption={false}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="announcementPriority">Prioritas</label>
+              <select
+                id="announcementPriority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as 'urgent' | 'normal' | 'low')}
+              >
+                <option value="urgent">Urgent</option>
+                <option value="normal">Normal</option>
+                <option value="low">Rendah</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  id="isPinned"
+                  checked={isPinned}
+                  onChange={(e) => setIsPinned(e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
-              </div>
-            </>
-          )}
+                <span>Pin pengumuman (tampilkan di atas)</span>
+              </label>
+            </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-              Prioritas
-            </label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as 'urgent' | 'normal' | 'low')}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.9375rem' }}
-            >
-              <option value="urgent">Urgent</option>
-              <option value="normal">Normal</option>
-              <option value="low">Rendah</option>
-            </select>
-          </div>
+            <div className="form-group">
+              <label htmlFor="announcementExpiresAt">Berakhir Pada (Opsional)</label>
+              <input
+                type="datetime-local"
+                id="announcementExpiresAt"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+              />
+              <small className="form-hint">Pengumuman akan otomatis tidak terlihat setelah tanggal ini</small>
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input
-              type="checkbox"
-              id="isPinned"
-              checked={isPinned}
-              onChange={(e) => setIsPinned(e.target.checked)}
-              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-            />
-            <label htmlFor="isPinned" style={{ fontSize: '0.875rem', cursor: 'pointer', userSelect: 'none' }}>
-              Pin pengumuman (tampilkan di atas)
-            </label>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>
-              Berakhir Pada (Opsional)
-            </label>
-            <input
-              type="datetime-local"
-              value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.9375rem' }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-            <button 
-              type="button" 
-              onClick={handleClose} 
-              className="btn"
-              disabled={isSubmitting || createAnnouncement.isLoading}
-              style={{ padding: '0.75rem 1.5rem' }}
-            >
-              Batal
-            </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={isSubmitting || createAnnouncement.isLoading}
-              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              {isSubmitting || createAnnouncement.isLoading ? (
-                <>
-                  <LoadingSpinner size={16} color="white" />
-                  Menyimpan...
-                </>
-              ) : (
-                'Buat Pengumuman'
-              )}
-            </button>
-          </div>
-        </form>
+            <div className="form-actions">
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={createAnnouncement.isLoading || isSubmitting}
+              >
+                {createAnnouncement.isLoading || isSubmitting ? (
+                  <>
+                    <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                    Menyimpan...
+                  </>
+                ) : 'Buat Pengumuman'}
+              </button>
+              <button 
+                type="button" 
+                onClick={handleClose} 
+                className="btn btn-secondary"
+                disabled={createAnnouncement.isLoading || isSubmitting}
+              >
+                Batal
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
