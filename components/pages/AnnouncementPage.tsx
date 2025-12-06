@@ -14,7 +14,7 @@ import { useUserPermission } from '@/hooks/useUserPermission'
 import CreateAnnouncementQuickView from '@/components/announcements/CreateAnnouncementQuickView'
 
 export default function AnnouncementPage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -336,7 +336,7 @@ export default function AnnouncementPage() {
         )}
 
         {/* FAB Button - Buat Pengumuman */}
-        {(isAdmin || isDanton || canCreateAnnouncement) && (
+        {sessionStatus !== 'loading' && (isAdmin || isDanton || canCreateAnnouncement) && (
           <button
             onClick={() => setShowCreateForm(true)}
             className="fab-button"

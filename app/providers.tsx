@@ -10,6 +10,7 @@ import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
 import NetworkStatus from '@/components/NetworkStatus'
 import NetworkErrorHandler from '@/components/NetworkErrorHandler'
+import SessionRefreshHandler from '@/components/SessionRefreshHandler'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
@@ -75,6 +76,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchInterval={5 * 60}
           refetchOnWindowFocus={true}
         >
+          <SessionRefreshHandler />
           <ServiceWorkerRegistration />
           <StatusBarHandler />
           <NetworkStatus />

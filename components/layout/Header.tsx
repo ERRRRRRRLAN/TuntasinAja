@@ -11,7 +11,7 @@ import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
 
 export default function Header() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -193,7 +193,16 @@ export default function Header() {
     router.push('/danton')
   }
 
-  if (!session) return null
+  // Wait for session to load before rendering
+  // Don't hide header while session is loading to prevent flickering
+  if (sessionStatus === 'loading') {
+    return null // Or return a loading skeleton if preferred
+  }
+
+  // Only hide if session is definitely not authenticated
+  if (sessionStatus === 'unauthenticated' || !session) {
+    return null
+  }
 
   return (
     <header className="header" ref={headerRef}>

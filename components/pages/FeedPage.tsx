@@ -898,7 +898,7 @@ export default function FeedPage() {
       )}
 
       {/* Feedback FAB - Above Create Thread Button */}
-      {session && (
+      {sessionStatus !== 'loading' && session && (
         <div 
           className="feedback-fab-container"
           style={{
@@ -1008,7 +1008,7 @@ export default function FeedPage() {
       )}
 
       {/* Floating Action Button - Create Thread */}
-      {session && canActuallyPostEdit && (
+      {sessionStatus !== 'loading' && session && canActuallyPostEdit && (
         <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"
