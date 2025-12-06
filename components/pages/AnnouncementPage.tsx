@@ -295,10 +295,69 @@ export default function AnnouncementPage() {
                 )}
               </div>
             )
-          })}
-        </div>
-      )}
-    </div>
+          }            )}
+          </div>
+        )}
+
+        {/* FAB Button - Buat Pengumuman */}
+        {(isAdmin || isDanton || canCreateAnnouncement) && (
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="fab-button"
+            aria-label="Buat Pengumuman"
+            style={{
+              position: 'fixed',
+              bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px) + 8px)',
+              right: '1.5rem',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              zIndex: 998,
+              transition: 'all 0.3s ease',
+              padding: 0,
+              minHeight: '56px',
+              touchAction: 'manipulation',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--primary-dark)'
+              e.currentTarget.style.transform = 'scale(1.1)'
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--primary)'
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.transform = 'scale(0.95)'
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+          >
+            <PlusIcon size={24} />
+          </button>
+        )}
+      </div>
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .fab-button {
+            bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 8px) !important;
+            right: 1rem !important;
+            width: 56px !important;
+            height: 56px !important;
+          }
+        }
+      `}</style>
     </>
   )
 }

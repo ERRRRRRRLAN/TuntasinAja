@@ -40,6 +40,8 @@ export default function DatePicker({
   })
   const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [showYearPicker, setShowYearPicker] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Update current month when value changes
@@ -49,13 +51,32 @@ export default function DatePicker({
     }
   }, [value])
 
+  // Handle render and animation state
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true)
+      setIsAnimating(false)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true)
+        })
+      })
+    } else {
+      setIsAnimating(false)
+      const timer = setTimeout(() => {
+        setShouldRender(false)
+        setShowMonthPicker(false)
+        setShowYearPicker(false)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
-        setShowMonthPicker(false)
-        setShowYearPicker(false)
       }
     }
 
@@ -210,7 +231,7 @@ export default function DatePicker({
       </div>
 
       {/* Calendar Dropdown */}
-      {isOpen && !disabled && (
+      {shouldRender && !disabled && (
         <div
           style={{
             position: 'absolute',
@@ -224,6 +245,11 @@ export default function DatePicker({
             zIndex: 1000,
             padding: '1rem',
             minWidth: '280px',
+            opacity: isAnimating ? 1 : 0,
+            transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
+            transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
+            pointerEvents: isAnimating ? 'auto' : 'none',
+            visibility: shouldRender ? 'visible' : 'hidden',
           }}
           onClick={(e) => e.stopPropagation()}
         >

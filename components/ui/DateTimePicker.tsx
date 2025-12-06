@@ -27,6 +27,8 @@ export default function DateTimePicker({
   const [dateValue, setDateValue] = useState(value ? value.split('T')[0] : '')
   const [timeValue, setTimeValue] = useState(value ? value.split('T')[1] || '00:00' : '00:00')
   const [isTimeOpen, setIsTimeOpen] = useState(false)
+  const [shouldRenderTime, setShouldRenderTime] = useState(false)
+  const [isTimeAnimating, setIsTimeAnimating] = useState(false)
   const timeContainerRef = useRef<HTMLDivElement>(null)
 
   // Update internal state when value prop changes
@@ -40,6 +42,25 @@ export default function DateTimePicker({
       setTimeValue('00:00')
     }
   }, [value])
+
+  // Handle render and animation state for time picker
+  useEffect(() => {
+    if (isTimeOpen) {
+      setShouldRenderTime(true)
+      setIsTimeAnimating(false)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTimeAnimating(true)
+        })
+      })
+    } else {
+      setIsTimeAnimating(false)
+      const timer = setTimeout(() => {
+        setShouldRenderTime(false)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isTimeOpen])
 
   // Close time dropdown when clicking outside
   useEffect(() => {
@@ -135,7 +156,7 @@ export default function DateTimePicker({
           </span>
         </div>
 
-        {isTimeOpen && !disabled && (
+        {shouldRenderTime && !disabled && (
           <div
             style={{
               position: 'absolute',
@@ -148,6 +169,11 @@ export default function DateTimePicker({
               padding: '1rem',
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
               zIndex: 1000,
+              opacity: isTimeAnimating ? 1 : 0,
+              transform: isTimeAnimating ? 'translateY(0)' : 'translateY(-10px)',
+              transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
+              pointerEvents: isTimeAnimating ? 'auto' : 'none',
+              visibility: shouldRenderTime ? 'visible' : 'hidden',
             }}
             onClick={(e) => e.stopPropagation()}
           >
