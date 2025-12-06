@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { addWeeks } from 'date-fns'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
@@ -21,7 +22,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  const [deadline, setDeadline] = useState<string>('')
+  // Default deadline: 1 week from today
+  const defaultDeadline = addWeeks(new Date(), 1)
+  const [deadline, setDeadline] = useState<string>(defaultDeadline.toISOString().slice(0, 16))
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
@@ -64,7 +67,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
-      setDeadline('')
+      // Reset deadline to default (1 week from now)
+      const newDefaultDeadline = addWeeks(new Date(), 1)
+      setDeadline(newDefaultDeadline.toISOString().slice(0, 16))
       setIsSubmitting(false)
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
