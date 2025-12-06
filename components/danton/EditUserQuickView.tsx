@@ -22,6 +22,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>('read_and_post_edit')
+  const [canCreateAnnouncement, setCanCreateAnnouncement] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -35,6 +36,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
       setEmail(user.email)
       setPassword('')
       setPermission(user.permission || 'read_and_post_edit')
+      setCanCreateAnnouncement(user.canCreateAnnouncement || false)
     }
   }, [user])
 
@@ -166,6 +168,16 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     updatePermission.mutate({
       userId,
       permission: newPermission,
+      canCreateAnnouncement,
+    })
+  }
+
+  const handleCanCreateAnnouncementChange = (value: boolean) => {
+    setCanCreateAnnouncement(value)
+    updatePermission.mutate({
+      userId,
+      permission,
+      canCreateAnnouncement: value,
     })
   }
 
@@ -410,6 +422,41 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                     </div>
                   </div>
                 </label>
+                
+                {/* Can Create Announcement Checkbox */}
+                <div style={{
+                  marginTop: '0.75rem',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)'
+                }}>
+                  <label style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.75rem', 
+                    cursor: 'pointer'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={canCreateAnnouncement}
+                      onChange={(e) => handleCanCreateAnnouncementChange(e.target.checked)}
+                      disabled={updatePermission.isLoading}
+                      style={{ 
+                        cursor: 'pointer', 
+                        width: '18px', 
+                        height: '18px',
+                        flexShrink: 0
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 500, marginBottom: '0.25rem' }}>Bisa Membuat Pengumuman</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                        User dapat membuat pengumuman untuk kelas mereka sendiri
+                      </div>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
