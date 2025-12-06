@@ -32,6 +32,7 @@ export default function ConfirmDialog({
   const contentRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -45,13 +46,19 @@ export default function ConfirmDialog({
       // Small delay to ensure DOM is ready before showing
       requestAnimationFrame(() => {
         setIsVisible(true)
+        // Stagger animation: show content after overlay starts fading in
+        setTimeout(() => {
+          setContentVisible(true)
+        }, 50)
       })
     } else {
+      // Hide content first, then overlay
+      setContentVisible(false)
       // Wait for transition to complete before hiding
       const timer = setTimeout(() => {
         setIsVisible(false)
         document.body.style.overflow = 'unset'
-      }, 300) // Match transition duration
+      }, 350) // Match transition duration
       return () => clearTimeout(timer)
     }
   }, [isOpen])
@@ -117,7 +124,9 @@ export default function ConfirmDialog({
       onTransitionEnd={handleTransitionEnd}
       style={{
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
+        backdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
+        WebkitBackdropFilter: isVisible ? 'blur(4px)' : 'blur(0px)',
+        transition: 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
@@ -126,14 +135,47 @@ export default function ConfirmDialog({
         className="confirm-dialog-content"
         onClick={handleContentClick}
         style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          opacity: contentVisible ? 1 : 0,
+          transform: contentVisible 
+            ? 'translateY(0) scale(1)' 
+            : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
-        <h3 className="confirm-dialog-title">{title}</h3>
-        <p className="confirm-dialog-message">{message}</p>
-        <div className="confirm-dialog-actions">
+        <h3 
+          className="confirm-dialog-title"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s'
+              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+          }}
+        >
+          {title}
+        </h3>
+        <p 
+          className="confirm-dialog-message"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(-10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
+              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+          }}
+        >
+          {message}
+        </p>
+        <div 
+          className="confirm-dialog-actions"
+          style={{
+            opacity: contentVisible ? 1 : 0,
+            transform: contentVisible ? 'translateY(0)' : 'translateY(10px)',
+            transition: contentVisible 
+              ? 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s'
+              : 'opacity 0.2s ease-out, transform 0.2s ease-out'
+          }}
+        >
           <button
             type="button"
             onClick={handleCancelClick}
