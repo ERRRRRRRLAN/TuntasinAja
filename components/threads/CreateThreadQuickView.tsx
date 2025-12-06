@@ -22,9 +22,14 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  // Default deadline: 1 week from today
-  const defaultDeadline = addWeeks(new Date(), 1)
-  const [deadline, setDeadline] = useState<string>(defaultDeadline.toISOString().slice(0, 16))
+  // Default deadline: 1 week from today at 00:00 (midnight)
+  const getDefaultDeadline = () => {
+    const oneWeekLater = addWeeks(new Date(), 1)
+    // Set time to 00:00:00
+    oneWeekLater.setHours(0, 0, 0, 0)
+    return oneWeekLater.toISOString().slice(0, 16)
+  }
+  const [deadline, setDeadline] = useState<string>(getDefaultDeadline())
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
@@ -67,9 +72,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
-      // Reset deadline to default (1 week from now)
-      const newDefaultDeadline = addWeeks(new Date(), 1)
-      setDeadline(newDefaultDeadline.toISOString().slice(0, 16))
+      // Reset deadline to default (1 week from now at 00:00)
+      setDeadline(getDefaultDeadline())
       setIsSubmitting(false)
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
