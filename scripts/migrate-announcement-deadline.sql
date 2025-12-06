@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS announcements (
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target_type "AnnouncementTargetType" NOT NULL DEFAULT 'normal',
+    target_type "AnnouncementTargetType" NOT NULL DEFAULT 'global',
     target_kelas TEXT,
     target_subject TEXT,
     priority "AnnouncementPriority" NOT NULL DEFAULT 'normal',
