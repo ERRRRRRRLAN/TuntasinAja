@@ -326,7 +326,8 @@ export const threadRouter = createTRPCRouter({
                     commentId: comment.id,
                     commentContent: comment.content,
                     threadDate: existingThread.date.toISOString(),
-                  }
+                  },
+                  'comment'
                 )
               } catch (error) {
                 console.error('Error sending notification for new comment:', error)
@@ -434,7 +435,8 @@ export const threadRouter = createTRPCRouter({
                 type: 'new_thread',
                 threadId: thread.id,
                 threadTitle: thread.title,
-              }
+              },
+              'task'
             )
             console.log('[ThreadRouter] Notification result:', result)
           } catch (error) {
@@ -597,7 +599,8 @@ export const threadRouter = createTRPCRouter({
               commentId: comment.id,
               commentContent: comment.content,
               threadDate: thread.date.toISOString(),
-            }
+            },
+            'comment'
           )
         } catch (error) {
           console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)

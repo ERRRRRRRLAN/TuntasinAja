@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/firebase-admin'
+import { filterTokensBySettings, type NotificationType } from '@/server/utils/notificationSettings'
 
 export const notificationRouter = createTRPCRouter({
   // Register device token
@@ -122,7 +123,8 @@ export async function sendNotificationToClass(
   kelas: string,
   title: string,
   body: string,
-  data?: Record<string, string>
+  data?: Record<string, string>,
+  notificationType: NotificationType = 'task'
 ) {
   try {
     console.log('[sendNotificationToClass] Starting notification send:', {
@@ -227,10 +229,20 @@ export async function sendNotificationToClass(
       }
     }
 
-    // Use filtered tokens only
-    const tokens = filteredTokens.map((dt: { token: string }) => dt.token)
-    console.log('[sendNotificationToClass] Sending to', tokens.length, 'devices')
-    const result = await sendPushNotification(tokens, title, body, data)
+    // Filter tokens based on user notification settings
+    const tokensToSend = await filterTokensBySettings(filteredTokens, notificationType)
+    
+    if (tokensToSend.length === 0) {
+      console.log('[sendNotificationToClass] No tokens to send after filtering by user settings')
+      return {
+        successCount: 0,
+        failureCount: 0,
+        message: 'No users eligible for notification based on their settings',
+      }
+    }
+
+    console.log('[sendNotificationToClass] Sending to', tokensToSend.length, 'devices (filtered from', filteredTokens.length, 'total)')
+    const result = await sendPushNotification(tokensToSend, title, body, data)
     
     console.log('[sendNotificationToClass] ✅ Notification send result:', {
       successCount: result.successCount,

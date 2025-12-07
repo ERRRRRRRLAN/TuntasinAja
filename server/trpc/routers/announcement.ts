@@ -329,7 +329,8 @@ export const announcementRouter = createTRPCRouter({
             type: 'announcement',
             announcementId: announcement.id,
             priority: input.priority,
-          }
+          },
+          'announcement'
         )
       }
 
