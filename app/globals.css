@@ -686,6 +686,17 @@ body {
   }
 }
 
+@keyframes slideDownToBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);

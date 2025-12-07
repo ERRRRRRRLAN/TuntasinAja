@@ -18,6 +18,7 @@ export default function MePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isNotificationClosing, setIsNotificationClosing] = useState(false)
   const [localSettings, setLocalSettings] = useState<any>(null)
   const utils = trpc.useUtils()
 
@@ -44,6 +45,7 @@ export default function MePage() {
   useEffect(() => {
     if (!localSettings || !settings) {
       setHasUnsavedChanges(false)
+      setIsNotificationClosing(false)
       return
     }
 
@@ -59,8 +61,21 @@ export default function MePage() {
       }
     })
 
-    setHasUnsavedChanges(hasChanges)
-  }, [localSettings, settings])
+    // If changes are removed, trigger closing animation
+    if (hasUnsavedChanges && !hasChanges) {
+      setIsNotificationClosing(true)
+      // Wait for animation to complete before hiding
+      setTimeout(() => {
+        setHasUnsavedChanges(false)
+        setIsNotificationClosing(false)
+      }, 300) // Match animation duration
+    } else {
+      setHasUnsavedChanges(hasChanges)
+      if (hasChanges) {
+        setIsNotificationClosing(false)
+      }
+    }
+  }, [localSettings, settings, hasUnsavedChanges])
 
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
@@ -721,7 +736,7 @@ export default function MePage() {
         />
 
         {/* Sticky Notification for Unsaved Changes */}
-        {hasUnsavedChanges && (
+        {(hasUnsavedChanges || isNotificationClosing) && (
           <div
             className="settings-unsaved-notification"
             style={{
@@ -739,7 +754,9 @@ export default function MePage() {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '1rem',
-              animation: 'slideUpFromBottom 0.3s ease-out',
+              animation: isNotificationClosing 
+                ? 'slideDownToBottom 0.3s ease-out forwards'
+                : 'slideUpFromBottom 0.3s ease-out',
               maxWidth: 'calc(100vw - 2rem)',
               flexWrap: 'wrap',
             }}
