@@ -26,6 +26,7 @@ export default function MePage() {
   const [localSettings, setLocalSettings] = useState<any>(null)
   const [showNavigationDialog, setShowNavigationDialog] = useState(false)
   const prevHasUnsavedChangesRef = useRef(false)
+  const justSavedRef = useRef(false) // Flag to skip comparison after save
   const utils = trpc.useUtils()
   
   // Check if running on mobile web (not native app)
@@ -58,13 +59,22 @@ export default function MePage() {
     if (settings) {
       setLocalSettings(settings)
       setHasUnsavedChanges(false)
+      setGlobalHasUnsavedChanges(false) // Reset global state when settings are synced
+      prevHasUnsavedChangesRef.current = false
     }
-  }, [settings])
+  }, [settings, setGlobalHasUnsavedChanges])
 
   // Check for unsaved changes whenever localSettings changes
   useEffect(() => {
+    // Skip comparison if we just saved (settings are being synced)
+    if (justSavedRef.current) {
+      justSavedRef.current = false
+      return
+    }
+    
     if (!localSettings || !settings) {
       setHasUnsavedChanges(false)
+      setGlobalHasUnsavedChanges(false)
       setIsNotificationClosing(false)
       prevHasUnsavedChangesRef.current = false
       return
@@ -81,6 +91,9 @@ export default function MePage() {
         }
       }
     })
+
+    // Sync global state
+    setGlobalHasUnsavedChanges(hasChanges)
 
     // If we had changes before but now don't, trigger closing animation
     if (prevHasUnsavedChangesRef.current && !hasChanges) {
@@ -102,7 +115,7 @@ export default function MePage() {
         setIsNotificationClosing(false)
       }
     }
-  }, [localSettings, settings]) // Removed hasUnsavedChanges from deps to avoid loop
+  }, [localSettings, settings, setGlobalHasUnsavedChanges]) // Removed hasUnsavedChanges from deps to avoid loop
 
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
@@ -110,6 +123,10 @@ export default function MePage() {
       toast.success('Pengaturan berhasil disimpan')
       setIsSaving(false)
       setHasUnsavedChanges(false)
+      setGlobalHasUnsavedChanges(false) // Reset global state immediately
+      prevHasUnsavedChangesRef.current = false // Reset ref to prevent animation trigger
+      setIsNotificationClosing(false) // Ensure notification doesn't show closing animation
+      justSavedRef.current = true // Set flag to skip comparison on next settings update
       utils.userSettings.get.invalidate()
     },
     onError: (error) => {
@@ -196,6 +213,9 @@ export default function MePage() {
       setLocalSettings({ ...settings })
     }
     setHasUnsavedChanges(false)
+    setGlobalHasUnsavedChanges(false) // Reset global state
+    prevHasUnsavedChangesRef.current = false // Reset ref
+    setIsNotificationClosing(false) // Reset closing state
     toast.info('Perubahan dibatalkan')
   }
 
