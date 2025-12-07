@@ -74,12 +74,12 @@ export default function BottomNavigation() {
               minWidth: '56px',
               position: 'relative',
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
               if (!isActive) {
                 e.currentTarget.style.color = 'var(--text)'
               }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
               if (!isActive) {
                 e.currentTarget.style.color = 'var(--text-light)'
               }
