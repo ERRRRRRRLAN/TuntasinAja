@@ -147,8 +147,7 @@ export default function Sidebar() {
   ]
 
   const additionalNavItems: NavItem[] = [
-    ...(isDanton ? [{ href: '/danton', label: 'Danton', icon: <CrownIcon size={20} /> }] : []),
-    ...(isAdmin ? [{ href: '/profile', label: 'Admin Panel', icon: <CrownIcon size={20} /> }] : []),
+    // Danton and Admin items moved to user section below
   ]
 
   const allNavItems = [...mainNavItems, ...additionalNavItems]
@@ -363,30 +362,60 @@ export default function Sidebar() {
               </div>
             </div>
 
-            <Link
-              href="/profile"
-              onClick={() => setIsOpen(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem',
-                textDecoration: 'none',
-                color: 'var(--text)',
-                borderRadius: '0.5rem',
-                transition: 'background 0.2s',
-                marginBottom: '0.5rem',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-              }}
-            >
-              <UserIcon size={18} />
-              <span style={{ fontSize: '0.875rem' }}>Profil</span>
-            </Link>
+            {/* Danton Dashboard / Admin Panel / Profil (conditional) */}
+            {isDanton && (
+              <Link
+                href="/danton"
+                onClick={() => setIsOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem',
+                  textDecoration: 'none',
+                  color: 'var(--text)',
+                  borderRadius: '0.5rem',
+                  transition: 'background 0.2s',
+                  marginBottom: '0.5rem',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                }}
+              >
+                <CrownIcon size={18} style={{ color: '#fbbf24' }} />
+                <span style={{ fontSize: '0.875rem' }}>Danton Dashboard</span>
+              </Link>
+            )}
+            {isAdmin && !isDanton && (
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem',
+                  textDecoration: 'none',
+                  color: 'var(--text)',
+                  borderRadius: '0.5rem',
+                  transition: 'background 0.2s',
+                  marginBottom: '0.5rem',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                }}
+              >
+                <CrownIcon size={18} style={{ color: 'var(--primary)' }} />
+                <span style={{ fontSize: '0.875rem' }}>Admin Panel</span>
+              </Link>
+            )}
+            {/* Regular users: no profile button */}
 
             {!Capacitor.isNativePlatform() && (
               <a
