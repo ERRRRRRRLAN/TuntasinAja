@@ -889,9 +889,9 @@ export default function FeedPage() {
         </div>
         )}
 
-      {/* Subscription Warning */}
-      {session && !isAdmin && isSubscriptionExpired && (
-        <div
+        {/* Subscription Warning */}
+        {session && !isAdmin && isSubscriptionExpired && (
+          <div
           className="subscription-fade-in"
           style={{
             position: 'fixed',
@@ -913,12 +913,12 @@ export default function FeedPage() {
         >
           <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0, marginTop: '0.125rem' }} />
           <span>Subscription habis - Tidak dapat membuat/mengedit</span>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Feedback FAB - Above Create Thread Button */}
-      {(session || hasSessionCookie) && (
-        <div 
+        {/* Feedback FAB - Above Create Thread Button */}
+        {(session || hasSessionCookie) && (
+          <div 
           className="feedback-fab-container"
           style={{
             position: 'fixed',
@@ -1023,12 +1023,12 @@ export default function FeedPage() {
           >
             <MessageIcon size={24} />
           </button>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Floating Action Button - Create Thread */}
-      {(session || hasSessionCookie) && canActuallyPostEdit && (
-        <button
+        {/* Floating Action Button - Create Thread */}
+        {(session || hasSessionCookie) && canActuallyPostEdit && (
+          <button
           onClick={() => setShowCreateForm(true)}
           className="fab-button"
           style={{
@@ -1086,8 +1086,8 @@ export default function FeedPage() {
               {uncompletedCount > 99 ? '99+' : uncompletedCount}
             </span>
           )}
-        </button>
-      )}
+          </button>
+        )}
 
         {/* Feedback Modal */}
         <FeedbackModal
