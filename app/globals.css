@@ -1460,7 +1460,7 @@ textarea {
 
   /* Add padding bottom for bottom navigation */
   .main-content {
-    padding-bottom: 80px !important;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
@@ -1561,6 +1561,7 @@ textarea {
 
   .main-content {
     padding: 1rem 0 !important;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
