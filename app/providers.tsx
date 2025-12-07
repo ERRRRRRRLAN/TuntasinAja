@@ -4,7 +4,7 @@ import { SessionProvider } from 'next-auth/react'
 import { trpc, trpcClient } from '@/lib/trpc'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Capacitor } from '@capacitor/core'
+// Capacitor will be loaded dynamically to avoid initialization errors
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
@@ -16,16 +16,25 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
 
 // Setup global back button handler for Android
-if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+if (typeof window !== 'undefined') {
   // Use setTimeout to ensure Capacitor is fully initialized
   setTimeout(() => {
-    import('@/hooks/useBackButton').then((module) => {
-      // This will trigger the setup in useBackButton.ts
-      console.log('[Providers] Back button handler module loaded')
-    }).catch((e) => {
-      // Silently fail - back button handler is optional
-      console.warn('[Providers] Could not load back button handler:', e)
-    })
+    try {
+      // Lazy load Capacitor to avoid errors if not initialized
+      const capacitorModule = require('@capacitor/core')
+      if (capacitorModule.Capacitor && capacitorModule.Capacitor.isNativePlatform()) {
+        import('@/hooks/useBackButton').then((module) => {
+          // This will trigger the setup in useBackButton.ts
+          console.log('[Providers] Back button handler module loaded')
+        }).catch((e) => {
+          // Silently fail - back button handler is optional
+          console.warn('[Providers] Could not load back button handler:', e)
+        })
+      }
+    } catch (e) {
+      // Silently fail - Capacitor might not be available (web build)
+      console.warn('[Providers] Capacitor not available, skipping back button handler:', e)
+    }
   }, 100)
 }
 

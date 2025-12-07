@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Capacitor } from '@capacitor/core'
+// Capacitor will be loaded dynamically to avoid initialization errors
 import { useBackButton } from './useBackButton'
 
 // Navigation history manager
@@ -68,6 +68,21 @@ export function useNavigationHistory() {
   const router = useRouter()
   const isInitialMount = useRef(true)
   const previousPathname = useRef<string | null>(null)
+  const [isNativePlatform, setIsNativePlatform] = useState(false)
+
+  // Check if native platform (lazy load Capacitor)
+  useEffect(() => {
+    const checkNativePlatform = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core')
+        setIsNativePlatform(Capacitor.isNativePlatform())
+      } catch (error) {
+        // Silently fail - not native platform
+        setIsNativePlatform(false)
+      }
+    }
+    checkNativePlatform()
+  }, [])
 
   // Track navigation
   useEffect(() => {
@@ -96,7 +111,7 @@ export function useNavigationHistory() {
   // This handler has lower priority - it will only be called if no QuickView/Modal is open
   // QuickView handlers will be registered after this, so they have higher priority
   useBackButton(
-    Capacitor.isNativePlatform() && navigationHistory.getHistory().length > 1,
+    isNativePlatform && navigationHistory.getHistory().length > 1,
     () => {
       try {
         // Check if we're at root (can't go back further)
