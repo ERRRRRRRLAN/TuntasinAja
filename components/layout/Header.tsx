@@ -60,6 +60,7 @@ export default function Header() {
     { href: '/history', label: 'History' },
     { href: '/schedule', label: 'Jadwal' },
     { href: '/announcement', label: 'Pengumuman' },
+    { href: '/settings', label: 'Pengaturan' },
     ...(isDanton ? [{ href: '/danton', label: 'Danton' }] : []),
   ]
 

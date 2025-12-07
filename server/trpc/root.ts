@@ -1,4 +1,5 @@
 import { createTRPCRouter } from './trpc'
+import { userSettingsRouter } from './routers/userSettings'
 import { threadRouter } from './routers/thread'
 import { userStatusRouter } from './routers/userStatus'
 import { historyRouter } from './routers/history'
@@ -31,6 +32,7 @@ export const appRouter = createTRPCRouter({
   database: databaseRouter,
   bulkOperations: bulkOperationsRouter,
   announcement: announcementRouter,
+  userSettings: userSettingsRouter,
 })
 
 export type AppRouter = typeof appRouter

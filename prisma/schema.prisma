@@ -30,6 +30,7 @@ model User {
   deviceTokens  DeviceToken[]
   announcements Announcement[]
   announcementReads AnnouncementRead[]
+  settings      UserSettings?
 
   @@map("users")
 }
@@ -277,4 +278,54 @@ model AnnouncementRead {
   @@index([userId])
   @@index([announcementId])
   @@map("announcement_reads")
+}
+
+model UserSettings {
+  id                    String    @id @default(cuid())
+  userId                String    @unique @map("user_id")
+  
+  // Notifications
+  pushNotificationsEnabled Boolean @default(true) @map("push_notifications_enabled")
+  taskNotificationsEnabled Boolean @default(true) @map("task_notifications_enabled")
+  commentNotificationsEnabled Boolean @default(true) @map("comment_notifications_enabled")
+  announcementNotificationsEnabled Boolean @default(true) @map("announcement_notifications_enabled")
+  deadlineReminderEnabled Boolean @default(true) @map("deadline_reminder_enabled")
+  scheduleReminderEnabled Boolean @default(true) @map("schedule_reminder_enabled")
+  overdueReminderEnabled Boolean @default(true) @map("overdue_reminder_enabled")
+  reminderTime          String?   @map("reminder_time") // "19:00"
+  dndEnabled            Boolean   @default(false) @map("dnd_enabled")
+  dndStartTime          String?   @map("dnd_start_time") // "22:00"
+  dndEndTime            String?   @map("dnd_end_time") // "06:00"
+  
+  // Display
+  theme                 String    @default("auto") @map("theme") // "light", "dark", "auto"
+  tasksPerPage          Int       @default(20) @map("tasks_per_page")
+  defaultSort           String    @default("newest") @map("default_sort") // "newest", "oldest", "deadline"
+  showCompletedTasks    Boolean   @default(true) @map("show_completed_tasks")
+  fontSize              String    @default("normal") @map("font_size") // "small", "normal", "large"
+  animationsEnabled     Boolean   @default(true) @map("animations_enabled")
+  
+  // Data
+  autoDeleteHistoryDays Int?      @map("auto_delete_history_days") // null = never
+  
+  // Sound & Vibration
+  soundEnabled          Boolean   @default(true) @map("sound_enabled")
+  vibrationEnabled      Boolean   @default(true) @map("vibration_enabled")
+  
+  // Language & Regional
+  language              String    @default("id") @map("language") // "id", "en"
+  dateFormat            String    @default("DD/MM/YYYY") @map("date_format")
+  timeFormat            String    @default("24h") @map("time_format") // "12h", "24h"
+  
+  // Accessibility
+  highContrast          Boolean   @default(false) @map("high_contrast")
+  largeButtons          Boolean   @default(false) @map("large_buttons")
+  reduceAnimations      Boolean   @default(false) @map("reduce_animations")
+  
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_settings")
 }
