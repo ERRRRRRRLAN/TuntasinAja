@@ -812,26 +812,26 @@ export default function FeedPage() {
         </div>
 
         {selectedThreadId && (
-        <ThreadQuickView
-          threadId={selectedThreadId}
-          onClose={() => {
-            setSelectedThreadId(null)
-            // Jika thread dibuka dari reminder, buka reminder modal lagi
-            if (threadOpenedFromReminder) {
-              setThreadOpenedFromReminder(false)
-              setShowReminderModal(true)
-            }
-          }}
-        />
-      )}
+          <ThreadQuickView
+            threadId={selectedThreadId}
+            onClose={() => {
+              setSelectedThreadId(null)
+              // Jika thread dibuka dari reminder, buka reminder modal lagi
+              if (threadOpenedFromReminder) {
+                setThreadOpenedFromReminder(false)
+                setShowReminderModal(true)
+              }
+            }}
+          />
+        )}
 
-      {showCreateForm && (
-        <CreateThreadQuickView onClose={() => setShowCreateForm(false)} />
-      )}
+        {showCreateForm && (
+          <CreateThreadQuickView onClose={() => setShowCreateForm(false)} />
+        )}
 
-      {/* Reminder Modal - Disabled for admin users */}
-      {!isAdmin && (
-        <ReminderModal
+        {/* Reminder Modal - Disabled for admin users */}
+        {!isAdmin && (
+          <ReminderModal
           isOpen={showReminderModal}
           onClose={() => {
             setShowReminderModal(false)
@@ -859,12 +859,12 @@ export default function FeedPage() {
             // Tutup reminder modal sementara
             setShowReminderModal(false)
           }}
-        />
-      )}
+          />
+        )}
 
-      {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
-      {/* Permission Indicator */}
-      {session && isOnlyRead && (
+        {/* Schedule Reminder Modal - For tasks related to tomorrow's classes */}
+        {/* Permission Indicator */}
+        {session && isOnlyRead && (
         <div
           className="subscription-fade-in"
           style={{
@@ -887,7 +887,7 @@ export default function FeedPage() {
           <AlertTriangleIcon size={16} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
           <span>Hanya Baca - Tidak dapat membuat/mengedit</span>
         </div>
-      )}
+        )}
 
       {/* Subscription Warning */}
       {session && !isAdmin && isSubscriptionExpired && (
@@ -1094,7 +1094,6 @@ export default function FeedPage() {
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
         />
-        </div>
       </Layout>
   )
 }
