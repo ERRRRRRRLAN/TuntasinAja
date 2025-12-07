@@ -3708,6 +3708,17 @@ textarea {
   }
 }
 
+/* FAB Button positioning for mobile */
+@media (max-width: 768px) {
+  .fab-create-thread {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .fab-feedback-container {
+    bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 @media (max-width: 640px) {
   .danton-user-list-mobile .card {
     padding: 0.875rem !important;
