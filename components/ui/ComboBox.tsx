@@ -101,15 +101,31 @@ export default function ComboBox({
     return () => setMounted(false)
   }, [])
 
-  // Calculate dropdown position when opened
+  // Calculate dropdown position when opened or on scroll/resize
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect()
-      setDropdownPosition({
-        top: buttonRect.bottom + window.scrollY + 4, // 4px gap
-        left: buttonRect.left + window.scrollX,
-        width: buttonRect.width
-      })
+    if (!isOpen || !buttonRef.current) return
+
+    const updatePosition = () => {
+      if (buttonRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect()
+        setDropdownPosition({
+          top: buttonRect.bottom + window.scrollY + 4, // 4px gap
+          left: buttonRect.left + window.scrollX,
+          width: buttonRect.width
+        })
+      }
+    }
+
+    // Initial position
+    updatePosition()
+
+    // Update on scroll or resize
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
     }
   }, [isOpen])
 
