@@ -3721,29 +3721,8 @@ textarea {
   }
 }
 
-/* FAB Button positioning - Desktop default */
-.fab-create-thread {
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
-  z-index: 999;
-}
-
-.fab-feedback-container {
-  bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
-  z-index: 999;
-}
-
-/* FAB Button positioning for mobile */
-@media (max-width: 768px) {
-  .fab-create-thread {
-    bottom: var(--bottom-nav-fab-spacing) !important;
-    z-index: 1001 !important; /* Above bottom navbar (z-index: 100) */
-  }
-
-  .fab-feedback-container {
-    bottom: calc(var(--bottom-nav-fab-spacing) + 90px) !important; /* 90px above Create Thread FAB for clear separation */
-    z-index: 1001 !important; /* Above bottom navbar (z-index: 100) */
-  }
-}
+/* FAB Button positioning - Now handled by inline styles in FeedPage.tsx */
+/* CSS classes kept for reference but positioning is handled dynamically */
 
 @media (max-width: 640px) {
   .danton-user-list-mobile .card {
