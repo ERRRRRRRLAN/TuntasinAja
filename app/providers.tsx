@@ -3,8 +3,8 @@
 import { SessionProvider } from 'next-auth/react'
 import { trpc, trpcClient } from '@/lib/trpc'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState } from 'react'
-// Capacitor will be loaded dynamically to avoid initialization errors
+import { useState, useEffect } from 'react'
+import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
@@ -14,29 +14,15 @@ import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
-import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
 // Setup global back button handler for Android
-if (typeof window !== 'undefined') {
-  // Use setTimeout to ensure Capacitor is fully initialized
-  setTimeout(() => {
-    // Use dynamic import instead of require to avoid module-level errors
-    import('@capacitor/core').then((capacitorModule) => {
-      if (capacitorModule.Capacitor && capacitorModule.Capacitor.isNativePlatform()) {
-        import('@/hooks/useBackButton').then((module) => {
-          // This will trigger the setup in useBackButton.ts
-          console.log('[Providers] Back button handler module loaded')
-        }).catch((e) => {
-          // Silently fail - back button handler is optional
-          console.warn('[Providers] Could not load back button handler:', e)
-        })
-      }
-    }).catch((e) => {
-      // Silently fail - Capacitor might not be available (web build)
-      console.warn('[Providers] Capacitor not available, skipping back button handler:', e)
-    })
-  }, 100)
+if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+  import('@/hooks/useBackButton').then((module) => {
+    // This will trigger the setup in useBackButton.ts
+    console.log('[Providers] Back button handler module loaded')
+  }).catch((e) => {
+    console.error('[Providers] Error loading back button handler:', e)
+  })
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -93,26 +79,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <ThemeProvider>
             <UnsavedChangesProvider>
-              <GlobalErrorHandler />
-              <ErrorBoundary fallback={null}>
-                <ServiceWorkerRegistration />
-              </ErrorBoundary>
-              <ErrorBoundary fallback={null}>
-                <StatusBarHandler />
-              </ErrorBoundary>
-              <ErrorBoundary fallback={null}>
-                <NetworkStatus />
-              </ErrorBoundary>
-              <ErrorBoundary fallback={null}>
-                <NetworkErrorHandler />
-              </ErrorBoundary>
+              <ServiceWorkerRegistration />
+              <StatusBarHandler />
+              <NetworkStatus />
+              <NetworkErrorHandler />
               {children}
-              <ErrorBoundary fallback={null}>
-                <PushNotificationSetup />
-              </ErrorBoundary>
-              <ErrorBoundary fallback={null}>
-                <AppUpdateChecker />
-              </ErrorBoundary>
+              <PushNotificationSetup />
+              <AppUpdateChecker />
             </UnsavedChangesProvider>
           </ThemeProvider>
         </SessionProvider>
