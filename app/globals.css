@@ -3940,6 +3940,13 @@ textarea {
     animation: fadeInUp 0.5s ease-out 0.2s both !important;
   }
 
+  /* Settings Unsaved Changes Notification */
+  .settings-unsaved-notification {
+    bottom: calc(var(--bottom-nav-height) + 1rem) !important;
+    z-index: 1000 !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+
   /* Feedback Modal Mobile - Fullscreen like QuickView */
   .feedback-modal-overlay {
     padding: 0 !important;
