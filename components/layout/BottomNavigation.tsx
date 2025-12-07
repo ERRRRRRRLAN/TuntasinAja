@@ -1,9 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BookIcon, ClockIcon, CalendarIcon, BellIcon, UserIcon } from '@/components/ui/Icons'
 import { useDanton } from '@/hooks/useDanton'
-import ProtectedLink from '@/components/ui/ProtectedLink'
 
 interface NavItem {
   href: string
@@ -58,7 +58,7 @@ export default function BottomNavigation() {
       {bottomNavItems.map((item) => {
         const isActive = pathname === item.href
         return (
-          <ProtectedLink
+          <Link
             key={item.href}
             href={item.href}
             style={{
@@ -74,12 +74,12 @@ export default function BottomNavigation() {
               minWidth: '56px',
               position: 'relative',
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+            onMouseEnter={(e) => {
               if (!isActive) {
                 e.currentTarget.style.color = 'var(--text)'
               }
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+            onMouseLeave={(e) => {
               if (!isActive) {
                 e.currentTarget.style.color = 'var(--text-light)'
               }
@@ -119,7 +119,7 @@ export default function BottomNavigation() {
                 }}
               />
             )}
-          </ProtectedLink>
+          </Link>
         )
       })}
     </nav>
