@@ -39,11 +39,6 @@ export default function FeedPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isMobile, setIsMobile] = useState(false)
-  
-  // Initialize isMobile immediately if window is available
-  if (typeof window !== 'undefined' && !isMobile && window.innerWidth <= 768) {
-    // This will be set properly in useEffect, but we check here too
-  }
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(false)
 
