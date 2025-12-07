@@ -14,6 +14,7 @@ import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined') {
@@ -91,13 +92,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <ThemeProvider>
             <UnsavedChangesProvider>
-              <ServiceWorkerRegistration />
-              <StatusBarHandler />
-              <NetworkStatus />
-              <NetworkErrorHandler />
+              <ErrorBoundary fallback={null}>
+                <ServiceWorkerRegistration />
+              </ErrorBoundary>
+              <ErrorBoundary fallback={null}>
+                <StatusBarHandler />
+              </ErrorBoundary>
+              <ErrorBoundary fallback={null}>
+                <NetworkStatus />
+              </ErrorBoundary>
+              <ErrorBoundary fallback={null}>
+                <NetworkErrorHandler />
+              </ErrorBoundary>
               {children}
-              <PushNotificationSetup />
-              <AppUpdateChecker />
+              <ErrorBoundary fallback={null}>
+                <PushNotificationSetup />
+              </ErrorBoundary>
+              <ErrorBoundary fallback={null}>
+                <AppUpdateChecker />
+              </ErrorBoundary>
             </UnsavedChangesProvider>
           </ThemeProvider>
         </SessionProvider>
