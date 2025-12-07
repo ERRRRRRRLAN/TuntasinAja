@@ -188,48 +188,66 @@ export default function MePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <ToggleSwitch
-              checked={settings.notificationsEnabled ?? true}
-              onChange={(checked) => handleToggle('notificationsEnabled', checked)}
-              label="Aktifkan Notifikasi"
-              description="Terima notifikasi untuk tugas baru dan update"
+              checked={settings.pushNotificationsEnabled ?? true}
+              onChange={(checked) => handleToggle('pushNotificationsEnabled', checked)}
+              label="Notifikasi Push"
+              description="Terima notifikasi push untuk tugas baru dan update"
               isLoading={isSaving}
             />
 
             <ToggleSwitch
-              checked={settings.reminderEnabled ?? true}
-              onChange={(checked) => handleToggle('reminderEnabled', checked)}
-              label="Aktifkan Pengingat"
+              checked={settings.taskNotificationsEnabled ?? true}
+              onChange={(checked) => handleToggle('taskNotificationsEnabled', checked)}
+              label="Notifikasi Tugas"
+              description="Terima notifikasi untuk tugas baru"
+              isLoading={isSaving}
+            />
+
+            <ToggleSwitch
+              checked={settings.commentNotificationsEnabled ?? true}
+              onChange={(checked) => handleToggle('commentNotificationsEnabled', checked)}
+              label="Notifikasi Komentar"
+              description="Terima notifikasi untuk komentar baru"
+              isLoading={isSaving}
+            />
+
+            <ToggleSwitch
+              checked={settings.deadlineReminderEnabled ?? true}
+              onChange={(checked) => handleToggle('deadlineReminderEnabled', checked)}
+              label="Pengingat Deadline"
               description="Dapatkan pengingat untuk tugas yang mendekati deadline"
               isLoading={isSaving}
             />
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'var(--text)',
-              }}>
-                Waktu Pengingat
-              </label>
-              <ComboBox
-                options={timeOptions}
-                value={settings.reminderTime || '08:00'}
-                onChange={(value) => handleTimeChange('reminderTime', value)}
-                placeholder="Pilih waktu"
-              />
-            </div>
+            {settings.deadlineReminderEnabled && (
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text)',
+                }}>
+                  Waktu Pengingat
+                </label>
+                <ComboBox
+                  options={timeOptions}
+                  value={settings.reminderTime || '08:00'}
+                  onChange={(value) => handleTimeChange('reminderTime', value)}
+                  placeholder="Pilih waktu"
+                />
+              </div>
+            )}
 
             <ToggleSwitch
-              checked={settings.doNotDisturbEnabled ?? false}
-              onChange={(checked) => handleToggle('doNotDisturbEnabled', checked)}
+              checked={settings.dndEnabled ?? false}
+              onChange={(checked) => handleToggle('dndEnabled', checked)}
               label="Jangan Ganggu"
               description="Nonaktifkan semua notifikasi selama waktu tertentu"
               isLoading={isSaving}
             />
 
-            {settings.doNotDisturbEnabled && (
+            {settings.dndEnabled && (
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ 
@@ -243,8 +261,8 @@ export default function MePage() {
                   </label>
                   <ComboBox
                     options={timeOptions}
-                    value={settings.doNotDisturbStart || '22:00'}
-                    onChange={(value) => handleTimeChange('doNotDisturbStart', value)}
+                    value={settings.dndStartTime || '22:00'}
+                    onChange={(value) => handleTimeChange('dndStartTime', value)}
                     placeholder="Pilih waktu"
                   />
                 </div>
@@ -260,8 +278,8 @@ export default function MePage() {
                   </label>
                   <ComboBox
                     options={timeOptions}
-                    value={settings.doNotDisturbEnd || '07:00'}
-                    onChange={(value) => handleTimeChange('doNotDisturbEnd', value)}
+                    value={settings.dndEndTime || '07:00'}
+                    onChange={(value) => handleTimeChange('dndEndTime', value)}
                     placeholder="Pilih waktu"
                   />
                 </div>
