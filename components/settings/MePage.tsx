@@ -91,9 +91,11 @@ export default function MePage() {
   })
 
   // Initialize local settings when settings are loaded
-  if (settings && !localSettings) {
-    setLocalSettings(settings)
-  }
+  useEffect(() => {
+    if (settings && !localSettings) {
+      setLocalSettings(settings)
+    }
+  }, [settings, localSettings])
 
   const handleToggle = (key: string, value: boolean) => {
     if (!localSettings) return
