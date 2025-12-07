@@ -132,10 +132,8 @@ export default function HistoryPage() {
   }
 
   return (
-    <>
-      <Header />
-      <main className="main-content">
-        <div className="container">
+    <Layout>
+      <div className="container">
           <div className="page-header">
             <h2>History Tugas Selesai</h2>
             <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginTop: '0.5rem' }}>

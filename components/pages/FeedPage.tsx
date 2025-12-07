@@ -811,9 +811,8 @@ export default function FeedPage() {
             </>
           )}
         </div>
-      </main>
 
-      {selectedThreadId && (
+        {selectedThreadId && (
         <ThreadQuickView
           threadId={selectedThreadId}
           onClose={() => {
