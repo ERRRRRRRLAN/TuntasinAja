@@ -15,6 +15,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined') {
@@ -92,6 +93,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <ThemeProvider>
             <UnsavedChangesProvider>
+              <GlobalErrorHandler />
               <ErrorBoundary fallback={null}>
                 <ServiceWorkerRegistration />
               </ErrorBoundary>
