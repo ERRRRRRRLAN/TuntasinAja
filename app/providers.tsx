@@ -14,6 +14,7 @@ import SessionRefreshHandler from '@/components/SessionRefreshHandler'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
@@ -78,14 +79,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchOnWindowFocus={true}
         >
           <ThemeProvider>
-            <SessionRefreshHandler />
-            <ServiceWorkerRegistration />
-            <StatusBarHandler />
-            <NetworkStatus />
-            <NetworkErrorHandler />
-            {children}
-            <PushNotificationSetup />
-            <AppUpdateChecker />
+            <UnsavedChangesProvider>
+              <SessionRefreshHandler />
+              <ServiceWorkerRegistration />
+              <StatusBarHandler />
+              <NetworkStatus />
+              <NetworkErrorHandler />
+              {children}
+              <PushNotificationSetup />
+              <AppUpdateChecker />
+            </UnsavedChangesProvider>
           </ThemeProvider>
         </SessionProvider>
       </QueryClientProvider>
