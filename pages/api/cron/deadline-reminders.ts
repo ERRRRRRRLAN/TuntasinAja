@@ -17,11 +17,12 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // TODO: Add authentication token check in production
-  // const authToken = req.headers.authorization
-  // if (authToken !== process.env.CRON_SECRET) {
-  //   return res.status(401).json({ error: 'Unauthorized' })
-  // }
+  // Authentication token check
+  // For Vercel Cron, you can check the Authorization header
+  const authHeader = req.headers.authorization
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
 
   try {
     const result = await sendDeadlineReminders()
