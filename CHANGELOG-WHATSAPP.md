@@ -4,9 +4,10 @@ Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja ja
 
 ## ✨ Fitur Baru
 
-### 1. **Tab "Me" - Profil & Pengaturan Lengkap**
+### 1. **Tab "Me" - Profil & Pengaturan Lengkap** ⚠️ BETA
 - Sekarang ada tab **"Me"** yang nampilin profil kamu di atas
 - Semua pengaturan ada di satu tempat, gak perlu bolak-balik halaman
+- ⚠️ **Catatan**: Fitur pengaturan ini masih dalam **masa pengujian (BETA)**, jadi mungkin masih ada bug atau fitur yang belum sempurna. Kalau nemuin masalah, langsung kasih tau lewat feedback ya!
 - Bisa atur notifikasi sesuai kebutuhan: mau terima notifikasi tugas? komentar? pengumuman? semua bisa diatur sendiri
 - Ada fitur **"Jangan Ganggu"** buat set waktu tertentu supaya notifikasi gak muncul (misalnya pas tidur malam)
 - Bisa set **waktu pengingat deadline** sendiri, jadi kamu bisa pilih kapan mau dikasih tau kalau ada tugas yang deadline-nya besok
