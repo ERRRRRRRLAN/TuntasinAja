@@ -29,6 +29,36 @@
   --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 16px); /* Space for FAB above navbar */
 }
 
+/* Dark mode */
+.dark {
+  --primary: #818cf8;
+  --primary-dark: #6366f1;
+  --secondary: #94a3b8;
+  --success: #34d399;
+  --danger: #f87171;
+  --bg: #0f172a;
+  --bg-primary: #1e293b;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --card: #1e293b;
+  --text: #f1f5f9;
+  --text-light: #94a3b8;
+  --border: #334155;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+/* Disable animations when animationsEnabled is false */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 /* Custom Scrollbar - Thin, no arrows */
 * {
   scrollbar-width: thin; /* Firefox */

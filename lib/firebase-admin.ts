@@ -99,11 +99,22 @@ export async function sendPushNotification(
       // Add Android-specific config
       android: {
         priority: 'high' as const,
+        notification: {
+          sound: 'default', // Will be controlled by user settings on client
+          channelId: 'default', // Android notification channel
+          // Vibration will be controlled by user settings on client
+        },
       },
       // Add APNS-specific config for iOS (if needed in future)
       apns: {
         headers: {
           'apns-priority': '10',
+        },
+        payload: {
+          aps: {
+            sound: 'default', // Will be controlled by user settings on client
+            // Vibration/badge will be controlled by user settings on client
+          },
         },
       },
     }

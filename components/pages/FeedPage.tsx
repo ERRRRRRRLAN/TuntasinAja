@@ -75,7 +75,6 @@ export default function FeedPage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize] = useState(20) // Default 20 threads per page
 
   // Get user data (kelas, isAdmin)
   const { data: userData, isLoading: isLoadingUserData } = trpc.auth.getUserData.useQuery(undefined, {
@@ -83,6 +82,16 @@ export default function FeedPage() {
   })
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
+
+  // Get user settings
+  const { data: userSettings } = trpc.userSettings.get.useQuery(undefined, {
+    enabled: !!session,
+    refetchOnWindowFocus: false,
+  })
+  
+  const pageSize = userSettings?.tasksPerPage || 20
+  const defaultSort = userSettings?.defaultSort || 'newest'
+  const showCompletedTasks = userSettings?.showCompletedTasks ?? true
 
   // Get subjects for user's class
   const { data: classSubjects, isLoading: isLoadingSubjects } = trpc.classSubject.getClassSubjects.useQuery(
@@ -103,7 +112,12 @@ export default function FeedPage() {
   // Get threads with pagination - invalidate cache when user changes
   const utils = trpc.useUtils()
   const { data: threadsData, isLoading, isFetching, isRefetching, error: threadsError, refetch: refetchThreads } = trpc.thread.getAll.useQuery(
-    { page: currentPage, limit: pageSize },
+    { 
+      page: currentPage, 
+      limit: pageSize,
+      sort: defaultSort,
+      showCompleted: showCompletedTasks,
+    },
     {
       refetchInterval: (query) => {
         // Stop polling jika tab tidak aktif (hidden)

@@ -11,6 +11,7 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { UserIcon, DownloadIcon, TrashIcon } from '@/components/ui/Icons'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -445,7 +446,26 @@ export default function MePage() {
               <ComboBox
                 options={themeOptions}
                 value={displaySettings.theme || 'auto'}
-                onChange={(value) => handleSelect('theme', value)}
+                onChange={(value) => {
+                  handleSelect('theme', value)
+                  // Update theme immediately
+                  if (typeof window !== 'undefined') {
+                    const root = document.documentElement
+                    if (value === 'dark') {
+                      root.classList.add('dark')
+                    } else if (value === 'light') {
+                      root.classList.remove('dark')
+                    } else {
+                      // Auto mode - check system preference
+                      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+                      if (prefersDark) {
+                        root.classList.add('dark')
+                      } else {
+                        root.classList.remove('dark')
+                      }
+                    }
+                  }
+                }}
                 placeholder="Pilih tema"
                 showAllOption={false}
                 showSearch={false}

@@ -15,6 +15,8 @@ export const threadRouter = createTRPCRouter({
       z.object({
         page: z.number().min(1).default(1).optional(),
         limit: z.number().min(1).max(50).default(20).optional(),
+        sort: z.enum(['newest', 'oldest', 'dueDate']).default('newest').optional(),
+        showCompleted: z.boolean().default(true).optional(),
       }).optional()
     )
     .query(async ({ ctx, input }) => {
@@ -90,29 +92,63 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: (() => {
+          const sort = input?.sort || 'newest'
+          switch (sort) {
+            case 'oldest':
+              return { createdAt: 'asc' }
+            case 'dueDate':
+              return { dueDate: 'asc' }
+            case 'newest':
+            default:
+              return { createdAt: 'desc' }
+          }
+        })(),
         skip,
         take: limit,
       })
 
-      // Filter out threads that are already completed by this user AND completion date > 24 hours
-      // Thread remains visible in dashboard for 24 hours after completion
-      // Thread remains in database until ALL users in the same kelas complete it
+      // Filter out threads that are already completed by this user
+      // Behavior depends on showCompleted setting:
+      // - If showCompleted = true: Show all threads (including completed ones)
+      // - If showCompleted = false: Filter out completed threads (regardless of completion time)
       let filteredThreads = threads
-      if (userId && !isAdmin) {
-        const { getUTCDate } = await import('@/lib/date-utils')
-        const now = getUTCDate()
-        // Calculate 24 hours ago (exactly 24 hours, not just 1 day from date)
-        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
-
-        // Get all completed thread IDs from history for this user where completion > 24 hours
+      const showCompleted = input?.showCompleted ?? true
+      
+      if (userId && !isAdmin && !showCompleted) {
+        // Get all completed thread IDs from history for this user
         const completedThreadIds = await prisma.history.findMany({
           where: {
             userId: userId,
             threadId: {
               not: null, // Only threads that still exist
+            },
+          },
+          select: {
+            threadId: true,
+          },
+        })
+
+        const completedIds = new Set(
+          completedThreadIds
+            .map((h) => h.threadId)
+            .filter((id): id is string => id !== null)
+        )
+
+        // Filter out all completed threads for this user
+        filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
+      } else if (userId && !isAdmin && showCompleted) {
+        // Show all threads, but we still need to check for old completions (>24 hours)
+        // This maintains backward compatibility with the 24-hour rule
+        const { getUTCDate } = await import('@/lib/date-utils')
+        const now = getUTCDate()
+        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
+
+        const completedThreadIds = await prisma.history.findMany({
+          where: {
+            userId: userId,
+            threadId: {
+              not: null,
             },
             completedDate: {
               lt: twentyFourHoursAgo, // Completed more than 24 hours ago
@@ -129,7 +165,7 @@ export const threadRouter = createTRPCRouter({
             .filter((id): id is string => id !== null)
         )
 
-        // Filter out completed threads for this user (only if completion > 24 hours)
+        // Filter out only threads completed more than 24 hours ago
         filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
       }
 

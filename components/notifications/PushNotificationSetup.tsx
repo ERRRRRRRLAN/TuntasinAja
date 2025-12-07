@@ -271,8 +271,35 @@ export default function PushNotificationSetup() {
         listenersRef.current.push(registrationErrorListener)
 
         // Listen for push notifications received
-        const pushListener = PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+        const pushListener = PushNotifications.addListener('pushNotificationReceived', async (notification: any) => {
           console.log('[PushNotificationSetup] 📬 Push notification received:', notification)
+          
+          // Get user settings for sound and vibration
+          try {
+            const settingsResponse = await fetch('/api/trpc/userSettings.get?input={}')
+            if (settingsResponse.ok) {
+              const settingsData = await settingsResponse.json()
+              const settings = settingsData?.result?.data
+              
+              // Play sound if enabled
+              if (settings?.soundEnabled !== false) {
+                // Sound is handled by the notification system, but we can add custom sound here if needed
+                console.log('[PushNotificationSetup] Sound enabled for notification')
+              }
+              
+              // Trigger vibration if enabled
+              if (settings?.vibrationEnabled !== false && 'vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]) // Vibration pattern: vibrate 200ms, pause 100ms, vibrate 200ms
+                console.log('[PushNotificationSetup] Vibration triggered')
+              }
+            }
+          } catch (error) {
+            console.error('[PushNotificationSetup] Error getting user settings:', error)
+            // Default to enabled if error
+            if ('vibrate' in navigator) {
+              navigator.vibrate([200, 100, 200])
+            }
+          }
         })
         listenersRef.current.push(pushListener)
 

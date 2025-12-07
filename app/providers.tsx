@@ -13,6 +13,7 @@ import NetworkErrorHandler from '@/components/NetworkErrorHandler'
 import SessionRefreshHandler from '@/components/SessionRefreshHandler'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
@@ -76,14 +77,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
           refetchInterval={5 * 60}
           refetchOnWindowFocus={true}
         >
-          <SessionRefreshHandler />
-          <ServiceWorkerRegistration />
-          <StatusBarHandler />
-          <NetworkStatus />
-          <NetworkErrorHandler />
-          {children}
-          <PushNotificationSetup />
-          <AppUpdateChecker />
+          <ThemeProvider>
+            <SessionRefreshHandler />
+            <ServiceWorkerRegistration />
+            <StatusBarHandler />
+            <NetworkStatus />
+            <NetworkErrorHandler />
+            {children}
+            <PushNotificationSetup />
+            <AppUpdateChecker />
+          </ThemeProvider>
         </SessionProvider>
       </QueryClientProvider>
     </trpc.Provider>
