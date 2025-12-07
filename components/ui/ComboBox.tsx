@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { FilterIcon, XIconSmall, CheckIcon } from './Icons'
 
 const MATA_PELAJARAN = [
@@ -90,6 +91,24 @@ export default function ComboBox({
   const displayValue = value === allValue && showAllOption 
     ? allLabel 
     : selectedOption?.label || value || placeholder
+
+  // Mount check for portal
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  // Calculate dropdown position when opened
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: buttonRect.bottom + window.scrollY + 4, // 4px gap
+        left: buttonRect.left + window.scrollX,
+        width: buttonRect.width
+      })
+    }
+  }, [isOpen])
 
   // Handle render and animation state
   useEffect(() => {
@@ -426,7 +445,8 @@ export default function ComboBox({
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
