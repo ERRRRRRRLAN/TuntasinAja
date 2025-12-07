@@ -919,7 +919,7 @@ export default function FeedPage() {
         {/* Feedback FAB - Above Create Thread Button */}
         {(session || hasSessionCookie) && (
           <div 
-          className="feedback-fab-container"
+          className="feedback-fab-container fab-feedback-container"
           style={{
             position: 'fixed',
             bottom: 'calc(7rem + env(safe-area-inset-bottom, 0))',
@@ -930,7 +930,6 @@ export default function FeedPage() {
             alignItems: 'flex-end',
             gap: '0.5rem'
           }}
-          className="fab-feedback-container"
         >
           {/* Tooltip - Hidden on mobile */}
           {showFeedbackTooltip && (
