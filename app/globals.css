@@ -1514,6 +1514,21 @@ textarea {
     max-width: calc(100vw - 1rem) !important;
     box-sizing: border-box !important;
   }
+
+  /* FAB Buttons Mobile - MUST be above bottom navbar (height ~70px) */
+  .fab-button,
+  .fab-create-thread {
+    bottom: 140px !important; /* Well above 70px bottom navbar */
+    right: 1rem !important;
+    z-index: 1001 !important;
+  }
+
+  .feedback-fab-container,
+  .fab-feedback-container {
+    bottom: 220px !important; /* 80px above Create Thread FAB */
+    right: 1rem !important;
+    z-index: 1001 !important;
+  }
 }
 
 /* Desktop (769px and up) */
@@ -3902,19 +3917,24 @@ textarea {
     margin-top: 1rem !important;
   }
 
-  /* FAB Buttons Mobile */
-  .fab-button {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0)) !important;
+  /* FAB Buttons Mobile - Positioned above bottom navbar */
+  /* IMPORTANT: These values must be high enough to be above bottom navbar (~70px) */
+  .fab-button,
+  .fab-create-thread {
+    bottom: 140px !important; /* Well above bottom navbar */
     right: 1rem !important;
+    z-index: 1001 !important;
   }
 
-  .feedback-fab-container {
-    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px) + 8px) !important;
+  .feedback-fab-container,
+  .fab-feedback-container {
+    bottom: 220px !important; /* Well above Create Thread FAB */
     right: 1rem !important;
-    z-index: 999 !important;
+    z-index: 1001 !important;
   }
 
-  .feedback-fab-container button {
+  .feedback-fab-container button,
+  .fab-feedback-container button {
     width: 52px !important;
     height: 52px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;

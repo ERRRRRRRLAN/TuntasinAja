@@ -38,7 +38,6 @@ export default function FeedPage() {
   const { data: session, status: sessionStatus } = useSession()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [isMobile, setIsMobile] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(false)
 
@@ -61,29 +60,6 @@ export default function FeedPage() {
     // Check periodically in case cookie is restored
     const interval = setInterval(checkSessionCookie, 1000)
     return () => clearInterval(interval)
-  }, [])
-
-  // Detect mobile screen size - initialize immediately
-  useEffect(() => {
-    const checkMobile = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(window.innerWidth <= 768)
-      }
-    }
-    
-    // Check immediately on mount
-    checkMobile()
-    
-    // Also check after a short delay to ensure window is available
-    const timeout = setTimeout(checkMobile, 100)
-    
-    // Listen for resize
-    window.addEventListener('resize', checkMobile)
-    
-    return () => {
-      clearTimeout(timeout)
-      window.removeEventListener('resize', checkMobile)
-    }
   }, [])
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -946,9 +922,7 @@ export default function FeedPage() {
           className="feedback-fab-container fab-feedback-container"
           style={{
             position: 'fixed',
-            bottom: (typeof window !== 'undefined' && window.innerWidth <= 768)
-              ? '260px' // Mobile: Fixed 260px from bottom - well above Create Thread FAB
-              : 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
+            bottom: 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop default, CSS overrides for mobile
             right: '1.5rem',
             zIndex: 1001,
             display: 'flex',
@@ -1059,9 +1033,7 @@ export default function FeedPage() {
           className="fab-button fab-create-thread"
           style={{
             position: 'fixed',
-            bottom: (typeof window !== 'undefined' && window.innerWidth <= 768)
-              ? '160px' // Mobile: Fixed 160px from bottom - well above navbar
-              : 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
+            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop default, CSS overrides for mobile
             right: '1.5rem',
             width: '56px',
             height: '56px',
