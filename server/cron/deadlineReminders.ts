@@ -72,7 +72,7 @@ export async function sendDeadlineReminders() {
           author: {
             kelas: user.kelas,
           },
-          dueDate: {
+          deadline: {
             gte: jakartaNow,
             lte: tomorrow,
           },
