@@ -7,11 +7,10 @@ import { Capacitor } from '@capacitor/core'
 import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { trpc } from '@/lib/trpc'
-import { toast } from '@/components/ui/ToastContainer'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon, LogOutIcon } from '@/components/ui/Icons'
+import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 
@@ -48,6 +47,12 @@ export default function MePage() {
     router.push('/auth/signin')
     return null
   }
+
+  // Get user data (isDanton)
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const isDanton = userData?.isDanton || false
 
   // Get settings
   const { data: settings, isLoading: isLoadingSettings } = trpc.userSettings.get.useQuery(undefined, {
@@ -120,7 +125,6 @@ export default function MePage() {
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
     onSuccess: () => {
-      toast.success('Pengaturan berhasil disimpan')
       setIsSaving(false)
       setHasUnsavedChanges(false)
       setGlobalHasUnsavedChanges(false) // Reset global state immediately
@@ -130,7 +134,6 @@ export default function MePage() {
       utils.userSettings.get.invalidate()
     },
     onError: (error) => {
-      toast.error(`Gagal menyimpan: ${error.message}`)
       setIsSaving(false)
     },
   })
@@ -141,11 +144,10 @@ export default function MePage() {
 
   const clearCache = trpc.userSettings.clearCache.useMutation({
     onSuccess: () => {
-      toast.success('Cache berhasil dihapus')
       setShowClearCacheDialog(false)
     },
     onError: (error) => {
-      toast.error(`Gagal menghapus cache: ${error.message}`)
+      // Silent error
     },
   })
 
@@ -201,7 +203,6 @@ export default function MePage() {
     if (Object.keys(updateData).length === 0) {
       setIsSaving(false)
       setHasUnsavedChanges(false)
-      toast.info('Tidak ada perubahan untuk disimpan')
       return
     }
 
@@ -216,7 +217,6 @@ export default function MePage() {
     setGlobalHasUnsavedChanges(false) // Reset global state
     prevHasUnsavedChangesRef.current = false // Reset ref
     setIsNotificationClosing(false) // Reset closing state
-    toast.info('Perubahan dibatalkan')
   }
 
   const handleExportData = () => {
@@ -231,7 +231,6 @@ export default function MePage() {
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-        toast.success('Data berhasil diekspor')
       }
     })
   }
@@ -248,7 +247,6 @@ export default function MePage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    toast.success('Download APK dimulai')
   }
 
   if (status === 'loading' || isLoadingSettings) {
@@ -337,6 +335,37 @@ export default function MePage() {
           
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isDanton && (
+              <button
+                onClick={() => router.push('/danton')}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--primary-dark)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--primary)'
+                }}
+              >
+                <CrownIcon size={18} />
+                Danton Dashboard
+              </button>
+            )}
+            
             {isMobileWeb && (
               <button
                 onClick={handleDownloadAPK}
