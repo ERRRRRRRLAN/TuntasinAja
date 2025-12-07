@@ -51,6 +51,18 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
+/* Dark mode checkbox styling */
+.dark input[type="checkbox"] {
+  accent-color: var(--primary);
+  filter: brightness(1.2);
+}
+
+.dark .thread-checkbox,
+.dark .comment-checkbox {
+  accent-color: var(--primary);
+  filter: brightness(1.2);
+}
+
 /* Disable animations when animationsEnabled is false */
 .no-animations *,
 .no-animations *::before,
