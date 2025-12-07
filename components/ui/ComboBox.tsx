@@ -185,7 +185,9 @@ export default function ComboBox({
         disabled={disabled}
         style={{
           width: '100%',
-          padding: '0.625rem 0.75rem 0.625rem 2.5rem',
+          padding: showAllOption || icon !== undefined 
+            ? '0.625rem 0.75rem 0.625rem 2.5rem' 
+            : '0.625rem 0.75rem',
           border: '1px solid var(--border)',
           borderRadius: '0.5rem',
           background: disabled ? 'var(--bg-secondary)' : 'var(--card)',
@@ -212,7 +214,7 @@ export default function ComboBox({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
-          {icon || (
+          {icon !== undefined ? icon : (showAllOption ? (
             <FilterIcon 
               size={18} 
               style={{ 
@@ -220,7 +222,7 @@ export default function ComboBox({
                 flexShrink: 0
               }} 
             />
-          )}
+          ) : null)}
           <span style={{ 
             overflow: 'hidden',
             textOverflow: 'ellipsis',
