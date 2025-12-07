@@ -20,23 +20,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
   
   // Get user settings (for theme and animations)
-  const { data: settings, error: settingsError } = trpc.userSettings.get.useQuery(undefined, {
+  const { data: settings } = trpc.userSettings.get.useQuery(undefined, {
     enabled: !!session,
     refetchOnWindowFocus: false,
-    retry: false, // Don't retry on error to prevent infinite loops
-    onError: (error) => {
-      // Silently handle errors - use default theme if settings can't be loaded
-      console.warn('[ThemeProvider] Failed to load user settings:', error)
-    },
   })
 
   // Update mutation
-  const updateSettings = trpc.userSettings.update.useMutation({
-    onError: (error) => {
-      // Silently handle errors - theme change will still work locally
-      console.warn('[ThemeProvider] Failed to update theme setting:', error)
-    },
-  })
+  const updateSettings = trpc.userSettings.update.useMutation()
 
   // Initialize theme from settings
   useEffect(() => {

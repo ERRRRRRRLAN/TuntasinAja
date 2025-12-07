@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-// Capacitor will be loaded dynamically to avoid initialization errors
+import { Capacitor } from '@capacitor/core'
 
 // Helper to safely load StatusBar
 async function loadStatusBar() {
@@ -23,48 +23,41 @@ async function loadStatusBar() {
 export default function StatusBarHandler() {
   useEffect(() => {
     const setupStatusBar = async () => {
+      // Only run on native platforms
+      if (!Capacitor.isNativePlatform()) {
+        return
+      }
+
+      const statusBarModule = await loadStatusBar()
+      if (!statusBarModule) {
+        return
+      }
+
+      const { StatusBar, Style } = statusBarModule
+
       try {
-        // Lazy load Capacitor
-        const { Capacitor } = await import('@capacitor/core')
-        // Only run on native platforms
-        if (!Capacitor.isNativePlatform()) {
-          return
-        }
+        // Set status bar style
+        await StatusBar.setStyle({
+          style: Style.Dark, // Use enum instead of string
+        })
 
-        const statusBarModule = await loadStatusBar()
-        if (!statusBarModule) {
-          return
-        }
+        // Set status bar background color (transparent)
+        await StatusBar.setBackgroundColor({
+          color: '#ffffff', // White background to match header
+        })
 
-        const { StatusBar, Style } = statusBarModule
+        // Set overlay to false so content doesn't go under status bar
+        await StatusBar.setOverlaysWebView({
+          overlay: false,
+        })
 
-        try {
-          // Set status bar style
-          await StatusBar.setStyle({
-            style: Style.Dark, // Use enum instead of string
-          })
+        // Note: Navigation bar is handled by Android theme configuration
+        // (windowTranslucentNavigation: false in styles.xml)
+        // CSS padding-bottom with env(safe-area-inset-bottom) handles spacing
 
-          // Set status bar background color (transparent)
-          await StatusBar.setBackgroundColor({
-            color: '#ffffff', // White background to match header
-          })
-
-          // Set overlay to false so content doesn't go under status bar
-          await StatusBar.setOverlaysWebView({
-            overlay: false,
-          })
-
-          // Note: Navigation bar is handled by Android theme configuration
-          // (windowTranslucentNavigation: false in styles.xml)
-          // CSS padding-bottom with env(safe-area-inset-bottom) handles spacing
-
-          console.log('[StatusBarHandler] ✅ Status bar configured')
-        } catch (error) {
-          console.error('[StatusBarHandler] ❌ Error configuring status bar:', error)
-        }
+        console.log('[StatusBarHandler] ✅ Status bar configured')
       } catch (error) {
-        // Silently fail - Capacitor might not be available
-        console.warn('[StatusBarHandler] Capacitor not available:', error)
+        console.error('[StatusBarHandler] ❌ Error configuring status bar:', error)
       }
     }
 

@@ -58,50 +58,40 @@ export default function NetworkErrorHandler() {
       }
     }
 
-    // Listen for fetch errors (only if fetch exists and is not already wrapped)
-    if (typeof window !== 'undefined' && window.fetch && !(window.fetch as any).__wrapped) {
+    // Listen for fetch errors
+    const originalFetch = window.fetch
+    window.fetch = async (...args) => {
       try {
-        const originalFetch = window.fetch.bind(window)
-        const wrappedFetch = async (...args: Parameters<typeof fetch>) => {
-          try {
-            const response = await originalFetch(...args)
-            
-            // Check if response is ok
-            if (!response.ok && response.status >= 500) {
-              // Server error - might be network related
-              const error = new Error(`Server error: ${response.status}`)
-              throw error
-            }
-            
-            return response
-          } catch (error: any) {
-            const errorMessage = error?.message || error?.toString() || ''
-            
-            const isNetworkError = 
-              errorMessage.includes('Network request failed') ||
-              errorMessage.includes('Failed to fetch') ||
-              errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
-              errorMessage.includes('NetworkError') ||
-              errorMessage.includes('ERR_FAILED') ||
-              error?.name === 'NetworkError' ||
-              error?.name === 'TypeError'
-
-            if (isNetworkError) {
-              console.error('[NetworkErrorHandler] Fetch network error:', error)
-              setHasNetworkError(true)
-              setErrorMessage(errorMessage)
-              setRetryCount(0)
-            }
-            
-            throw error
-          }
+        const response = await originalFetch(...args)
+        
+        // Check if response is ok
+        if (!response.ok && response.status >= 500) {
+          // Server error - might be network related
+          const error = new Error(`Server error: ${response.status}`)
+          throw error
         }
-        // Mark as wrapped to prevent double wrapping
-        (wrappedFetch as any).__wrapped = true
-        window.fetch = wrappedFetch
-      } catch (error) {
-        // Silently fail if fetch wrapping fails
-        console.warn('[NetworkErrorHandler] Failed to wrap fetch:', error)
+        
+        return response
+      } catch (error: any) {
+        const errorMessage = error?.message || error?.toString() || ''
+        
+        const isNetworkError = 
+          errorMessage.includes('Network request failed') ||
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
+          errorMessage.includes('NetworkError') ||
+          errorMessage.includes('ERR_FAILED') ||
+          error?.name === 'NetworkError' ||
+          error?.name === 'TypeError'
+
+        if (isNetworkError) {
+          console.error('[NetworkErrorHandler] Fetch network error:', error)
+          setHasNetworkError(true)
+          setErrorMessage(errorMessage)
+          setRetryCount(0)
+        }
+        
+        throw error
       }
     }
 
@@ -109,8 +99,7 @@ export default function NetworkErrorHandler() {
 
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
-      // Note: We don't restore original fetch to avoid issues with other code
-      // The wrapped fetch should be safe to keep
+      window.fetch = originalFetch
     }
   }, [])
 

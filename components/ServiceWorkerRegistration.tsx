@@ -42,34 +42,18 @@ export default function ServiceWorkerRegistration() {
 
       // Handle service worker updates
       if (navigator.serviceWorker.controller) {
-        let reloadTimeout: NodeJS.Timeout | null = null
-        const handleControllerChange = () => {
-          // Prevent multiple reloads
-          if (reloadTimeout) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          // Reload page saat service worker baru mengambil kontrol
+          // Tapi jangan reload terlalu sering
+          if (!window.location.reload) {
             return
           }
           
           // Delay reload sedikit untuk menghindari loop
-          reloadTimeout = setTimeout(() => {
-            try {
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload()
-              }
-            } catch (error) {
-              console.warn('[ServiceWorkerRegistration] Error reloading page:', error)
-            }
+          setTimeout(() => {
+            window.location.reload()
           }, 100)
-        }
-        
-        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
-        
-        // Cleanup
-        return () => {
-          if (reloadTimeout) {
-            clearTimeout(reloadTimeout)
-          }
-          navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange)
-        }
+        })
       }
 
       // Cleanup function untuk useEffect
@@ -77,7 +61,6 @@ export default function ServiceWorkerRegistration() {
         if (updateInterval) {
           clearInterval(updateInterval)
         }
-        // Note: Service worker event listeners are cleaned up above
       }
     }
   }, [])

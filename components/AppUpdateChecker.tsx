@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { App } from '@capacitor/app'
 import { toast } from './ui/ToastContainer'
 
 interface VersionInfo {
@@ -20,18 +22,11 @@ export default function AppUpdateChecker() {
 
   // Get current app version
   const getCurrentVersion = async (): Promise<{ versionCode: number; versionName: string } | null> => {
-    if (typeof window === 'undefined') {
+    if (!Capacitor.isNativePlatform()) {
       return null
     }
 
     try {
-      // Lazy load Capacitor and App plugin
-      const { Capacitor } = await import('@capacitor/core')
-      if (!Capacitor.isNativePlatform()) {
-        return null
-      }
-
-      const { App } = await import('@capacitor/app')
       const info = await App.getInfo()
       // Capacitor App.getInfo() doesn't provide versionCode directly
       // We'll parse from versionName and use a simple mapping
@@ -66,20 +61,8 @@ export default function AppUpdateChecker() {
 
   // Check for updates
   const checkForUpdates = async () => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    try {
-      // Lazy load Capacitor
-      const { Capacitor } = await import('@capacitor/core')
-      // Only check on native platform
-      if (!Capacitor.isNativePlatform()) {
-        return
-      }
-    } catch (error) {
-      // Silently fail if Capacitor is not available
-      console.warn('[AppUpdateChecker] Capacitor not available:', error)
+    // Only check on native platform
+    if (!Capacitor.isNativePlatform()) {
       return
     }
 
@@ -127,8 +110,6 @@ export default function AppUpdateChecker() {
     setIsDownloading(true)
 
     try {
-      // Lazy load Capacitor
-      const { Capacitor } = await import('@capacitor/core')
       if (Capacitor.getPlatform() === 'android') {
         // For Android, use Browser plugin to open download URL in external browser
         // This ensures proper download handling
@@ -196,11 +177,8 @@ export default function AppUpdateChecker() {
     let listener: any = null
     
     const setupListener = async () => {
-      try {
-        // Lazy load Capacitor and App plugin
-        const { Capacitor } = await import('@capacitor/core')
-        if (Capacitor.isNativePlatform()) {
-          const { App } = await import('@capacitor/app')
+      if (Capacitor.isNativePlatform()) {
+        try {
           listener = await App.addListener('appStateChange', ({ isActive }) => {
             if (isActive) {
               // Check for updates when app comes to foreground
@@ -209,9 +187,9 @@ export default function AppUpdateChecker() {
               }, 1000)
             }
           })
+        } catch (error) {
+          console.error('[AppUpdateChecker] Error setting up app state listener:', error)
         }
-      } catch (error) {
-        console.error('[AppUpdateChecker] Error setting up app state listener:', error)
       }
     }
 

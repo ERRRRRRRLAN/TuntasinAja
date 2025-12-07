@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-// Capacitor will be loaded dynamically to avoid initialization errors
+import { Capacitor } from '@capacitor/core'
 import { useBackButton } from './useBackButton'
 
 // Navigation history manager
@@ -68,21 +68,6 @@ export function useNavigationHistory() {
   const router = useRouter()
   const isInitialMount = useRef(true)
   const previousPathname = useRef<string | null>(null)
-  const [isNativePlatform, setIsNativePlatform] = useState(false)
-
-  // Check if native platform (lazy load Capacitor)
-  useEffect(() => {
-    const checkNativePlatform = async () => {
-      try {
-        const { Capacitor } = await import('@capacitor/core')
-        setIsNativePlatform(Capacitor.isNativePlatform())
-      } catch (error) {
-        // Silently fail - not native platform
-        setIsNativePlatform(false)
-      }
-    }
-    checkNativePlatform()
-  }, [])
 
   // Track navigation
   useEffect(() => {
@@ -111,25 +96,20 @@ export function useNavigationHistory() {
   // This handler has lower priority - it will only be called if no QuickView/Modal is open
   // QuickView handlers will be registered after this, so they have higher priority
   useBackButton(
-    isNativePlatform && navigationHistory.getHistory().length > 1,
+    Capacitor.isNativePlatform() && navigationHistory.getHistory().length > 1,
     () => {
-      try {
-        // Check if we're at root (can't go back further)
-        if (navigationHistory.getHistory().length <= 1) {
-          return false // Allow default (exit app)
-        }
-        
-        const previous = navigationHistory.pop()
-        if (previous && previous !== pathname) {
-          console.log('[NavigationHistory] Navigating back to:', previous, 'from:', pathname)
-          router.push(previous)
-          return true // Prevent default
-        }
+      // Check if we're at root (can't go back further)
+      if (navigationHistory.getHistory().length <= 1) {
         return false // Allow default (exit app)
-      } catch (error) {
-        console.error('[NavigationHistory] Error in back button handler:', error)
-        return false // Allow default on error
       }
+      
+      const previous = navigationHistory.pop()
+      if (previous && previous !== pathname) {
+        console.log('[NavigationHistory] Navigating back to:', previous, 'from:', pathname)
+        router.push(previous)
+        return true // Prevent default
+      }
+      return false // Allow default (exit app)
     }
   )
 

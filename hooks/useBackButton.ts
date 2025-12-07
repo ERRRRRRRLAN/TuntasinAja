@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-// Capacitor will be loaded dynamically to avoid initialization errors
+import { Capacitor } from '@capacitor/core'
 
 // Global back button handler registry
 type BackButtonHandler = () => boolean | void // Return true to prevent default, false/void to allow default
@@ -12,17 +12,11 @@ class BackButtonManager {
   private isSetup = false
 
   async setup() {
-    if (this.isSetup) {
+    if (this.isSetup || !Capacitor.isNativePlatform()) {
       return
     }
 
     try {
-      // Lazy load Capacitor to avoid errors if not initialized
-      const { Capacitor } = await import('@capacitor/core')
-      if (!Capacitor.isNativePlatform()) {
-        return
-      }
-
       const { App } = await import('@capacitor/app')
       
       // Remove existing listener if any
@@ -152,17 +146,11 @@ export function useBackButton(isActive: boolean, onBack: () => boolean | void) {
 if (typeof window !== 'undefined') {
   // Use setTimeout to ensure Capacitor is fully initialized
   setTimeout(() => {
-    // Use dynamic import instead of require to avoid module-level errors
-    import('@capacitor/core').then(({ Capacitor }) => {
-      if (Capacitor.isNativePlatform()) {
-        backButtonManager.setup().catch((error) => {
-          console.error('[useBackButton] Error setting up global back button handler:', error)
-        })
-      }
-    }).catch((error) => {
-      // Silently fail - Capacitor might not be available (web build)
-      console.warn('[useBackButton] Capacitor not available, skipping setup:', error)
-    })
+    if (Capacitor.isNativePlatform()) {
+      backButtonManager.setup().catch((error) => {
+        console.error('[useBackButton] Error setting up global back button handler:', error)
+      })
+    }
   }, 100)
 }
 
