@@ -105,17 +105,17 @@ export default function FeedPage() {
   const { data: threadsData, isLoading, isFetching, isRefetching, error: threadsError, refetch: refetchThreads } = trpc.thread.getAll.useQuery(
     { page: currentPage, limit: pageSize },
     {
-    refetchInterval: (query) => {
-      // Stop polling jika tab tidak aktif (hidden)
-      if (typeof document !== 'undefined' && document.hidden) {
-        return false
-      }
-      // 5 detik lebih reasonable untuk mengurangi beban server
-      return 5000
-    },
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
-    refetchOnMount: true, // Always refetch when component mounts
-    refetchOnReconnect: true, // Refetch when network reconnects
+      refetchInterval: (query) => {
+        // Stop polling jika tab tidak aktif (hidden)
+        if (typeof document !== 'undefined' && document.hidden) {
+          return false
+        }
+        // 5 detik lebih reasonable untuk mengurangi beban server
+        return 5000
+      },
+      refetchOnWindowFocus: true, // Refetch when user returns to tab
+      refetchOnMount: true, // Always refetch when component mounts
+      refetchOnReconnect: true, // Refetch when network reconnects
       enabled: sessionStatus !== 'loading' && !isLoadingUserData, // Only fetch when session and user data are ready
       staleTime: 0, // Always consider data stale
       cacheTime: 0, // Don't cache data
