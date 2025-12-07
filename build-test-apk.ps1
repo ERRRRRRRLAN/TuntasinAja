@@ -23,18 +23,51 @@ Write-Host ""
 
 # Step 1: Build Next.js (skip if DATABASE_URL not available)
 Write-Host "[Step 1] Building Next.js app..." -ForegroundColor Cyan
+
+# Check if DATABASE_URL exists in environment or .env file
+$hasDatabaseUrl = $false
 if ($env:DATABASE_URL) {
+    $hasDatabaseUrl = $true
+    Write-Host "DATABASE_URL found in environment" -ForegroundColor Green
+} else {
+    # Try to load from .env.local or .env
+    if (Test-Path ".env.local") {
+        $envLines = Get-Content ".env.local"
+        foreach ($line in $envLines) {
+            if ($line -match "^DATABASE_URL=(.+)$") {
+                $env:DATABASE_URL = $matches[1].Trim('"').Trim("'")
+                $hasDatabaseUrl = $true
+                Write-Host "DATABASE_URL loaded from .env.local" -ForegroundColor Green
+                break
+            }
+        }
+    }
+    if (-not $hasDatabaseUrl -and (Test-Path ".env")) {
+        $envLines = Get-Content ".env"
+        foreach ($line in $envLines) {
+            if ($line -match "^DATABASE_URL=(.+)$") {
+                $env:DATABASE_URL = $matches[1].Trim('"').Trim("'")
+                $hasDatabaseUrl = $true
+                Write-Host "DATABASE_URL loaded from .env" -ForegroundColor Green
+                break
+            }
+        }
+    }
+}
+
+if ($hasDatabaseUrl) {
     npm run build
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Next.js build failed!" -ForegroundColor Red
-        Write-Host "Note: DATABASE_URL is required for full build. Skipping build step for testing..." -ForegroundColor Yellow
-        Write-Host "The APK will use the last successful build." -ForegroundColor Yellow
+        Write-Host "Continuing anyway for testing build..." -ForegroundColor Yellow
+        Write-Host "Note: APK will use the last successful build if available." -ForegroundColor Yellow
     } else {
         Write-Host "Next.js build completed" -ForegroundColor Green
     }
 } else {
     Write-Host "DATABASE_URL not found. Skipping Next.js build..." -ForegroundColor Yellow
     Write-Host "Note: This is OK for testing builds. The APK will use the last successful build." -ForegroundColor Yellow
+    Write-Host "To do a full build, set DATABASE_URL environment variable or add it to .env.local" -ForegroundColor Gray
 }
 Write-Host ""
 
