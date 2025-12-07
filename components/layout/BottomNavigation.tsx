@@ -44,7 +44,7 @@ export default function BottomNavigation() {
         background: 'var(--card)',
         borderTop: '1px solid var(--border)',
         boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
-        zIndex: 100,
+        zIndex: 100, /* Lower than FAB buttons (z-index: 1001) */
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
