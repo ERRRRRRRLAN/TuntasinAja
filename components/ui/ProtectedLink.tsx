@@ -73,17 +73,16 @@ export default function ProtectedLink({
       >
         {children}
       </Link>
-      {showDialog && (
-        <ConfirmDialog
-          title="Perubahan Belum Disimpan"
-          message="Anda memiliki perubahan yang belum disimpan. Apakah Anda ingin menyimpan perubahan terlebih dahulu?"
-          confirmText="Simpan & Lanjutkan"
-          cancelText="Buang & Lanjutkan"
-          onConfirm={handleConfirm}
-          onCancel={handleDiscard}
-          danger={false}
-        />
-      )}
+      <ConfirmDialog
+        isOpen={showDialog}
+        title="Perubahan Belum Disimpan"
+        message="Anda memiliki perubahan yang belum disimpan. Apakah Anda ingin menyimpan perubahan terlebih dahulu?"
+        confirmText="Simpan & Lanjutkan"
+        cancelText="Buang & Lanjutkan"
+        onConfirm={handleConfirm}
+        onCancel={handleDiscard}
+        danger={false}
+      />
     </>
   )
 }
