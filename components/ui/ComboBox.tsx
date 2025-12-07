@@ -42,6 +42,7 @@ interface ComboBoxProps {
   icon?: React.ReactNode
   emptyMessage?: string
   disabled?: boolean
+  showSearch?: boolean // New prop to control search box visibility
 }
 
 export default function ComboBox({ 
@@ -55,7 +56,8 @@ export default function ComboBox({
   searchPlaceholder = 'Cari mata pelajaran...',
   icon,
   emptyMessage = 'Tidak ada mata pelajaran yang ditemukan',
-  disabled = false
+  disabled = false,
+  showSearch = true // Default to true for backward compatibility
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -73,11 +75,13 @@ export default function ComboBox({
     return opt
   })
 
-  // Filter options based on search query
-  const filteredOptions = normalizedOptions.filter(option =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    option.value.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Filter options based on search query (only if search is enabled)
+  const filteredOptions = showSearch
+    ? normalizedOptions.filter(option =>
+        option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        option.value.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : normalizedOptions
 
   // Get display value
   const selectedOption = normalizedOptions.find(opt => opt.value === value)
@@ -120,12 +124,14 @@ export default function ComboBox({
     }
 
     document.addEventListener('mousedown', handleClickOutside)
-    // Focus input when opened
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 50)
-    })
+    // Focus input when opened (only if search is enabled)
+    if (showSearch) {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          inputRef.current?.focus()
+        }, 50)
+      })
+    }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -291,36 +297,38 @@ export default function ComboBox({
             visibility: shouldRender ? 'visible' : 'hidden'
           }}
         >
-          {/* Search Input */}
-          <div style={{
-            padding: '0.75rem',
-            borderBottom: '1px solid var(--border)'
-          }}>
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                border: '1px solid var(--border)',
-                borderRadius: '0.375rem',
-                background: 'var(--bg-secondary)',
-                color: 'var(--text)',
-                fontSize: '0.875rem',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-              }}
-            />
-          </div>
+          {/* Search Input - Only show if showSearch is true */}
+          {showSearch && (
+            <div style={{
+              padding: '0.75rem',
+              borderBottom: '1px solid var(--border)'
+            }}>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  border: '1px solid var(--border)',
+                  borderRadius: '0.375rem',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text)',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                }}
+              />
+            </div>
+          )}
 
           {/* Options List */}
           <div style={{

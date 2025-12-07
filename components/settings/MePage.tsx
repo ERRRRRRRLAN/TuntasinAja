@@ -341,6 +341,10 @@ export default function MePage() {
                   value={displaySettings.reminderTime || '08:00'}
                   onChange={(value) => handleTimeChange('reminderTime', value)}
                   placeholder="Pilih waktu"
+                  showAllOption={false}
+                  showSearch={false}
+                  searchPlaceholder=""
+                  emptyMessage="Tidak ada waktu yang ditemukan"
                 />
               </div>
             )}
@@ -370,6 +374,10 @@ export default function MePage() {
                     value={displaySettings.dndStartTime || '22:00'}
                     onChange={(value) => handleTimeChange('dndStartTime', value)}
                     placeholder="Pilih waktu"
+                    showAllOption={false}
+                    showSearch={false}
+                    searchPlaceholder=""
+                    emptyMessage="Tidak ada waktu yang ditemukan"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -387,6 +395,10 @@ export default function MePage() {
                     value={displaySettings.dndEndTime || '07:00'}
                     onChange={(value) => handleTimeChange('dndEndTime', value)}
                     placeholder="Pilih waktu"
+                    showAllOption={false}
+                    showSearch={false}
+                    searchPlaceholder=""
+                    emptyMessage="Tidak ada waktu yang ditemukan"
                   />
                 </div>
               </div>
@@ -432,6 +444,10 @@ export default function MePage() {
                 value={displaySettings.theme || 'auto'}
                 onChange={(value) => handleSelect('theme', value)}
                 placeholder="Pilih tema"
+                showAllOption={false}
+                showSearch={false}
+                searchPlaceholder=""
+                emptyMessage="Tidak ada tema yang ditemukan"
               />
             </div>
 
@@ -478,6 +494,10 @@ export default function MePage() {
                 value={displaySettings.defaultSort || 'newest'}
                 onChange={(value) => handleSelect('defaultSort', value)}
                 placeholder="Pilih urutan"
+                showAllOption={false}
+                showSearch={false}
+                searchPlaceholder=""
+                emptyMessage="Tidak ada urutan yang ditemukan"
               />
             </div>
 
