@@ -63,15 +63,27 @@ export default function FeedPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Detect mobile screen size
+  // Detect mobile screen size - initialize immediately
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth <= 768)
+      }
     }
     
+    // Check immediately on mount
     checkMobile()
+    
+    // Also check after a short delay to ensure window is available
+    const timeout = setTimeout(checkMobile, 100)
+    
+    // Listen for resize
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -935,7 +947,7 @@ export default function FeedPage() {
           style={{
             position: 'fixed',
             bottom: isMobile
-              ? '210px' // Mobile: Fixed 210px from bottom - well above Create Thread FAB
+              ? '230px' // Mobile: Fixed 230px from bottom - well above Create Thread FAB (140px + 90px spacing)
               : 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             zIndex: 1001,
@@ -1048,7 +1060,7 @@ export default function FeedPage() {
           style={{
             position: 'fixed',
             bottom: isMobile 
-              ? '120px' // Mobile: Fixed 120px from bottom - well above navbar
+              ? '140px' // Mobile: Fixed 140px from bottom - well above navbar (56px navbar + 84px spacing)
               : 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             width: '56px',
