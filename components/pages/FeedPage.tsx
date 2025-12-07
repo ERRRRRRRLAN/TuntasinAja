@@ -38,6 +38,7 @@ export default function FeedPage() {
   const { data: session, status: sessionStatus } = useSession()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(false)
 
@@ -60,6 +61,17 @@ export default function FeedPage() {
     // Check periodically in case cookie is restored
     const interval = setInterval(checkSessionCookie, 1000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -922,7 +934,11 @@ export default function FeedPage() {
           className="feedback-fab-container fab-feedback-container"
           style={{
             position: 'fixed',
+            bottom: isMobile
+              ? 'calc(56px + 50px + 90px + env(safe-area-inset-bottom, 0px))' // Mobile: navbar + spacing + 90px above Create Thread
+              : 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
+            zIndex: 1001,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',
@@ -1031,6 +1047,9 @@ export default function FeedPage() {
           className="fab-button fab-create-thread"
           style={{
             position: 'fixed',
+            bottom: isMobile 
+              ? 'calc(56px + 50px + env(safe-area-inset-bottom, 0px))' // Mobile: navbar height + 50px spacing
+              : 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             width: '56px',
             height: '56px',
@@ -1043,6 +1062,7 @@ export default function FeedPage() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1001,
             transition: 'all 0.3s ease',
             padding: 0
           }}
