@@ -12,7 +12,6 @@ import {
   CrownIcon, 
   UserIcon, 
   LogOutIcon,
-  XIcon,
   DownloadIcon
 } from '@/components/ui/Icons'
 import { useSession, signOut } from 'next-auth/react'
@@ -245,9 +244,6 @@ export default function Sidebar() {
           style={{
             padding: '1.5rem',
             borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
           }}
         >
           <h2
@@ -260,29 +256,6 @@ export default function Sidebar() {
           >
             TuntasinAja
           </h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-light)',
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-light)'
-            }}
-            aria-label="Close sidebar"
-          >
-            <XIcon size={20} />
-          </button>
         </div>
 
         {/* Navigation Items */}
