@@ -43,6 +43,7 @@ interface ComboBoxProps {
   emptyMessage?: string
   disabled?: boolean
   showSearch?: boolean // New prop to control search box visibility
+  showClear?: boolean // New prop to control clear button visibility
 }
 
 export default function ComboBox({ 
@@ -57,7 +58,8 @@ export default function ComboBox({
   icon,
   emptyMessage = 'Tidak ada mata pelajaran yang ditemukan',
   disabled = false,
-  showSearch = true // Default to true for backward compatibility
+  showSearch = true, // Default to true for backward compatibility
+  showClear = true // Default to true for backward compatibility
 }: ComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -232,7 +234,7 @@ export default function ComboBox({
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0 }}>
-          {value !== allValue && value && (
+          {showClear && value !== allValue && value && (
             <button
               type="button"
               onClick={handleClear}

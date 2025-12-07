@@ -343,6 +343,7 @@ export default function MePage() {
                   placeholder="Pilih waktu"
                   showAllOption={false}
                   showSearch={false}
+                  showClear={false}
                   searchPlaceholder=""
                   emptyMessage="Tidak ada waktu yang ditemukan"
                 />
@@ -376,6 +377,7 @@ export default function MePage() {
                     placeholder="Pilih waktu"
                     showAllOption={false}
                     showSearch={false}
+                    showClear={false}
                     searchPlaceholder=""
                     emptyMessage="Tidak ada waktu yang ditemukan"
                   />
@@ -397,6 +399,7 @@ export default function MePage() {
                     placeholder="Pilih waktu"
                     showAllOption={false}
                     showSearch={false}
+                    showClear={false}
                     searchPlaceholder=""
                     emptyMessage="Tidak ada waktu yang ditemukan"
                   />
@@ -446,6 +449,7 @@ export default function MePage() {
                 placeholder="Pilih tema"
                 showAllOption={false}
                 showSearch={false}
+                showClear={false}
                 searchPlaceholder=""
                 emptyMessage="Tidak ada tema yang ditemukan"
               />
@@ -496,6 +500,7 @@ export default function MePage() {
                 placeholder="Pilih urutan"
                 showAllOption={false}
                 showSearch={false}
+                showClear={false}
                 searchPlaceholder=""
                 emptyMessage="Tidak ada urutan yang ditemukan"
               />
