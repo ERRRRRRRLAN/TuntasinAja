@@ -39,6 +39,11 @@ export default function FeedPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isMobile, setIsMobile] = useState(false)
+  
+  // Initialize isMobile immediately if window is available
+  if (typeof window !== 'undefined' && !isMobile && window.innerWidth <= 768) {
+    // This will be set properly in useEffect, but we check here too
+  }
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(false)
 
@@ -946,8 +951,8 @@ export default function FeedPage() {
           className="feedback-fab-container fab-feedback-container"
           style={{
             position: 'fixed',
-            bottom: isMobile
-              ? '230px' // Mobile: Fixed 230px from bottom - well above Create Thread FAB (140px + 90px spacing)
+            bottom: (typeof window !== 'undefined' && window.innerWidth <= 768)
+              ? '260px' // Mobile: Fixed 260px from bottom - well above Create Thread FAB
               : 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             zIndex: 1001,
@@ -1059,8 +1064,8 @@ export default function FeedPage() {
           className="fab-button fab-create-thread"
           style={{
             position: 'fixed',
-            bottom: isMobile 
-              ? '140px' // Mobile: Fixed 140px from bottom - well above navbar (56px navbar + 84px spacing)
+            bottom: (typeof window !== 'undefined' && window.innerWidth <= 768)
+              ? '160px' // Mobile: Fixed 160px from bottom - well above navbar
               : 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             width: '56px',
