@@ -45,7 +45,6 @@ export default function BottomNavigation() {
         borderTop: '1px solid var(--border)',
         boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
         zIndex: 100,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
