@@ -90,7 +90,7 @@ export default function FeedPage() {
   })
   
   const pageSize = userSettings?.tasksPerPage || 20
-  const defaultSort = userSettings?.defaultSort || 'newest'
+  const defaultSort: 'newest' | 'oldest' | 'dueDate' = (userSettings?.defaultSort as 'newest' | 'oldest' | 'dueDate') || 'newest'
   const showCompletedTasks = userSettings?.showCompletedTasks ?? true
 
   // Get subjects for user's class
