@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import ProtectedLink from '@/components/ui/ProtectedLink'
 import { useState, useEffect, useRef } from 'react'
 import { 
   BookIcon, 
@@ -267,7 +267,7 @@ export default function Sidebar() {
           {allNavItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link
+              <ProtectedLink
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
@@ -320,7 +320,7 @@ export default function Sidebar() {
                     {item.badge}
                   </span>
                 )}
-              </Link>
+              </ProtectedLink>
             )
           })}
         </nav>
@@ -363,7 +363,7 @@ export default function Sidebar() {
 
             {/* Danton Dashboard / Admin Panel / Profil (conditional) */}
             {isDanton && (
-              <Link
+              <ProtectedLink
                 href="/danton"
                 onClick={() => setIsOpen(false)}
                 style={{
@@ -386,10 +386,10 @@ export default function Sidebar() {
               >
                 <CrownIcon size={18} style={{ color: '#fbbf24' }} />
                 <span style={{ fontSize: '0.875rem' }}>Danton Dashboard</span>
-              </Link>
+              </ProtectedLink>
             )}
             {isAdmin && !isDanton && (
-              <Link
+              <ProtectedLink
                 href="/profile"
                 onClick={() => setIsOpen(false)}
                 style={{
@@ -412,7 +412,7 @@ export default function Sidebar() {
               >
                 <CrownIcon size={18} style={{ color: 'var(--primary)' }} />
                 <span style={{ fontSize: '0.875rem' }}>Admin Panel</span>
-              </Link>
+              </ProtectedLink>
             )}
             {/* Regular users: no profile button */}
 

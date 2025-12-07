@@ -60,6 +60,7 @@ export default function MePage() {
       setHasUnsavedChanges(false)
       setIsNotificationClosing(false)
       prevHasUnsavedChangesRef.current = false
+      setGlobalHasUnsavedChanges(false)
       return
     }
 
@@ -74,6 +75,9 @@ export default function MePage() {
         }
       }
     })
+
+    // Sync with global context
+    setGlobalHasUnsavedChanges(hasChanges)
 
     // If we had changes before but now don't, trigger closing animation
     if (prevHasUnsavedChangesRef.current && !hasChanges) {
@@ -95,7 +99,7 @@ export default function MePage() {
         setIsNotificationClosing(false)
       }
     }
-  }, [localSettings, settings]) // Removed hasUnsavedChanges from deps to avoid loop
+  }, [localSettings, settings, setGlobalHasUnsavedChanges]) // Removed hasUnsavedChanges from deps to avoid loop
 
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
@@ -156,7 +160,7 @@ export default function MePage() {
     // hasUnsavedChanges will be updated by useEffect
   }
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
     if (!localSettings || !settings) return
     
     setIsSaving(true)
@@ -177,20 +181,57 @@ export default function MePage() {
     if (Object.keys(updateData).length === 0) {
       setIsSaving(false)
       setHasUnsavedChanges(false)
+      setGlobalHasUnsavedChanges(false)
       toast.info('Tidak ada perubahan untuk disimpan')
       return
     }
 
-    updateSettings.mutate(updateData)
-  }
+    return new Promise<void>((resolve, reject) => {
+      updateSettings.mutate(updateData, {
+        onSuccess: () => {
+          resolve()
+        },
+        onError: (error) => {
+          reject(error)
+        }
+      })
+    })
+  }, [localSettings, settings, updateSettings, setGlobalHasUnsavedChanges])
 
-  const handleDiscard = () => {
+  const handleDiscard = useCallback(() => {
     if (settings) {
       setLocalSettings({ ...settings })
     }
     setHasUnsavedChanges(false)
+    setGlobalHasUnsavedChanges(false)
     toast.info('Perubahan dibatalkan')
-  }
+  }, [settings, setGlobalHasUnsavedChanges])
+
+  // Setup save/discard callbacks in context
+  useEffect(() => {
+    setOnSave(handleSave)
+    setOnDiscard(handleDiscard)
+    return () => {
+      setOnSave(null)
+      setOnDiscard(null)
+    }
+  }, [handleSave, handleDiscard, setOnSave, setOnDiscard])
+
+  // Block browser refresh/close when there are unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = 'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin meninggalkan halaman ini?'
+        return e.returnValue
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [hasUnsavedChanges])
 
   const handleExportData = () => {
     exportData.refetch().then((result) => {
