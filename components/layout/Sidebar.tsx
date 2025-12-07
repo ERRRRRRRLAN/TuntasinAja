@@ -283,12 +283,12 @@ export default function Sidebar() {
                   transition: 'all 0.2s',
                   fontWeight: isActive ? 600 : 500,
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'var(--bg-secondary)'
                   }
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent'
                   }
@@ -377,10 +377,10 @@ export default function Sidebar() {
                   transition: 'background 0.2s',
                   marginBottom: '0.5rem',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'transparent'
                 }}
               >
@@ -403,10 +403,10 @@ export default function Sidebar() {
                   transition: 'background 0.2s',
                   marginBottom: '0.5rem',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'transparent'
                 }}
               >
@@ -431,10 +431,10 @@ export default function Sidebar() {
                   transition: 'background 0.2s',
                   marginBottom: '0.5rem',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.background = 'transparent'
                 }}
               >
