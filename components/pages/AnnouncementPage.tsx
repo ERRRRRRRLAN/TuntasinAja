@@ -362,11 +362,11 @@ export default function AnnouncementPage() {
         {(isAdmin || isDanton || canCreateAnnouncement) && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="fab-button"
+            className="fab-button fab-create-announcement"
             aria-label="Buat Pengumuman"
             style={{
               position: 'fixed',
-              bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px) + 8px)',
+              bottom: '1.5rem',
               right: '1.5rem',
               width: '56px',
               height: '56px',
@@ -434,16 +434,6 @@ export default function AnnouncementPage() {
         )}
       </div>
 
-      <style jsx>{`
-        @media (max-width: 640px) {
-          .fab-button {
-            bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 8px) !important;
-            right: 1rem !important;
-            width: 56px !important;
-            height: 56px !important;
-          }
-        }
-      `}</style>
     </>
   )
 }

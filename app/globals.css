@@ -1575,7 +1575,8 @@ textarea {
 
   /* FAB Buttons Mobile - above bottom navbar with small gap */
   .fab-button,
-  .fab-create-thread {
+  .fab-create-thread,
+  .fab-create-announcement {
     bottom: 90px !important; /* Just above 70px bottom navbar with 20px gap */
     right: 1rem !important;
     z-index: 1001 !important;
@@ -3987,7 +3988,8 @@ textarea {
 
   /* FAB Buttons Mobile - Positioned above bottom navbar with small gap */
   .fab-button,
-  .fab-create-thread {
+  .fab-create-thread,
+  .fab-create-announcement {
     bottom: 90px !important; /* Just above 70px bottom navbar */
     right: 1rem !important;
     z-index: 1001 !important;
