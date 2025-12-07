@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
@@ -10,8 +10,9 @@ import { toast } from '@/components/ui/ToastContainer'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { UserIcon, DownloadIcon, TrashIcon } from '@/components/ui/Icons'
+import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
+import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -21,8 +22,18 @@ export default function MePage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isNotificationClosing, setIsNotificationClosing] = useState(false)
   const [localSettings, setLocalSettings] = useState<any>(null)
+  const [showNavigationDialog, setShowNavigationDialog] = useState(false)
   const prevHasUnsavedChangesRef = useRef(false)
   const utils = trpc.useUtils()
+  
+  // Get unsaved changes context for global navigation blocking
+  const { 
+    setHasUnsavedChanges: setGlobalHasUnsavedChanges,
+    pendingNavigation,
+    setPendingNavigation,
+    setOnSave,
+    setOnDiscard,
+  } = useUnsavedChanges()
 
   // Redirect jika belum login
   if (status === 'unauthenticated') {
@@ -230,9 +241,21 @@ export default function MePage() {
   }
 
   const themeOptions = [
-    { value: 'light', label: '☀️ Light' },
-    { value: 'dark', label: '🌙 Dark' },
-    { value: 'auto', label: '⚙️ Auto' },
+    { 
+      value: 'light', 
+      label: 'Light',
+      icon: <SunIcon size={18} style={{ color: 'currentColor' }} />
+    },
+    { 
+      value: 'dark', 
+      label: 'Dark',
+      icon: <MoonIcon size={18} style={{ color: 'currentColor' }} />
+    },
+    { 
+      value: 'auto', 
+      label: 'Auto',
+      icon: <MonitorIcon size={18} style={{ color: 'currentColor' }} />
+    },
   ]
 
   const sortOptions = [

@@ -28,7 +28,8 @@ const MATA_PELAJARAN = [
 
 interface ComboBoxOption {
   value: string
-  label: string
+  label: string | React.ReactNode
+  icon?: React.ReactNode
 }
 
 interface ComboBoxProps {
@@ -83,17 +84,19 @@ export default function ComboBox({
 
   // Filter options based on search query (only if search is enabled)
   const filteredOptions = showSearch
-    ? normalizedOptions.filter(option =>
-        option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        option.value.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? normalizedOptions.filter(option => {
+        const labelStr = typeof option.label === 'string' ? option.label : option.value
+        return labelStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               option.value.toLowerCase().includes(searchQuery.toLowerCase())
+      })
     : normalizedOptions
 
   // Get display value
   const selectedOption = normalizedOptions.find(opt => opt.value === value)
   const displayValue = value === allValue && showAllOption 
     ? allLabel 
-    : selectedOption?.label || value || placeholder
+    : (typeof selectedOption?.label === 'string' ? selectedOption.label : selectedOption?.value) || value || placeholder
+  const displayIcon = selectedOption?.icon
 
   // Mount check for portal
   useEffect(() => {
@@ -260,7 +263,11 @@ export default function ComboBox({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
-          {icon !== undefined ? icon : (showAllOption ? (
+          {icon !== undefined ? icon : displayIcon ? (
+            <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              {displayIcon}
+            </span>
+          ) : (showAllOption ? (
             <FilterIcon 
               size={18} 
               style={{ 
@@ -456,7 +463,14 @@ export default function ComboBox({
                     }
                   }}
                 >
-                  <span>{option.label}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                    {option.icon && (
+                      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        {option.icon}
+                      </span>
+                    )}
+                    <span>{typeof option.label === 'string' ? option.label : option.label}</span>
+                  </div>
                   {value === option.value && (
                     <CheckIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
                   )}
