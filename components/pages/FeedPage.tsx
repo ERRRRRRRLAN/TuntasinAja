@@ -1030,7 +1030,7 @@ export default function FeedPage() {
         {(session || hasSessionCookie) && canActuallyPostEdit && (
           <button
           onClick={() => setShowCreateForm(true)}
-          className="fab-button"
+          className="fab-button fab-create-thread"
           style={{
             position: 'fixed',
             bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0))',
@@ -1050,7 +1050,6 @@ export default function FeedPage() {
             transition: 'all 0.3s ease',
             padding: 0
           }}
-          className="fab-create-thread"
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--primary-dark)'
             e.currentTarget.style.transform = 'scale(1.1)'
