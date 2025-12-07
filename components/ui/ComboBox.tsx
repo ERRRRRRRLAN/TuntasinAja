@@ -65,10 +65,13 @@ export default function ComboBox({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [shouldRender, setShouldRender] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
+  const [mounted, setMounted] = useState(false)
 
   // Normalize options to ComboBoxOption format
   const normalizedOptions: ComboBoxOption[] = options.map(opt => {
@@ -193,6 +196,7 @@ export default function ComboBox({
     <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
       {/* Trigger Button */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => {
           if (disabled) return
@@ -294,21 +298,21 @@ export default function ComboBox({
         </div>
       </button>
 
-      {/* Dropdown */}
-      {shouldRender && (
+      {/* Dropdown - Rendered via Portal to escape parent overflow */}
+      {mounted && shouldRender && createPortal(
         <div
           ref={dropdownRef}
           className="combobox-dropdown"
           style={{
-            position: 'absolute',
-            top: 'calc(100% + 0.5rem)',
-            left: 0,
-            right: 0,
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
             background: 'var(--card)',
             border: '1px solid var(--border)',
             borderRadius: '0.5rem',
             boxShadow: 'var(--shadow-lg)',
-            zIndex: 1000,
+            zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
             opacity: isAnimating ? 1 : 0,
