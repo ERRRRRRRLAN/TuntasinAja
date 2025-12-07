@@ -331,6 +331,9 @@ body {
   padding: 2rem 0;
   padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 8px);
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scrollbar */
   animation: fadeIn 0.5s ease-out;
 }
 
