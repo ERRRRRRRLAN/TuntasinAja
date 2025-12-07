@@ -40,6 +40,28 @@ export default function MePage() {
     }
   }, [settings])
 
+  // Check for unsaved changes whenever localSettings changes
+  useEffect(() => {
+    if (!localSettings || !settings) {
+      setHasUnsavedChanges(false)
+      return
+    }
+
+    // Compare all settings fields (excluding metadata)
+    let hasChanges = false
+    Object.keys(localSettings).forEach((key) => {
+      if (key !== 'id' && key !== 'userId' && key !== 'createdAt' && key !== 'updatedAt') {
+        const localValue = localSettings[key as keyof typeof localSettings]
+        const originalValue = settings[key as keyof typeof settings]
+        if (localValue !== originalValue) {
+          hasChanges = true
+        }
+      }
+    })
+
+    setHasUnsavedChanges(hasChanges)
+  }, [localSettings, settings])
+
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
     onSuccess: () => {
@@ -76,25 +98,25 @@ export default function MePage() {
   const handleToggle = (key: string, value: boolean) => {
     if (!localSettings) return
     setLocalSettings({ ...localSettings, [key]: value })
-    setHasUnsavedChanges(true)
+    // hasUnsavedChanges will be updated by useEffect
   }
 
   const handleTimeChange = (key: string, value: string) => {
     if (!localSettings) return
     setLocalSettings({ ...localSettings, [key]: value || null })
-    setHasUnsavedChanges(true)
+    // hasUnsavedChanges will be updated by useEffect
   }
 
   const handleSelect = (key: string, value: string) => {
     if (!localSettings) return
     setLocalSettings({ ...localSettings, [key]: value })
-    setHasUnsavedChanges(true)
+    // hasUnsavedChanges will be updated by useEffect
   }
 
   const handleNumber = (key: string, value: number | null) => {
     if (!localSettings) return
     setLocalSettings({ ...localSettings, [key]: value })
-    setHasUnsavedChanges(true)
+    // hasUnsavedChanges will be updated by useEffect
   }
 
   const handleSave = () => {
@@ -717,14 +739,17 @@ export default function MePage() {
               gap: '1rem',
               animation: 'slideUpFromBottom 0.3s ease-out',
               maxWidth: 'calc(100vw - 2rem)',
+              flexWrap: 'wrap',
             }}
           >
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
               <p style={{ 
                 margin: 0, 
                 fontSize: '0.875rem', 
                 fontWeight: 500,
                 color: 'var(--text)',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
               }}>
                 Pengaturan telah diubah
               </p>
@@ -732,11 +757,13 @@ export default function MePage() {
                 margin: '0.25rem 0 0 0', 
                 fontSize: '0.75rem', 
                 color: 'var(--text-light)',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
               }}>
                 Simpan perubahan atau batalkan?
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
               <button
                 onClick={handleDiscard}
                 disabled={isSaving}
