@@ -26,7 +26,7 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   /* Bottom Navigation Height - calculated: paddingTop (0.5rem = 8px) + icon (24px) + gap (0.25rem = 4px) + label (0.75rem = 12px) + paddingBottom (0.5rem = 8px) + safe-area = ~56px + safe-area */
   --bottom-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
-  --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 20px); /* Space for FAB above navbar */
+  --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 30px); /* Space for FAB above navbar - increased for better separation */
 }
 
 /* Custom Scrollbar - Thin, no arrows */
@@ -3729,7 +3729,7 @@ textarea {
   }
 
   .fab-feedback-container {
-    bottom: calc(var(--bottom-nav-fab-spacing) + 70px) !important; /* 70px above Create Thread FAB */
+    bottom: calc(var(--bottom-nav-fab-spacing) + 80px) !important; /* 80px above Create Thread FAB for better separation */
     z-index: 1001 !important; /* Above bottom navbar (z-index: 100) */
   }
 }
