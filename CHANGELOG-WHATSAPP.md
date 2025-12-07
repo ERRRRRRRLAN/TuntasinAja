@@ -4,31 +4,46 @@ Ada beberapa update baru nih:
 
 ## ✨ Fitur Baru
 
-### 1. **Pengumuman**
-- Ada tab **Pengumuman** baru
-- Admin dan ketua kelas bisa buat pengumuman untuk kelas
-- Bisa set prioritas dan tanggal kadaluarsa
-- Ada notifikasi kalau ada pengumuman baru
+### 1. **Halaman "Me" & Pengaturan Lengkap**
+- Tab **"Me"** baru dengan profil user di bagian atas
+- **Pengaturan Notifikasi**: Kontrol notifikasi tugas, komentar, pengumuman, dan pengingat deadline
+- **Pengaturan Tampilan**: Pilih tema (Light/Dark/Auto), jumlah tugas per halaman, urutan default, dan animasi
+- **Pengaturan Suara & Getar**: Aktifkan/nonaktifkan suara dan getaran untuk notifikasi
+- **Pengaturan Data**: Auto-hapus history, ekspor data, dan hapus cache
+- **Manual Save/Discard**: Perubahan pengaturan tidak auto-save, ada notifikasi untuk simpan atau batalkan
+- **Do Not Disturb**: Set waktu untuk menonaktifkan notifikasi (misal: 22:00 - 07:00)
 
-### 2. **Deadline Tugas**
-- Sekarang bisa **set deadline** waktu buat tugas
-- Default-nya otomatis **7 hari dari tanggal buat** (jam 00:00)
-- Tugas yang punya deadline ditandai dengan badge warna
-- Tugas diurutkan berdasarkan deadline terdekat
+### 2. **Navigasi Baru**
+- **Bottom Navigation** untuk mobile (lebih mudah diakses)
+- **Sidebar Navigation** untuk desktop (lebih rapi)
+- Icon monochrome yang konsisten dengan tema aplikasi
+- Navigasi yang lebih efisien dengan banyak fitur
 
-### 3. **Panel Admin**
-- Bisa monitor database (ukuran, statistik, dll)
-- Bisa edit/hapus banyak user sekaligus
-- Ada rate limiting untuk keamanan
+### 3. **Sistem Tema**
+- Pilih tema **Light**, **Dark**, atau **Auto** (ikuti sistem)
+- Tema langsung diterapkan tanpa perlu refresh
+- Semua halaman otomatis mengikuti tema yang dipilih
+
+### 4. **Pengingat Deadline Personal**
+- Set **waktu pengingat** sendiri untuk tugas yang deadline-nya besok
+- Notifikasi akan dikirim sesuai waktu yang dipilih
+- Bisa aktifkan/nonaktifkan sesuai kebutuhan
 
 ## 🔧 Yang Diperbaiki
 
-- **Reminder tugas >7 hari** sekarang cuma muncul sekali pas buka aplikasi (ga muncul lagi kalau pindah halaman)
-- Animasi dialog lebih halus
-- Daftar tugas sekarang pakai pagination (lebih cepat)
-- Update data lebih efisien saat tab tidak aktif
-- Perbaikan UI di beberapa halaman
-- Perbaikan timezone untuk deadline
+- **Scrollbar custom**: Lebih tipis dan tanpa panah
+- **UI Mobile**: Bottom navbar tidak menutupi konten lagi
+- **FAB Buttons**: Posisi lebih baik, tidak bertabrakan dengan navbar
+- **Dropdown Settings**: Lebih fleksibel, tidak semua pakai search box
+- **Blocking Navigasi**: Tidak bisa pindah halaman kalau ada perubahan pengaturan yang belum disimpan
+- **Perbaikan UI**: Layout lebih rapi dan responsif di semua ukuran layar
+- **Animasi**: Lebih halus dan bisa dinonaktifkan di pengaturan
+
+## ⚙️ Fitur Teknis
+
+- **Auto-delete History**: History otomatis terhapus sesuai pengaturan (default: 30 hari)
+- **Export Data**: Bisa ekspor semua data pengaturan dalam format JSON
+- **Clear Cache**: Hapus cache aplikasi untuk performa lebih baik
 
 ## ℹ️ Info Penting
 
@@ -37,4 +52,3 @@ Update terbaru TuntasinAja bisa dilihat di channel ini. Pastikan aplikasi selalu
 Kalau ada pertanyaan atau saran, bisa kirim lewat tombol **Feedback** di aplikasi.
 
 Terima kasih!
-
