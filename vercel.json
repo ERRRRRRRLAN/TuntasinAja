@@ -7,16 +7,6 @@
   "env": {
     "PRISMA_GENERATE_DATAPROXY": "true"
   },
-  "crons": [
-    {
-      "path": "/api/cron/auto-delete-threads",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/cleanup-user-statuses",
-      "schedule": "0 2 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/TuntasinAja.apk",
