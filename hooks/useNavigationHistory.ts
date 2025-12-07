@@ -98,18 +98,23 @@ export function useNavigationHistory() {
   useBackButton(
     Capacitor.isNativePlatform() && navigationHistory.getHistory().length > 1,
     () => {
-      // Check if we're at root (can't go back further)
-      if (navigationHistory.getHistory().length <= 1) {
+      try {
+        // Check if we're at root (can't go back further)
+        if (navigationHistory.getHistory().length <= 1) {
+          return false // Allow default (exit app)
+        }
+        
+        const previous = navigationHistory.pop()
+        if (previous && previous !== pathname) {
+          console.log('[NavigationHistory] Navigating back to:', previous, 'from:', pathname)
+          router.push(previous)
+          return true // Prevent default
+        }
         return false // Allow default (exit app)
+      } catch (error) {
+        console.error('[NavigationHistory] Error in back button handler:', error)
+        return false // Allow default on error
       }
-      
-      const previous = navigationHistory.pop()
-      if (previous && previous !== pathname) {
-        console.log('[NavigationHistory] Navigating back to:', previous, 'from:', pathname)
-        router.push(previous)
-        return true // Prevent default
-      }
-      return false // Allow default (exit app)
     }
   )
 

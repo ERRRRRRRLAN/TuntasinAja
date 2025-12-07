@@ -3,7 +3,7 @@
 import { SessionProvider } from 'next-auth/react'
 import { trpc, trpcClient } from '@/lib/trpc'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
@@ -17,12 +17,16 @@ import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesPro
 
 // Setup global back button handler for Android
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
-  import('@/hooks/useBackButton').then((module) => {
-    // This will trigger the setup in useBackButton.ts
-    console.log('[Providers] Back button handler module loaded')
-  }).catch((e) => {
-    console.error('[Providers] Error loading back button handler:', e)
-  })
+  // Use setTimeout to ensure Capacitor is fully initialized
+  setTimeout(() => {
+    import('@/hooks/useBackButton').then((module) => {
+      // This will trigger the setup in useBackButton.ts
+      console.log('[Providers] Back button handler module loaded')
+    }).catch((e) => {
+      // Silently fail - back button handler is optional
+      console.warn('[Providers] Could not load back button handler:', e)
+    })
+  }, 100)
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
