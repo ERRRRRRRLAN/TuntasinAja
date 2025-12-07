@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Capacitor } from '@capacitor/core'
+import { useEffect, useRef, useState } from 'react'
+// Capacitor will be loaded dynamically to avoid initialization errors
 import { useBackButton } from './useBackButton'
 
 /**
@@ -12,9 +12,24 @@ import { useBackButton } from './useBackButton'
 export function useBackHandler(isActive: boolean, onBack: () => void) {
   const hasPushedState = useRef(false)
   const handlerId = useRef<string | null>(null)
+  const [isNativePlatform, setIsNativePlatform] = useState(false)
+
+  // Check if native platform (lazy load Capacitor)
+  useEffect(() => {
+    const checkNativePlatform = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core')
+        setIsNativePlatform(Capacitor.isNativePlatform())
+      } catch (error) {
+        // Silently fail - not native platform
+        setIsNativePlatform(false)
+      }
+    }
+    checkNativePlatform()
+  }, [])
 
   // Use the new useBackButton hook for native platforms
-  useBackButton(isActive && Capacitor.isNativePlatform(), () => {
+  useBackButton(isActive && isNativePlatform, () => {
     if (isActive) {
       onBack()
       return true // Prevent default behavior
@@ -24,7 +39,7 @@ export function useBackHandler(isActive: boolean, onBack: () => void) {
 
   // Setup untuk web browser - popstate event
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    if (isNativePlatform) {
       // Native platform handled by useBackButton
       return
     }

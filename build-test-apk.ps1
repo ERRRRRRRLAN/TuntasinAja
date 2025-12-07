@@ -18,7 +18,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Skip version increment
-Write-Host "⏭️  Skipping version increment (testing build)" -ForegroundColor Yellow
+Write-Host "Skipping version increment (testing build)" -ForegroundColor Yellow
 Write-Host ""
 
 # Build APK
@@ -29,7 +29,7 @@ $buildResult = $LASTEXITCODE
 cd ..
 
 if ($buildResult -ne 0) {
-    Write-Host "❌ Build failed!" -ForegroundColor Red
+    Write-Host "Build failed!" -ForegroundColor Red
     exit $buildResult
 }
 
@@ -41,14 +41,13 @@ $apkDest = "public\TuntasinAja.apk"
 
 if (Test-Path $apkSource) {
     Copy-Item -Path $apkSource -Destination $apkDest -Force
-    Write-Host "✅ APK copied to public folder successfully" -ForegroundColor Green
+    Write-Host "APK copied to public folder successfully" -ForegroundColor Green
     Write-Host "   Source: $apkSource" -ForegroundColor Gray
     Write-Host "   Destination: $apkDest" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "📦 APK siap untuk testing!" -ForegroundColor Green
+    Write-Host "APK siap untuk testing!" -ForegroundColor Green
 } else {
-    Write-Host "⚠️  APK file not found at: $apkSource" -ForegroundColor Yellow
+    Write-Host "APK file not found at: $apkSource" -ForegroundColor Yellow
     Write-Host "   Please check if build was successful" -ForegroundColor Yellow
     exit 1
 }
-

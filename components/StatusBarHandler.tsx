@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Capacitor } from '@capacitor/core'
+// Capacitor will be loaded dynamically to avoid initialization errors
 
 // Helper to safely load StatusBar
 async function loadStatusBar() {
@@ -23,8 +23,16 @@ async function loadStatusBar() {
 export default function StatusBarHandler() {
   useEffect(() => {
     const setupStatusBar = async () => {
-      // Only run on native platforms
-      if (!Capacitor.isNativePlatform()) {
+      try {
+        // Lazy load Capacitor
+        const { Capacitor } = await import('@capacitor/core')
+        // Only run on native platforms
+        if (!Capacitor.isNativePlatform()) {
+          return
+        }
+      } catch (error) {
+        // Silently fail - Capacitor might not be available
+        console.warn('[StatusBarHandler] Capacitor not available:', error)
         return
       }
 

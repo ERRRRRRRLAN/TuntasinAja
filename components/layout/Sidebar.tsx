@@ -16,7 +16,7 @@ import {
 import { useSession, signOut } from 'next-auth/react'
 import { useDanton } from '@/hooks/useDanton'
 import { trpc } from '@/lib/trpc'
-import { Capacitor } from '@capacitor/core'
+// Capacitor will be loaded dynamically to avoid initialization errors
 import { useQueryClient } from '@tanstack/react-query'
 
 interface NavItem {
@@ -34,8 +34,23 @@ export default function Sidebar() {
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isNativePlatform, setIsNativePlatform] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+
+  // Check if native platform (lazy load Capacitor)
+  useEffect(() => {
+    const checkNativePlatform = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core')
+        setIsNativePlatform(Capacitor.isNativePlatform())
+      } catch (error) {
+        // Silently fail - not native platform
+        setIsNativePlatform(false)
+      }
+    }
+    checkNativePlatform()
+  }, [])
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -416,7 +431,7 @@ export default function Sidebar() {
             )}
             {/* Regular users: no profile button */}
 
-            {!Capacitor.isNativePlatform() && (
+            {!isNativePlatform && (
               <a
                 href="/TuntasinAja.apk"
                 download="TuntasinAja.apk"

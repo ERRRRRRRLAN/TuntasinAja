@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Capacitor } from '@capacitor/core'
+// Capacitor will be loaded dynamically to avoid initialization errors
 import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { trpc } from '@/lib/trpc'
@@ -27,11 +27,28 @@ export default function MePage() {
   const prevHasUnsavedChangesRef = useRef(false)
   const justSavedRef = useRef(false) // Flag to skip comparison after save
   const utils = trpc.useUtils()
+  const [isMobileWeb, setIsMobileWeb] = useState(false)
   
   // Check if running on mobile web (not native app)
-  const isMobileWeb = typeof window !== 'undefined' && 
-    window.innerWidth <= 768 && 
-    !Capacitor.isNativePlatform()
+  useEffect(() => {
+    const checkMobileWeb = async () => {
+      if (typeof window === 'undefined') {
+        return
+      }
+      
+      try {
+        const { Capacitor } = await import('@capacitor/core')
+        setIsMobileWeb(
+          window.innerWidth <= 768 && 
+          !Capacitor.isNativePlatform()
+        )
+      } catch (error) {
+        // If Capacitor is not available, assume web
+        setIsMobileWeb(window.innerWidth <= 768)
+      }
+    }
+    checkMobileWeb()
+  }, [])
   
   // Get unsaved changes context for global navigation blocking
   const { 
