@@ -17,7 +17,7 @@ import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
 // Generate list of kelas options
-const generateKelasOptions = () => {
+const generateKelasOptions = (): string[] => {
   const kelasOptions: string[] = []
   const tingkat = ['X', 'XI', 'XII']
   const jurusan = ['RPL', 'TKJ', 'BC']
