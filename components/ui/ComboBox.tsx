@@ -323,15 +323,16 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown - Rendered via Portal to escape parent overflow */}
-      {mounted && shouldRender && dropdownPosition.width > 0 && createPortal(
+      {mounted && shouldRender && createPortal(
         <div
           ref={dropdownRef}
           className="combobox-dropdown"
           style={{
             position: 'fixed',
-            top: `${dropdownPosition.top}px`,
-            left: `${dropdownPosition.left}px`,
-            width: `${dropdownPosition.width}px`,
+            top: `${dropdownPosition.top || 0}px`,
+            left: `${dropdownPosition.left || 0}px`,
+            width: `${dropdownPosition.width || (buttonRef.current?.getBoundingClientRect().width || 200)}px`,
+            minWidth: '200px',
             background: 'var(--card)',
             border: '1px solid var(--border)',
             borderRadius: '0.5rem',
