@@ -101,15 +101,9 @@ export default function ComboBox({
     return () => setMounted(false)
   }, [])
 
-  // Calculate dropdown position when opened or on scroll/resize
+  // Calculate dropdown position when opened
   useEffect(() => {
-    if (!isOpen || !buttonRef.current) {
-      // Reset position when closed
-      if (!isOpen) {
-        setDropdownPosition({ top: 0, left: 0, width: 0 })
-      }
-      return
-    }
+    if (!isOpen || !buttonRef.current) return
 
     const updatePosition = () => {
       if (buttonRef.current) {
@@ -117,15 +111,13 @@ export default function ComboBox({
         setDropdownPosition({
           top: buttonRect.bottom + window.scrollY + 4, // 4px gap
           left: buttonRect.left + window.scrollX,
-          width: buttonRect.width || 200 // Fallback width if 0
+          width: buttonRect.width
         })
       }
     }
 
-    // Initial position - use setTimeout to ensure button is rendered
-    setTimeout(() => {
-      updatePosition()
-    }, 0)
+    // Initial position
+    updatePosition()
 
     // Update on scroll or resize
     window.addEventListener('scroll', updatePosition, true)
@@ -165,7 +157,12 @@ export default function ComboBox({
     if (!isOpen) return
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      // Check if click is outside both container and dropdown (portal)
+      const isOutsideContainer = containerRef.current && !containerRef.current.contains(target)
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(target)
+      
+      if (isOutsideContainer && isOutsideDropdown) {
         setIsOpen(false)
         setSearchQuery('')
       }
@@ -184,7 +181,7 @@ export default function ComboBox({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen])
+  }, [isOpen, showSearch])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -328,11 +325,11 @@ export default function ComboBox({
           ref={dropdownRef}
           className="combobox-dropdown"
           style={{
-            position: 'fixed',
-            top: `${dropdownPosition.top || 0}px`,
-            left: `${dropdownPosition.left || 0}px`,
-            width: `${dropdownPosition.width || (buttonRef.current?.getBoundingClientRect().width || 200)}px`,
-            minWidth: '200px',
+            position: 'absolute',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            minWidth: '150px',
             background: 'var(--card)',
             border: '1px solid var(--border)',
             borderRadius: '0.5rem',
