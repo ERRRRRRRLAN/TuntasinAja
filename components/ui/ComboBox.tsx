@@ -290,10 +290,8 @@ export default function ComboBox({
             borderRadius: '0.5rem',
             boxShadow: 'var(--shadow-lg)',
             zIndex: 1000,
-            maxHeight: '300px',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
             opacity: isAnimating ? 1 : 0,
             transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
             transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
@@ -336,8 +334,8 @@ export default function ComboBox({
 
           {/* Options List */}
           <div style={{
-            overflowY: 'auto',
-            maxHeight: '250px'
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             {/* All Option */}
             {showAllOption && (
