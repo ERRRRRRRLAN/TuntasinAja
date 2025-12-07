@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { Capacitor } from '@capacitor/core'
 import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { trpc } from '@/lib/trpc'
@@ -10,7 +11,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon } from '@/components/ui/Icons'
+import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon, LogOutIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 
@@ -19,12 +20,18 @@ export default function MePage() {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isNotificationClosing, setIsNotificationClosing] = useState(false)
   const [localSettings, setLocalSettings] = useState<any>(null)
   const [showNavigationDialog, setShowNavigationDialog] = useState(false)
   const prevHasUnsavedChangesRef = useRef(false)
   const utils = trpc.useUtils()
+  
+  // Check if running on mobile web (not native app)
+  const isMobileWeb = typeof window !== 'undefined' && 
+    window.innerWidth <= 768 && 
+    !Capacitor.isNativePlatform()
   
   // Get unsaved changes context for global navigation blocking
   const { 
@@ -209,6 +216,21 @@ export default function MePage() {
     })
   }
 
+  const handleLogout = async () => {
+    setShowLogoutDialog(false)
+    await signOut({ callbackUrl: '/auth/signin' })
+  }
+
+  const handleDownloadAPK = () => {
+    const link = document.createElement('a')
+    link.href = '/TuntasinAja.apk'
+    link.download = 'TuntasinAja.apk'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success('Download APK dimulai')
+  }
+
   if (status === 'loading' || isLoadingSettings) {
     return (
       <Layout>
@@ -269,7 +291,7 @@ export default function MePage() {
       <div className="container">
         {/* Profile Section */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
             <div style={{
               width: '64px',
               height: '64px',
@@ -291,6 +313,71 @@ export default function MePage() {
                 {session.user.email}
               </p>
             </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isMobileWeb && (
+              <button
+                onClick={handleDownloadAPK}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--primary-dark)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--primary)'
+                }}
+              >
+                <DownloadIcon size={18} />
+                Download APK
+              </button>
+            )}
+            
+            <button
+              onClick={() => setShowLogoutDialog(true)}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                background: 'transparent',
+                color: 'var(--danger)',
+                border: '1px solid var(--border)',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--danger)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+            >
+              <LogOutIcon size={18} />
+              Logout
+            </button>
           </div>
         </div>
 
@@ -814,6 +901,17 @@ export default function MePage() {
           title="Hapus Cache"
           message="Apakah Anda yakin ingin menghapus cache? Tindakan ini tidak dapat dibatalkan."
           confirmText="Hapus"
+          cancelText="Batal"
+          danger={true}
+        />
+
+        <ConfirmDialog
+          isOpen={showLogoutDialog}
+          onCancel={() => setShowLogoutDialog(false)}
+          onConfirm={handleLogout}
+          title="Logout"
+          message="Apakah Anda yakin ingin keluar dari akun?"
+          confirmText="Logout"
           cancelText="Batal"
           danger={true}
         />
