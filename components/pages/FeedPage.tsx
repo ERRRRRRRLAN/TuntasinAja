@@ -15,6 +15,7 @@ import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
+import DashboardOneClick from '@/components/dashboard/DashboardOneClick'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -666,6 +667,11 @@ export default function FeedPage() {
                 <span> • Kelas: {selectedKelas}</span>
               )}
             </div>
+          )}
+
+          {/* Dashboard One-Click - Show today's tasks with quick actions */}
+          {session && isDataValidated && !isLoadingUserData && (
+            <DashboardOneClick />
           )}
 
           {/* Only show loading on initial load, not during background refresh */}
