@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { trpc } from '@/lib/trpc'
-import { toast } from '@/components/ui/ToastContainer'
 import ComboBox from '@/components/ui/ComboBox'
 import { XCloseIcon, TrashIcon, CalendarIcon } from '@/components/ui/Icons'
 import { useBackHandler } from '@/hooks/useBackHandler'
@@ -43,11 +42,12 @@ export default function ScheduleEditQuickView({
     onSuccess: () => {
       utils.weeklySchedule.getSchedule.invalidate()
       utils.weeklySchedule.getUserSchedule.invalidate()
+      // Close quickview after successful save
       handleCloseQuickView()
-      toast.success('Jadwal berhasil disimpan!')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menyimpan jadwal')
+      // Silent error - user can see the issue and retry
+      console.error('Failed to save schedule:', error)
     },
   })
 
@@ -56,10 +56,10 @@ export default function ScheduleEditQuickView({
       utils.weeklySchedule.getSchedule.invalidate()
       utils.weeklySchedule.getUserSchedule.invalidate()
       handleCloseQuickView()
-      toast.success('Jadwal berhasil dihapus!')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus jadwal')
+      // Silent error - user can retry
+      console.error('Failed to delete schedule:', error)
     },
   })
 
@@ -162,6 +162,9 @@ export default function ScheduleEditQuickView({
   }
 
   const handleSubjectChange = (subject: string) => {
+    // Don't update local state if already saving
+    if (setSchedule.isLoading) return
+    
     setSelectedSubject(subject)
     
     // Auto-save on selection
@@ -216,9 +219,40 @@ export default function ScheduleEditQuickView({
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+            position: 'relative'
           }}
         >
+          {/* Loading Overlay - covers entire quickview */}
+          {setSchedule.isLoading && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'var(--card)',
+              opacity: 0.95,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              zIndex: 100,
+              borderRadius: '1rem'
+            }}>
+              <LoadingSpinner size={32} />
+              <p style={{ 
+                color: 'var(--text)', 
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                margin: 0
+              }}>
+                Menyimpan jadwal...
+              </p>
+            </div>
+          )}
+
           <div className="quickview-header">
             <div className="quickview-header-top">
               <div className="quickview-header-left">
@@ -300,6 +334,7 @@ export default function ScheduleEditQuickView({
                   showAllOption={false}
                   searchPlaceholder="Cari mata pelajaran..."
                   emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                  disabled={setSchedule.isLoading || deleteSchedule.isLoading}
                 />
               ) : (
                 <div style={{ 
@@ -340,17 +375,19 @@ export default function ScheduleEditQuickView({
               </div>
             )}
 
-            <div style={{ 
-              marginTop: '1rem',
-              padding: '0.75rem',
-              background: 'var(--bg-secondary)',
-              borderRadius: '0.5rem',
-              fontSize: '0.8125rem',
-              color: 'var(--text-light)',
-              lineHeight: '1.5'
-            }}>
-              <strong>Tips:</strong> Pilih mata pelajaran dari dropdown di atas. Jadwal akan tersimpan otomatis saat dipilih.
-            </div>
+            {!setSchedule.isLoading && (
+              <div style={{ 
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: 'var(--bg-secondary)',
+                borderRadius: '0.5rem',
+                fontSize: '0.8125rem',
+                color: 'var(--text-light)',
+                lineHeight: '1.5'
+              }}>
+                <strong>Tips:</strong> Pilih mata pelajaran dari dropdown di atas. Jadwal akan tersimpan otomatis saat dipilih.
+              </div>
+            )}
           </div>
         </div>
       </div>
