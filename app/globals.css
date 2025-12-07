@@ -1432,9 +1432,10 @@ textarea {
     display: none !important;
   }
 
-  /* Hide bottom navigation on desktop */
+  /* Hide bottom navigation on desktop - force hide */
   .bottom-navigation {
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
   }
 
   /* Adjust main content margin for sidebar */
