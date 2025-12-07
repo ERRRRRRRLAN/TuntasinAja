@@ -365,8 +365,7 @@ export default function FeedPage() {
   }
 
   return (
-    <>
-      <Layout>
+    <Layout>
         <div className="container">
           <div className="page-header">
             <div>
@@ -1097,6 +1096,5 @@ export default function FeedPage() {
         />
         </div>
       </Layout>
-    </>
   )
 }

@@ -252,39 +252,39 @@ export default function HistoryPage() {
         </div>
 
         <ConfirmDialog
-        isOpen={deleteHistoryId !== null}
-        title="Hapus History?"
-        message="Apakah Anda yakin ingin menghapus history ini? Tindakan ini tidak dapat dibatalkan."
-        confirmText={deleteHistory.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
-        cancelText="Batal"
-        danger={true}
-        disabled={deleteHistory.isLoading}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => {
-          if (!deleteHistory.isLoading) {
-            setDeleteHistoryId(null)
-          }
-        }}
-      />
+          isOpen={deleteHistoryId !== null}
+          title="Hapus History?"
+          message="Apakah Anda yakin ingin menghapus history ini? Tindakan ini tidak dapat dibatalkan."
+          confirmText={deleteHistory.isLoading ? 'Menghapus...' : 'Ya, Hapus'}
+          cancelText="Batal"
+          danger={true}
+          disabled={deleteHistory.isLoading}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            if (!deleteHistory.isLoading) {
+              setDeleteHistoryId(null)
+            }
+          }}
+        />
 
-      <ConfirmDialog
-        isOpen={recoverHistoryId !== null}
-        title="Recovery Tugas?"
-        message="Apakah Anda yakin ingin mengembalikan tugas ini ke feed? Tugas akan kembali muncul di feed dan history akan dihapus."
-        confirmText={recoverHistory.isLoading ? 'Memulihkan...' : 'Ya, Recovery'}
-        cancelText="Batal"
-        disabled={recoverHistory.isLoading}
-        onConfirm={() => {
-          if (recoverHistoryId) {
-            recoverHistory.mutate({ historyId: recoverHistoryId })
-          }
-        }}
-        onCancel={() => {
-          if (!recoverHistory.isLoading) {
-            setRecoverHistoryId(null)
-          }
-        }}
-      />
+        <ConfirmDialog
+          isOpen={recoverHistoryId !== null}
+          title="Recovery Tugas?"
+          message="Apakah Anda yakin ingin mengembalikan tugas ini ke feed? Tugas akan kembali muncul di feed dan history akan dihapus."
+          confirmText={recoverHistory.isLoading ? 'Memulihkan...' : 'Ya, Recovery'}
+          cancelText="Batal"
+          disabled={recoverHistory.isLoading}
+          onConfirm={() => {
+            if (recoverHistoryId) {
+              recoverHistory.mutate({ historyId: recoverHistoryId })
+            }
+          }}
+          onCancel={() => {
+            if (!recoverHistory.isLoading) {
+              setRecoverHistoryId(null)
+            }
+          }}
+        />
       </Layout>
   )
 }
