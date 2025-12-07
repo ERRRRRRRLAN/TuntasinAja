@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
@@ -20,6 +20,7 @@ export default function MePage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isNotificationClosing, setIsNotificationClosing] = useState(false)
   const [localSettings, setLocalSettings] = useState<any>(null)
+  const prevHasUnsavedChangesRef = useRef(false)
   const utils = trpc.useUtils()
 
   // Redirect jika belum login
@@ -46,6 +47,7 @@ export default function MePage() {
     if (!localSettings || !settings) {
       setHasUnsavedChanges(false)
       setIsNotificationClosing(false)
+      prevHasUnsavedChangesRef.current = false
       return
     }
 
@@ -62,19 +64,21 @@ export default function MePage() {
     })
 
     // If we had changes before but now don't, trigger closing animation
-    if (hasUnsavedChanges && !hasChanges) {
+    if (prevHasUnsavedChangesRef.current && !hasChanges) {
       setIsNotificationClosing(true)
       // Wait for animation to complete before hiding
       const timeout = setTimeout(() => {
         setHasUnsavedChanges(false)
         setIsNotificationClosing(false)
       }, 300) // Match animation duration
+      prevHasUnsavedChangesRef.current = false
       return () => clearTimeout(timeout)
     } else {
       // Update state only if it's different to avoid unnecessary re-renders
       if (hasUnsavedChanges !== hasChanges) {
         setHasUnsavedChanges(hasChanges)
       }
+      prevHasUnsavedChangesRef.current = hasChanges
       if (hasChanges && isNotificationClosing) {
         setIsNotificationClosing(false)
       }
