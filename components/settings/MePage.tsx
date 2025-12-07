@@ -699,6 +699,7 @@ export default function MePage() {
         {/* Sticky Notification for Unsaved Changes */}
         {hasUnsavedChanges && (
           <div
+            className="settings-unsaved-notification"
             style={{
               position: 'fixed',
               bottom: 'calc(var(--bottom-nav-height) + 1rem)',
@@ -715,6 +716,7 @@ export default function MePage() {
               justifyContent: 'space-between',
               gap: '1rem',
               animation: 'slideUpFromBottom 0.3s ease-out',
+              maxWidth: 'calc(100vw - 2rem)',
             }}
           >
             <div style={{ flex: 1 }}>
