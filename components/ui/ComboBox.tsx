@@ -330,6 +330,7 @@ export default function ComboBox({
             left: `${dropdownPosition.left}px`,
             width: `${dropdownPosition.width}px`,
             minWidth: '150px',
+            maxHeight: '300px',
             background: 'var(--card)',
             border: '1px solid var(--border)',
             borderRadius: '0.5rem',
@@ -337,6 +338,7 @@ export default function ComboBox({
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'hidden',
             opacity: isAnimating ? 1 : 0,
             transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
             transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
@@ -379,8 +381,8 @@ export default function ComboBox({
 
           {/* Options List */}
           <div style={{
-            display: 'flex',
-            flexDirection: 'column'
+            overflowY: 'auto',
+            maxHeight: '250px'
           }}>
             {/* All Option */}
             {showAllOption && (
