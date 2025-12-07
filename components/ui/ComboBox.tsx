@@ -103,7 +103,13 @@ export default function ComboBox({
 
   // Calculate dropdown position when opened or on scroll/resize
   useEffect(() => {
-    if (!isOpen || !buttonRef.current) return
+    if (!isOpen || !buttonRef.current) {
+      // Reset position when closed
+      if (!isOpen) {
+        setDropdownPosition({ top: 0, left: 0, width: 0 })
+      }
+      return
+    }
 
     const updatePosition = () => {
       if (buttonRef.current) {
@@ -111,13 +117,15 @@ export default function ComboBox({
         setDropdownPosition({
           top: buttonRect.bottom + window.scrollY + 4, // 4px gap
           left: buttonRect.left + window.scrollX,
-          width: buttonRect.width
+          width: buttonRect.width || 200 // Fallback width if 0
         })
       }
     }
 
-    // Initial position
-    updatePosition()
+    // Initial position - use setTimeout to ensure button is rendered
+    setTimeout(() => {
+      updatePosition()
+    }, 0)
 
     // Update on scroll or resize
     window.addEventListener('scroll', updatePosition, true)
@@ -315,7 +323,7 @@ export default function ComboBox({
       </button>
 
       {/* Dropdown - Rendered via Portal to escape parent overflow */}
-      {mounted && shouldRender && createPortal(
+      {mounted && shouldRender && dropdownPosition.width > 0 && createPortal(
         <div
           ref={dropdownRef}
           className="combobox-dropdown"
