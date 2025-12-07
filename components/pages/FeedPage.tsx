@@ -930,6 +930,7 @@ export default function FeedPage() {
             alignItems: 'flex-end',
             gap: '0.5rem'
           }}
+          className="fab-feedback-container"
         >
           {/* Tooltip - Hidden on mobile */}
           {showFeedbackTooltip && (
@@ -1050,6 +1051,7 @@ export default function FeedPage() {
             transition: 'all 0.3s ease',
             padding: 0
           }}
+          className="fab-create-thread"
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--primary-dark)'
             e.currentTarget.style.transform = 'scale(1.1)'
