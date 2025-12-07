@@ -330,13 +330,20 @@ export default function MePage() {
               <div>
                 <label style={{ 
                   display: 'block', 
-                  marginBottom: '0.5rem', 
+                  marginBottom: '0.25rem', 
                   fontSize: '0.875rem',
                   fontWeight: 500,
                   color: 'var(--text)',
                 }}>
                   Waktu Pengingat
                 </label>
+                <p style={{
+                  margin: '0 0 0.5rem 0',
+                  fontSize: '0.75rem',
+                  color: 'var(--text-secondary)',
+                }}>
+                  Waktu harian untuk menerima pengingat tugas yang deadline-nya besok
+                </p>
                 <ComboBox
                   options={timeOptions}
                   value={displaySettings.reminderTime || '08:00'}
