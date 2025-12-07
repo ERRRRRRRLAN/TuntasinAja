@@ -21,8 +21,39 @@ Write-Host ""
 Write-Host "Skipping version increment (testing build)" -ForegroundColor Yellow
 Write-Host ""
 
-# Build APK
-Write-Host "Building signed APK..." -ForegroundColor Cyan
+# Step 1: Build Next.js
+Write-Host "[Step 1] Building Next.js app..." -ForegroundColor Cyan
+npm run build
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Next.js build failed!" -ForegroundColor Red
+    exit 1
+}
+Write-Host "Next.js build completed" -ForegroundColor Green
+Write-Host ""
+
+# Step 2: Sync Capacitor
+Write-Host "[Step 2] Syncing Capacitor..." -ForegroundColor Cyan
+npx cap sync android
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Capacitor sync failed!" -ForegroundColor Red
+    exit 1
+}
+Write-Host "Capacitor sync completed" -ForegroundColor Green
+Write-Host ""
+
+# Step 3: Clean previous build (optional but recommended)
+Write-Host "[Step 3] Cleaning previous build..." -ForegroundColor Cyan
+cd android
+.\gradlew.bat clean
+$cleanResult = $LASTEXITCODE
+cd ..
+if ($cleanResult -ne 0) {
+    Write-Host "Clean failed, but continuing..." -ForegroundColor Yellow
+}
+Write-Host ""
+
+# Step 4: Build APK
+Write-Host "[Step 4] Building signed APK..." -ForegroundColor Cyan
 cd android
 .\gradlew.bat assembleRelease
 $buildResult = $LASTEXITCODE
