@@ -935,7 +935,7 @@ export default function FeedPage() {
           style={{
             position: 'fixed',
             bottom: isMobile
-              ? 'calc(56px + 50px + 90px + env(safe-area-inset-bottom, 0px))' // Mobile: navbar + spacing + 90px above Create Thread
+              ? '210px' // Mobile: Fixed 210px from bottom - well above Create Thread FAB
               : 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             zIndex: 1001,
@@ -1048,7 +1048,7 @@ export default function FeedPage() {
           style={{
             position: 'fixed',
             bottom: isMobile 
-              ? 'calc(56px + 50px + env(safe-area-inset-bottom, 0px))' // Mobile: navbar height + 50px spacing
+              ? '120px' // Mobile: Fixed 120px from bottom - well above navbar
               : 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', // Desktop: default
             right: '1.5rem',
             width: '56px',
