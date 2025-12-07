@@ -628,13 +628,13 @@ export default function MePage() {
 
         <ConfirmDialog
           isOpen={showClearCacheDialog}
-          onClose={() => setShowClearCacheDialog(false)}
+          onCancel={() => setShowClearCacheDialog(false)}
           onConfirm={() => clearCache.mutate()}
           title="Hapus Cache"
           message="Apakah Anda yakin ingin menghapus cache? Tindakan ini tidak dapat dibatalkan."
           confirmText="Hapus"
           cancelText="Batal"
-          confirmButtonStyle={{ background: 'var(--danger)' }}
+          danger={true}
         />
       </div>
     </Layout>
