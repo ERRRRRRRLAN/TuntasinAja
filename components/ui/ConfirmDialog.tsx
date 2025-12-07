@@ -104,6 +104,8 @@ export default function ConfirmDialog({
     // Only cancel if clicking directly on the overlay, not on the content
     // Don't allow closing if disabled (e.g., during loading)
     if (e.target === overlayRef.current && !disabled) {
+      e.preventDefault()
+      e.stopPropagation()
       onCancel()
     }
   }

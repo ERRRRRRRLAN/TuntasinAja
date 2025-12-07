@@ -167,6 +167,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   }
 
   const handleCardClick = () => {
+    // Don't open quickview if any dialog is open
+    if (showConfirmDialog || showUncheckDialog) {
+      return
+    }
     if (onThreadClick) {
       onThreadClick(thread.id)
     }
@@ -229,7 +233,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     <div 
       className="thread-card" 
       onClick={handleCardClick}
-      style={{ cursor: 'pointer' }}
+      style={{ 
+        cursor: 'pointer',
+        pointerEvents: (showConfirmDialog || showUncheckDialog) ? 'none' : 'auto'
+      }}
     >
       <div className="thread-card-content">
         <div className="thread-card-header">
