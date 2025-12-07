@@ -19,9 +19,8 @@ import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesPro
 if (typeof window !== 'undefined') {
   // Use setTimeout to ensure Capacitor is fully initialized
   setTimeout(() => {
-    try {
-      // Lazy load Capacitor to avoid errors if not initialized
-      const capacitorModule = require('@capacitor/core')
+    // Use dynamic import instead of require to avoid module-level errors
+    import('@capacitor/core').then((capacitorModule) => {
       if (capacitorModule.Capacitor && capacitorModule.Capacitor.isNativePlatform()) {
         import('@/hooks/useBackButton').then((module) => {
           // This will trigger the setup in useBackButton.ts
@@ -31,10 +30,10 @@ if (typeof window !== 'undefined') {
           console.warn('[Providers] Could not load back button handler:', e)
         })
       }
-    } catch (e) {
+    }).catch((e) => {
       // Silently fail - Capacitor might not be available (web build)
       console.warn('[Providers] Capacitor not available, skipping back button handler:', e)
-    }
+    })
   }, 100)
 }
 

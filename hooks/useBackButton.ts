@@ -152,18 +152,17 @@ export function useBackButton(isActive: boolean, onBack: () => boolean | void) {
 if (typeof window !== 'undefined') {
   // Use setTimeout to ensure Capacitor is fully initialized
   setTimeout(() => {
-    try {
-      // Lazy load Capacitor to avoid errors if not initialized
-      const { Capacitor } = require('@capacitor/core')
+    // Use dynamic import instead of require to avoid module-level errors
+    import('@capacitor/core').then(({ Capacitor }) => {
       if (Capacitor.isNativePlatform()) {
         backButtonManager.setup().catch((error) => {
           console.error('[useBackButton] Error setting up global back button handler:', error)
         })
       }
-    } catch (error) {
+    }).catch((error) => {
       // Silently fail - Capacitor might not be available (web build)
       console.warn('[useBackButton] Capacitor not available, skipping setup:', error)
-    }
+    })
   }, 100)
 }
 
