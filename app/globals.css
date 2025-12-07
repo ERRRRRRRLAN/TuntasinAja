@@ -1343,26 +1343,62 @@ textarea {
 /* Responsive Design */
 /* Mobile First Approach */
 
-/* Small devices (phones, 640px and down) */
+/* Bottom Navigation (Mobile) */
+.bottom-navigation {
+  display: none; /* Hidden by default, shown on mobile */
+}
+
+/* Sidebar Toggle Button (Desktop) */
+.sidebar-toggle {
+  display: none; /* Hidden by default, shown on desktop */
+}
+
+/* Sidebar */
+.sidebar {
+  display: none; /* Hidden by default, shown on desktop */
+}
+
+.sidebar-overlay {
+  display: none; /* Hidden by default, shown on desktop when sidebar is open */
+}
+
+/* Animation for sidebar overlay */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Small devices (phones, 768px and down) */
 @media (max-width: 768px) {
   .nav-desktop {
     display: none;
   }
 
   .mobile-menu-btn {
-    display: block;
+    display: none; /* No longer needed */
   }
 
   .mobile-menu {
+    display: none; /* No longer needed */
+  }
+
+  /* Show bottom navigation on mobile */
+  .bottom-navigation {
     display: flex;
   }
 
-  /* Profile button di mobile - sebelah kiri menu icon */
-  .header-right-container .nav-desktop {
-    display: none;
+  /* Hide sidebar on mobile */
+  .sidebar,
+  .sidebar-overlay,
+  .sidebar-toggle {
+    display: none !important;
   }
 
-  /* Profile dan menu button di mobile - bersama di kanan */
+  /* Profile button di mobile */
   .header-right-container {
     gap: 0.75rem !important;
     margin-left: auto;
@@ -1370,6 +1406,41 @@ textarea {
 
   .profile-dropdown-container {
     margin-right: 0;
+  }
+
+  /* Add padding bottom for bottom navigation */
+  .main-content {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Desktop (769px and up) */
+@media (min-width: 769px) {
+  /* Show sidebar toggle button on desktop */
+  .sidebar-toggle {
+    display: block;
+  }
+
+  /* Show sidebar on desktop - always visible */
+  .sidebar {
+    display: flex !important;
+    transform: translateX(0) !important; /* Always visible on desktop */
+  }
+
+  /* Hide sidebar overlay on desktop (sidebar is always visible, not overlay) */
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  /* Hide bottom navigation on desktop */
+  .bottom-navigation {
+    display: none;
+  }
+
+  /* Adjust main content margin for sidebar */
+  .main-content {
+    margin-left: 280px; /* Push content to the right for sidebar */
+    padding-bottom: 0 !important; /* No bottom padding on desktop */
   }
 }
 

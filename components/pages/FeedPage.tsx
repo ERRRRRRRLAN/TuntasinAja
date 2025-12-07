@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import ThreadCard from '@/components/threads/ThreadCard'
 import ThreadQuickView from '@/components/threads/ThreadQuickView'
 import CreateThreadQuickView from '@/components/threads/CreateThreadQuickView'
@@ -366,8 +366,7 @@ export default function FeedPage() {
 
   return (
     <>
-      <Header />
-      <main className="main-content">
+      <Layout>
         <div className="container">
           <div className="page-header">
             <div>
@@ -1092,12 +1091,13 @@ export default function FeedPage() {
         </button>
       )}
 
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={showFeedbackModal}
-        onClose={() => setShowFeedbackModal(false)}
-      />
-
+        {/* Feedback Modal */}
+        <FeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+        />
+        </div>
+      </Layout>
     </>
   )
 }

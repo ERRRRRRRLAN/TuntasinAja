@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import AnnouncementPage from '@/components/pages/AnnouncementPage'
 
@@ -30,12 +30,11 @@ export default function AnnouncementPageRoute() {
   }
 
   return (
-    <>
-      <Header />
-      <main style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <Layout>
+      <div className="container">
         <AnnouncementPage />
-      </main>
-    </>
+      </div>
+    </Layout>
   )
 }
 

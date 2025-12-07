@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import WeeklyScheduleViewer from '@/components/schedule/WeeklyScheduleViewer'
 
 export const dynamic = 'force-dynamic'
@@ -15,14 +15,11 @@ export default async function SchedulePage() {
     }
 
     return (
-      <>
-        <Header />
-        <main className="main-content">
-          <div className="container">
-            <WeeklyScheduleViewer />
-          </div>
-        </main>
-      </>
+      <Layout>
+      <div className="container">
+        <WeeklyScheduleViewer />
+      </div>
+    </Layout>
     )
   } catch (error: any) {
     // NEXT_REDIRECT is not a real error, it's how Next.js handles redirects

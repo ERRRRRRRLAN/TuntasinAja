@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import AddUserForm from '@/components/admin/AddUserForm'
 import BulkAddUserForm from '@/components/admin/BulkAddUserForm'
 import UserList from '@/components/admin/UserList'
@@ -48,16 +48,13 @@ export default function ProfilePage() {
   // Show loading jika sedang check session
   if (status === 'loading') {
     return (
-      <>
-        <Header />
-        <main className="main-content">
-          <div className="container">
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
-            </div>
+      <Layout>
+        <div className="container">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
           </div>
-        </main>
-      </>
+        </div>
+      </Layout>
     )
   }
 
@@ -67,10 +64,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      <Header />
-      <main className="main-content">
-        <div className="container">
+    <Layout>
+      <div className="container">
           {isAdmin ? (
             <div>
               <div className="admin-panel-header" style={{ 
@@ -339,8 +334,7 @@ export default function ProfilePage() {
           )}
 
         </div>
-      </main>
-    </>
+      </Layout>
   )
 }
 

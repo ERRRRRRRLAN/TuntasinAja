@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import NotificationSettings from '@/components/settings/NotificationSettings'
 import DisplaySettings from '@/components/settings/DisplaySettings'
@@ -25,19 +25,16 @@ export default function SettingsPage() {
 
   if (status === 'loading') {
     return (
-      <>
-        <Header />
-        <main className="main-content">
-          <div className="container">
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <LoadingSpinner />
-              <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
-                Memuat pengaturan...
-              </p>
-            </div>
+      <Layout>
+        <div className="container">
+          <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+            <LoadingSpinner />
+            <p style={{ color: 'var(--text-light)', marginTop: '1rem' }}>
+              Memuat pengaturan...
+            </p>
           </div>
-        </main>
-      </>
+        </div>
+      </Layout>
     )
   }
 
@@ -58,10 +55,8 @@ export default function SettingsPage() {
     : null
 
   return (
-    <>
-      <Header />
-      <main className="main-content">
-        <div className="container">
+    <Layout>
+      <div className="container">
           <div className="page-header">
             <div>
               <h2 style={{ 
@@ -156,8 +151,7 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
-      </main>
-    </>
+      </Layout>
   )
 }
 

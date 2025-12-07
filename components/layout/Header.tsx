@@ -4,10 +4,9 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { BookIcon, UserIcon, LogOutIcon, CrownIcon, DownloadIcon } from '@/components/ui/Icons'
+import { UserIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
 import { trpc } from '@/lib/trpc'
 import { useDanton } from '@/hooks/useDanton'
-import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
 
 export default function Header() {
@@ -15,7 +14,6 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [shouldRenderProfile, setShouldRenderProfile] = useState(false)
   const [isProfileAnimating, setIsProfileAnimating] = useState(false)
@@ -55,42 +53,7 @@ export default function Header() {
   // Check if user is danton
   const { isDanton } = useDanton()
 
-  const navLinks = [
-    { href: '/', label: 'Tugas' },
-    { href: '/history', label: 'History' },
-    { href: '/schedule', label: 'Jadwal' },
-    { href: '/announcement', label: 'Pengumuman' },
-    { href: '/settings', label: 'Pengaturan' },
-    ...(isDanton ? [{ href: '/danton', label: 'Danton' }] : []),
-  ]
-
-  // Calculate header height for mobile menu positioning
-  useEffect(() => {
-    if (headerRef.current) {
-      const height = headerRef.current.offsetHeight
-      setHeaderHeight(height)
-    }
-  }, [session])
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false)
-  }, [pathname])
-
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (isMobileMenuOpen && !target.closest('.header') && !target.closest('.mobile-menu')) {
-        setIsMobileMenuOpen(false)
-      }
-    }
-
-    if (isMobileMenuOpen) {
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }
-  }, [isMobileMenuOpen])
+  // No longer need navLinks or mobile menu state
 
   // Handle profile dropdown render and animation state
   useEffect(() => {
@@ -236,7 +199,7 @@ export default function Header() {
   return (
     <header className="header" ref={headerRef}>
       <div className="header-content">
-        <Link href="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Link href="/" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <img 
             src="/logo.svg" 
             alt="TuntasinAja Logo" 
@@ -250,24 +213,8 @@ export default function Header() {
           <span>TuntasinAja</span>
         </Link>
         
-        {/* Right side: Navigation + Profile */}
+        {/* Right side: Profile */}
         <div className="header-right-container" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          {/* Desktop Navigation */}
-          <nav className="nav nav-desktop">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="nav-link"
-                style={{
-                  color: pathname === link.href ? 'var(--primary)' : 'var(--text-light)',
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
           {/* Profile Dropdown */}
           {session && (
             <div
@@ -451,64 +398,8 @@ export default function Header() {
           </div>
           )}
 
-          {/* Mobile Menu Button */}
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
-          </button>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <nav 
-        className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}
-        style={{ top: `${headerHeight}px` }}
-      >
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="mobile-nav-link"
-            style={{
-              color: pathname === link.href ? 'var(--primary)' : 'var(--text)',
-              fontWeight: pathname === link.href ? 600 : 500,
-            }}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            {link.label}
-          </Link>
-        ))}
-        
-        {/* Download APK Button - Mobile Web Only (not in native APK) */}
-        {!Capacitor.isNativePlatform() && (
-          <a
-            href="/TuntasinAja.apk"
-            download="TuntasinAja.apk"
-            className="mobile-nav-link"
-            style={{
-              color: 'var(--primary)',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              borderTop: '1px solid var(--border)',
-              marginTop: '0.5rem',
-              paddingTop: '1rem',
-            }}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <DownloadIcon size={18} style={{ color: 'var(--primary)' }} />
-            <span>Download APK</span>
-          </a>
-        )}
-      </nav>
     </header>
   )
 }

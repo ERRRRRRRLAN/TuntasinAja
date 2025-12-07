@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import { format, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toJakartaDate } from '@/lib/date-utils'
@@ -116,16 +116,13 @@ export default function HistoryPage() {
   // Show loading jika sedang check session
   if (status === 'loading') {
     return (
-      <>
-        <Header />
-        <main className="main-content">
-          <div className="container">
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
-            </div>
+      <Layout>
+        <div className="container">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-light)' }}>Memuat...</p>
           </div>
-        </main>
-      </>
+        </div>
+      </Layout>
     )
   }
 
@@ -255,9 +252,8 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
-      </main>
 
-      <ConfirmDialog
+        <ConfirmDialog
         isOpen={deleteHistoryId !== null}
         title="Hapus History?"
         message="Apakah Anda yakin ingin menghapus history ini? Tindakan ini tidak dapat dibatalkan."
@@ -291,7 +287,7 @@ export default function HistoryPage() {
           }
         }}
       />
-    </>
+      </Layout>
   )
 }
 

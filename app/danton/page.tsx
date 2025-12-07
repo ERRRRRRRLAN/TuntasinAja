@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import DantonDashboard from '@/components/danton/DantonDashboard'
-import Header from '@/components/layout/Header'
+import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function DantonPage() {
@@ -30,15 +30,14 @@ export default function DantonPage() {
   }
 
   return (
-    <>
-      <Header />
-      <main style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <Layout>
+      <div className="container">
         <h1 style={{ marginBottom: '1.5rem', fontSize: '2rem', fontWeight: 700 }}>
           Dashboard Danton
         </h1>
         <DantonDashboard />
-      </main>
-    </>
+      </div>
+    </Layout>
   )
 }
 
