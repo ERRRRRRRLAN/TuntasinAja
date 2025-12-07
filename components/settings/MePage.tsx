@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
@@ -17,6 +17,8 @@ export default function MePage() {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [localSettings, setLocalSettings] = useState<any>(null)
   const utils = trpc.useUtils()
 
   // Redirect jika belum login
@@ -30,11 +32,20 @@ export default function MePage() {
     refetchOnWindowFocus: false,
   })
 
+  // Initialize local settings when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings)
+      setHasUnsavedChanges(false)
+    }
+  }, [settings])
+
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
     onSuccess: () => {
       toast.success('Pengaturan berhasil disimpan')
       setIsSaving(false)
+      setHasUnsavedChanges(false)
       utils.userSettings.get.invalidate()
     },
     onError: (error) => {
@@ -57,24 +68,69 @@ export default function MePage() {
     },
   })
 
+  // Initialize local settings when settings are loaded
+  if (settings && !localSettings) {
+    setLocalSettings(settings)
+  }
+
   const handleToggle = (key: string, value: boolean) => {
-    setIsSaving(true)
-    updateSettings.mutate({ [key]: value })
+    if (!localSettings) return
+    setLocalSettings({ ...localSettings, [key]: value })
+    setHasUnsavedChanges(true)
   }
 
   const handleTimeChange = (key: string, value: string) => {
-    setIsSaving(true)
-    updateSettings.mutate({ [key]: value || null })
+    if (!localSettings) return
+    setLocalSettings({ ...localSettings, [key]: value || null })
+    setHasUnsavedChanges(true)
   }
 
   const handleSelect = (key: string, value: string) => {
-    setIsSaving(true)
-    updateSettings.mutate({ [key]: value })
+    if (!localSettings) return
+    setLocalSettings({ ...localSettings, [key]: value })
+    setHasUnsavedChanges(true)
   }
 
   const handleNumber = (key: string, value: number | null) => {
+    if (!localSettings) return
+    setLocalSettings({ ...localSettings, [key]: value })
+    setHasUnsavedChanges(true)
+  }
+
+  const handleSave = () => {
+    if (!localSettings || !settings) return
+    
     setIsSaving(true)
-    updateSettings.mutate({ [key]: value })
+    // Prepare update data - only include changed fields
+    const updateData: any = {}
+    
+    // Compare with original settings and only include changed fields
+    Object.keys(localSettings).forEach((key) => {
+      if (key !== 'id' && key !== 'userId' && key !== 'createdAt' && key !== 'updatedAt') {
+        const localValue = localSettings[key as keyof typeof localSettings]
+        const originalValue = settings[key as keyof typeof settings]
+        if (localValue !== originalValue) {
+          updateData[key] = localValue
+        }
+      }
+    })
+
+    if (Object.keys(updateData).length === 0) {
+      setIsSaving(false)
+      setHasUnsavedChanges(false)
+      toast.info('Tidak ada perubahan untuk disimpan')
+      return
+    }
+
+    updateSettings.mutate(updateData)
+  }
+
+  const handleDiscard = () => {
+    if (settings) {
+      setLocalSettings({ ...settings })
+    }
+    setHasUnsavedChanges(false)
+    toast.info('Perubahan dibatalkan')
   }
 
   const handleExportData = () => {
@@ -109,9 +165,12 @@ export default function MePage() {
     )
   }
 
-  if (!session || !settings) {
+  if (!session || !settings || !localSettings) {
     return null
   }
+
+  // Use localSettings for display instead of settings
+  const displaySettings = localSettings
 
   // Generate time options (00:00 - 23:30, 30 minute intervals)
   const timeOptions = []
@@ -188,38 +247,38 @@ export default function MePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <ToggleSwitch
-              checked={settings.pushNotificationsEnabled ?? true}
+              checked={displaySettings.pushNotificationsEnabled ?? true}
               onChange={(checked) => handleToggle('pushNotificationsEnabled', checked)}
               label="Notifikasi Push"
               description="Terima notifikasi push untuk tugas baru dan update"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
             <ToggleSwitch
-              checked={settings.taskNotificationsEnabled ?? true}
+              checked={displaySettings.taskNotificationsEnabled ?? true}
               onChange={(checked) => handleToggle('taskNotificationsEnabled', checked)}
               label="Notifikasi Tugas"
               description="Terima notifikasi untuk tugas baru"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
             <ToggleSwitch
-              checked={settings.commentNotificationsEnabled ?? true}
+              checked={displaySettings.commentNotificationsEnabled ?? true}
               onChange={(checked) => handleToggle('commentNotificationsEnabled', checked)}
               label="Notifikasi Komentar"
               description="Terima notifikasi untuk komentar baru"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
             <ToggleSwitch
-              checked={settings.deadlineReminderEnabled ?? true}
+              checked={displaySettings.deadlineReminderEnabled ?? true}
               onChange={(checked) => handleToggle('deadlineReminderEnabled', checked)}
               label="Pengingat Deadline"
               description="Dapatkan pengingat untuk tugas yang mendekati deadline"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
-            {settings.deadlineReminderEnabled && (
+            {displaySettings.deadlineReminderEnabled && (
               <div>
                 <label style={{ 
                   display: 'block', 
@@ -232,7 +291,7 @@ export default function MePage() {
                 </label>
                 <ComboBox
                   options={timeOptions}
-                  value={settings.reminderTime || '08:00'}
+                  value={displaySettings.reminderTime || '08:00'}
                   onChange={(value) => handleTimeChange('reminderTime', value)}
                   placeholder="Pilih waktu"
                 />
@@ -240,14 +299,14 @@ export default function MePage() {
             )}
 
             <ToggleSwitch
-              checked={settings.dndEnabled ?? false}
+              checked={displaySettings.dndEnabled ?? false}
               onChange={(checked) => handleToggle('dndEnabled', checked)}
               label="Jangan Ganggu"
               description="Nonaktifkan semua notifikasi selama waktu tertentu"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
-            {settings.dndEnabled && (
+            {displaySettings.dndEnabled && (
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ 
@@ -261,7 +320,7 @@ export default function MePage() {
                   </label>
                   <ComboBox
                     options={timeOptions}
-                    value={settings.dndStartTime || '22:00'}
+                    value={displaySettings.dndStartTime || '22:00'}
                     onChange={(value) => handleTimeChange('dndStartTime', value)}
                     placeholder="Pilih waktu"
                   />
@@ -278,7 +337,7 @@ export default function MePage() {
                   </label>
                   <ComboBox
                     options={timeOptions}
-                    value={settings.dndEndTime || '07:00'}
+                    value={displaySettings.dndEndTime || '07:00'}
                     onChange={(value) => handleTimeChange('dndEndTime', value)}
                     placeholder="Pilih waktu"
                   />
@@ -323,7 +382,7 @@ export default function MePage() {
               </label>
               <ComboBox
                 options={themeOptions}
-                value={settings.theme || 'auto'}
+                value={displaySettings.theme || 'auto'}
                 onChange={(value) => handleSelect('theme', value)}
                 placeholder="Pilih tema"
               />
@@ -343,7 +402,7 @@ export default function MePage() {
                 type="number"
                 min="5"
                 max="50"
-                value={settings.tasksPerPage || 20}
+                value={displaySettings.tasksPerPage || 20}
                 onChange={(e) => handleNumber('tasksPerPage', parseInt(e.target.value) || 20)}
                 style={{
                   width: '100%',
@@ -369,26 +428,26 @@ export default function MePage() {
               </label>
               <ComboBox
                 options={sortOptions}
-                value={settings.defaultSort || 'newest'}
+                value={displaySettings.defaultSort || 'newest'}
                 onChange={(value) => handleSelect('defaultSort', value)}
                 placeholder="Pilih urutan"
               />
             </div>
 
             <ToggleSwitch
-              checked={settings.showCompletedTasks ?? true}
+              checked={displaySettings.showCompletedTasks ?? true}
               onChange={(checked) => handleToggle('showCompletedTasks', checked)}
               label="Tampilkan Tugas Selesai"
               description="Tampilkan tugas yang sudah selesai di daftar"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
             <ToggleSwitch
-              checked={settings.animationsEnabled ?? true}
+              checked={displaySettings.animationsEnabled ?? true}
               onChange={(checked) => handleToggle('animationsEnabled', checked)}
               label="Aktifkan Animasi"
               description="Tampilkan animasi transisi dan efek visual"
-              isLoading={isSaving}
+              isLoading={false}
             />
           </div>
         </div>
@@ -417,19 +476,19 @@ export default function MePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <ToggleSwitch
-              checked={settings.soundEnabled ?? true}
+              checked={displaySettings.soundEnabled ?? true}
               onChange={(checked) => handleToggle('soundEnabled', checked)}
               label="Aktifkan Suara"
               description="Putar suara saat menerima notifikasi"
-              isLoading={isSaving}
+              isLoading={false}
             />
 
             <ToggleSwitch
-              checked={settings.vibrationEnabled ?? true}
+              checked={displaySettings.vibrationEnabled ?? true}
               onChange={(checked) => handleToggle('vibrationEnabled', checked)}
               label="Aktifkan Getar"
               description="Getarkan perangkat saat menerima notifikasi"
-              isLoading={isSaving}
+              isLoading={false}
             />
           </div>
         </div>
@@ -471,7 +530,7 @@ export default function MePage() {
                 type="number"
                 min="0"
                 max="365"
-                value={settings.autoDeleteHistoryDays ?? 30}
+                value={displaySettings.autoDeleteHistoryDays ?? 30}
                 onChange={(e) => handleNumber('autoDeleteHistoryDays', parseInt(e.target.value) || null)}
                 style={{
                   width: '100%',
@@ -636,6 +695,107 @@ export default function MePage() {
           cancelText="Batal"
           danger={true}
         />
+
+        {/* Sticky Notification for Unsaved Changes */}
+        {hasUnsavedChanges && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 'calc(var(--bottom-nav-height) + 1rem)',
+              left: '1rem',
+              right: '1rem',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: '0.75rem',
+              padding: '1rem 1.25rem',
+              boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.15)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              animation: 'slideUpFromBottom 0.3s ease-out',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                fontWeight: 500,
+                color: 'var(--text)',
+              }}>
+                Pengaturan telah diubah
+              </p>
+              <p style={{ 
+                margin: '0.25rem 0 0 0', 
+                fontSize: '0.75rem', 
+                color: 'var(--text-light)',
+              }}>
+                Simpan perubahan atau batalkan?
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={handleDiscard}
+                disabled={isSaving}
+                style={{
+                  padding: '0.625rem 1rem',
+                  background: 'transparent',
+                  border: '1px solid var(--border)',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text)',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: isSaving ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.background = 'var(--bg-secondary)'
+                    e.currentTarget.style.borderColor = 'var(--text-light)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }
+                }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                style={{
+                  padding: '0.625rem 1.25rem',
+                  background: isSaving ? 'var(--text-light)' : 'var(--primary)',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'white',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: isSaving ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.background = 'var(--primary-dark)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.background = 'var(--primary)'
+                  }
+                }}
+              >
+                {isSaving ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   )
