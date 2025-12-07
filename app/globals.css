@@ -24,9 +24,9 @@
   --border: #e2e8f0;
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  /* Bottom Navigation Height - calculated: paddingTop (0.5rem = 8px) + icon (24px) + gap (0.25rem = 4px) + label (0.75rem = 12px) + paddingBottom (0.5rem = 8px) + safe-area = ~56px + safe-area */
-  --bottom-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
-  --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 50px); /* Space for FAB above navbar - large spacing to prevent overlap */
+  /* Bottom Navigation Height - increased for better touch targets */
+  --bottom-nav-height: calc(70px + env(safe-area-inset-bottom, 0px));
+  --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 16px); /* Space for FAB above navbar */
 }
 
 /* Custom Scrollbar - Thin, no arrows */
@@ -1515,17 +1515,17 @@ textarea {
     box-sizing: border-box !important;
   }
 
-  /* FAB Buttons Mobile - MUST be above bottom navbar (height ~70px) */
+  /* FAB Buttons Mobile - above bottom navbar with small gap */
   .fab-button,
   .fab-create-thread {
-    bottom: 140px !important; /* Well above 70px bottom navbar */
+    bottom: 90px !important; /* Just above 70px bottom navbar with 20px gap */
     right: 1rem !important;
     z-index: 1001 !important;
   }
 
   .feedback-fab-container,
   .fab-feedback-container {
-    bottom: 220px !important; /* 80px above Create Thread FAB */
+    bottom: 160px !important; /* 70px above Create Thread FAB */
     right: 1rem !important;
     z-index: 1001 !important;
   }
@@ -3917,18 +3917,17 @@ textarea {
     margin-top: 1rem !important;
   }
 
-  /* FAB Buttons Mobile - Positioned above bottom navbar */
-  /* IMPORTANT: These values must be high enough to be above bottom navbar (~70px) */
+  /* FAB Buttons Mobile - Positioned above bottom navbar with small gap */
   .fab-button,
   .fab-create-thread {
-    bottom: 140px !important; /* Well above bottom navbar */
+    bottom: 90px !important; /* Just above 70px bottom navbar */
     right: 1rem !important;
     z-index: 1001 !important;
   }
 
   .feedback-fab-container,
   .fab-feedback-container {
-    bottom: 220px !important; /* Well above Create Thread FAB */
+    bottom: 160px !important; /* 70px above Create Thread FAB */
     right: 1rem !important;
     z-index: 1001 !important;
   }

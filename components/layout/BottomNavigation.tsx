@@ -15,13 +15,13 @@ export default function BottomNavigation() {
   const pathname = usePathname()
   const { isDanton } = useDanton()
 
-  // Main navigation items (always visible)
+  // Main navigation items (always visible) - increased icon size
   const mainNavItems: NavItem[] = [
-    { href: '/', label: 'Tugas', icon: <BookIcon size={20} /> },
-    { href: '/history', label: 'History', icon: <ClockIcon size={20} /> },
-    { href: '/schedule', label: 'Jadwal', icon: <CalendarIcon size={20} /> },
-    { href: '/announcement', label: 'Pengumuman', icon: <BellIcon size={20} /> },
-    { href: '/settings', label: 'Pengaturan', icon: <SettingsIcon size={20} /> },
+    { href: '/', label: 'Tugas', icon: <BookIcon size={24} /> },
+    { href: '/history', label: 'History', icon: <ClockIcon size={24} /> },
+    { href: '/schedule', label: 'Jadwal', icon: <CalendarIcon size={24} /> },
+    { href: '/announcement', label: 'Pengumuman', icon: <BellIcon size={24} /> },
+    { href: '/settings', label: 'Pengaturan', icon: <SettingsIcon size={24} /> },
   ]
 
   // Additional items (if danton, show in sidebar only)
@@ -43,13 +43,13 @@ export default function BottomNavigation() {
         right: 0,
         background: 'var(--card)',
         borderTop: '1px solid var(--border)',
-        boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.1)',
         zIndex: 100, /* Lower than FAB buttons (z-index: 1001) */
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        paddingTop: '0.5rem',
-        paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+        paddingTop: '0.75rem',
+        paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
         height: 'var(--bottom-nav-height)',
         minHeight: 'var(--bottom-nav-height)',
         maxHeight: 'var(--bottom-nav-height)',
@@ -66,12 +66,12 @@ export default function BottomNavigation() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.25rem',
-              padding: '0.5rem 0.75rem',
+              gap: '0.375rem',
+              padding: '0.5rem 0.875rem',
               textDecoration: 'none',
               color: isActive ? 'var(--primary)' : 'var(--text-light)',
               transition: 'all 0.2s',
-              minWidth: '60px',
+              minWidth: '56px',
               position: 'relative',
             }}
             onMouseEnter={(e) => {
@@ -97,9 +97,10 @@ export default function BottomNavigation() {
             </div>
             <span
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.6875rem',
                 fontWeight: isActive ? 600 : 500,
                 color: 'inherit',
+                letterSpacing: '-0.01em',
               }}
             >
               {item.label}
