@@ -903,6 +903,10 @@ textarea {
   margin-bottom: 1.5rem;
   animation: fadeInUp 0.4s ease-out;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .card:hover {
@@ -941,6 +945,9 @@ textarea {
   position: relative;
   overflow: hidden;
   border: 1px solid transparent;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .thread-card::before {
