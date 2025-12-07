@@ -1564,6 +1564,14 @@ textarea {
     box-sizing: border-box;
     overflow-x: hidden; /* Prevent horizontal scrollbar */
   }
+
+  /* Settings Unsaved Changes Notification - Desktop */
+  .settings-unsaved-notification {
+    left: calc(280px + 1rem) !important; /* Sidebar width (280px) + padding */
+    right: 1rem !important;
+    max-width: calc(100vw - 280px - 2rem) !important; /* Account for sidebar */
+    bottom: 1.5rem !important; /* Lower position on desktop */
+  }
 }
 
 @media (max-width: 640px) {
