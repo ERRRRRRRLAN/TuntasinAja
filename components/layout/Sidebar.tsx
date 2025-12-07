@@ -8,7 +8,6 @@ import {
   ClockIcon, 
   CalendarIcon, 
   BellIcon, 
-  SettingsIcon, 
   CrownIcon, 
   UserIcon, 
   LogOutIcon,
@@ -143,7 +142,7 @@ export default function Sidebar() {
     { href: '/history', label: 'History', icon: <ClockIcon size={20} /> },
     { href: '/schedule', label: 'Jadwal', icon: <CalendarIcon size={20} /> },
     { href: '/announcement', label: 'Pengumuman', icon: <BellIcon size={20} /> },
-    { href: '/settings', label: 'Pengaturan', icon: <SettingsIcon size={20} /> },
+    { href: '/settings', label: 'Me', icon: <UserIcon size={20} /> },
   ]
 
   const additionalNavItems: NavItem[] = [

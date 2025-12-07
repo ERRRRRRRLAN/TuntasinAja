@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookIcon, ClockIcon, CalendarIcon, BellIcon, SettingsIcon } from '@/components/ui/Icons'
+import { BookIcon, ClockIcon, CalendarIcon, BellIcon, UserIcon } from '@/components/ui/Icons'
 import { useDanton } from '@/hooks/useDanton'
 
 interface NavItem {
@@ -21,7 +21,7 @@ export default function BottomNavigation() {
     { href: '/history', label: 'History', icon: <ClockIcon size={24} /> },
     { href: '/schedule', label: 'Jadwal', icon: <CalendarIcon size={24} /> },
     { href: '/announcement', label: 'Pengumuman', icon: <BellIcon size={24} /> },
-    { href: '/settings', label: 'Pengaturan', icon: <SettingsIcon size={24} /> },
+    { href: '/settings', label: 'Me', icon: <UserIcon size={24} /> },
   ]
 
   // Additional items (if danton, show in sidebar only)

@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { redirect } from 'next/navigation'
-import SettingsPage from '@/components/settings/SettingsPage'
+import MePage from '@/components/settings/MePage'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +12,6 @@ export default async function Settings() {
     redirect('/auth/signin')
   }
 
-  return <SettingsPage />
+  return <MePage />
 }
 
