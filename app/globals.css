@@ -3721,6 +3721,17 @@ textarea {
   }
 }
 
+/* FAB Button positioning - Desktop default */
+.fab-create-thread {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 999;
+}
+
+.fab-feedback-container {
+  bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+  z-index: 999;
+}
+
 /* FAB Button positioning for mobile */
 @media (max-width: 768px) {
   .fab-create-thread {

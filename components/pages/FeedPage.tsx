@@ -922,9 +922,7 @@ export default function FeedPage() {
           className="feedback-fab-container fab-feedback-container"
           style={{
             position: 'fixed',
-            bottom: 'calc(7rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
-            zIndex: 999,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',
@@ -1033,7 +1031,6 @@ export default function FeedPage() {
           className="fab-button fab-create-thread"
           style={{
             position: 'fixed',
-            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0))',
             right: '1.5rem',
             width: '56px',
             height: '56px',
@@ -1046,7 +1043,6 @@ export default function FeedPage() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: 999,
             transition: 'all 0.3s ease',
             padding: 0
           }}
