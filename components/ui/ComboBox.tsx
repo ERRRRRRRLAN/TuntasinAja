@@ -108,9 +108,10 @@ export default function ComboBox({
     const updatePosition = () => {
       if (buttonRef.current) {
         const buttonRect = buttonRef.current.getBoundingClientRect()
+        // Use fixed positioning since dropdown is in portal
         setDropdownPosition({
-          top: buttonRect.bottom + window.scrollY + 4, // 4px gap
-          left: buttonRect.left + window.scrollX,
+          top: buttonRect.bottom + 4, // 4px gap, relative to viewport
+          left: buttonRect.left, // Relative to viewport
           width: buttonRect.width
         })
       }
@@ -325,7 +326,7 @@ export default function ComboBox({
           ref={dropdownRef}
           className="combobox-dropdown"
           style={{
-            position: 'absolute',
+            position: 'fixed',
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
             width: `${dropdownPosition.width}px`,
@@ -335,7 +336,7 @@ export default function ComboBox({
             border: '1px solid var(--border)',
             borderRadius: '0.5rem',
             boxShadow: 'var(--shadow-lg)',
-            zIndex: 10000,
+            zIndex: 10001, // Higher than quickview (1000)
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
