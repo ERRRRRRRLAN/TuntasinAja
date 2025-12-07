@@ -1,49 +1,52 @@
 # 📢 Update TuntasinAja
 
-Ada beberapa update baru nih:
+Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih enak! 🎉
 
 ## ✨ Fitur Baru
 
-### 1. **Halaman "Me" & Pengaturan Lengkap**
-- Tab **"Me"** baru dengan profil user di bagian atas
-- **Pengaturan Notifikasi**: Kontrol notifikasi tugas, komentar, pengumuman, dan pengingat deadline
-- **Pengaturan Tampilan**: Pilih tema (Light/Dark/Auto), jumlah tugas per halaman, urutan default, dan animasi
-- **Pengaturan Suara & Getar**: Aktifkan/nonaktifkan suara dan getaran untuk notifikasi
-- **Pengaturan Data**: Auto-hapus history, ekspor data, dan hapus cache
-- **Manual Save/Discard**: Perubahan pengaturan tidak auto-save, ada notifikasi untuk simpan atau batalkan
-- **Do Not Disturb**: Set waktu untuk menonaktifkan notifikasi (misal: 22:00 - 07:00)
+### 1. **Tab "Me" - Profil & Pengaturan Lengkap**
+- Sekarang ada tab **"Me"** yang nampilin profil kamu di atas
+- Semua pengaturan ada di satu tempat, gak perlu bolak-balik halaman
+- Bisa atur notifikasi sesuai kebutuhan: mau terima notifikasi tugas? komentar? pengumuman? semua bisa diatur sendiri
+- Ada fitur **"Jangan Ganggu"** buat set waktu tertentu supaya notifikasi gak muncul (misalnya pas tidur malam)
+- Bisa set **waktu pengingat deadline** sendiri, jadi kamu bisa pilih kapan mau dikasih tau kalau ada tugas yang deadline-nya besok
 
-### 2. **Navigasi Baru**
-- **Bottom Navigation** untuk mobile (lebih mudah diakses)
-- **Sidebar Navigation** untuk desktop (lebih rapi)
-- Icon monochrome yang konsisten dengan tema aplikasi
-- Navigasi yang lebih efisien dengan banyak fitur
+### 2. **Tema Aplikasi**
+- Sekarang bisa pilih tema **Light**, **Dark**, atau **Auto** (ikutin tema HP kamu)
+- Tema langsung berubah tanpa perlu refresh aplikasi
+- Semua halaman otomatis ikut tema yang dipilih
 
-### 3. **Sistem Tema**
-- Pilih tema **Light**, **Dark**, atau **Auto** (ikuti sistem)
-- Tema langsung diterapkan tanpa perlu refresh
-- Semua halaman otomatis mengikuti tema yang dipilih
+### 3. **Navigasi Baru yang Lebih Nyaman**
+- Di HP: sekarang pakai **bottom navigation** yang lebih gampang dijangkau jempol
+- Di desktop: pakai **sidebar** yang lebih rapi dan gak makan tempat
+- Icon-nya sekarang konsisten dan lebih jelas
 
-### 4. **Pengingat Deadline Personal**
-- Set **waktu pengingat** sendiri untuk tugas yang deadline-nya besok
-- Notifikasi akan dikirim sesuai waktu yang dipilih
-- Bisa aktifkan/nonaktifkan sesuai kebutuhan
+### 4. **Pengaturan Tampilan**
+- Bisa atur berapa banyak tugas yang ditampilkan per halaman
+- Bisa pilih urutan tugas: terbaru, terlama, atau berdasarkan deadline
+- Bisa sembunyikan/tampilkan tugas yang sudah selesai
+- Bisa matikan animasi kalau gak suka
+
+### 5. **Pengaturan Suara & Getar**
+- Bisa aktifkan/nonaktifkan suara notifikasi
+- Bisa aktifkan/nonaktifkan getaran notifikasi
+- Semua bisa diatur sesuai selera masing-masing
 
 ## 🔧 Yang Diperbaiki
 
-- **Scrollbar custom**: Lebih tipis dan tanpa panah
-- **UI Mobile**: Bottom navbar tidak menutupi konten lagi
-- **FAB Buttons**: Posisi lebih baik, tidak bertabrakan dengan navbar
-- **Dropdown Settings**: Lebih fleksibel, tidak semua pakai search box
-- **Blocking Navigasi**: Tidak bisa pindah halaman kalau ada perubahan pengaturan yang belum disimpan
-- **Perbaikan UI**: Layout lebih rapi dan responsif di semua ukuran layar
-- **Animasi**: Lebih halus dan bisa dinonaktifkan di pengaturan
+- **Scrollbar** sekarang lebih tipis dan gak ada panahnya, lebih rapi
+- **UI Mobile** diperbaiki, bottom navbar gak nutupin konten lagi
+- **Tombol buat tugas baru** posisinya lebih baik, gak ketabrak navbar
+- **Dropdown pengaturan** sekarang lebih fleksibel dan gak semua pakai search box
+- Kalau ada **perubahan pengaturan yang belum disimpan**, aplikasi bakal ngingetin dulu sebelum pindah halaman (biar gak kehilangan perubahan)
+- **Layout** lebih rapi dan responsif di semua ukuran layar
+- **Animasi** lebih halus dan bisa dimatikan kalau gak suka
 
-## ⚙️ Fitur Teknis
+## 💡 Tips
 
-- **Auto-delete History**: History otomatis terhapus sesuai pengaturan (default: 30 hari)
-- **Export Data**: Bisa ekspor semua data pengaturan dalam format JSON
-- **Clear Cache**: Hapus cache aplikasi untuk performa lebih baik
+- Coba fitur **"Jangan Ganggu"** kalau gak mau diganggu notifikasi pas waktu tertentu
+- Atur **waktu pengingat deadline** sesuai jadwal kamu biar gak ketinggalan tugas
+- Coba tema **Dark** kalau suka yang gelap-gelapan, atau **Auto** biar ikutin tema HP
 
 ## ℹ️ Info Penting
 
@@ -51,4 +54,4 @@ Update terbaru TuntasinAja bisa dilihat di channel ini. Pastikan aplikasi selalu
 
 Kalau ada pertanyaan atau saran, bisa kirim lewat tombol **Feedback** di aplikasi.
 
-Terima kasih!
+Terima kasih! 🙏
