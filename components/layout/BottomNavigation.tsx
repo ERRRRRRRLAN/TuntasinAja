@@ -50,6 +50,9 @@ export default function BottomNavigation() {
         alignItems: 'center',
         paddingTop: '0.5rem',
         paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+        height: 'var(--bottom-nav-height)',
+        minHeight: 'var(--bottom-nav-height)',
+        maxHeight: 'var(--bottom-nav-height)',
       }}
     >
       {bottomNavItems.map((item) => {
