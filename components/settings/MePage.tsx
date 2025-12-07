@@ -61,21 +61,25 @@ export default function MePage() {
       }
     })
 
-    // If changes are removed, trigger closing animation
+    // If we had changes before but now don't, trigger closing animation
     if (hasUnsavedChanges && !hasChanges) {
       setIsNotificationClosing(true)
       // Wait for animation to complete before hiding
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setHasUnsavedChanges(false)
         setIsNotificationClosing(false)
       }, 300) // Match animation duration
+      return () => clearTimeout(timeout)
     } else {
-      setHasUnsavedChanges(hasChanges)
-      if (hasChanges) {
+      // Update state only if it's different to avoid unnecessary re-renders
+      if (hasUnsavedChanges !== hasChanges) {
+        setHasUnsavedChanges(hasChanges)
+      }
+      if (hasChanges && isNotificationClosing) {
         setIsNotificationClosing(false)
       }
     }
-  }, [localSettings, settings, hasUnsavedChanges])
+  }, [localSettings, settings]) // Removed hasUnsavedChanges from deps to avoid loop
 
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation({
