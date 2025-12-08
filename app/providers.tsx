@@ -8,6 +8,7 @@ import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
+import SessionRefresher from '@/components/SessionRefresher'
 import NetworkStatus from '@/components/NetworkStatus'
 import NetworkErrorHandler from '@/components/NetworkErrorHandler'
 import { useNavigationHistory } from '@/hooks/useNavigationHistory'
@@ -76,7 +77,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SessionProvider 
           refetchInterval={5 * 60}
           refetchOnWindowFocus={true}
+          refetchWhenOffline={false}
         >
+          <SessionRefresher />
           <ThemeProvider>
             <UnsavedChangesProvider>
               <ServiceWorkerRegistration />
