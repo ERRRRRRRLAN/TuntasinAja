@@ -7,7 +7,6 @@ export default function NetworkErrorHandler() {
   const [hasNetworkError, setHasNetworkError] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
-  const [countdown, setCountdown] = useState(3)
   const queryClient = useQueryClient()
 
   const handleReload = useCallback(() => {
@@ -33,10 +32,66 @@ export default function NetworkErrorHandler() {
   }, [queryClient])
 
   useEffect(() => {
+    // Check for JSON error displayed in body (like {"error":"Network request failed"})
+    const checkForJsonError = () => {
+      if (typeof document !== 'undefined') {
+        const bodyText = document.body?.textContent || ''
+        
+        // Check if body contains JSON error with network request failed
+        if (bodyText.includes('"error"') && bodyText.includes('Network request failed')) {
+          try {
+            // Try to parse JSON from body
+            const jsonMatch = bodyText.match(/\{[^}]*"error"[^}]*\}/)
+            if (jsonMatch) {
+              const errorData = JSON.parse(jsonMatch[0])
+              if (errorData.error && errorData.error.includes('Network request failed')) {
+                console.error('[NetworkErrorHandler] JSON error detected in body:', errorData)
+                setHasNetworkError(true)
+                setErrorMessage(errorData.error)
+                setRetryCount(0)
+                // Clear the error from body
+                document.body.innerHTML = ''
+                return true
+              }
+            }
+          } catch (e) {
+            // If parsing fails, just check for the error text
+            if (bodyText.includes('Network request failed')) {
+              console.error('[NetworkErrorHandler] Network error text detected in body')
+              setHasNetworkError(true)
+              setErrorMessage('Network request failed')
+              setRetryCount(0)
+              document.body.innerHTML = ''
+              return true
+            }
+          }
+        }
+      }
+      return false
+    }
+
+    // Initial check
+    if (checkForJsonError()) {
+      return
+    }
+
     // Listen for unhandled promise rejections (network errors)
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const error = event.reason
       const errorMessage = error?.message || error?.toString() || ''
+      
+      // Also check if error is a JSON object
+      let jsonError = null
+      try {
+        if (typeof error === 'object' && error !== null) {
+          const errorStr = JSON.stringify(error)
+          if (errorStr.includes('Network request failed')) {
+            jsonError = error
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
       
       const isNetworkError = 
         errorMessage.includes('Network request failed') ||
@@ -44,13 +99,14 @@ export default function NetworkErrorHandler() {
         errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
         errorMessage.includes('NetworkError') ||
         errorMessage.includes('ERR_FAILED') ||
+        jsonError !== null ||
         error?.name === 'NetworkError' ||
         error?.name === 'TypeError'
 
       if (isNetworkError) {
         console.error('[NetworkErrorHandler] Network error detected:', error)
         setHasNetworkError(true)
-        setErrorMessage(errorMessage)
+        setErrorMessage(jsonError?.error || errorMessage)
         setRetryCount(0)
         
         // Prevent default error handling
@@ -65,10 +121,35 @@ export default function NetworkErrorHandler() {
         const response = await originalFetch(...args)
         
         // Check if response is ok
-        if (!response.ok && response.status >= 500) {
+        if (!response.ok) {
+          // Try to parse error response body
+          try {
+            const contentType = response.headers.get('content-type')
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.clone().json()
+              
+              // Check if error message contains network error
+              const errorText = JSON.stringify(errorData)
+              if (errorText.includes('Network request failed') || 
+                  errorText.includes('Failed to fetch') ||
+                  errorData?.error?.includes('Network request failed')) {
+                console.error('[NetworkErrorHandler] Network error in response:', errorData)
+                setHasNetworkError(true)
+                setErrorMessage(errorData?.error || 'Network request failed')
+                setRetryCount(0)
+                // Don't throw, let the error handler show the UI
+                return response
+              }
+            }
+          } catch (parseError) {
+            // If parsing fails, continue with normal error handling
+          }
+          
           // Server error - might be network related
-          const error = new Error(`Server error: ${response.status}`)
-          throw error
+          if (response.status >= 500) {
+            const error = new Error(`Server error: ${response.status}`)
+            throw error
+          }
         }
         
         return response
@@ -97,40 +178,32 @@ export default function NetworkErrorHandler() {
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection)
 
+    // Monitor body changes for JSON errors
+    const observer = new MutationObserver(() => {
+      checkForJsonError()
+    })
+
+    if (document.body) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      })
+    }
+
+    // Periodic check as fallback
+    const checkInterval = setInterval(() => {
+      checkForJsonError()
+    }, 1000)
+
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
       window.fetch = originalFetch
+      observer.disconnect()
+      clearInterval(checkInterval)
     }
   }, [])
 
-  // Auto reload after 3 seconds if network error
-  useEffect(() => {
-    if (hasNetworkError && retryCount === 0) {
-      setCountdown(3)
-      
-      // Countdown timer
-      const countdownInterval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(countdownInterval)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      // Auto reload timer
-      const reloadTimer = setTimeout(() => {
-        console.log('[NetworkErrorHandler] Auto reloading due to network error...')
-        handleReload()
-      }, 3000) // 3 seconds delay
-
-      return () => {
-        clearTimeout(reloadTimer)
-        clearInterval(countdownInterval)
-      }
-    }
-  }, [hasNetworkError, retryCount, handleReload])
 
   if (!hasNetworkError) return null
 
@@ -177,7 +250,7 @@ export default function NetworkErrorHandler() {
           marginBottom: '1.5rem',
           lineHeight: 1.5,
         }}>
-          Terjadi kesalahan saat menghubungkan ke server. Aplikasi akan dimuat ulang otomatis dalam beberapa detik.
+          Terjadi kesalahan saat menghubungkan ke server. Pastikan koneksi internet Anda aktif, lalu klik tombol "Muat Ulang Aplikasi" di bawah.
         </p>
         {errorMessage && (
           <p style={{
@@ -192,9 +265,41 @@ export default function NetworkErrorHandler() {
         )}
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           gap: '0.75rem',
-          justifyContent: 'center',
         }}>
+          <button
+            onClick={handleReload}
+            style={{
+              padding: '1rem 2rem',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '1rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              width: '100%',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc2626'
+              e.currentTarget.style.transform = 'scale(1.02)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ef4444'
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc2626'
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.backgroundColor = '#ef4444'
+            }}
+          >
+            🔄 Muat Ulang Aplikasi
+          </button>
           <button
             onClick={handleRetry}
             style={{
@@ -207,6 +312,7 @@ export default function NetworkErrorHandler() {
               fontWeight: 500,
               cursor: 'pointer',
               transition: 'background 0.2s',
+              width: '100%',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#4f46e5'
@@ -214,41 +320,16 @@ export default function NetworkErrorHandler() {
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#6366f1'
             }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.backgroundColor = '#4f46e5'
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.backgroundColor = '#6366f1'
+            }}
           >
             Coba Lagi
           </button>
-          <button
-            onClick={handleReload}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#dc2626'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ef4444'
-            }}
-          >
-            Muat Ulang
-          </button>
         </div>
-        {retryCount === 0 && countdown > 0 && (
-          <p style={{
-            fontSize: '0.75rem',
-            color: '#9ca3af',
-            marginTop: '1rem',
-          }}>
-            Auto reload dalam {countdown} detik...
-          </p>
-        )}
       </div>
     </div>
   )
