@@ -24,6 +24,7 @@ export default function MePage() {
   const [isNotificationClosing, setIsNotificationClosing] = useState(false)
   const [localSettings, setLocalSettings] = useState<any>(null)
   const [showNavigationDialog, setShowNavigationDialog] = useState(false)
+  const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
   const prevHasUnsavedChangesRef = useRef(false)
   const justSavedRef = useRef(false) // Flag to skip comparison after save
   const utils = trpc.useUtils()
@@ -42,11 +43,34 @@ export default function MePage() {
     setOnDiscard,
   } = useUnsavedChanges()
 
-  // Redirect jika belum login
-  if (status === 'unauthenticated') {
-    router.push('/auth/signin')
-    return null
-  }
+  // Check if session cookie exists (even if session data not loaded yet)
+  useEffect(() => {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+
+    checkSessionCookie()
+    
+    // Check periodically in case cookie changes
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Redirect jika belum login - only if status is unauthenticated AND no cookie exists
+  // This prevents redirect during session refresh when app resumes from background
+  useEffect(() => {
+    if (status === 'unauthenticated' && !hasSessionCookie) {
+      router.push('/auth/signin')
+    }
+  }, [status, hasSessionCookie, router])
 
   // Get user data (isDanton)
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {

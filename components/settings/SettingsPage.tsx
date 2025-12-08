@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
@@ -16,12 +16,35 @@ export default function SettingsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
 
-  // Redirect jika belum login
-  if (status === 'unauthenticated') {
-    router.push('/auth/signin')
-    return null
-  }
+  // Check if session cookie exists (even if session data not loaded yet)
+  useEffect(() => {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+
+    checkSessionCookie()
+    
+    // Check periodically in case cookie changes
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Redirect jika belum login - only if status is unauthenticated AND no cookie exists
+  useEffect(() => {
+    if (status === 'unauthenticated' && !hasSessionCookie) {
+      router.push('/auth/signin')
+    }
+  }, [status, hasSessionCookie, router])
 
   if (status === 'loading') {
     return (

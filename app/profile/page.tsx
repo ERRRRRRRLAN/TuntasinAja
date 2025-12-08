@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [showBulkAddUser, setShowBulkAddUser] = useState(false)
   const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings' | 'announcements'>('users')
+  const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
   const utils = trpc.useUtils()
   
   // Get unread feedback count for admin
@@ -37,12 +38,30 @@ export default function ProfilePage() {
   })
   const isAdmin = adminCheck?.isAdmin || false
 
-  // Redirect jika belum login
+  // Check if session cookie exists
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+    checkSessionCookie()
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Redirect jika belum login - only if no cookie exists
+  useEffect(() => {
+    if (status === 'unauthenticated' && !hasSessionCookie) {
       router.push('/auth/signin')
     }
-  }, [status, router])
+  }, [status, hasSessionCookie, router])
 
 
   // Show loading jika sedang check session
@@ -58,8 +77,8 @@ export default function ProfilePage() {
     )
   }
 
-  // Don't render jika belum login (will redirect)
-  if (status === 'unauthenticated' || !session) {
+  // Don't render jika belum login (will redirect) - but keep showing if cookie exists
+  if ((status === 'unauthenticated' && !hasSessionCookie) || (!session && !hasSessionCookie)) {
     return null
   }
 

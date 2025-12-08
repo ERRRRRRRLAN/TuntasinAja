@@ -17,6 +17,7 @@ export default function HistoryPage() {
   const router = useRouter()
   const [deleteHistoryId, setDeleteHistoryId] = useState<string | null>(null)
   const [recoverHistoryId, setRecoverHistoryId] = useState<string | null>(null)
+  const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
   
   const { data: histories, isLoading, error: historyError } = trpc.history.getUserHistory.useQuery(undefined, {
     refetchInterval: (query) => {
@@ -33,12 +34,30 @@ export default function HistoryPage() {
     },
   })
 
-  // Redirect jika belum login
+  // Check if session cookie exists
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    const checkSessionCookie = () => {
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';')
+        const hasCookie = cookies.some(cookie => {
+          const trimmed = cookie.trim()
+          return trimmed.startsWith('next-auth.session-token=') || 
+                 trimmed.startsWith('__Secure-next-auth.session-token=')
+        })
+        setHasSessionCookie(hasCookie)
+      }
+    }
+    checkSessionCookie()
+    const interval = setInterval(checkSessionCookie, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Redirect jika belum login - only if no cookie exists
+  useEffect(() => {
+    if (status === 'unauthenticated' && !hasSessionCookie) {
       router.push('/auth/signin')
     }
-  }, [status, router])
+  }, [status, hasSessionCookie, router])
 
   const utils = trpc.useUtils()
 
@@ -126,8 +145,8 @@ export default function HistoryPage() {
     )
   }
 
-  // Don't render jika belum login (will redirect)
-  if (status === 'unauthenticated' || !session) {
+  // Don't render jika belum login (will redirect) - but keep showing if cookie exists
+  if ((status === 'unauthenticated' && !hasSessionCookie) || (!session && !hasSessionCookie)) {
     return null
   }
 
