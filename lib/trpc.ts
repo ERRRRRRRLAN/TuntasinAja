@@ -3,11 +3,25 @@
 import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
 import superjson from 'superjson'
 import type { AppRouter } from '@/server/trpc/root'
+import { Capacitor } from '@capacitor/core'
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') {
-    // Client-side web: use current origin
-    return window.location.origin
+    // Check if running in Capacitor native app
+    if (Capacitor.isNativePlatform()) {
+      // Use Vercel URL for native app (from capacitor.config.ts)
+      return 'https://tuntasinaja-livid.vercel.app'
+    }
+    
+    // Check if running in localhost (development)
+    const origin = window.location.origin
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('capacitor://')) {
+      // Development or Capacitor local: use Vercel URL
+      return 'https://tuntasinaja-livid.vercel.app'
+    }
+    
+    // Production web: use current origin
+    return origin
   }
   // Server-side
   if (process.env.VERCEL_URL) {
