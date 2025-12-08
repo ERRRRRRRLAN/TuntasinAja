@@ -42,25 +42,56 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-        {/* Early error handler script - runs before React loads */}
+        {/* Early error handler script - runs before React loads and on app resume */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
+            var errorShown = false;
+            
             function checkForNetworkError() {
+              if (errorShown) return true;
               var bodyText = document.body ? document.body.textContent || document.body.innerText : '';
-              if (bodyText && (bodyText.indexOf('"error"') !== -1 && bodyText.indexOf('Network request failed') !== -1) || bodyText.indexOf('{"error":') !== -1) {
-                showErrorPage();
-                return true;
+              // Check for JSON error patterns
+              if (bodyText) {
+                var hasError = (bodyText.indexOf('"error"') !== -1 && bodyText.indexOf('Network request failed') !== -1) ||
+                               (bodyText.indexOf('{"error":') !== -1) ||
+                               (bodyText.trim().startsWith('{') && bodyText.indexOf('Network') !== -1);
+                if (hasError) {
+                  showErrorPage();
+                  return true;
+                }
               }
               return false;
             }
             
             function showErrorPage() {
+              errorShown = true;
               document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:#1a1a2e;color:white;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;"><div style="font-size:4rem;margin-bottom:1rem;">⚠️</div><h1 style="font-size:1.5rem;margin-bottom:0.5rem;font-weight:600;">Koneksi Gagal</h1><p style="color:#a0a0a0;margin-bottom:2rem;font-size:0.95rem;max-width:300px;line-height:1.5;">Tidak dapat terhubung ke server. Pastikan koneksi internet Anda aktif.</p><button onclick="window.location.reload()" style="padding:1rem 2.5rem;background:#ef4444;color:white;border:none;border-radius:0.75rem;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(239,68,68,0.4);transition:all 0.2s;">🔄 Muat Ulang</button><p style="color:#666;margin-top:1.5rem;font-size:0.75rem;">Klik tombol di atas untuk mencoba lagi</p></div>';
               document.body.style.margin = '0';
               document.body.style.padding = '0';
             }
             
-            // Check immediately
+            // Check when app comes back from background (visibility change)
+            document.addEventListener('visibilitychange', function() {
+              if (!document.hidden) {
+                // App is now visible (resumed from background)
+                errorShown = false; // Reset flag
+                setTimeout(checkForNetworkError, 100);
+                setTimeout(checkForNetworkError, 500);
+                setTimeout(checkForNetworkError, 1000);
+                setTimeout(checkForNetworkError, 2000);
+                setTimeout(checkForNetworkError, 3000);
+              }
+            });
+            
+            // Check on page focus (another way to detect app resume)
+            window.addEventListener('focus', function() {
+              errorShown = false;
+              setTimeout(checkForNetworkError, 100);
+              setTimeout(checkForNetworkError, 500);
+              setTimeout(checkForNetworkError, 1000);
+            });
+            
+            // Check immediately on page load
             if (document.readyState === 'loading') {
               document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(checkForNetworkError, 100);
@@ -69,10 +100,27 @@ export default function RootLayout({
               setTimeout(checkForNetworkError, 100);
             }
             
-            // Also check after a delay in case content loads later
+            // Also check after delays in case content loads later
             setTimeout(checkForNetworkError, 500);
             setTimeout(checkForNetworkError, 1000);
             setTimeout(checkForNetworkError, 2000);
+            
+            // Continuous monitoring for errors
+            setInterval(checkForNetworkError, 2000);
+            
+            // Watch for body changes using MutationObserver
+            if (typeof MutationObserver !== 'undefined') {
+              var observer = new MutationObserver(function() {
+                setTimeout(checkForNetworkError, 100);
+              });
+              if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+              } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+                });
+              }
+            }
           })();
         `}} />
       </head>
