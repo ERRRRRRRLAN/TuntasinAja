@@ -71,6 +71,14 @@ if (-not $SkipNpmInstall) {
     Write-Host ""
 }
 
+# Set dummy DATABASE_URL for build (required for Prisma during build)
+if (-not $env:DATABASE_URL) {
+    Write-Host "[Step 3.5] Setting dummy DATABASE_URL for build..." -ForegroundColor Yellow
+    $env:DATABASE_URL = "postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+    Write-Host "[OK] Dummy DATABASE_URL set" -ForegroundColor Green
+    Write-Host ""
+}
+
 # Build Next.js
 if (-not $SkipBuild) {
     Write-Host "[Step 4] Building Next.js..." -ForegroundColor Yellow
