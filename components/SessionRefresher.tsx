@@ -83,34 +83,17 @@ export default function SessionRefresher() {
         // Use NextAuth's update function to refresh the session
         // This will re-fetch the session from the server
         if (update) {
-          await update()
-          console.log('[SessionRefresher] ✅ Session updated via update()')
-        }
-        
-        // Also trigger a re-fetch of the session endpoint
-        try {
-          const response = await fetch('/api/auth/session', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Cache-Control': 'no-cache',
-            },
-          })
-          
-          if (response.ok) {
-            const sessionData = await response.json()
-            console.log('[SessionRefresher] ✅ Session fetched:', { 
-              hasUser: !!sessionData?.user,
-              userId: sessionData?.user?.id 
-            })
-          } else {
-            console.log('[SessionRefresher] ⚠️ Session fetch response not ok:', response.status)
+          try {
+            await update()
+            console.log('[SessionRefresher] ✅ Session updated via update()')
+          } catch (updateError) {
+            // Silently handle update errors - network might not be ready
+            console.log('[SessionRefresher] ⚠️ Session update failed (will retry):', updateError)
           }
-        } catch (fetchError) {
-          console.error('[SessionRefresher] ❌ Error fetching session:', fetchError)
         }
         
         // Wait a bit before clearing recovery flag
+        // The session will be restored automatically by NextAuth
         setTimeout(() => {
           setIsRecoveringSession(false)
           console.log('[SessionRefresher] ✅ Session recovery complete')
