@@ -74,6 +74,44 @@
   scroll-behavior: auto !important;
 }
 
+/* Exception: Keep animations for dialogs and modals even when animations are disabled */
+/* These elements should always animate for better UX - use specific values to override .no-animations */
+.no-animations .confirm-dialog-overlay,
+.no-animations .confirm-dialog-overlay *,
+.no-animations .confirm-dialog-content,
+.no-animations .confirm-dialog-content *,
+.no-animations .confirm-dialog-title,
+.no-animations .confirm-dialog-message,
+.no-animations .confirm-dialog-actions,
+.no-animations .quickview-confirm-dialog-overlay,
+.no-animations .quickview-confirm-dialog-overlay *,
+.no-animations .quickview-confirm-dialog-content,
+.no-animations .quickview-confirm-dialog-content *,
+.no-animations .quickview-confirm-dialog-title,
+.no-animations .quickview-confirm-dialog-message,
+.no-animations .quickview-confirm-dialog-actions,
+.no-animations .quickview-overlay,
+.no-animations .quickview-overlay *,
+.no-animations .quickview-content,
+.no-animations .quickview-content *,
+.no-animations .feedback-modal-overlay,
+.no-animations .feedback-modal-overlay *,
+.no-animations .feedback-modal-content,
+.no-animations .feedback-modal-content *,
+.no-animations .completion-stats-modal-content,
+.no-animations .completion-stats-modal-content *,
+.no-animations .schedule-reminder-modal-content,
+.no-animations .schedule-reminder-modal-content *,
+.no-animations .toast-container,
+.no-animations .toast-container *,
+.no-animations .toast,
+.no-animations .toast * {
+  animation-duration: initial !important;
+  animation-delay: initial !important;
+  transition-duration: initial !important;
+  transition-delay: initial !important;
+}
+
 /* Custom Scrollbar - Thin, no arrows */
 * {
   scrollbar-width: thin; /* Firefox */
