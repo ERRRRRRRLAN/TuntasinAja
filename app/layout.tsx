@@ -42,6 +42,37 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+        {/* Theme initialization script - runs before React to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              // Get theme from localStorage
+              var savedTheme = localStorage.getItem('tuntasin-theme');
+              var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              
+              // Determine initial theme
+              var initialTheme = 'light';
+              if (savedTheme === 'dark') {
+                initialTheme = 'dark';
+              } else if (savedTheme === 'auto') {
+                initialTheme = systemPrefersDark ? 'dark' : 'light';
+              } else if (!savedTheme) {
+                // No saved theme, check system preference
+                initialTheme = systemPrefersDark ? 'dark' : 'light';
+              }
+              
+              // Apply theme immediately before React renders
+              if (initialTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+              }
+            } catch (e) {
+              // Fallback to light if localStorage fails
+              console.error('Theme initialization error:', e);
+            }
+          })();
+        `}} />
         {/* Early error handler script - runs before React loads and on app resume */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
