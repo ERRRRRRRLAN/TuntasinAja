@@ -44,7 +44,7 @@ export const threadRouter = createTRPCRouter({
       const skip = (page - 1) * limit
 
       // Build where clause for filtering
-      // For group tasks: only show if user is a member
+      // For group tasks: only show if user is a member OR user is the creator
       // For regular tasks: show to all users in same kelas
       const whereClause = isAdmin
         ? undefined // Admin sees all
@@ -58,14 +58,21 @@ export const threadRouter = createTRPCRouter({
                   kelas: userKelas,
                 },
               },
-              // Group tasks - only show if user is a member
+              // Group tasks - show if user is a member OR user is the creator
               {
                 isGroupTask: true,
-                groupMembers: {
-                  some: {
-                    userId: userId,
+                OR: [
+                  {
+                    groupMembers: {
+                      some: {
+                        userId: userId,
+                      },
+                    },
                   },
-                },
+                  {
+                    authorId: userId, // Creator can always see their own group task
+                  },
+                ],
               },
             ],
           }
