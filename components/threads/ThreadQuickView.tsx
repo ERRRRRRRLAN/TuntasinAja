@@ -8,6 +8,8 @@ import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
+import CreateGroupModal from '@/components/groupTask/CreateGroupModal'
+import ManageGroupModal from '@/components/groupTask/ManageGroupModal'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
@@ -40,6 +42,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isVisible, setIsVisible] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [isMobile, setIsMobile] = useState(false)
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
+  const [showManageGroupModal, setShowManageGroupModal] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -193,6 +197,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const threadAuthorKelas = (thread as any)?.author?.kelas || null
   const isDantonOfSameClass = isDanton && dantonKelas === threadAuthorKelas && dantonKelas !== null
   const canDeleteThread = isAdmin || isThreadAuthor || isDantonOfSameClass
+
+  // Group task checks
+  const isGroupTask = (thread as any)?.isGroupTask || false
+  const maxGroupMembers = (thread as any)?.maxGroupMembers || null
+  const groupMemberIds = (thread as any)?.groupMembers?.map((m: any) => m.userId) || []
+  const isGroupMember = session?.user?.id ? groupMemberIds.includes(session.user.id) : false
+  const hasGroupMembers = groupMemberIds.length > 0
+
+  // Get group members with progress
+  const { data: groupMembers } = trpc.groupTask.getGroupMembers.useQuery(
+    { threadId },
+    { enabled: isGroupTask && (isGroupMember || isThreadAuthor || isAdmin) }
+  )
 
   const utils = trpc.useUtils()
 
@@ -678,7 +695,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </div>
           
           <div className="quickview-title-section">
-            {session && !isAdmin && (
+            {session && !isAdmin && (!isGroupTask || isGroupMember) && (
               <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
                 <Checkbox
                   checked={isThreadCompleted}
@@ -769,6 +786,197 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             </span>
           )}
         </div>
+
+        {/* Group Task Section */}
+        {isGroupTask && (
+          <div style={{
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.75rem',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.25rem 0.5rem',
+                  background: 'var(--primary-light)',
+                  color: 'var(--primary)',
+                  borderRadius: '0.25rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 500
+                }}>
+                  👥 Tugas Kelompok
+                </span>
+                {maxGroupMembers && (
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    Maks {maxGroupMembers} anggota
+                  </span>
+                )}
+              </div>
+              {isThreadAuthor && (
+                <button
+                  onClick={() => {
+                    if (hasGroupMembers) {
+                      setShowManageGroupModal(true)
+                    } else {
+                      setShowCreateGroupModal(true)
+                    }
+                  }}
+                  className="btn btn-primary"
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  {hasGroupMembers ? 'Kelola' : 'Buat Kelompok'}
+                </button>
+              )}
+            </div>
+
+            {!hasGroupMembers && isThreadAuthor && (
+              <div style={{
+                padding: '1rem',
+                background: 'var(--card)',
+                borderRadius: '0.5rem',
+                textAlign: 'center',
+                color: 'var(--text-light)',
+                fontSize: '0.875rem'
+              }}>
+                <p style={{ margin: 0, marginBottom: '0.5rem' }}>
+                  Tugas ini belum memiliki kelompok. Buat kelompok untuk memilih anggota.
+                </p>
+                <button
+                  onClick={() => setShowCreateGroupModal(true)}
+                  className="btn btn-primary"
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  Buat Kelompok
+                </button>
+              </div>
+            )}
+
+            {hasGroupMembers && groupMembers && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>Anggota Kelompok</h4>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                    {groupMembers.length} anggota
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {groupMembers.map((member) => {
+                    // Get member progress
+                    const memberStatus = statuses?.find((s) => s.userId === member.user.id && !s.commentId)
+                    const memberThreadCompleted = memberStatus?.isCompleted || false
+                    const memberCommentStatuses = statuses?.filter((s) => s.userId === member.user.id && s.commentId) || []
+                    const completedComments = memberCommentStatuses.filter((s) => s.isCompleted).length
+                    const totalComments = (thread as any)?.comments?.length || 0
+                    const memberProgress = totalComments > 0 ? (completedComments / totalComments) * 100 : 0
+
+                    let statusIcon = '⭕'
+                    let statusText = 'Belum mulai'
+                    if (memberThreadCompleted) {
+                      statusIcon = '✅'
+                      statusText = 'Selesai'
+                    } else if (completedComments > 0) {
+                      statusIcon = '⏳'
+                      statusText = 'Sedang'
+                    }
+
+                    return (
+                      <div
+                        key={member.id}
+                        style={{
+                          padding: '0.75rem',
+                          background: 'var(--card)',
+                          borderRadius: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem'
+                        }}
+                      >
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: 'var(--primary-light)',
+                          color: 'var(--primary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          flexShrink: 0
+                        }}>
+                          {member.user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.875rem' }}>
+                            {member.user.name}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                            <span>{statusIcon} {statusText}</span>
+                            {totalComments > 0 && (
+                              <span>• {completedComments}/{totalComments} sub tugas</span>
+                            )}
+                          </div>
+                        </div>
+                        {memberThreadCompleted && (
+                          <span style={{ fontSize: '1rem', flexShrink: 0 }}>✅</span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                {totalComments > 0 && (
+                  <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>Progress Kelompok</span>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-light)', fontWeight: 500 }}>
+                        {groupMembers.filter((m) => {
+                          const s = statuses?.find((s) => s.userId === m.user.id && !s.commentId)
+                          return s?.isCompleted || false
+                        }).length}/{groupMembers.length} selesai
+                      </span>
+                    </div>
+                    <div style={{
+                      height: '8px',
+                      background: 'var(--bg)',
+                      borderRadius: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        background: 'var(--primary)',
+                        width: `${(groupMembers.filter((m) => {
+                          const s = statuses?.find((s) => s.userId === m.user.id && !s.commentId)
+                          return s?.isCompleted || false
+                        }).length / groupMembers.length) * 100}%`,
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!hasGroupMembers && !isThreadAuthor && (
+              <div style={{
+                padding: '1rem',
+                background: 'var(--card)',
+                borderRadius: '0.5rem',
+                textAlign: 'center',
+                color: 'var(--text-light)',
+                fontSize: '0.875rem'
+              }}>
+                <p style={{ margin: 0 }}>
+                  Tugas ini belum memiliki kelompok. Hanya pembuat tugas yang bisa membuat kelompok.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
@@ -1232,6 +1440,32 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             totalCount={completionStats.totalCount}
             completedUsers={completionStats.completedUsers}
           />
+        )}
+
+        {/* Group Task Modals */}
+        {isGroupTask && isThreadAuthor && (
+          <>
+            <CreateGroupModal
+              isOpen={showCreateGroupModal}
+              onClose={() => setShowCreateGroupModal(false)}
+              threadId={threadId}
+              maxGroupMembers={maxGroupMembers || 5}
+              onSuccess={() => {
+                utils.thread.getById.invalidate({ id: threadId })
+                utils.groupTask.getGroupMembers.invalidate({ threadId })
+              }}
+            />
+            <ManageGroupModal
+              isOpen={showManageGroupModal}
+              onClose={() => setShowManageGroupModal(false)}
+              threadId={threadId}
+              maxGroupMembers={maxGroupMembers || 5}
+              onSuccess={() => {
+                utils.thread.getById.invalidate({ id: threadId })
+                utils.groupTask.getGroupMembers.invalidate({ threadId })
+              }}
+            />
+          </>
         )}
       </div>
     </div>

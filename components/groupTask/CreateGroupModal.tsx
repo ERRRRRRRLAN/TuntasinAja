@@ -175,10 +175,10 @@ export default function CreateGroupModal({
         bottom: 0,
         background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: window.innerWidth <= 640 ? 'flex-end' : 'center',
         justifyContent: 'center',
         zIndex: 3000,
-        padding: '1rem',
+        padding: window.innerWidth <= 640 ? '0' : '1rem',
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
         pointerEvents: isVisible ? 'auto' : 'none',
@@ -189,14 +189,16 @@ export default function CreateGroupModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--card)',
-          borderRadius: '1rem',
-          padding: '1.5rem',
+          borderRadius: window.innerWidth <= 640 ? '1rem 1rem 0 0' : '1rem',
+          padding: window.innerWidth <= 640 ? '1rem' : '1.5rem',
           maxWidth: '500px',
           width: '100%',
-          maxHeight: '90vh',
+          maxHeight: window.innerWidth <= 640 ? '90vh' : '90vh',
           overflow: 'auto',
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transform: isVisible 
+            ? (window.innerWidth <= 640 ? 'translateY(0)' : 'translateY(0) scale(1)')
+            : (window.innerWidth <= 640 ? 'translateY(100%)' : 'translateY(20px) scale(0.95)'),
           transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
         }}
       >
@@ -444,14 +446,22 @@ export default function CreateGroupModal({
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.75rem', 
+          justifyContent: 'flex-end', 
+          marginTop: '1.5rem',
+          flexDirection: window.innerWidth <= 640 ? 'column' : 'row'
+        }}>
           <button
             type="button"
             onClick={onClose}
             className="btn btn-secondary"
             disabled={createGroup.isLoading}
             style={{
-              padding: '0.625rem 1.25rem',
+              padding: window.innerWidth <= 640 ? '0.875rem 1.25rem' : '0.625rem 1.25rem',
+              width: window.innerWidth <= 640 ? '100%' : 'auto',
+              fontSize: window.innerWidth <= 640 ? '1rem' : '0.875rem',
             }}
           >
             Batal
@@ -462,7 +472,9 @@ export default function CreateGroupModal({
             className="btn btn-primary"
             disabled={createGroup.isLoading || selectedNames.size === 0 || (availableSlots <= 0 && selectedNames.size > 0)}
             style={{
-              padding: '0.625rem 1.25rem',
+              padding: window.innerWidth <= 640 ? '0.875rem 1.25rem' : '0.625rem 1.25rem',
+              width: window.innerWidth <= 640 ? '100%' : 'auto',
+              fontSize: window.innerWidth <= 640 ? '1rem' : '0.875rem',
             }}
           >
             {createGroup.isLoading ? (
