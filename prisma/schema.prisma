@@ -31,8 +31,6 @@ model User {
   announcements     Announcement[]
   announcementReads AnnouncementRead[]
   settings          UserSettings?
-  groupMembers      GroupMember[]
-  addedGroupMembers GroupMember[]      @relation("AddedBy")
 
   @@map("users")
 }
@@ -43,8 +41,6 @@ model Thread {
   authorId        String    @map("user_id_pembuat")
   date            DateTime  @default(now())
   deadline        DateTime? @map("deadline") // Optional deadline untuk tugas
-  isGroupTask     Boolean   @default(false) @map("is_group_task")
-  maxGroupMembers Int?      @map("max_group_members") // Maksimal anggota per kelompok (termasuk pembuat)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -52,7 +48,6 @@ model Thread {
   comments     Comment[]
   userStatuses UserStatus[]
   histories    History[]
-  groupMembers GroupMember[]
 
   // Unique constraint removed to allow same title+date for different classes
   // Duplicate prevention is now handled by application logic (checking kelas)
@@ -335,19 +330,3 @@ model UserSettings {
   @@map("user_settings")
 }
 
-model GroupMember {
-  id       String   @id @default(cuid())
-  threadId String   @map("thread_id")
-  userId   String   @map("user_id")
-  addedBy  String   @map("added_by") // User yang menambahkan (pembuat thread)
-  addedAt  DateTime @default(now()) @map("added_at")
-
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  adder  User   @relation("AddedBy", fields: [addedBy], references: [id], onDelete: Cascade)
-
-  @@unique([threadId, userId])
-  @@index([threadId])
-  @@index([userId])
-  @@map("group_members")
-}
