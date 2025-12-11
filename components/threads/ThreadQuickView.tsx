@@ -864,15 +864,18 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                     {groupMembers.length} anggota
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {groupMembers.map((member) => {
-                    // Get member progress
-                    const memberStatus = statuses?.find((s) => s.userId === member.user.id && !s.commentId)
-                    const memberThreadCompleted = memberStatus?.isCompleted || false
-                    const memberCommentStatuses = statuses?.filter((s) => s.userId === member.user.id && s.commentId) || []
-                    const completedComments = memberCommentStatuses.filter((s) => s.isCompleted).length
-                    const totalComments = (thread as any)?.comments?.length || 0
-                    const memberProgress = totalComments > 0 ? (completedComments / totalComments) * 100 : 0
+                {(() => {
+                  const totalComments = (thread as any)?.comments?.length || 0
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {groupMembers.map((member) => {
+                          // Get member progress
+                          const memberStatus = statuses?.find((s) => s.userId === member.user.id && !s.commentId)
+                          const memberThreadCompleted = memberStatus?.isCompleted || false
+                          const memberCommentStatuses = statuses?.filter((s) => s.userId === member.user.id && s.commentId) || []
+                          const completedComments = memberCommentStatuses.filter((s) => s.isCompleted).length
+                          const memberProgress = totalComments > 0 ? (completedComments / totalComments) * 100 : 0
 
                     let statusIcon = '⭕'
                     let statusText = 'Belum mulai'
@@ -958,6 +961,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                     </div>
                   </div>
                 )}
+                    </>
+                  )
+                })()}
               </div>
             )}
 
