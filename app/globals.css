@@ -260,12 +260,19 @@ body {
   transition: width 0.3s ease;
 }
 
+.nav-link {
+  transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .nav-link:hover {
   color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .nav-link:hover::after {
   width: 100%;
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Mobile Menu Button */
@@ -392,13 +399,21 @@ body {
   transition: transform 0.3s ease;
 }
 
+.mobile-nav-link {
+  transition: background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              padding-left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .mobile-nav-link:hover {
   background: var(--bg-secondary);
   padding-left: 1.25rem;
+  transform: translateX(4px);
 }
 
 .mobile-nav-link:hover::before {
   transform: scaleY(1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .mobile-btn-logout {
@@ -433,8 +448,20 @@ body {
   transition: background 0.2s;
 }
 
-.btn-logout:hover {
+.btn-logout {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.btn-logout:hover:not(:disabled) {
   background: #dc2626;
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-logout:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 /* Main Content */
@@ -666,8 +693,14 @@ body {
   opacity: 1;
 }
 
+.signin-password-toggle {
+  transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .signin-password-toggle:hover:not(:disabled) {
   color: var(--primary);
+  transform: scale(1.1);
 }
 
 .signin-password-toggle:disabled {
@@ -707,14 +740,20 @@ body {
   left: 100%;
 }
 
+.signin-form-button {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .signin-form-button:hover:not(:disabled) {
   background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.3);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.35);
 }
 
 .signin-form-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.96);
 }
 
 .signin-form-button:disabled {
@@ -951,6 +990,101 @@ textarea {
   color: var(--text);
 }
 
+/* Universal Click Animation for All Interactive Elements */
+/* Smooth and consistent transitions for all interactive elements */
+button,
+.btn,
+a[role="button"],
+div[role="button"],
+div[onClick],
+input[type="button"],
+input[type="submit"],
+.thread-card,
+.card.clickable,
+.fab-button,
+.fab-create-thread,
+.fab-create-announcement,
+.feedback-fab-button,
+.quickview-close-btn,
+.thread-delete-btn,
+.comment-delete-btn,
+.quickview-delete-btn,
+.nav-link,
+.mobile-nav-link,
+.mobile-nav-link,
+.combobox-button,
+.combobox-item,
+.toast-close,
+.history-item,
+.thread-checkbox,
+.comment-checkbox,
+.custom-checkbox {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Click Animation: Scale Down */
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+a[role="button"]:active,
+div[role="button"]:active:not(.disabled),
+div[onClick]:active:not(.disabled),
+input[type="button"]:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+.thread-card:active,
+.card.clickable:active,
+.fab-button:active,
+.fab-create-thread:active,
+.fab-create-announcement:active,
+.feedback-fab-button:active,
+.quickview-close-btn:active,
+.thread-delete-btn:active,
+.comment-delete-btn:active,
+.quickview-delete-btn:active,
+.nav-link:active,
+.mobile-nav-link:active,
+.combobox-button:active,
+.combobox-item:active,
+.toast-close:active,
+.history-item:active {
+  transform: scale(0.96) !important;
+}
+
+/* Hover Animation: Smooth Scale Up (Desktop Only) */
+/* Using ease-out for smoother hover experience */
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled):not(:active),
+  .btn:hover:not(:disabled):not(:active),
+  a[role="button"]:hover:not(:active),
+  div[role="button"]:hover:not(.disabled):not(:active),
+  div[onClick]:hover:not(.disabled):not(:active),
+  .thread-card:hover:not(:active),
+  .card.clickable:hover:not(:active),
+  .fab-button:hover:not(:active),
+  .fab-create-thread:hover:not(:active),
+  .fab-create-announcement:hover:not(:active),
+  .feedback-fab-button:hover:not(:active),
+  .quickview-close-btn:hover:not(:active),
+  .thread-delete-btn:hover:not(:active),
+  .comment-delete-btn:hover:not(:active),
+  .quickview-delete-btn:hover:not(:active),
+  .nav-link:hover:not(:active),
+  .mobile-nav-link:hover:not(:active),
+  .combobox-button:hover:not(:active),
+  .combobox-item:hover:not(:active),
+  .toast-close:hover:not(:active),
+  .history-item:hover:not(:active) {
+    transform: scale(1.03) !important;
+  }
+}
+
 /* Buttons */
 .btn {
   padding: 0.75rem 1.5rem;
@@ -959,7 +1093,10 @@ textarea {
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   display: inline-block;
   text-align: center;
   position: relative;
@@ -976,12 +1113,21 @@ textarea {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
 }
 
-.btn:active::before {
+.btn:hover:not(:disabled)::before,
+.btn:active:not(:disabled)::before {
   width: 300px;
   height: 300px;
+  opacity: 1;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96) !important;
 }
 
 .btn-primary {
@@ -991,11 +1137,14 @@ textarea {
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-dark);
+  transform: scale(1.03) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 .btn-secondary {
@@ -1003,8 +1152,10 @@ textarea {
   color: white;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: #475569;
+  transform: scale(1.03) !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
 }
 
 .btn-danger {
@@ -1015,11 +1166,18 @@ textarea {
 
 .btn-danger:hover:not(:disabled) {
   background: #b91c1c;
+  transform: scale(1.03) !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: scale(0.96) !important;
 }
 
 .btn-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 /* Cards */
@@ -1037,9 +1195,32 @@ textarea {
   overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.4s ease-out;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover:not(:active) {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card:active {
+    transform: translateY(-1px) scale(0.99);
+  }
 }
 
 /* Threads */
@@ -1065,7 +1246,9 @@ textarea {
   padding: 1.5rem;
   box-shadow: var(--shadow);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   text-decoration: none;
   color: inherit;
   display: block;
@@ -1076,6 +1259,7 @@ textarea {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  will-change: transform;
 }
 
 .thread-card::before {
@@ -1086,17 +1270,23 @@ textarea {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
-  transition: left 0.5s ease;
+  transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .thread-card:hover::before {
   left: 100%;
 }
 
-.thread-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border);
+@media (hover: hover) and (pointer: fine) {
+  .thread-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-color: var(--border);
+  }
+  
+  .thread-card:active {
+    transform: translateY(-2px) scale(0.99);
+  }
 }
 
 .thread-title {
@@ -1166,13 +1356,22 @@ textarea {
   padding: 1.5rem;
   box-shadow: var(--shadow);
   border-left: 4px solid var(--success);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-left-width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform;
 }
 
-.history-item:hover {
-  transform: translateX(4px);
-  box-shadow: var(--shadow-lg);
-  border-left-width: 6px;
+@media (hover: hover) and (pointer: fine) {
+  .history-item:hover {
+    transform: translateX(5px) scale(1.02);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-left-width: 6px;
+  }
+  
+  .history-item:active {
+    transform: translateX(3px) scale(0.99);
+  }
 }
 
 .history-item-header {
@@ -1238,8 +1437,19 @@ textarea {
   transition: transform 0.3s ease;
 }
 
-.profile-avatar:hover {
-  transform: scale(1.1) rotate(5deg);
+.profile-avatar {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+  
+  .profile-avatar:active {
+    transform: scale(1.05) rotate(2deg);
+  }
 }
 
 .profile-header h2 {
@@ -1259,7 +1469,8 @@ textarea {
 .stat-item {
   text-align: center;
   animation: scaleIn 0.4s ease-out backwards;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform;
 }
 
 .stat-item:nth-child(1) {
@@ -1274,8 +1485,14 @@ textarea {
   animation-delay: 0.3s;
 }
 
-.stat-item:hover {
-  transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .stat-item:hover {
+    transform: scale(1.08);
+  }
+  
+  .stat-item:active {
+    transform: scale(0.96);
+  }
 }
 
 .stat-value {
@@ -1310,11 +1527,15 @@ textarea {
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
-  animation: fadeIn 0.2s;
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              backdrop-filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .quickview-overlay.closing {
-  animation: fadeOut 0.3s ease-out;
+  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
@@ -1329,29 +1550,29 @@ textarea {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-10px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.92);
   }
   to {
     opacity: 1;
@@ -1380,17 +1601,19 @@ textarea {
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   flex-direction: column;
   /* Enable smooth scrolling on mobile */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .quickview-content.closing {
-  animation: fadeOutDown 0.3s ease-out;
+  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideDown {
@@ -1418,15 +1641,15 @@ textarea {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Exit Animations */
+/* Exit Animations - Smooth and consistent */
 @keyframes fadeOut {
   from {
     opacity: 1;
@@ -1439,22 +1662,22 @@ textarea {
 @keyframes fadeOutDown {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.98);
   }
 }
 
 @keyframes fadeOutUp {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-20px) scale(0.98);
   }
 }
 
@@ -1465,51 +1688,51 @@ textarea {
   }
   to {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.92);
   }
 }
 
 @keyframes slideOutRight {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(20px) scale(0.98);
   }
 }
 
 @keyframes slideOutLeft {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-20px) scale(0.98);
   }
 }
 
 @keyframes slideOutDown {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) scale(0.98);
   }
 }
 
 @keyframes slideOutUp {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-10px) scale(0.98);
   }
 }
 
@@ -2310,9 +2533,20 @@ textarea {
   line-height: 1;
 }
 
+.toast-close {
+  transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .toast-close:hover {
   opacity: 1;
   background: rgba(0, 0, 0, 0.1);
+  transform: scale(1.1) rotate(90deg);
+}
+
+.toast-close:active {
+  transform: scale(0.95) rotate(90deg);
 }
 
 @media (max-width: 640px) {
@@ -2418,7 +2652,20 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: fadeInUp 0.2s ease-out;
+  animation: fadeInUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top;
+}
+
+.combobox-item {
+  transition: background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .combobox-item:hover {
+    background-color: var(--bg-secondary);
+    transform: translateX(4px);
+  }
 }
 
 @media (max-width: 640px) {
@@ -2993,9 +3240,18 @@ textarea {
   transition: all 0.2s;
 }
 
-.comment-card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.comment-card {
+  transition: border-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .comment-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
 }
 
 .comment-footer {
@@ -3347,14 +3603,23 @@ textarea {
   touch-action: manipulation;
 }
 
-.fab-button:hover {
-  background: var(--primary-dark);
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.fab-button {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fab-button:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
 }
 
 .fab-button:active {
-  transform: scale(0.95);
+  transform: scale(0.92) !important;
 }
 
 /* FAB button positioning now handled by inline styles in FeedPage.tsx */
