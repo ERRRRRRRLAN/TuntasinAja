@@ -771,6 +771,7 @@ body {
   font-size: 1rem;
   font-family: inherit;
   background: var(--card);
+  color: var(--text);
   transition: border-color 0.2s;
 }
 
@@ -782,6 +783,7 @@ body {
   font-size: 1rem;
   font-family: inherit;
   background: var(--card);
+  color: var(--text);
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
   -webkit-appearance: none;
@@ -886,6 +888,7 @@ textarea {
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+  color: var(--text);
 }
 
 /* Buttons */
