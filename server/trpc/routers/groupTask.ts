@@ -50,14 +50,18 @@ export const groupTaskRouter = createTRPCRouter({
 
       // Get existing member IDs
       const existingMemberIds = new Set(thread.groupMembers.map((m) => m.userId))
+      // Combine current user and existing members to exclude
+      const excludeIds = Array.from(existingMemberIds)
+      if (!excludeIds.includes(ctx.session.user.id)) {
+        excludeIds.push(ctx.session.user.id)
+      }
 
       // Search users by name (case-insensitive, contains match)
       const users = await prisma.user.findMany({
         where: {
           kelas: thread.author.kelas,
           isAdmin: false,
-          id: { not: ctx.session.user.id }, // Exclude current user
-          id: { notIn: Array.from(existingMemberIds) }, // Exclude already added
+          id: { notIn: excludeIds }, // Exclude current user and already added members
           name: {
             contains: input.query,
             mode: 'insensitive',
@@ -143,14 +147,18 @@ export const groupTaskRouter = createTRPCRouter({
 
       // Get existing member IDs
       const existingMemberIds = new Set(thread.groupMembers.map((m) => m.userId))
+      // Combine current user and existing members to exclude
+      const excludeIds = Array.from(existingMemberIds)
+      if (!excludeIds.includes(ctx.session.user.id)) {
+        excludeIds.push(ctx.session.user.id)
+      }
 
       // Find users by exact name match (case-insensitive)
       const users = await prisma.user.findMany({
         where: {
           kelas: thread.author.kelas,
           isAdmin: false,
-          id: { not: ctx.session.user.id }, // Exclude current user
-          id: { notIn: Array.from(existingMemberIds) }, // Exclude already added
+          id: { notIn: excludeIds }, // Exclude current user and already added members
           name: {
             in: input.userNames,
             mode: 'insensitive',
@@ -369,14 +377,18 @@ export const groupTaskRouter = createTRPCRouter({
 
       // Get existing member IDs
       const existingMemberIds = new Set(thread.groupMembers.map((m) => m.userId))
+      // Combine current user and existing members to exclude
+      const excludeIds = Array.from(existingMemberIds)
+      if (!excludeIds.includes(ctx.session.user.id)) {
+        excludeIds.push(ctx.session.user.id)
+      }
 
       // Find users by exact name match
       const users = await prisma.user.findMany({
         where: {
           kelas: thread.author.kelas,
           isAdmin: false,
-          id: { not: ctx.session.user.id },
-          id: { notIn: Array.from(existingMemberIds) },
+          id: { notIn: excludeIds }, // Exclude current user and already added members
           name: {
             in: input.userNames,
             mode: 'insensitive',
