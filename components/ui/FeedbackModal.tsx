@@ -25,12 +25,20 @@ export default function FeedbackModal({
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleClose = useCallback(() => {
+    // Add closing class for animation
+    if (overlayRef.current) {
+      overlayRef.current.classList.add('closing')
+    }
+    if (contentRef.current) {
+      contentRef.current.classList.add('closing')
+    }
+    
     setIsVisible(false)
     
-    // Wait for transition to complete before closing
+    // Wait for animation to complete before closing
     setTimeout(() => {
       onClose()
-    }, 300) // Match transition duration
+    }, 300) // Match animation duration
   }, [onClose])
 
   const submitFeedback = trpc.feedback.submit.useMutation({
@@ -119,7 +127,7 @@ export default function FeedbackModal({
     <div 
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="feedback-modal-overlay"
+      className={`feedback-modal-overlay ${!isVisible ? 'closing' : ''}`}
       style={{
         position: 'fixed',
         top: 0,
@@ -132,8 +140,6 @@ export default function FeedbackModal({
         justifyContent: 'center',
         zIndex: 9999,
         padding: '1rem',
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none',
         overflowY: 'auto'
       }}
@@ -141,7 +147,7 @@ export default function FeedbackModal({
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className="card feedback-modal-content"
+        className={`card feedback-modal-content ${!isVisible ? 'closing' : ''}`}
         style={{
           maxWidth: '500px',
           width: '100%',
@@ -149,9 +155,6 @@ export default function FeedbackModal({
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
-          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header */}

@@ -65,13 +65,22 @@ export default function ScheduleEditQuickView({
 
   const handleCloseQuickView = useCallback(() => {
     setIsQuickViewOpen(false)
-    setIsVisible(false)
     setShowDeleteDialog(false)
     
-    // Wait for transition to complete before closing
+    // Add closing class for animation
+    if (overlayRef.current) {
+      overlayRef.current.classList.add('closing')
+    }
+    if (contentRef.current) {
+      contentRef.current.classList.add('closing')
+    }
+    
+    setIsVisible(false)
+    
+    // Wait for animation to complete before closing
     setTimeout(() => {
       onClose()
-    }, 300) // Match transition duration
+    }, 300) // Match animation duration
   }, [onClose])
 
   // Mount effect for Portal
@@ -203,23 +212,17 @@ export default function ScheduleEditQuickView({
     <>
       <div 
         ref={overlayRef}
-        className="quickview-overlay" 
+        className={`quickview-overlay ${!isVisible ? 'closing' : ''}`}
         onClick={handleOverlayClick}
-        onTransitionEnd={handleTransitionEnd}
         style={{
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.3s ease-out',
           pointerEvents: isVisible ? 'auto' : 'none'
         }}
       >
         <div 
           ref={contentRef}
-          className="quickview-content" 
+          className={`quickview-content ${!isVisible ? 'closing' : ''}`}
           onClick={(e) => e.stopPropagation()}
           style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
             position: 'relative'
           }}
         >

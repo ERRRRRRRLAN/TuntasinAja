@@ -102,13 +102,22 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
   const handleClose = useCallback(() => {
     setIsQuickViewOpen(false)
+    
+    // Add closing class for animation
+    if (overlayRef.current) {
+      overlayRef.current.classList.add('closing')
+    }
+    if (contentRef.current) {
+      contentRef.current.classList.add('closing')
+    }
+    
     setIsVisible(false)
     
-    // Wait for transition to complete before closing
+    // Wait for animation to complete before closing
     setTimeout(() => {
       document.body.style.overflow = ''
       onClose()
-    }, 300) // Match transition duration
+    }, 300) // Match animation duration
   }, [onClose])
 
   // Lock body scroll when quickview is open (mobile)
@@ -208,24 +217,16 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   return (
     <div 
       ref={overlayRef}
-      className="quickview-overlay" 
+      className={`quickview-overlay ${!isVisible ? 'closing' : ''}`}
       onClick={handleOverlayClick}
-      onTransitionEnd={handleTransitionEnd}
       style={{
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
       <div 
         ref={contentRef}
-        className="quickview-content" 
+        className={`quickview-content ${!isVisible ? 'closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
-        }}
       >
         <div className="quickview-header">
           <div className="quickview-header-top">

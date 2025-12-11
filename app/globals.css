@@ -1286,13 +1286,13 @@ input[type="submit"],
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.2s;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 
 .quickview-overlay.closing {
-  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOut 0.3s ease-out;
 }
 
 @keyframes fadeIn {
@@ -1358,7 +1358,7 @@ input[type="submit"],
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1368,7 +1368,7 @@ input[type="submit"],
 }
 
 .quickview-content.closing {
-  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOutDown 0.3s ease-out;
 }
 
 @keyframes slideDown {
@@ -2000,11 +2000,11 @@ input[type="submit"],
   z-index: 3000; /* Lebih tinggi dari quickview (1000) dan header (100) */
   backdrop-filter: blur(2px);
   isolation: isolate;
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeIn 0.2s;
 }
 
 .confirm-dialog-overlay.closing {
-  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOut 0.3s ease-out;
 }
 
 .confirm-dialog-content {
@@ -2017,11 +2017,11 @@ input[type="submit"],
   pointer-events: auto;
   position: relative;
   z-index: 1;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .confirm-dialog-content.closing {
-  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOutDown 0.3s ease-out;
 }
 
 .confirm-dialog-title {
@@ -2072,11 +2072,11 @@ input[type="submit"],
   z-index: 10001; /* Lebih tinggi dari quickview overlay (1000) dan semua elemen lainnya */
   backdrop-filter: blur(2px);
   isolation: isolate; /* Create new stacking context to prevent flicker */
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeIn 0.2s;
 }
 
 .quickview-confirm-dialog-overlay.closing {
-  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOut 0.3s ease-out;
 }
 
 .quickview-confirm-dialog-content {
@@ -2088,11 +2088,37 @@ input[type="submit"],
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
   pointer-events: auto;
   position: relative;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .quickview-confirm-dialog-content.closing {
-  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeOutDown 0.3s ease-out;
+}
+
+/* Feedback Modal Animations */
+.feedback-modal-overlay {
+  animation: fadeIn 0.2s;
+}
+
+.feedback-modal-overlay.closing {
+  animation: fadeOut 0.3s ease-out;
+}
+
+.feedback-modal-content {
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feedback-modal-content.closing {
+  animation: fadeOutDown 0.3s ease-out;
+}
+
+/* Completion Stats Modal Animations */
+.completion-stats-modal-content {
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.completion-stats-modal-content.closing {
+  animation: fadeOutDown 0.3s ease-out;
 }
 
 /* User List Table Styles */
@@ -2233,11 +2259,11 @@ input[type="submit"],
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
-  animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toast.closing {
-  animation: toastSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: toastSlideOut 0.3s ease-out;
 }
 
 .toast::before {
