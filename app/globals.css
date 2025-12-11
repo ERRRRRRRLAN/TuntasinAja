@@ -278,13 +278,22 @@ body {
   }
 }
 
+@keyframes underlineIn {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .nav-link:hover {
-    animation: highlightInNav 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInNav 0.2s ease-out forwards;
   }
 
   .nav-link:hover::after {
-    animation: underlineIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: underlineIn 0.2s ease-out forwards;
   }
 }
 
@@ -383,7 +392,7 @@ body {
   font-weight: 500;
   border-radius: 0.5rem;
   transition: all 0.3s ease;
-  animation: slideInRight 0.3s ease-out backwards;
+  animation: slideInRight 0.25s ease-out backwards;
   position: relative;
   overflow: hidden;
 }
@@ -440,11 +449,11 @@ body {
 
 @media (hover: hover) and (pointer: fine) {
   .mobile-nav-link:hover {
-    animation: highlightInMobileNav 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInMobileNav 0.2s ease-out forwards;
   }
 
   .mobile-nav-link:hover::before {
-    animation: highlightInMobileNavBefore 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInMobileNavBefore 0.2s ease-out forwards;
   }
 }
 
@@ -490,18 +499,18 @@ body {
   }
   to {
     background: #dc2626;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 4px 8px -2px rgba(220, 38, 38, 0.25);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-logout:hover:not(:disabled) {
-    animation: highlightInLogout 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInLogout 0.2s ease-out forwards;
   }
 }
 
 .btn-logout:active:not(:disabled) {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 /* Main Content */
@@ -513,7 +522,7 @@ body {
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: hidden; /* Prevent horizontal scrollbar */
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @media (max-width: 768px) {
@@ -607,7 +616,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  animation: fadeInDown 0.6s ease-out;
+  animation: fadeInDown 0.3s ease-out;
 }
 
 .signin-page-logo-text {
@@ -629,7 +638,7 @@ body {
 .signin-page-container {
   width: 100%;
   max-width: 450px;
-  animation: fadeInUp 0.6s ease-out 0.2s both;
+  animation: fadeInUp 0.3s ease-out 0.1s both;
 }
 
 .signin-page-card {
@@ -748,7 +757,7 @@ body {
 
 @media (hover: hover) and (pointer: fine) {
   .signin-password-toggle:hover:not(:disabled) {
-    animation: highlightInPasswordToggle 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInPasswordToggle 0.2s ease-out forwards;
   }
 }
 
@@ -806,18 +815,18 @@ body {
   }
   to {
     background: var(--primary-dark);
-    box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 6px 10px -2px rgba(99, 102, 241, 0.25);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .signin-form-button:hover:not(:disabled) {
-    animation: highlightInSigninButton 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInSigninButton 0.2s ease-out forwards;
   }
 }
 
 .signin-form-button:active:not(:disabled) {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 .signin-form-button:disabled {
@@ -846,15 +855,13 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Highlight Animation Keyframes - Smooth highlight effect for hover */
+/* Subtle Highlight Animation Keyframes - Simple and smooth */
 @keyframes highlightIn {
   from {
     background-color: transparent;
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
   }
   to {
-    background-color: rgba(99, 102, 241, 0.08);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background-color: rgba(99, 102, 241, 0.05);
   }
 }
 
@@ -872,10 +879,11 @@ body {
 @keyframes highlightInPrimary {
   from {
     background-color: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
   }
   to {
     background-color: var(--primary-dark);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 6px 10px -2px rgba(99, 102, 241, 0.25);
   }
 }
 
@@ -895,7 +903,7 @@ body {
   }
   to {
     background-color: #b91c1c;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 4px 8px -2px rgba(220, 38, 38, 0.25);
   }
 }
 
@@ -915,7 +923,7 @@ body {
   }
   to {
     background-color: #475569;
-    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    box-shadow: 0 4px 8px -2px rgba(100, 116, 139, 0.25);
   }
 }
 
@@ -935,7 +943,7 @@ body {
     border-color: transparent;
   }
   to {
-    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
     border-color: var(--border);
   }
 }
@@ -956,8 +964,8 @@ body {
     border-left-width: 4px;
   }
   to {
-    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
-    border-left-width: 6px;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+    border-left-width: 5px;
   }
 }
 
@@ -972,18 +980,19 @@ body {
   }
 }
 
+/* Subtle click animation - minimal scale */
 @keyframes clickScale {
   from {
     transform: scale(1);
   }
   to {
-    transform: scale(0.96);
+    transform: scale(0.98);
   }
 }
 
 @keyframes clickScaleReverse {
   from {
-    transform: scale(0.96);
+    transform: scale(0.98);
   }
   to {
     transform: scale(1);
@@ -1021,7 +1030,7 @@ body {
 @keyframes fadeInLeft {
   from {
     opacity: 0;
-    transform: translateX(-10px);
+    transform: translateX(-6px);
   }
   to {
     opacity: 1;
@@ -1032,7 +1041,7 @@ body {
 @keyframes slideUpFromBottom {
   from {
     opacity: 0;
-    transform: translateY(100%);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -1230,7 +1239,7 @@ input[type="submit"],
   will-change: background-color, box-shadow, border-color;
 }
 
-/* Click Animation: Using keyframes */
+/* Click Animation: Subtle scale using keyframes */
 button:active:not(:disabled),
 .btn:active:not(:disabled),
 a[role="button"]:active,
@@ -1254,10 +1263,10 @@ input[type="submit"]:active:not(:disabled),
 .combobox-item:active,
 .toast-close:active,
 .history-item:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
-/* Hover Animation: Highlight Effect using keyframes (Desktop Only) */
+/* Hover Animation: Subtle highlight effect using keyframes (Desktop Only) */
 @media (hover: hover) and (pointer: fine) {
   button:hover:not(:disabled):not(:active),
   .btn-secondary:hover:not(:disabled):not(:active),
@@ -1279,7 +1288,7 @@ input[type="submit"]:active:not(:disabled),
   .combobox-button:hover:not(:active),
   .combobox-item:hover:not(:active),
   .toast-close:hover:not(:active) {
-    animation: highlightIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightIn 0.2s ease-out forwards;
   }
 }
 
@@ -1299,7 +1308,7 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .btn:active:not(:disabled) {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 .btn-primary {
@@ -1309,7 +1318,7 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:hover:not(:disabled) {
-    animation: highlightInPrimary 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInPrimary 0.2s ease-out forwards;
   }
 }
 
@@ -1325,7 +1334,7 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .btn-secondary:hover:not(:disabled) {
-    animation: highlightInSecondary 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInSecondary 0.2s ease-out forwards;
   }
 }
 
@@ -1337,7 +1346,7 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .btn-danger:hover:not(:disabled) {
-    animation: highlightInDanger 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInDanger 0.2s ease-out forwards;
   }
 }
 
@@ -1364,12 +1373,12 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .card.clickable:hover:not(:active) {
-    animation: highlightInCard 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInCard 0.2s ease-out forwards;
   }
 }
 
 .card.clickable:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 /* Threads */
@@ -1379,7 +1388,7 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .threads-container > * {
-  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  animation: fadeInUp 0.3s ease-out backwards;
 }
 
 .threads-container > *:nth-child(1) { animation-delay: 0.05s; }
@@ -1398,7 +1407,7 @@ input[type="submit"]:active:not(:disabled),
   text-decoration: none;
   color: inherit;
   display: block;
-  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  animation: fadeInUp 0.3s ease-out backwards;
   position: relative;
   overflow: hidden;
   border: 1px solid transparent;
@@ -1422,33 +1431,37 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .thread-card:hover::before {
-    animation: shimmerIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: shimmerIn 0.4s ease-out forwards;
   }
   
   .thread-card:hover {
-    animation: highlightInCard 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInCard 0.2s ease-out forwards;
   }
 }
 
 .thread-card:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 @keyframes shimmerIn {
   from {
     left: -100%;
+    opacity: 0;
   }
   to {
     left: 100%;
+    opacity: 1;
   }
 }
 
 @keyframes shimmerOut {
   from {
     left: 100%;
+    opacity: 1;
   }
   to {
     left: -100%;
+    opacity: 0;
   }
 }
 
@@ -1524,12 +1537,12 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .history-item:hover {
-    animation: highlightInHistory 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInHistory 0.2s ease-out forwards;
   }
 }
 
 .history-item:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 .history-item-header {
@@ -1571,7 +1584,7 @@ input[type="submit"]:active:not(:disabled),
   box-shadow: var(--shadow-lg);
   max-width: 600px;
   margin: 0 auto;
-  animation: scaleIn 0.5s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 .profile-header {
@@ -1591,7 +1604,7 @@ input[type="submit"]:active:not(:disabled),
   justify-content: center;
   font-size: 3rem;
   margin: 0 auto 1rem;
-  animation: scaleIn 0.6s ease-out 0.2s backwards;
+  animation: scaleIn 0.3s ease-out 0.1s backwards;
   transition: transform 0.3s ease;
 }
 
@@ -1604,18 +1617,18 @@ input[type="submit"]:active:not(:disabled),
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
   }
   to {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .profile-avatar:hover {
-    animation: highlightInAvatar 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInAvatar 0.2s ease-out forwards;
   }
 }
 
 .profile-avatar:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 .profile-header h2 {
@@ -1655,18 +1668,18 @@ input[type="submit"]:active:not(:disabled),
     box-shadow: none;
   }
   to {
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .stat-item:hover {
-    animation: highlightInStat 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInStat 0.2s ease-out forwards;
   }
 }
 
 .stat-item:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 .stat-value {
@@ -1701,15 +1714,15 @@ input[type="submit"]:active:not(:disabled),
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.2s ease-out;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              backdrop-filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s ease-out,
+              backdrop-filter 0.2s ease-out;
 }
 
 .quickview-overlay.closing {
-  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeOut 0.2s ease-out;
 }
 
 @keyframes fadeIn {
@@ -1724,29 +1737,29 @@ input[type="submit"]:active:not(:disabled),
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.98);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -1757,7 +1770,7 @@ input[type="submit"]:active:not(:disabled),
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-8px);
   }
   to {
     opacity: 1;
@@ -1775,19 +1788,19 @@ input[type="submit"]:active:not(:disabled),
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUp 0.25s ease-out;
   position: relative;
   display: flex;
   flex-direction: column;
   /* Enable smooth scrolling on mobile */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease-out,
+              opacity 0.2s ease-out;
 }
 
 .quickview-content.closing {
-  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeOutDown 0.2s ease-out;
 }
 
 @keyframes slideDown {
@@ -1815,11 +1828,11 @@ input[type="submit"]:active:not(:disabled),
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -1836,22 +1849,22 @@ input[type="submit"]:active:not(:disabled),
 @keyframes fadeOutDown {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(8px);
   }
 }
 
 @keyframes fadeOutUp {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-20px) scale(0.98);
+    transform: translateY(-8px);
   }
 }
 
@@ -1862,51 +1875,51 @@ input[type="submit"]:active:not(:disabled),
   }
   to {
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.97);
   }
 }
 
 @keyframes slideOutRight {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: translateX(20px) scale(0.98);
+    transform: translateX(8px);
   }
 }
 
 @keyframes slideOutLeft {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: translateX(-20px) scale(0.98);
+    transform: translateX(-8px);
   }
 }
 
 @keyframes slideOutDown {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(8px);
   }
 }
 
 @keyframes slideOutUp {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-10px) scale(0.98);
+    transform: translateY(-8px);
   }
 }
 
@@ -2724,12 +2737,12 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .toast-close:hover {
-    animation: highlightInToastClose 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInToastClose 0.2s ease-out forwards;
   }
 }
 
 .toast-close:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 @media (max-width: 640px) {
@@ -2835,7 +2848,7 @@ input[type="submit"]:active:not(:disabled),
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: fadeInUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeInUp 0.25s ease-out;
   transform-origin: top;
 }
 
@@ -2854,7 +2867,7 @@ input[type="submit"]:active:not(:disabled),
 
 @media (hover: hover) and (pointer: fine) {
   .combobox-item:hover {
-    animation: highlightInComboboxItem 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInComboboxItem 0.2s ease-out forwards;
   }
 }
 
@@ -3236,7 +3249,7 @@ input[type="submit"]:active:not(:disabled),
   }
 
   .feedback-fab-button {
-    animation: fadeInUp 0.5s ease-out 0.2s both !important;
+    animation: fadeInUp 0.3s ease-out 0.15s both !important;
   }
   
   .thread-detail-meta {
@@ -3441,13 +3454,13 @@ input[type="submit"]:active:not(:disabled),
   }
   to {
     border-color: var(--primary);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .comment-card:hover {
-    animation: highlightInComment 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInComment 0.2s ease-out forwards;
   }
 }
 
@@ -3811,18 +3824,18 @@ input[type="submit"]:active:not(:disabled),
   }
   to {
     background: var(--primary-dark);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .fab-button:hover {
-    animation: highlightInFAB 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: highlightInFAB 0.2s ease-out forwards;
   }
 }
 
 .fab-button:active {
-  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clickScale 0.12s ease-out forwards;
 }
 
 /* FAB button positioning now handled by inline styles in FeedPage.tsx */
@@ -4538,7 +4551,7 @@ input[type="submit"]:active:not(:disabled),
     width: 52px !important;
     height: 52px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-    animation: fadeInUp 0.5s ease-out 0.2s both !important;
+    animation: fadeInUp 0.3s ease-out 0.15s both !important;
   }
 
   /* Settings Unsaved Changes Notification */
@@ -4573,7 +4586,7 @@ input[type="submit"]:active:not(:disabled),
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     transform: translateY(0) !important;
-    animation: slideUpFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    animation: slideUpFromBottom 0.25s ease-out !important;
   }
 
   .feedback-modal-header {
@@ -4680,7 +4693,7 @@ input[type="submit"]:active:not(:disabled),
   }
 
   .completion-stats-user-item {
-    animation: fadeInLeft 0.3s ease-out both;
+    animation: fadeInLeft 0.25s ease-out both;
   }
 
   /* Feedback List Mobile */
