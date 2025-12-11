@@ -72,11 +72,12 @@ export default function MePage() {
     }
   }, [status, hasSessionCookie, router])
 
-  // Get user data (isDanton)
+  // Get user data (isDanton, isAdmin)
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
     enabled: !!session,
   })
   const isDanton = userData?.isDanton || false
+  const isAdmin = userData?.isAdmin || false
 
   // Get settings
   const { data: settings, isLoading: isLoadingSettings } = trpc.userSettings.get.useQuery(undefined, {
@@ -359,6 +360,37 @@ export default function MePage() {
           
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isAdmin && (
+              <button
+                onClick={() => router.push('/profile')}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--primary-dark)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--primary)'
+                }}
+              >
+                <CrownIcon size={18} />
+                Admin Panel
+              </button>
+            )}
+            
             {isDanton && (
               <button
                 onClick={() => router.push('/danton')}

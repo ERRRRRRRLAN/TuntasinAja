@@ -7,6 +7,12 @@
   "env": {
     "PRISMA_GENERATE_DATAPROXY": "true"
   },
+  "crons": [
+    {
+      "path": "/api/cron/auto-delete-expired-threads",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/TuntasinAja.apk",
