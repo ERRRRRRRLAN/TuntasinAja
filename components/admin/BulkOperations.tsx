@@ -60,6 +60,7 @@ export default function BulkOperations() {
   const [targetKelas, setTargetKelas] = useState<string>('')
   const [showMoveConfirm, setShowMoveConfirm] = useState(false)
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
+  const [showExpiredThreadsConfirm, setShowExpiredThreadsConfirm] = useState(false)
 
   const kelasOptions = generateKelasOptions()
 
@@ -210,6 +211,19 @@ export default function BulkOperations() {
     onError: (error) => {
       toast.error(error.message || 'Gagal cleanup orphaned data')
       setShowCleanupConfirm(false)
+    },
+  })
+
+  const cleanupExpiredThreads = trpc.thread.cleanupExpiredThreads.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message)
+      setShowExpiredThreadsConfirm(false)
+      utils.thread.getAll.invalidate()
+      utils.database.getStats.invalidate()
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Gagal menghapus expired threads')
+      setShowExpiredThreadsConfirm(false)
     },
   })
 
@@ -1074,6 +1088,21 @@ export default function BulkOperations() {
           message="Apakah Anda yakin ingin menghapus orphaned user statuses? Operasi ini tidak dapat dibatalkan!"
           confirmText="Ya, Cleanup"
           cancelText="Batal"
+        />
+      )}
+
+      {showExpiredThreadsConfirm && (
+        <ConfirmDialog
+          isOpen={showExpiredThreadsConfirm}
+          onCancel={() => setShowExpiredThreadsConfirm(false)}
+          onConfirm={() => {
+            cleanupExpiredThreads.mutate({ confirm: true })
+          }}
+          title="Hapus Expired Threads?"
+          message="Apakah Anda yakin ingin menghapus semua tugas yang deadline-nya sudah lewat? Tugas dan sub tugas akan dihapus, namun history tetap tersimpan. Operasi ini tidak dapat dibatalkan!"
+          confirmText="Ya, Hapus"
+          cancelText="Batal"
+          danger={true}
         />
       )}
     </div>

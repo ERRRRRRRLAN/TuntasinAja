@@ -61,23 +61,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Update mutation
   const updateSettings = trpc.userSettings.update.useMutation()
 
-  // Sync theme from database when settings load (but don't override if localStorage has newer value)
+  // Always use 'auto' theme - follow device theme
+  // No need to sync from database since we always use auto
   useEffect(() => {
-    if (settings?.theme) {
-      const savedTheme = getInitialTheme()
-      // Only update if localStorage doesn't have a value or if database has different value
-      // This prevents overriding user's manual theme change before database syncs
-      if (!savedTheme || savedTheme === 'auto') {
-        setThemeState(settings.theme as Theme)
-        // Save to localStorage for next time
-        try {
-          localStorage.setItem(THEME_STORAGE_KEY, settings.theme)
-        } catch (e) {
-          console.error('Error saving theme to localStorage:', e)
-        }
+    // Force theme to 'auto' if it's not already
+    if (theme !== 'auto') {
+      setThemeState('auto')
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, 'auto')
+      } catch (e) {
+        console.error('Error saving theme to localStorage:', e)
       }
     }
-  }, [settings?.theme])
+  }, [theme])
 
   // Calculate effective theme based on user preference and system preference
   useEffect(() => {
@@ -128,18 +124,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [effectiveTheme, settings?.animationsEnabled])
 
   const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme)
-    
-    // Save to localStorage immediately for instant feedback
+    // Always use 'auto' theme - ignore manual changes
+    // Theme will always follow device preference
+    setThemeState('auto')
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme)
+      localStorage.setItem(THEME_STORAGE_KEY, 'auto')
     } catch (e) {
       console.error('Error saving theme to localStorage:', e)
-    }
-    
-    // Sync to database if user is logged in
-    if (session) {
-      updateSettings.mutate({ theme: newTheme })
     }
   }
 

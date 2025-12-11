@@ -979,6 +979,106 @@ export const threadRouter = createTRPCRouter({
     return { deleted: deletedCount }
   }),
 
+  // Cleanup expired threads (Admin only) - Delete threads that have passed their deadline
+  cleanupExpiredThreads: adminProcedure
+    .input(
+      z.object({
+        confirm: z.boolean(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      if (!input.confirm) {
+        throw new Error('Konfirmasi diperlukan untuk menghapus expired threads')
+      }
+
+      const { getUTCDate } = await import('@/lib/date-utils')
+      const now = getUTCDate()
+
+      // Find all threads that have passed their deadline
+      // Only threads with deadline that is not null and is in the past
+      const expiredThreads = await prisma.thread.findMany({
+        where: {
+          deadline: {
+            not: null,
+            lt: now, // Deadline is in the past
+          },
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          comments: {
+            select: {
+              id: true,
+            },
+          },
+          histories: {
+            select: {
+              id: true,
+              userId: true,
+            },
+          },
+        },
+      })
+
+      let deletedCount = 0
+
+      // For each expired thread, update histories and delete thread
+      for (const thread of expiredThreads) {
+        // Update all histories related to this thread with denormalized data
+        // Set threadId to null explicitly to avoid unique constraint issues
+        // This ensures history remains even after thread is deleted
+        await prisma.history.updateMany({
+          where: {
+            threadId: thread.id,
+          },
+          data: {
+            threadTitle: thread.title,
+            threadAuthorId: thread.author.id,
+            threadAuthorName: thread.author.name,
+            threadId: null, // Set to null explicitly before deleting thread
+          },
+        })
+
+        // Get comment IDs before deleting thread
+        const commentIds = thread.comments.map((c) => c.id)
+
+        // Delete UserStatus related to this thread
+        await prisma.userStatus.deleteMany({
+          where: {
+            threadId: thread.id,
+          },
+        })
+
+        // Delete UserStatus related to comments in this thread
+        if (commentIds.length > 0) {
+          await prisma.userStatus.deleteMany({
+            where: {
+              commentId: {
+                in: commentIds,
+              },
+            },
+          })
+        }
+
+        // Delete the thread (histories will remain with threadId = null)
+        // Comments will be deleted via cascade
+        await prisma.thread.delete({
+          where: { id: thread.id },
+        })
+
+        deletedCount++
+      }
+
+      return {
+        deleted: deletedCount,
+        message: `Berhasil menghapus ${deletedCount} thread yang deadline-nya sudah lewat`,
+      }
+    }),
+
   // Get thread completion statistics (Admin only)
   getCompletionStats: adminProcedure
     .input(z.object({ threadId: z.string() }))

@@ -10,7 +10,7 @@ import { trpc } from '@/lib/trpc'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { UserIcon, DownloadIcon, TrashIcon, SunIcon, MoonIcon, MonitorIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
+import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 
@@ -304,24 +304,6 @@ export default function MePage() {
       timeOptions.push({ value: timeStr, label: timeStr })
     }
   }
-
-  const themeOptions = [
-    { 
-      value: 'light', 
-      label: 'Light',
-      icon: <SunIcon size={18} style={{ color: 'currentColor' }} />
-    },
-    { 
-      value: 'dark', 
-      label: 'Dark',
-      icon: <MoonIcon size={18} style={{ color: 'currentColor' }} />
-    },
-    { 
-      value: 'auto', 
-      label: 'Auto',
-      icon: <MonitorIcon size={18} style={{ color: 'currentColor' }} />
-    },
-  ]
 
   const sortOptions = [
     { value: 'newest', label: 'Terbaru' },
@@ -632,7 +614,7 @@ export default function MePage() {
           </div>
         </div>
 
-        {/* Tampilan & Tema */}
+        {/* Tampilan */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ 
@@ -642,7 +624,7 @@ export default function MePage() {
               fontWeight: 600,
               color: 'var(--text)',
             }}>
-              Tampilan & Tema
+              Tampilan
             </h3>
             <p style={{ 
               margin: 0,
@@ -655,48 +637,6 @@ export default function MePage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'var(--text)',
-              }}>
-                Tema
-              </label>
-              <ComboBox
-                options={themeOptions}
-                value={displaySettings.theme || 'auto'}
-                onChange={(value) => {
-                  handleSelect('theme', value)
-                  // Update theme immediately
-                  if (typeof window !== 'undefined') {
-                    const root = document.documentElement
-                    if (value === 'dark') {
-                      root.classList.add('dark')
-                    } else if (value === 'light') {
-                      root.classList.remove('dark')
-                    } else {
-                      // Auto mode - check system preference
-                      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-                      if (prefersDark) {
-                        root.classList.add('dark')
-                      } else {
-                        root.classList.remove('dark')
-                      }
-                    }
-                  }
-                }}
-                placeholder="Pilih tema"
-                showAllOption={false}
-                showSearch={false}
-                showClear={false}
-                searchPlaceholder=""
-                emptyMessage="Tidak ada tema yang ditemukan"
-              />
-            </div>
-
             <div>
               <label style={{ 
                 display: 'block', 
