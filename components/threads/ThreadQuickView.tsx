@@ -60,21 +60,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleCloseQuickView = useCallback(() => {
     setShowConfirmDialog(false)
     setIsQuickViewOpen(false)
-    
-    // Add closing class for animation
-    if (overlayRef.current) {
-      overlayRef.current.classList.add('closing')
-    }
-    if (contentRef.current) {
-      contentRef.current.classList.add('closing')
-    }
-    
     setIsVisible(false)
     
-    // Wait for animation to complete before closing
+    // Wait for transition to complete before closing
     setTimeout(() => {
+      // Unlock body scroll - cleanup will be handled by useEffect
       onClose()
-    }, 300) // Match animation duration
+    }, 300) // Match transition duration
   }, [onClose])
 
   // Reset confirm dialog when quickview is closed or threadId changes
@@ -523,9 +515,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   return (
     <div 
       ref={overlayRef}
-      className={`quickview-overlay ${!isVisible ? 'closing' : ''}`}
+      className="quickview-overlay" 
       onClick={handleOverlayClick}
+      onTransitionEnd={handleTransitionEnd}
       style={{
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-out',
         pointerEvents: isVisible ? 'auto' : 'none',
         // Force mobile overlay style - prevent desktop layout shift
         ...(isMobile ? {
@@ -538,10 +533,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     >
       <div 
         ref={contentRef}
-        className={`quickview-content ${!isVisible ? 'closing' : ''}`}
+        className="quickview-content" 
         onClick={(e) => e.stopPropagation()} 
         style={{ 
           position: 'relative',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
           // Force mobile view - prevent desktop layout shift after update
           ...(isMobile ? {
             width: '100%',
@@ -1235,7 +1233,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             completedUsers={completionStats.completedUsers}
           />
         )}
-
       </div>
     </div>
   )

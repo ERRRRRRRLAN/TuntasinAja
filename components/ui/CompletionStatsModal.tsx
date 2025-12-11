@@ -53,20 +53,12 @@ export default function CompletionStatsModal({
   }, [isOpen])
 
   const handleClose = useCallback(() => {
-    // Add closing class for animation
-    if (overlayRef.current) {
-      overlayRef.current.classList.add('closing')
-    }
-    if (contentRef.current) {
-      contentRef.current.classList.add('closing')
-    }
-    
     setIsVisible(false)
     
-    // Wait for animation to complete before closing
+    // Wait for transition to complete before closing
     setTimeout(() => {
       onClose()
-    }, 300) // Match animation duration
+    }, 300) // Match transition duration
   }, [onClose])
 
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
@@ -134,7 +126,6 @@ export default function CompletionStatsModal({
       onClick={handleOverlayClick}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
-      className={`confirm-dialog-overlay ${!isVisible ? 'closing' : ''}`}
       style={{
         position: 'fixed',
         top: 0,
@@ -147,19 +138,24 @@ export default function CompletionStatsModal({
         justifyContent: 'center',
         zIndex: 9999,
         padding: '1rem',
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
       <div 
         ref={contentRef}
         onClick={handleContentClick}
-        className={`card completion-stats-modal-content ${!isVisible ? 'closing' : ''}`}
+        className="card completion-stats-modal-content"
         style={{
           maxWidth: '500px',
           width: '100%',
           maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+          transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflow: 'hidden'
         }}
       >

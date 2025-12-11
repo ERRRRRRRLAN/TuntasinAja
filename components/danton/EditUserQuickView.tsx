@@ -47,21 +47,12 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
 
   const handleCloseQuickView = useCallback(() => {
     setIsQuickViewOpen(false)
-    
-    // Add closing class for animation
-    if (overlayRef.current) {
-      overlayRef.current.classList.add('closing')
-    }
-    if (contentRef.current) {
-      contentRef.current.classList.add('closing')
-    }
-    
     setIsVisible(false)
     
-    // Wait for animation to complete before closing
+    // Wait for transition to complete before closing
     setTimeout(() => {
       onClose()
-    }, 300) // Match animation duration
+    }, 300) // Match transition duration
   }, [onClose])
 
   useEffect(() => {
@@ -201,7 +192,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     <>
       <div
         ref={overlayRef}
-        className={`quickview-overlay ${!isVisible ? 'closing' : ''}`}
+        className="quickview-overlay"
         style={{
           position: 'fixed',
           top: 0,
@@ -213,6 +204,8 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
           padding: '1rem',
           pointerEvents: isVisible ? 'auto' : 'none'
         }}
@@ -226,7 +219,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
       >
         <div
           ref={contentRef}
-          className={`quickview-content ${!isVisible ? 'closing' : ''}`}
+          className="quickview-content"
           onClick={(e) => e.stopPropagation()}
           style={{
             background: 'var(--card)',
@@ -235,6 +228,9 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
             maxWidth: '600px',
             maxHeight: '90vh',
             overflow: 'auto',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
             boxShadow: 'var(--shadow-lg)',
           }}
         >
