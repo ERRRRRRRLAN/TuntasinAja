@@ -22,6 +22,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
+  const [isGroupTask, setIsGroupTask] = useState(false)
+  const [maxGroupMembers, setMaxGroupMembers] = useState<number>(5)
   // Default deadline: 7 days from today at 00:00 (midnight) in local timezone
   // Calculate when form is opened, not when component mounts
   const getDefaultDeadline = () => {
@@ -85,6 +87,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
+      setIsGroupTask(false)
+      setMaxGroupMembers(5)
       // Reset deadline to default (1 week from now at 00:00)
       setDeadline(getDefaultDeadline())
       setIsSubmitting(false)
@@ -201,7 +205,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     createThread.mutate({ 
       title, 
       comment: comment || undefined,
-      deadline: deadline ? new Date(deadline) : undefined
+      deadline: deadline ? new Date(deadline) : undefined,
+      isGroupTask: isGroupTask,
+      maxGroupMembers: isGroupTask ? maxGroupMembers : undefined
     })
   }
 
@@ -320,6 +326,57 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               />
               <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
             </div>
+
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  id="isGroupTask"
+                  checked={isGroupTask}
+                  onChange={(e) => setIsGroupTask(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <span>Tugas Kelompok</span>
+              </label>
+              <small className="form-hint">
+                {isGroupTask 
+                  ? "Tugas ini untuk kelompok tertentu. Setelah upload, Anda bisa pilih anggota kelompok."
+                  : "Tugas biasa untuk semua siswa di kelas yang sama."
+                }
+              </small>
+            </div>
+
+            {isGroupTask && (
+              <div className="form-group">
+                <label htmlFor="maxGroupMembers">Maksimal Anggota (termasuk Anda) *</label>
+                <input
+                  id="maxGroupMembers"
+                  type="number"
+                  min="2"
+                  max="50"
+                  value={maxGroupMembers}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (!isNaN(value) && value >= 2 && value <= 50) {
+                      setMaxGroupMembers(value)
+                    }
+                  }}
+                  required={isGroupTask}
+                  style={{
+                    width: '100%',
+                    padding: '0.625rem',
+                    fontSize: '1rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.375rem',
+                    background: 'var(--card)',
+                    color: 'var(--text)'
+                  }}
+                />
+                <small className="form-hint">
+                  Jumlah maksimal anggota per kelompok. Anda (pembuat) sudah termasuk dalam jumlah ini. Minimal 2, maksimal 50.
+                </small>
+              </div>
+            )}
 
             <div className="form-actions">
               <button 

@@ -8,6 +8,7 @@ import { toJakartaDate, getUTCDate } from '@/lib/date-utils'
 import { trpc } from '@/lib/trpc'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
+import CreateGroupModal from '@/components/groupTask/CreateGroupModal'
 import { toast } from '@/components/ui/ToastContainer'
 import { UserIcon, CalendarIcon, MessageIcon, ClockIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
@@ -20,6 +21,8 @@ interface ThreadCardProps {
     date: Date
     createdAt: Date
     deadline?: Date | null
+    isGroupTask?: boolean
+    maxGroupMembers?: number | null
     author: {
       id: string
       name: string
@@ -38,6 +41,9 @@ interface ThreadCardProps {
     _count: {
       comments: number
     }
+    groupMembers?: Array<{
+      userId: string
+    }>
   }
   onThreadClick?: (threadId: string) => void
 }
@@ -47,6 +53,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
   const [showCompletionStatsModal, setShowCompletionStatsModal] = useState(false)
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Get thread status
@@ -71,6 +78,14 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const threadStatus = statuses?.find((s) => s.threadId === thread.id && !s.commentId)
   const isCompleted = threadStatus?.isCompleted || false
+
+  // Group task checks
+  const isGroupTask = thread.isGroupTask || false
+  const isThreadAuthor = session?.user?.id === thread.author.id
+  const groupMemberIds = thread.groupMembers?.map((m) => m.userId) || []
+  const isGroupMember = session?.user?.id ? groupMemberIds.includes(session.user.id) : false
+  const hasGroupMembers = groupMemberIds.length > 0
+  const memberCount = groupMemberIds.length
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
@@ -240,7 +255,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     >
       <div className="thread-card-content">
         <div className="thread-card-header">
-          {session && !isAdmin && (
+          {session && !isAdmin && (!isGroupTask || isGroupMember) && (
             <Checkbox
               checked={isCompleted}
               onClick={handleCheckboxClick}
@@ -373,6 +388,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 threadId={thread.id}
                 statuses={statuses || []}
                 threadAuthorId={thread.author.id}
+                isGroupTask={isGroupTask}
+                isGroupMember={isGroupMember}
               />
             ))}
             {thread.comments.length > 2 && (
@@ -382,7 +399,77 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             )}
           </div>
         )}
+
+        {/* Group Task Badge and Actions */}
+        {isGroupTask && (
+          <div style={{
+            marginTop: '0.75rem',
+            padding: '0.75rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                background: 'var(--primary-light)',
+                color: 'var(--primary)',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: 500
+              }}>
+                👥 Kelompok
+              </span>
+              {hasGroupMembers && (
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  {memberCount} anggota
+                </span>
+              )}
+              {!hasGroupMembers && (
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                  Belum ada anggota
+                </span>
+              )}
+            </div>
+            {isThreadAuthor && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowCreateGroupModal(true)
+                }}
+                className="btn btn-primary"
+                style={{
+                  fontSize: '0.875rem',
+                  padding: '0.5rem 1rem',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {hasGroupMembers ? 'Kelola' : 'Buat Kelompok'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Create Group Modal */}
+      {isGroupTask && isThreadAuthor && (
+        <CreateGroupModal
+          isOpen={showCreateGroupModal}
+          onClose={() => setShowCreateGroupModal(false)}
+          threadId={thread.id}
+          maxGroupMembers={thread.maxGroupMembers || 5}
+          onSuccess={() => {
+            utils.thread.getAll.invalidate()
+          }}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={showConfirmDialog}
@@ -421,12 +508,16 @@ function CommentItem({
   comment, 
   threadId,
   statuses,
-  threadAuthorId
+  threadAuthorId,
+  isGroupTask,
+  isGroupMember
 }: { 
   comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
   threadAuthorId: string
+  isGroupTask?: boolean
+  isGroupMember?: boolean
 }) {
   const { data: session } = useSession()
   const commentStatus = statuses.find((s) => s.commentId === comment.id)
@@ -475,7 +566,7 @@ function CommentItem({
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
-      {session && !isAdmin && (
+      {session && !isAdmin && (!isGroupTask || isGroupMember) && (
         <div style={{ marginTop: '0.25rem' }}>
           <Checkbox
             checked={isCompleted}

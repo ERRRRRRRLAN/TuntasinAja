@@ -11,43 +11,48 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
-  isAdmin       Boolean   @default(false) @map("is_admin")
-  isDanton      Boolean   @default(false) @map("is_danton")
-  kelas         String?   @map("kelas")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  isDanton     Boolean  @default(false) @map("is_danton")
+  kelas        String?  @map("kelas")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  threads       Thread[]
-  comments      Comment[]
-  userStatuses  UserStatus[]
-  histories     History[]
-  permission    UserPermission?
-  feedbacks     Feedback[]
-  deviceTokens  DeviceToken[]
-  announcements Announcement[]
+  threads           Thread[]
+  comments          Comment[]
+  userStatuses      UserStatus[]
+  histories         History[]
+  permission        UserPermission?
+  feedbacks         Feedback[]
+  deviceTokens      DeviceToken[]
+  announcements     Announcement[]
   announcementReads AnnouncementRead[]
-  settings      UserSettings?
+  settings          UserSettings?
+  groupMembers      GroupMember[]
+  addedGroupMembers GroupMember[]      @relation("AddedBy")
 
   @@map("users")
 }
 
 model Thread {
-  id          String    @id @default(cuid())
-  title       String    @map("judul_mapel")
-  authorId    String    @map("user_id_pembuat")
-  date        DateTime  @default(now())
-  deadline    DateTime? @map("deadline") // Optional deadline untuk tugas
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(cuid())
+  title           String    @map("judul_mapel")
+  authorId        String    @map("user_id_pembuat")
+  date            DateTime  @default(now())
+  deadline        DateTime? @map("deadline") // Optional deadline untuk tugas
+  isGroupTask     Boolean   @default(false) @map("is_group_task")
+  maxGroupMembers Int?      @map("max_group_members") // Maksimal anggota per kelompok (termasuk pembuat)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments    Comment[]
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments     Comment[]
   userStatuses UserStatus[]
-  histories   History[]
+  histories    History[]
+  groupMembers GroupMember[]
 
   // Unique constraint removed to allow same title+date for different classes
   // Duplicate prevention is now handled by application logic (checking kelas)
@@ -55,33 +60,33 @@ model Thread {
 }
 
 model Comment {
-  id          String    @id @default(cuid())
-  threadId    String    @map("thread_id")
-  authorId    String    @map("user_id_pembuat")
-  content     String    @map("isi_tugas")
-  deadline    DateTime? @map("deadline") // Optional deadline untuk sub-tugas
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id        String    @id @default(cuid())
+  threadId  String    @map("thread_id")
+  authorId  String    @map("user_id_pembuat")
+  content   String    @map("isi_tugas")
+  deadline  DateTime? @map("deadline") // Optional deadline untuk sub-tugas
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
-  thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  thread       Thread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   userStatuses UserStatus[]
 
   @@map("comments")
 }
 
 model UserStatus {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  commentId   String?   @map("comment_id")
-  threadId    String?   @map("thread_id")
-  isCompleted Boolean   @default(false) @map("status_selesai")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  commentId   String?  @map("comment_id")
+  threadId    String?  @map("thread_id")
+  isCompleted Boolean  @default(false) @map("status_selesai")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comment     Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  thread      Thread?   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  thread  Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
   @@unique([userId, threadId])
@@ -89,17 +94,17 @@ model UserStatus {
 }
 
 model History {
-  id            String    @id @default(cuid())
-  userId        String    @map("user_id")
-  threadId      String?   @map("thread_id") // Optional karena thread bisa dihapus
-  threadTitle   String    @map("thread_title") // Denormalisasi: simpan title thread
-  threadAuthorId String?  @map("thread_author_id") // Denormalisasi: simpan author ID
-  threadAuthorName String? @map("thread_author_name") // Denormalisasi: simpan author name
-  completedDate DateTime  @default(now()) @map("tanggal_selesai")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  threadId         String?  @map("thread_id") // Optional karena thread bisa dihapus
+  threadTitle      String   @map("thread_title") // Denormalisasi: simpan title thread
+  threadAuthorId   String?  @map("thread_author_id") // Denormalisasi: simpan author ID
+  threadAuthorName String?  @map("thread_author_name") // Denormalisasi: simpan author name
+  completedDate    DateTime @default(now()) @map("tanggal_selesai")
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  thread        Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull) // SetNull agar history tidak terhapus
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Thread? @relation(fields: [threadId], references: [id], onDelete: SetNull) // SetNull agar history tidak terhapus
 
   // Note: Unique constraint removed to allow multiple histories with null threadId
   // Partial unique index is created via SQL migration to enforce uniqueness only when threadId is not null
@@ -113,23 +118,23 @@ enum PermissionType {
 
 model UserPermission {
   id                    String         @id @default(cuid())
-  userId                 String         @unique @map("user_id")
-  permission             PermissionType @default(read_and_post_edit)
-  canCreateAnnouncement  Boolean        @default(false) @map("can_create_announcement")
-  createdAt              DateTime       @default(now()) @map("created_at")
-  updatedAt              DateTime       @updatedAt @map("updated_at")
+  userId                String         @unique @map("user_id")
+  permission            PermissionType @default(read_and_post_edit)
+  canCreateAnnouncement Boolean        @default(false) @map("can_create_announcement")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
 
-  user                   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_permissions")
 }
 
 model ClassSubscription {
-  id                 String   @id @default(cuid())
-  kelas              String   @unique @map("kelas")
+  id                  String   @id @default(cuid())
+  kelas               String   @unique @map("kelas")
   subscriptionEndDate DateTime @map("subscription_end_date")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@map("class_subscriptions")
 }
@@ -145,12 +150,12 @@ enum DayOfWeek {
 }
 
 model ClassSchedule {
-  id          String    @id @default(cuid())
-  kelas       String    @map("kelas")
-  dayOfWeek   DayOfWeek @map("day_of_week")
-  subject     String    @map("subject")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id        String    @id @default(cuid())
+  kelas     String    @map("kelas")
+  dayOfWeek DayOfWeek @map("day_of_week")
+  subject   String    @map("subject")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@unique([kelas, dayOfWeek, subject])
   @@index([kelas])
@@ -159,13 +164,13 @@ model ClassSchedule {
 }
 
 model WeeklySchedule {
-  id          String    @id @default(cuid())
-  kelas       String    @map("kelas")
-  dayOfWeek   DayOfWeek @map("day_of_week")
-  period      Int       @map("period") // Urutan jam pelajaran (1, 2, 3, dst)
-  subject     String    @map("subject")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id        String    @id @default(cuid())
+  kelas     String    @map("kelas")
+  dayOfWeek DayOfWeek @map("day_of_week")
+  period    Int       @map("period") // Urutan jam pelajaran (1, 2, 3, dst)
+  subject   String    @map("subject")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@unique([kelas, dayOfWeek, period])
   @@index([kelas])
@@ -174,11 +179,11 @@ model WeeklySchedule {
 }
 
 model ClassSubject {
-  id          String   @id @default(cuid())
-  kelas       String   @map("kelas")
-  subject     String   @map("subject")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  kelas     String   @map("kelas")
+  subject   String   @map("subject")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([kelas, subject])
   @@index([kelas])
@@ -186,14 +191,14 @@ model ClassSubject {
 }
 
 model Feedback {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  content     String    @map("content")
-  isRead      Boolean   @default(false) @map("is_read")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  content   String   @map("content")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
@@ -202,14 +207,14 @@ model Feedback {
 }
 
 model DeviceToken {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  token       String    @unique @map("token")
-  deviceInfo  String?   @map("device_info")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  token      String   @unique @map("token")
+  deviceInfo String?  @map("device_info")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])
@@ -217,12 +222,12 @@ model DeviceToken {
 }
 
 model AppSettings {
-  id            String    @id @default(cuid())
-  key           String    @unique @map("key")
-  value         String    @map("value")
-  description   String?   @map("description")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  key         String   @unique @map("key")
+  value       String   @map("value")
+  description String?  @map("description")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("app_settings")
 }
@@ -253,8 +258,8 @@ model Announcement {
   createdAt     DateTime               @default(now()) @map("created_at")
   updatedAt     DateTime               @updatedAt @map("updated_at")
 
-  author        User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  reads         AnnouncementRead[]
+  author User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reads  AnnouncementRead[]
 
   @@index([targetType])
   @@index([targetKelas])
@@ -265,14 +270,14 @@ model Announcement {
 }
 
 model AnnouncementRead {
-  id            String       @id @default(cuid())
-  announcementId String      @map("announcement_id")
-  userId        String       @map("user_id")
-  readAt        DateTime    @default(now()) @map("read_at")
-  createdAt     DateTime    @default(now()) @map("created_at")
+  id             String   @id @default(cuid())
+  announcementId String   @map("announcement_id")
+  userId         String   @map("user_id")
+  readAt         DateTime @default(now()) @map("read_at")
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, userId])
   @@index([userId])
@@ -281,51 +286,68 @@ model AnnouncementRead {
 }
 
 model UserSettings {
-  id                    String    @id @default(cuid())
-  userId                String    @unique @map("user_id")
-  
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
   // Notifications
-  pushNotificationsEnabled Boolean @default(true) @map("push_notifications_enabled")
-  taskNotificationsEnabled Boolean @default(true) @map("task_notifications_enabled")
-  commentNotificationsEnabled Boolean @default(true) @map("comment_notifications_enabled")
+  pushNotificationsEnabled         Boolean @default(true) @map("push_notifications_enabled")
+  taskNotificationsEnabled         Boolean @default(true) @map("task_notifications_enabled")
+  commentNotificationsEnabled      Boolean @default(true) @map("comment_notifications_enabled")
   announcementNotificationsEnabled Boolean @default(true) @map("announcement_notifications_enabled")
-  deadlineReminderEnabled Boolean @default(true) @map("deadline_reminder_enabled")
-  scheduleReminderEnabled Boolean @default(true) @map("schedule_reminder_enabled")
-  overdueReminderEnabled Boolean @default(true) @map("overdue_reminder_enabled")
-  reminderTime          String?   @map("reminder_time") // "19:00"
-  dndEnabled            Boolean   @default(false) @map("dnd_enabled")
-  dndStartTime          String?   @map("dnd_start_time") // "22:00"
-  dndEndTime            String?   @map("dnd_end_time") // "06:00"
-  
+  deadlineReminderEnabled          Boolean @default(true) @map("deadline_reminder_enabled")
+  scheduleReminderEnabled          Boolean @default(true) @map("schedule_reminder_enabled")
+  overdueReminderEnabled           Boolean @default(true) @map("overdue_reminder_enabled")
+  reminderTime                     String? @map("reminder_time") // "19:00"
+  dndEnabled                       Boolean @default(false) @map("dnd_enabled")
+  dndStartTime                     String? @map("dnd_start_time") // "22:00"
+  dndEndTime                       String? @map("dnd_end_time") // "06:00"
+
   // Display
-  theme                 String    @default("auto") @map("theme") // "light", "dark", "auto"
-  tasksPerPage          Int       @default(20) @map("tasks_per_page")
-  defaultSort           String    @default("newest") @map("default_sort") // "newest", "oldest", "deadline"
-  showCompletedTasks    Boolean   @default(true) @map("show_completed_tasks")
-  fontSize              String    @default("normal") @map("font_size") // "small", "normal", "large"
-  animationsEnabled     Boolean   @default(true) @map("animations_enabled")
-  
+  theme              String  @default("auto") @map("theme") // "light", "dark", "auto"
+  tasksPerPage       Int     @default(20) @map("tasks_per_page")
+  defaultSort        String  @default("newest") @map("default_sort") // "newest", "oldest", "deadline"
+  showCompletedTasks Boolean @default(true) @map("show_completed_tasks")
+  fontSize           String  @default("normal") @map("font_size") // "small", "normal", "large"
+  animationsEnabled  Boolean @default(true) @map("animations_enabled")
+
   // Data
-  autoDeleteHistoryDays Int?      @map("auto_delete_history_days") // null = never
-  
+  autoDeleteHistoryDays Int? @map("auto_delete_history_days") // null = never
+
   // Sound & Vibration
-  soundEnabled          Boolean   @default(true) @map("sound_enabled")
-  vibrationEnabled      Boolean   @default(true) @map("vibration_enabled")
-  
+  soundEnabled     Boolean @default(true) @map("sound_enabled")
+  vibrationEnabled Boolean @default(true) @map("vibration_enabled")
+
   // Language & Regional
-  language              String    @default("id") @map("language") // "id", "en"
-  dateFormat            String    @default("DD/MM/YYYY") @map("date_format")
-  timeFormat            String    @default("24h") @map("time_format") // "12h", "24h"
-  
+  language   String @default("id") @map("language") // "id", "en"
+  dateFormat String @default("DD/MM/YYYY") @map("date_format")
+  timeFormat String @default("24h") @map("time_format") // "12h", "24h"
+
   // Accessibility
-  highContrast          Boolean   @default(false) @map("high_contrast")
-  largeButtons          Boolean   @default(false) @map("large_buttons")
-  reduceAnimations      Boolean   @default(false) @map("reduce_animations")
-  
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-  
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  highContrast     Boolean @default(false) @map("high_contrast")
+  largeButtons     Boolean @default(false) @map("large_buttons")
+  reduceAnimations Boolean @default(false) @map("reduce_animations")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_settings")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  threadId String   @map("thread_id")
+  userId   String   @map("user_id")
+  addedBy  String   @map("added_by") // User yang menambahkan (pembuat thread)
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adder  User   @relation("AddedBy", fields: [addedBy], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([threadId])
+  @@index([userId])
+  @@map("group_members")
 }

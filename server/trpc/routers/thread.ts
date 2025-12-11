@@ -44,11 +44,35 @@ export const threadRouter = createTRPCRouter({
       const skip = (page - 1) * limit
 
       // Build where clause for filtering
+      // For group tasks: only show if user is a member
+      // For regular tasks: show to all users in same kelas
       const whereClause = isAdmin
         ? undefined // Admin sees all
+        : userKelas && userId
+        ? {
+            OR: [
+              // Regular threads (not group task) - show to all in same kelas
+              {
+                isGroupTask: false,
+                author: {
+                  kelas: userKelas,
+                },
+              },
+              // Group tasks - only show if user is a member
+              {
+                isGroupTask: true,
+                groupMembers: {
+                  some: {
+                    userId: userId,
+                  },
+                },
+              },
+            ],
+          }
         : userKelas
         ? {
-            // Filter by kelas of thread author
+            // Fallback: if no userId, only show regular threads
+            isGroupTask: false,
             author: {
               kelas: userKelas,
             },
@@ -89,6 +113,11 @@ export const threadRouter = createTRPCRouter({
           _count: {
             select: {
               comments: true,
+            },
+          },
+          groupMembers: {
+            select: {
+              userId: true,
             },
           },
         },
@@ -234,6 +263,8 @@ export const threadRouter = createTRPCRouter({
         title: z.string().min(1),
         comment: z.string().optional(),
         deadline: z.date().optional(),
+        isGroupTask: z.boolean().optional().default(false),
+        maxGroupMembers: z.number().min(2).max(50).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -384,6 +415,14 @@ export const threadRouter = createTRPCRouter({
         // Create new thread
         // Explicitly set createdAt to current time in Jakarta timezone
         const now = getUTCDate()
+        // Validate maxGroupMembers if isGroupTask
+        if (input.isGroupTask && !input.maxGroupMembers) {
+          throw new Error('Maksimal anggota harus diisi untuk tugas kelompok')
+        }
+        if (input.isGroupTask && input.maxGroupMembers && (input.maxGroupMembers < 2 || input.maxGroupMembers > 50)) {
+          throw new Error('Maksimal anggota harus antara 2 dan 50')
+        }
+
         const thread = await prisma.thread.create({
           data: {
             title: input.title,
@@ -391,6 +430,8 @@ export const threadRouter = createTRPCRouter({
             date: today,
             createdAt: now,
             deadline: input.deadline || null,
+            isGroupTask: input.isGroupTask || false,
+            maxGroupMembers: input.isGroupTask ? (input.maxGroupMembers || null) : null,
             comments: input.comment
               ? {
                   create: {
