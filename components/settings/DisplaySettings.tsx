@@ -63,12 +63,6 @@ export default function DisplaySettings() {
     )
   }
 
-  const themeOptions = [
-    { value: 'light', label: '☀️ Light' },
-    { value: 'dark', label: '🌙 Dark' },
-    { value: 'auto', label: '⚙️ Auto' },
-  ]
-
   const fontSizeOptions = [
     { value: 'small', label: 'Kecil' },
     { value: 'normal', label: 'Normal' },
@@ -102,72 +96,6 @@ export default function DisplaySettings() {
       </h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {/* Theme */}
-        <div style={{
-          padding: '1rem',
-          background: 'var(--bg-secondary)',
-          borderRadius: '0.5rem',
-          border: '1px solid var(--border)',
-        }}>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <label style={{
-              display: 'block',
-              fontWeight: 500,
-              marginBottom: '0.25rem',
-              fontSize: '0.95rem',
-              color: 'var(--text)',
-            }}>
-              Tema
-            </label>
-            <div style={{
-              fontSize: '0.875rem',
-              color: 'var(--text-light)',
-              marginBottom: '0.75rem',
-            }}>
-              Pilih tema tampilan aplikasi
-            </div>
-          </div>
-          <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            flexWrap: 'wrap',
-          }}>
-            {themeOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleSelect('theme', option.value)}
-                disabled={isSaving}
-                style={{
-                  flex: 1,
-                  minWidth: '100px',
-                  padding: '0.75rem 1rem',
-                  background: settings.theme === option.value ? 'var(--primary)' : 'var(--bg)',
-                  color: settings.theme === option.value ? 'white' : 'var(--text)',
-                  border: `1px solid ${settings.theme === option.value ? 'var(--primary)' : 'var(--border)'}`,
-                  borderRadius: '0.5rem',
-                  cursor: isSaving ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  transition: 'all 0.2s',
-                  opacity: isSaving ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSaving && settings.theme !== option.value) {
-                    e.currentTarget.style.background = 'var(--bg-secondary)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSaving && settings.theme !== option.value) {
-                    e.currentTarget.style.background = 'var(--bg)'
-                  }
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Font Size */}
         <div style={{
           padding: '1rem',
