@@ -201,7 +201,6 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     <>
       <div
         ref={overlayRef}
-        className="quickview-overlay"
         className={`quickview-overlay ${!isVisible ? 'closing' : ''}`}
         style={{
           position: 'fixed',
