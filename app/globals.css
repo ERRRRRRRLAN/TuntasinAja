@@ -243,10 +243,10 @@ body {
   color: var(--text-light);
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
   padding: 0.25rem 0;
+  will-change: color;
 }
 
 .nav-link::after {
@@ -257,22 +257,35 @@ body {
   width: 0;
   height: 2px;
   background: var(--primary);
-  transition: width 0.3s ease;
+  will-change: width;
 }
 
-.nav-link {
-  transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+@keyframes highlightInNav {
+  from {
+    color: var(--text-light);
+  }
+  to {
+    color: var(--primary);
+  }
 }
 
-.nav-link:hover {
-  color: var(--primary);
-  transform: translateY(-1px);
+@keyframes underlineIn {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
-.nav-link:hover::after {
-  width: 100%;
-  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    animation: highlightInNav 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .nav-link:hover::after {
+    animation: underlineIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 /* Mobile Menu Button */
@@ -387,6 +400,11 @@ body {
   animation-delay: 0.15s;
 }
 
+.mobile-nav-link {
+  will-change: background-color, padding-left;
+  position: relative;
+}
+
 .mobile-nav-link::before {
   content: '';
   position: absolute;
@@ -396,24 +414,38 @@ body {
   width: 3px;
   background: var(--primary);
   transform: scaleY(0);
-  transition: transform 0.3s ease;
+  will-change: transform;
+  transform-origin: top;
 }
 
-.mobile-nav-link {
-  transition: background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              padding-left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+@keyframes highlightInMobileNav {
+  from {
+    background-color: transparent;
+    padding-left: 1rem;
+  }
+  to {
+    background-color: var(--bg-secondary);
+    padding-left: 1.25rem;
+  }
 }
 
-.mobile-nav-link:hover {
-  background: var(--bg-secondary);
-  padding-left: 1.25rem;
-  transform: translateX(4px);
+@keyframes highlightInMobileNavBefore {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 
-.mobile-nav-link:hover::before {
-  transform: scaleY(1);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+@media (hover: hover) and (pointer: fine) {
+  .mobile-nav-link:hover {
+    animation: highlightInMobileNav 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .mobile-nav-link:hover::before {
+    animation: highlightInMobileNavBefore 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .mobile-btn-logout {
@@ -449,19 +481,27 @@ body {
 }
 
 .btn-logout {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: background-color, box-shadow;
 }
 
-.btn-logout:hover:not(:disabled) {
-  background: #dc2626;
-  transform: scale(1.03);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+@keyframes highlightInLogout {
+  from {
+    background: var(--danger);
+  }
+  to {
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-logout:hover:not(:disabled) {
+    animation: highlightInLogout 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .btn-logout:active:not(:disabled) {
-  transform: scale(0.96);
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Main Content */
@@ -694,13 +734,22 @@ body {
 }
 
 .signin-password-toggle {
-  transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: color;
 }
 
-.signin-password-toggle:hover:not(:disabled) {
-  color: var(--primary);
-  transform: scale(1.1);
+@keyframes highlightInPasswordToggle {
+  from {
+    color: var(--text-light);
+  }
+  to {
+    color: var(--primary);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .signin-password-toggle:hover:not(:disabled) {
+    animation: highlightInPasswordToggle 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .signin-password-toggle:disabled {
@@ -718,11 +767,11 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
   margin-top: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
   position: relative;
   overflow: hidden;
+  will-change: background-color, box-shadow;
 }
 
 .signin-form-button::before {
@@ -733,27 +782,42 @@ body {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  will-change: left;
 }
 
-.signin-form-button:hover:not(:disabled)::before {
-  left: 100%;
+@keyframes shimmerSigninIn {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
 }
 
 .signin-form-button {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: background-color, box-shadow;
+  position: relative;
 }
 
-.signin-form-button:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.35);
+@keyframes highlightInSigninButton {
+  from {
+    background: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+  }
+  to {
+    background: var(--primary-dark);
+    box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.35);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .signin-form-button:hover:not(:disabled) {
+    animation: highlightInSigninButton 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .signin-form-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.96);
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .signin-form-button:disabled {
@@ -780,6 +844,150 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Highlight Animation Keyframes - Smooth highlight effect for hover */
+@keyframes highlightIn {
+  from {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  to {
+    background-color: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  }
+}
+
+@keyframes highlightOut {
+  from {
+    background-color: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+@keyframes highlightInPrimary {
+  from {
+    background-color: var(--primary);
+  }
+  to {
+    background-color: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+}
+
+@keyframes highlightOutPrimary {
+  from {
+    background-color: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  to {
+    background-color: var(--primary);
+  }
+}
+
+@keyframes highlightInDanger {
+  from {
+    background-color: #dc2626;
+  }
+  to {
+    background-color: #b91c1c;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+}
+
+@keyframes highlightOutDanger {
+  from {
+    background-color: #b91c1c;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+  to {
+    background-color: #dc2626;
+  }
+}
+
+@keyframes highlightInSecondary {
+  from {
+    background-color: var(--secondary);
+  }
+  to {
+    background-color: #475569;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+  }
+}
+
+@keyframes highlightOutSecondary {
+  from {
+    background-color: #475569;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+  }
+  to {
+    background-color: var(--secondary);
+  }
+}
+
+@keyframes highlightInCard {
+  from {
+    box-shadow: var(--shadow);
+    border-color: transparent;
+  }
+  to {
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-color: var(--border);
+  }
+}
+
+@keyframes highlightOutCard {
+  from {
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-color: var(--border);
+  }
+  to {
+    box-shadow: var(--shadow);
+  }
+}
+
+@keyframes highlightInHistory {
+  from {
+    box-shadow: var(--shadow);
+    border-left-width: 4px;
+  }
+  to {
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-left-width: 6px;
+  }
+}
+
+@keyframes highlightOutHistory {
+  from {
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    border-left-width: 6px;
+  }
+  to {
+    box-shadow: var(--shadow);
+    border-left-width: 4px;
+  }
+}
+
+@keyframes clickScale {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.96);
+  }
+}
+
+@keyframes clickScaleReverse {
+  from {
+    transform: scale(0.96);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 @keyframes fadeInDown {
@@ -991,7 +1199,7 @@ textarea {
 }
 
 /* Universal Click Animation for All Interactive Elements */
-/* Smooth and consistent transitions for all interactive elements */
+/* Using keyframes for smooth animations */
 button,
 .btn,
 a[role="button"],
@@ -1011,7 +1219,6 @@ input[type="submit"],
 .quickview-delete-btn,
 .nav-link,
 .mobile-nav-link,
-.mobile-nav-link,
 .combobox-button,
 .combobox-item,
 .toast-close,
@@ -1019,18 +1226,11 @@ input[type="submit"],
 .thread-checkbox,
 .comment-checkbox,
 .custom-checkbox {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  transform-origin: center;
-  will-change: transform;
+  position: relative;
+  will-change: background-color, box-shadow, border-color;
 }
 
-/* Click Animation: Scale Down */
+/* Click Animation: Using keyframes */
 button:active:not(:disabled),
 .btn:active:not(:disabled),
 a[role="button"]:active,
@@ -1054,14 +1254,13 @@ input[type="submit"]:active:not(:disabled),
 .combobox-item:active,
 .toast-close:active,
 .history-item:active {
-  transform: scale(0.96) !important;
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Hover Animation: Smooth Scale Up (Desktop Only) */
-/* Using ease-out for smoother hover experience */
+/* Hover Animation: Highlight Effect using keyframes (Desktop Only) */
 @media (hover: hover) and (pointer: fine) {
   button:hover:not(:disabled):not(:active),
-  .btn:hover:not(:disabled):not(:active),
+  .btn-secondary:hover:not(:disabled):not(:active),
   a[role="button"]:hover:not(:active),
   div[role="button"]:hover:not(.disabled):not(:active),
   div[onClick]:hover:not(.disabled):not(:active),
@@ -1079,9 +1278,8 @@ input[type="submit"]:active:not(:disabled),
   .mobile-nav-link:hover:not(:active),
   .combobox-button:hover:not(:active),
   .combobox-item:hover:not(:active),
-  .toast-close:hover:not(:active),
-  .history-item:hover:not(:active) {
-    transform: scale(1.03) !important;
+  .toast-close:hover:not(:active) {
+    animation: highlightIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 }
 
@@ -1093,41 +1291,15 @@ input[type="submit"]:active:not(:disabled),
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   display: inline-block;
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-}
-
-.btn:hover:not(:disabled)::before,
-.btn:active:not(:disabled)::before {
-  width: 300px;
-  height: 300px;
-  opacity: 1;
+  will-change: background-color, box-shadow;
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.96) !important;
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .btn-primary {
@@ -1135,16 +1307,15 @@ input[type="submit"]:active:not(:disabled),
   color: white;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: scale(1.03) !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover:not(:disabled) {
+    animation: highlightInPrimary 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none !important;
 }
 
 .btn-secondary {
@@ -1152,10 +1323,10 @@ input[type="submit"]:active:not(:disabled),
   color: white;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: #475569;
-  transform: scale(1.03) !important;
-  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover:not(:disabled) {
+    animation: highlightInSecondary 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .btn-danger {
@@ -1164,20 +1335,15 @@ input[type="submit"]:active:not(:disabled),
   border: none;
 }
 
-.btn-danger:hover:not(:disabled) {
-  background: #b91c1c;
-  transform: scale(1.03) !important;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.btn-danger:active:not(:disabled) {
-  transform: scale(0.96) !important;
+@media (hover: hover) and (pointer: fine) {
+  .btn-danger:hover:not(:disabled) {
+    animation: highlightInDanger 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .btn-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none !important;
 }
 
 /* Cards */
@@ -1188,39 +1354,22 @@ input[type="submit"]:active:not(:disabled),
   box-shadow: var(--shadow);
   margin-bottom: 1.5rem;
   animation: fadeInUp 0.4s ease-out;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: hidden; /* Prevent horizontal overflow */
-}
-
-/* Cards */
-.card {
-  background: var(--card);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  margin-bottom: 1.5rem;
-  animation: fadeInUp 0.4s ease-out;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden; /* Prevent horizontal overflow */
-  will-change: transform;
+  will-change: box-shadow, border-color;
+  border: 1px solid transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .card:hover:not(:active) {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+  .card.clickable:hover:not(:active) {
+    animation: highlightInCard 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
-  
-  .card:active {
-    transform: translateY(-1px) scale(0.99);
-  }
+}
+
+.card.clickable:active {
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Threads */
@@ -1246,9 +1395,6 @@ input[type="submit"]:active:not(:disabled),
   padding: 1.5rem;
   box-shadow: var(--shadow);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   text-decoration: none;
   color: inherit;
   display: block;
@@ -1259,7 +1405,7 @@ input[type="submit"]:active:not(:disabled),
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  will-change: transform;
+  will-change: box-shadow, border-color;
 }
 
 .thread-card::before {
@@ -1270,22 +1416,39 @@ input[type="submit"]:active:not(:disabled),
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
-  transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.thread-card:hover::before {
-  left: 100%;
+  animation: shimmerOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .thread-card:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
-    border-color: var(--border);
+  .thread-card:hover::before {
+    animation: shimmerIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
   
-  .thread-card:active {
-    transform: translateY(-2px) scale(0.99);
+  .thread-card:hover {
+    animation: highlightInCard 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+.thread-card:active {
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes shimmerIn {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes shimmerOut {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -100%;
   }
 }
 
@@ -1356,22 +1519,17 @@ input[type="submit"]:active:not(:disabled),
   padding: 1.5rem;
   box-shadow: var(--shadow);
   border-left: 4px solid var(--success);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-left-width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  will-change: transform;
+  will-change: box-shadow, border-left-width;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .history-item:hover {
-    transform: translateX(5px) scale(1.02);
-    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
-    border-left-width: 6px;
+    animation: highlightInHistory 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
-  
-  .history-item:active {
-    transform: translateX(3px) scale(0.99);
-  }
+}
+
+.history-item:active {
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .history-item-header {
@@ -1438,18 +1596,26 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .profile-avatar {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  will-change: transform;
+  will-change: box-shadow;
+}
+
+@keyframes highlightInAvatar {
+  from {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .profile-avatar:hover {
-    transform: scale(1.1) rotate(5deg);
+    animation: highlightInAvatar 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
-  
-  .profile-avatar:active {
-    transform: scale(1.05) rotate(2deg);
-  }
+}
+
+.profile-avatar:active {
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .profile-header h2 {
@@ -1469,8 +1635,7 @@ input[type="submit"]:active:not(:disabled),
 .stat-item {
   text-align: center;
   animation: scaleIn 0.4s ease-out backwards;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  will-change: transform;
+  will-change: box-shadow;
 }
 
 .stat-item:nth-child(1) {
@@ -1485,14 +1650,23 @@ input[type="submit"]:active:not(:disabled),
   animation-delay: 0.3s;
 }
 
+@keyframes highlightInStat {
+  from {
+    box-shadow: none;
+  }
+  to {
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .stat-item:hover {
-    transform: scale(1.08);
+    animation: highlightInStat 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
-  
-  .stat-item:active {
-    transform: scale(0.96);
-  }
+}
+
+.stat-item:active {
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .stat-value {
@@ -2534,19 +2708,28 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .toast-close {
-  transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: opacity, background-color;
 }
 
-.toast-close:hover {
-  opacity: 1;
-  background: rgba(0, 0, 0, 0.1);
-  transform: scale(1.1) rotate(90deg);
+@keyframes highlightInToastClose {
+  from {
+    opacity: 0.7;
+    background: transparent;
+  }
+  to {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toast-close:hover {
+    animation: highlightInToastClose 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 
 .toast-close:active {
-  transform: scale(0.95) rotate(90deg);
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @media (max-width: 640px) {
@@ -2657,14 +2840,21 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .combobox-item {
-  transition: background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: background-color;
+}
+
+@keyframes highlightInComboboxItem {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--bg-secondary);
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .combobox-item:hover {
-    background-color: var(--bg-secondary);
-    transform: translateX(4px);
+    animation: highlightInComboboxItem 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 }
 
@@ -3241,16 +3431,23 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .comment-card {
-  transition: border-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: border-color, box-shadow;
+}
+
+@keyframes highlightInComment {
+  from {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+  to {
+    border-color: var(--primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .comment-card:hover {
-    border-color: var(--primary);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    animation: highlightInComment 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 }
 
@@ -3604,22 +3801,28 @@ input[type="submit"]:active:not(:disabled),
 }
 
 .fab-button {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  will-change: transform;
+  will-change: background-color, box-shadow;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .fab-button:hover {
+@keyframes highlightInFAB {
+  from {
+    background: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  to {
     background: var(--primary-dark);
-    transform: scale(1.1);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .fab-button:hover {
+    animation: highlightInFAB 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
 .fab-button:active {
-  transform: scale(0.92) !important;
+  animation: clickScale 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* FAB button positioning now handled by inline styles in FeedPage.tsx */
