@@ -74,14 +74,11 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
 
   const toastContent = (
     <div
-      className={`toast ${isVisible ? 'toast-visible' : ''}`}
+      className={`toast ${!isVisible ? 'closing' : ''}`}
       style={{
         background: color.bg,
         border: `1px solid ${color.border}`,
         color: color.text,
-        animation: isVisible 
-          ? 'toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
-          : 'toastSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       }}
       onClick={onClose}
     >

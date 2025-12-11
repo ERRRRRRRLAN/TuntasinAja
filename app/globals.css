@@ -1292,7 +1292,7 @@ input[type="submit"],
 }
 
 .quickview-overlay.closing {
-  animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -1358,7 +1358,7 @@ input[type="submit"],
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1368,7 +1368,7 @@ input[type="submit"],
 }
 
 .quickview-content.closing {
-  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes slideDown {
@@ -2000,6 +2000,11 @@ input[type="submit"],
   z-index: 3000; /* Lebih tinggi dari quickview (1000) dan header (100) */
   backdrop-filter: blur(2px);
   isolation: isolate;
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.confirm-dialog-overlay.closing {
+  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .confirm-dialog-content {
@@ -2012,6 +2017,11 @@ input[type="submit"],
   pointer-events: auto;
   position: relative;
   z-index: 1;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.confirm-dialog-content.closing {
+  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .confirm-dialog-title {
@@ -2062,6 +2072,11 @@ input[type="submit"],
   z-index: 10001; /* Lebih tinggi dari quickview overlay (1000) dan semua elemen lainnya */
   backdrop-filter: blur(2px);
   isolation: isolate; /* Create new stacking context to prevent flicker */
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.quickview-confirm-dialog-overlay.closing {
+  animation: fadeOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .quickview-confirm-dialog-content {
@@ -2073,6 +2088,11 @@ input[type="submit"],
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
   pointer-events: auto;
   position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.quickview-confirm-dialog-content.closing {
+  animation: fadeOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* User List Table Styles */
@@ -2210,13 +2230,14 @@ input[type="submit"],
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   pointer-events: auto;
-  opacity: 0;
-  transform: translateX(120%) scale(0.9);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.toast.closing {
+  animation: toastSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .toast::before {
@@ -2230,30 +2251,25 @@ input[type="submit"],
   opacity: 0.3;
 }
 
-.toast-visible {
-  opacity: 1;
-  transform: translateX(0) scale(1);
-}
-
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateX(120%) scale(0.9);
+    transform: translateX(120%);
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 
 @keyframes toastSlideOut {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: translateX(120%) scale(0.9);
+    transform: translateX(120%);
   }
 }
 
