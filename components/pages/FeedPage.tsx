@@ -960,7 +960,8 @@ export default function FeedPage() {
               color: 'var(--text)',
               lineHeight: '1.5',
               animation: 'fadeIn 0.2s ease-out',
-              position: 'relative'
+              position: 'relative',
+              zIndex: 999 // Lower than quickview overlay (1000)
             }}>
               <div style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--primary)' }}>
                 Saran & Masukan
@@ -1011,6 +1012,7 @@ export default function FeedPage() {
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               padding: 0,
               position: 'relative',
+              zIndex: 999, // Lower than quickview overlay (1000)
               animation: 'fadeInUp 0.5s ease-out 0.2s both, pulse 2s ease-in-out infinite 1s'
             }}
             onMouseEnter={(e) => {
