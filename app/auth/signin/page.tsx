@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -80,32 +81,20 @@ export default function SignInPage() {
 
   return (
     <div className="signin-page-wrapper">
-      {/* Simple Header - Only Logo and Title */}
-      <header className="signin-page-header">
-        <div className="signin-page-header-content">
-          <div className="signin-page-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <img 
-              src="/logo.svg" 
-              alt="TuntasinAja Logo" 
-              style={{ 
-                width: '32px', 
-                height: '32px', 
-                flexShrink: 0,
-                objectFit: 'contain'
-              }} 
-            />
-            <span className="signin-page-logo-text">TuntasinAja</span>
-          </div>
-        </div>
-      </header>
+      {/* Background with blurred circles */}
+      <div className="signin-background-circles">
+        <div className="signin-circle signin-circle-1"></div>
+        <div className="signin-circle signin-circle-2"></div>
+      </div>
 
       {/* Main Content */}
       <main className="signin-page-main">
         <div className="signin-page-container">
           <div className="signin-page-card">
-            <div className="signin-page-welcome">
-              <h1 className="signin-page-title">Kumpulan Tugas SMKN 6 Tangerang Selatan</h1>
-              <p className="signin-page-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
+            {/* Header */}
+            <div className="signin-page-header-section">
+              <h1 className="signin-page-title">Login</h1>
+              <p className="signin-page-subtitle">Welcome Back Please Login To Your Account</p>
             </div>
             
             {error && (
@@ -117,7 +106,7 @@ export default function SignInPage() {
             <form onSubmit={handleSubmit} className="signin-page-form">
               <div className="signin-form-group">
                 <label htmlFor="email" className="signin-form-label">
-                  Email
+                  Name
                 </label>
                 <input
                   id="email"
@@ -125,19 +114,16 @@ export default function SignInPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={(e) => {
-                    // Ensure value is saved when user leaves field (Android clipboard fix)
                     const inputValue = e.target.value
                     if (inputValue !== email) {
                       setEmail(inputValue)
                     }
                   }}
                   onPaste={(e) => {
-                    // Handle paste event explicitly for Android
                     e.preventDefault()
                     const pastedText = e.clipboardData.getData('text')
                     if (pastedText) {
                       setEmail(pastedText)
-                      // Also update the input value directly for Android WebView
                       const target = e.target as HTMLInputElement
                       if (target) {
                         target.value = pastedText
@@ -145,14 +131,13 @@ export default function SignInPage() {
                     }
                   }}
                   onInput={(e) => {
-                    // Fallback handler for Android WebView
                     const target = e.target as HTMLInputElement
                     if (target && target.value !== email) {
                       setEmail(target.value)
                     }
                   }}
                   className="signin-form-input"
-                  placeholder="nama@email.com"
+                  placeholder="Enter your email"
                   required
                   disabled={isLoading}
                 />
@@ -169,19 +154,16 @@ export default function SignInPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onBlur={(e) => {
-                      // Ensure value is saved when user leaves field (Android clipboard fix)
                       const inputValue = e.target.value
                       if (inputValue !== password) {
                         setPassword(inputValue)
                       }
                     }}
                     onPaste={(e) => {
-                      // Handle paste event explicitly for Android
                       e.preventDefault()
                       const pastedText = e.clipboardData.getData('text')
                       if (pastedText) {
                         setPassword(pastedText)
-                        // Also update the input value directly for Android WebView
                         const target = e.target as HTMLInputElement
                         if (target) {
                           target.value = pastedText
@@ -189,14 +171,13 @@ export default function SignInPage() {
                       }
                     }}
                     onInput={(e) => {
-                      // Fallback handler for Android WebView
                       const target = e.target as HTMLInputElement
                       if (target && target.value !== password) {
                         setPassword(target.value)
                       }
                     }}
                     className="signin-form-input"
-                    placeholder="Masukkan password Anda"
+                    placeholder="Enter your password"
                     required
                     disabled={isLoading}
                     style={{ paddingRight: '3rem' }}
@@ -206,7 +187,7 @@ export default function SignInPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                     className="signin-password-toggle"
-                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
                       <EyeOffIcon size={20} />
@@ -215,6 +196,25 @@ export default function SignInPage() {
                     )}
                   </button>
                 </div>
+              </div>
+
+              {/* Remember Me and Forgot Password */}
+              <div className="signin-form-options">
+                <label className="signin-remember-me">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={isLoading}
+                  />
+                  <span>Remember Me</span>
+                </label>
+                <a href="#" className="signin-forgot-password" onClick={(e) => {
+                  e.preventDefault()
+                  // TODO: Implement forgot password functionality
+                }}>
+                  Forgot Password?
+                </a>
               </div>
 
               <button
@@ -228,7 +228,7 @@ export default function SignInPage() {
                     Memproses...
                   </span>
                 ) : (
-                  'Masuk'
+                  'Login'
                 )}
               </button>
             </form>
