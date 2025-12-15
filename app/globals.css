@@ -1590,14 +1590,14 @@ textarea::placeholder {
   .fab-create-announcement {
     bottom: 110px !important; /* Above 70px bottom navbar with 40px gap */
     right: 1rem !important;
-    z-index: 1001 !important;
+    z-index: 999 !important; /* Lower than quickview overlay (1000) */
   }
 
   .feedback-fab-container,
   .fab-feedback-container {
     bottom: 180px !important; /* 70px above Create Thread FAB */
     right: 1rem !important;
-    z-index: 1001 !important;
+    z-index: 999 !important; /* Lower than quickview overlay (1000) */
   }
 }
 
@@ -4003,7 +4003,7 @@ textarea::placeholder {
   .fab-create-announcement {
     bottom: 110px !important; /* Above 70px bottom navbar with 40px gap */
     right: 1rem !important;
-    z-index: 1001 !important;
+    z-index: 999 !important; /* Lower than quickview overlay (1000) */
   }
 
   .feedback-fab-container,

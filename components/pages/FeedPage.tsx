@@ -938,7 +938,7 @@ export default function FeedPage() {
             position: 'fixed',
             bottom: 'calc(7rem + env(safe-area-inset-bottom, 0px))', // Desktop default, CSS overrides for mobile
             right: '1.5rem',
-            zIndex: 1001,
+            zIndex: 999, // Lower than quickview overlay (1000)
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',
@@ -1060,7 +1060,7 @@ export default function FeedPage() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: 1001,
+            zIndex: 999, // Lower than quickview overlay (1000)
             transition: 'all 0.3s ease',
             padding: 0
           }}
