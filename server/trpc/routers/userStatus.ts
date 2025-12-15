@@ -422,7 +422,7 @@ export const userStatusRouter = createTRPCRouter({
           // Find existing history (if threadId is not null)
           const existingHistory = await prisma.history.findFirst({
             where: {
-              userId: ctx.session.user.id,
+              userId: userId,
               threadId: input.threadId,
             },
           })
@@ -434,9 +434,9 @@ export const userStatusRouter = createTRPCRouter({
               data: {
                 completedDate: getUTCDate(),
                 // Update denormalized data in case thread info changed
-                threadTitle: thread.title,
-                threadAuthorId: thread.author.id,
-                threadAuthorName: thread.author.name,
+                threadTitle: threadWithDetails.title,
+                threadAuthorId: threadWithDetails.author.id,
+                threadAuthorName: threadWithDetails.author.name,
               },
             })
             } else {
@@ -453,16 +453,16 @@ export const userStatusRouter = createTRPCRouter({
               })
             }
           } else if (allCommentsCompleted && threadCompleted) {
-          // Move to history if:
-          // 1. All comments are completed (or thread has no comments)
-          // 2. Thread is also completed
-          // Find existing history (if threadId is not null)
-          const existingHistory = await prisma.history.findFirst({
-            where: {
-              userId: ctx.session.user.id,
-              threadId: input.threadId,
-            },
-          })
+            // Move to history if:
+            // 1. All comments are completed (or thread has no comments)
+            // 2. Thread is also completed
+            // Find existing history (if threadId is not null)
+            const existingHistory = await prisma.history.findFirst({
+              where: {
+                userId: userId,
+                threadId: input.threadId,
+              },
+            })
 
             if (existingHistory) {
               // Update existing history
