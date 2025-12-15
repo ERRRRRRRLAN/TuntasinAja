@@ -10,8 +10,16 @@ import { XCloseIcon, BookIcon } from '@/components/ui/Icons'
 import ComboBox from '@/components/ui/ComboBox'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import UserAutocomplete from '@/components/ui/UserAutocomplete'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useBackHandler } from '@/hooks/useBackHandler'
+
+interface User {
+  id: string
+  name: string
+  email: string
+  kelas: string | null
+}
 
 interface CreateThreadQuickViewProps {
   onClose: () => void
@@ -22,6 +30,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
+  const [isGroupTask, setIsGroupTask] = useState(false)
+  const [groupTaskTitle, setGroupTaskTitle] = useState('')
+  const [selectedMembers, setSelectedMembers] = useState<User[]>([])
   // Default deadline: 7 days from today at 00:00 (midnight) in local timezone
   // Calculate when form is opened, not when component mounts
   const getDefaultDeadline = () => {
@@ -85,6 +96,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
       setTitle('')
       setComment('')
+      setIsGroupTask(false)
+      setGroupTaskTitle('')
+      setSelectedMembers([])
       // Reset deadline to default (1 week from now at 00:00)
       setDeadline(getDefaultDeadline())
       setIsSubmitting(false)
@@ -196,12 +210,27 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       toast.warning('Pilih mata pelajaran terlebih dahulu!')
       return
     }
+
+    // Validate group task fields
+    if (isGroupTask) {
+      if (!groupTaskTitle.trim()) {
+        toast.warning('Judul tugas kelompok harus diisi!')
+        return
+      }
+      if (selectedMembers.length === 0) {
+        toast.warning('Pilih minimal 1 anggota kelompok!')
+        return
+      }
+    }
     
     setIsSubmitting(true)
     createThread.mutate({ 
       title, 
       comment: comment || undefined,
-      deadline: deadline ? new Date(deadline) : undefined
+      deadline: deadline ? new Date(deadline) : undefined,
+      isGroupTask,
+      groupTaskTitle: isGroupTask ? groupTaskTitle : undefined,
+      memberIds: isGroupTask ? selectedMembers.map(m => m.id) : undefined,
     })
   }
 
@@ -284,6 +313,64 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
 
         <div className="comments-section">
           <form onSubmit={handleSubmit} style={{ padding: '0' }}>
+            {/* Pilihan Jenis Tugas */}
+            <div className="form-group">
+              <label>Jenis Tugas *</label>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.75rem 1rem',
+                    border: `2px solid ${!isGroupTask ? 'var(--primary)' : 'var(--border)'}`,
+                    borderRadius: '0.5rem',
+                    background: !isGroupTask ? 'var(--primary)10' : 'transparent',
+                    flex: 1,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="taskType"
+                    checked={!isGroupTask}
+                    onChange={() => setIsGroupTask(false)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontWeight: !isGroupTask ? 600 : 400 }}>Individual</span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.75rem 1rem',
+                    border: `2px solid ${isGroupTask ? 'var(--primary)' : 'var(--border)'}`,
+                    borderRadius: '0.5rem',
+                    background: isGroupTask ? 'var(--primary)10' : 'transparent',
+                    flex: 1,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="taskType"
+                    checked={isGroupTask}
+                    onChange={() => setIsGroupTask(true)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontWeight: isGroupTask ? 600 : 400 }}>Kelompok</span>
+                </label>
+              </div>
+              <small className="form-hint">
+                {isGroupTask
+                  ? 'Tugas untuk kelompok tertentu dengan anggota yang bisa dipilih'
+                  : 'Tugas untuk semua siswa di kelas yang sama'}
+              </small>
+            </div>
+
             <div className="form-group">
               <label htmlFor="threadTitle">Nama Mata Pelajaran *</label>
               <ComboBox
@@ -298,6 +385,38 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               />
               <small className="form-hint">Pilih mata pelajaran dari daftar</small>
             </div>
+
+            {/* Group Task Title */}
+            {isGroupTask && (
+              <div className="form-group">
+                <label htmlFor="groupTaskTitle">Judul Tugas Kelompok *</label>
+                <input
+                  type="text"
+                  id="groupTaskTitle"
+                  value={groupTaskTitle}
+                  onChange={(e) => setGroupTaskTitle(e.target.value)}
+                  placeholder="Contoh: Membuat Presentasi Bab 5"
+                  required={isGroupTask}
+                />
+                <small className="form-hint">Judul yang mendeskripsikan tugas kelompok</small>
+              </div>
+            )}
+
+            {/* Group Members */}
+            {isGroupTask && (
+              <div className="form-group">
+                <label>Anggota Kelompok *</label>
+                <UserAutocomplete
+                  value={selectedMembers}
+                  onChange={setSelectedMembers}
+                  placeholder="Ketik nama anggota... (contoh: Makarim)"
+                  excludeUserId={session?.user?.id}
+                />
+                <small className="form-hint">
+                  Pilih anggota kelompok. Anda akan otomatis menjadi anggota.
+                </small>
+              </div>
+            )}
 
             <div className="form-group">
               <label htmlFor="threadComment">Sub Tugas Awal (Deskripsi Tugas)</label>
@@ -332,7 +451,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                     <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
                     Membuat...
                   </>
-                ) : 'Buat PR'}
+                ) : isGroupTask ? 'Buat Tugas Kelompok' : 'Buat PR'}
               </button>
               <button 
                 type="button" 

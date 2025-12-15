@@ -46,9 +46,30 @@ export const threadRouter = createTRPCRouter({
       // Build where clause for filtering
       const whereClause = isAdmin
         ? undefined // Admin sees all
+        : userId && userKelas
+        ? {
+            OR: [
+              // Individual tasks from same kelas
+              {
+                isGroupTask: false,
+                author: {
+                  kelas: userKelas,
+                },
+              },
+              // Group tasks where user is a member
+              {
+                isGroupTask: true,
+                groupMembers: {
+                  some: {
+                    userId: userId,
+                  },
+                },
+              },
+            ],
+          }
         : userKelas
         ? {
-            // Filter by kelas of thread author
+            // Fallback: only show tasks from same kelas (if not logged in)
             author: {
               kelas: userKelas,
             },
@@ -89,6 +110,17 @@ export const threadRouter = createTRPCRouter({
           _count: {
             select: {
               comments: true,
+            },
+          },
+          groupMembers: {
+            select: {
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -234,6 +266,9 @@ export const threadRouter = createTRPCRouter({
         title: z.string().min(1),
         comment: z.string().optional(),
         deadline: z.date().optional(),
+        isGroupTask: z.boolean().optional().default(false),
+        groupTaskTitle: z.string().optional(),
+        memberIds: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -269,10 +304,13 @@ export const threadRouter = createTRPCRouter({
         const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
 
-        // Check if thread with same title exists ONLY for today's date AND same kelas
-        // This prevents bug where thread from different kelas is found
-        // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
-        const existingThread = await prisma.thread.findFirst({
+        // Skip duplicate check for group tasks (each group task is unique)
+        let existingThread = null
+        if (!input.isGroupTask) {
+          // Check if thread with same title exists ONLY for today's date AND same kelas
+          // This prevents bug where thread from different kelas is found
+          // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
+          existingThread = await prisma.thread.findFirst({
           where: {
             title: input.title,
             date: {
@@ -299,6 +337,7 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
+        }
 
         if (existingThread) {
           // If comment provided, add as comment
@@ -391,6 +430,8 @@ export const threadRouter = createTRPCRouter({
             date: today,
             createdAt: now,
             deadline: input.deadline || null,
+            isGroupTask: input.isGroupTask || false,
+            groupTaskTitle: input.groupTaskTitle || null,
             comments: input.comment
               ? {
                   create: {
@@ -422,6 +463,30 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
+
+        // Create group members if this is a group task
+        if (input.isGroupTask && input.memberIds && input.memberIds.length > 0) {
+          // Add selected members
+          const memberData = input.memberIds.map(memberId => ({
+            threadId: thread.id,
+            userId: memberId,
+            addedBy: ctx.session.user.id,
+          }))
+
+          // Auto-add creator as member if not already in the list
+          if (!input.memberIds.includes(ctx.session.user.id)) {
+            memberData.push({
+              threadId: thread.id,
+              userId: ctx.session.user.id,
+              addedBy: ctx.session.user.id,
+            })
+          }
+
+          await prisma.groupMember.createMany({
+            data: memberData,
+            skipDuplicates: true,
+          })
+        }
 
         // Send notification for new thread
         if (userKelas && !isAdmin) {

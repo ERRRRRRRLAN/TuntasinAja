@@ -281,38 +281,66 @@ export const userStatusRouter = createTRPCRouter({
       if ((user as any)?.isAdmin) {
         throw new Error('Admin tidak dapat mencentang comment. Admin hanya dapat melihat statistik pengerjaan.')
       }
-      if (input.isCompleted) {
-        // Don't set threadId for comment status to avoid unique constraint conflict
-        // We can get threadId from comment relation if needed
-        await prisma.userStatus.upsert({
-          where: {
-            userId_commentId: {
-              userId: ctx.session.user.id,
-              commentId: input.commentId,
+
+      // Check if this is a group task and get group members
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.threadId },
+        select: {
+          isGroupTask: true,
+          groupMembers: {
+            select: {
+              userId: true,
             },
           },
-          create: {
-            userId: ctx.session.user.id,
-            commentId: input.commentId,
-            // Don't set threadId to avoid conflict with thread status unique constraint
-            threadId: null,
-            isCompleted: true,
-          },
-          update: {
-            isCompleted: true,
-          },
-        })
+        },
+      })
+
+      const isGroupTask = thread?.isGroupTask || false
+      const groupMemberIds = isGroupTask ? thread?.groupMembers.map(m => m.userId) || [] : []
+
+      // For group tasks: shared completion (all members see the same status)
+      // For individual tasks: only update current user's status
+      const userIdsToUpdate = isGroupTask && groupMemberIds.length > 0
+        ? groupMemberIds
+        : [ctx.session.user.id]
+
+      if (input.isCompleted) {
+        // Mark comment as completed for all relevant users
+        await Promise.all(
+          userIdsToUpdate.map(userId =>
+            prisma.userStatus.upsert({
+              where: {
+                userId_commentId: {
+                  userId: userId,
+                  commentId: input.commentId,
+                },
+              },
+              create: {
+                userId: userId,
+                commentId: input.commentId,
+                threadId: null,
+                isCompleted: true,
+              },
+              update: {
+                isCompleted: true,
+              },
+            })
+          )
+        )
       } else {
+        // Unmark comment for all relevant users
         await prisma.userStatus.deleteMany({
           where: {
-            userId: ctx.session.user.id,
+            userId: {
+              in: userIdsToUpdate,
+            },
             commentId: input.commentId,
           },
         })
       }
 
       // Check if thread should be moved to history
-      const thread = await prisma.thread.findUnique({
+      const threadWithDetails = await prisma.thread.findUnique({
         where: { id: input.threadId },
         include: {
           comments: true,
@@ -322,59 +350,72 @@ export const userStatusRouter = createTRPCRouter({
               name: true,
             },
           },
+          groupMembers: {
+            select: {
+              userId: true,
+            },
+          },
         },
       })
 
-      if (thread) {
-        const threadStatus = await prisma.userStatus.findUnique({
-          where: {
-            userId_threadId: {
-              userId: ctx.session.user.id,
-              threadId: input.threadId,
-            },
-          },
-        })
+      if (threadWithDetails) {
+        // For group tasks, use same userIdsToUpdate as above
+        // For individual tasks, only check current user
+        const usersToCheck = isGroupTask && groupMemberIds.length > 0
+          ? groupMemberIds
+          : [ctx.session.user.id]
 
-        // Get all comment statuses for this thread
-        const commentsStatuses = await Promise.all(
-          thread.comments.map(async (comment) => {
-            const status = await prisma.userStatus.findUnique({
-              where: {
-                userId_commentId: {
-                  userId: ctx.session.user.id,
-                  commentId: comment.id,
-                },
-              },
-            })
-            return status?.isCompleted ?? false
-          })
-        )
-
-        // If thread has no comments, consider all comments as completed
-        // Otherwise, check if all comments are completed
-        const allCommentsCompleted = 
-          thread.comments.length === 0 || 
-          commentsStatuses.every((status) => status === true)
-        const threadCompleted = threadStatus?.isCompleted ?? false
-
-        // Auto-check thread if all comments are completed
-        if (allCommentsCompleted && !threadCompleted) {
-          await prisma.userStatus.upsert({
+        // Check for EACH user if we should auto-complete thread
+        for (const userId of usersToCheck) {
+          const threadStatus = await prisma.userStatus.findUnique({
             where: {
               userId_threadId: {
-                userId: ctx.session.user.id,
+                userId: userId,
                 threadId: input.threadId,
               },
             },
-            create: {
-              userId: ctx.session.user.id,
-              threadId: input.threadId,
-              isCompleted: true,
-            },
-            update: {
-              isCompleted: true,
-            },
           })
+
+          // Get all comment statuses for this thread for this user
+          const commentsStatuses = await Promise.all(
+            threadWithDetails.comments.map(async (comment) => {
+              const status = await prisma.userStatus.findUnique({
+                where: {
+                  userId_commentId: {
+                    userId: userId,
+                    commentId: comment.id,
+                  },
+                },
+              })
+              return status?.isCompleted ?? false
+            })
+          )
+
+          // If thread has no comments, consider all comments as completed
+          // Otherwise, check if all comments are completed
+          const allCommentsCompleted = 
+            threadWithDetails.comments.length === 0 || 
+            commentsStatuses.every((status) => status === true)
+          const threadCompleted = threadStatus?.isCompleted ?? false
+
+          // Auto-check thread if all comments are completed
+          if (allCommentsCompleted && !threadCompleted) {
+            await prisma.userStatus.upsert({
+              where: {
+                userId_threadId: {
+                  userId: userId,
+                  threadId: input.threadId,
+                },
+              },
+              create: {
+                userId: userId,
+                threadId: input.threadId,
+                isCompleted: true,
+              },
+              update: {
+                isCompleted: true,
+              },
+            })
 
           // After auto-checking thread, move to history immediately
           // because all comments are completed and thread is now completed
@@ -398,20 +439,20 @@ export const userStatusRouter = createTRPCRouter({
                 threadAuthorName: thread.author.name,
               },
             })
-          } else {
-            // Create new history
-            await prisma.history.create({
-              data: {
-                userId: ctx.session.user.id,
-                threadId: input.threadId,
-                threadTitle: thread.title,
-                threadAuthorId: thread.author.id,
-                threadAuthorName: thread.author.name,
-                completedDate: getUTCDate(),
-              },
-            })
-          }
-        } else if (allCommentsCompleted && threadCompleted) {
+            } else {
+              // Create new history
+              await prisma.history.create({
+                data: {
+                  userId: userId,
+                  threadId: input.threadId,
+                  threadTitle: threadWithDetails.title,
+                  threadAuthorId: threadWithDetails.author.id,
+                  threadAuthorName: threadWithDetails.author.name,
+                  completedDate: getUTCDate(),
+                },
+              })
+            }
+          } else if (allCommentsCompleted && threadCompleted) {
           // Move to history if:
           // 1. All comments are completed (or thread has no comments)
           // 2. Thread is also completed
@@ -423,39 +464,40 @@ export const userStatusRouter = createTRPCRouter({
             },
           })
 
-          if (existingHistory) {
-            // Update existing history
-            await prisma.history.update({
-              where: { id: existingHistory.id },
-              data: {
-                completedDate: getUTCDate(),
-                // Update denormalized data in case thread info changed
-                threadTitle: thread.title,
-                threadAuthorId: thread.author.id,
-                threadAuthorName: thread.author.name,
-              },
-            })
+            if (existingHistory) {
+              // Update existing history
+              await prisma.history.update({
+                where: { id: existingHistory.id },
+                data: {
+                  completedDate: getUTCDate(),
+                  // Update denormalized data in case thread info changed
+                  threadTitle: threadWithDetails.title,
+                  threadAuthorId: threadWithDetails.author.id,
+                  threadAuthorName: threadWithDetails.author.name,
+                },
+              })
+            } else {
+              // Create new history
+              await prisma.history.create({
+                data: {
+                  userId: userId,
+                  threadId: input.threadId,
+                  threadTitle: threadWithDetails.title,
+                  threadAuthorId: threadWithDetails.author.id,
+                  threadAuthorName: threadWithDetails.author.name,
+                  completedDate: getUTCDate(),
+                },
+              })
+            }
           } else {
-            // Create new history
-            await prisma.history.create({
-              data: {
-                userId: ctx.session.user.id,
+            // Remove from history if thread or comments are unchecked
+            await prisma.history.deleteMany({
+              where: {
+                userId: userId,
                 threadId: input.threadId,
-                threadTitle: thread.title,
-                threadAuthorId: thread.author.id,
-                threadAuthorName: thread.author.name,
-                completedDate: getUTCDate(),
               },
             })
           }
-        } else {
-          // Remove from history if thread or comments are unchecked
-          await prisma.history.deleteMany({
-            where: {
-              userId: ctx.session.user.id,
-              threadId: input.threadId,
-            },
-          })
         }
       }
 

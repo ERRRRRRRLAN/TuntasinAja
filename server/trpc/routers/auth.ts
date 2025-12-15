@@ -581,5 +581,46 @@ export const authRouter = createTRPCRouter({
         errors,
       }
     }),
+
+  // Search users by name for autocomplete
+  searchUsers: protectedProcedure
+    .input(
+      z.object({
+        query: z.string().min(1),
+        excludeUserId: z.string().optional(), // Exclude current user from results
+        limit: z.number().min(1).max(20).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { query, excludeUserId, limit } = input;
+
+      const users = await prisma.user.findMany({
+        where: {
+          name: {
+            contains: query,
+            mode: 'insensitive',
+          },
+          ...(excludeUserId && {
+            id: {
+              not: excludeUserId,
+            },
+          }),
+          // Exclude admin users from search results
+          isAdmin: false,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          kelas: true,
+        },
+        take: limit,
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return users;
+    }),
 })
 

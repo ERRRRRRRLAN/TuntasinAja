@@ -20,6 +20,8 @@ interface ThreadCardProps {
     date: Date
     createdAt: Date
     deadline?: Date | null
+    isGroupTask?: boolean
+    groupTaskTitle?: string | null
     author: {
       id: string
       name: string
@@ -38,6 +40,13 @@ interface ThreadCardProps {
     _count: {
       comments: number
     }
+    groupMembers?: Array<{
+      userId: string
+      user: {
+        id: string
+        name: string
+      }
+    }>
   }
   onThreadClick?: (threadId: string) => void
 }
@@ -285,37 +294,58 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             </div>
           )}
           <div className="thread-card-header-content" style={{ position: 'relative' }}>
-            <h3 
-              className="thread-title"
-              style={{
-                textDecoration: isCompleted ? 'line-through' : 'none',
-                color: isCompleted ? 'var(--text-light)' : 'var(--text)',
-                flex: 1,
-                margin: 0,
-                lineHeight: 1.4,
-                paddingRight: thread.author.kelas ? '80px' : '0'
-              }}
-            >
-              {thread.title}
-            </h3>
-            {thread.author.kelas && (
-              <span style={{
-                position: 'absolute',
-                right: '0',
-                top: 0,
-                display: 'inline-block',
-                padding: '0.125rem 0.375rem',
-                borderRadius: '0.25rem',
-                border: '1px solid var(--primary)',
-                color: 'var(--primary)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                background: 'transparent',
-                zIndex: 1
-              }}>
-                {thread.author.kelas}
-              </span>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h3 
+                  className="thread-title"
+                  style={{
+                    textDecoration: isCompleted ? 'line-through' : 'none',
+                    color: isCompleted ? 'var(--text-light)' : 'var(--text)',
+                    margin: 0,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {thread.title}
+                </h3>
+                {thread.isGroupTask && (
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                  }}>
+                    Kelompok
+                  </span>
+                )}
+                {thread.author.kelas && (
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.125rem 0.375rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid var(--primary)',
+                    color: 'var(--primary)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    background: 'transparent',
+                  }}>
+                    {thread.author.kelas}
+                  </span>
+                )}
+              </div>
+              {thread.isGroupTask && thread.groupTaskTitle && (
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.875rem',
+                  color: 'var(--text-light)',
+                  fontStyle: 'italic',
+                }}>
+                  {thread.groupTaskTitle}
+                </p>
+              )}
+            </div>
           </div>
         </div>
         
@@ -324,6 +354,17 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <UserIcon size={16} />
             <span>{thread.author.name}</span>
           </span>
+          {thread.isGroupTask && thread.groupMembers && thread.groupMembers.length > 0 && (
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.375rem',
+              fontSize: '0.875rem',
+              color: 'var(--text-light)',
+            }}>
+              👥 {thread.groupMembers.length} anggota
+            </span>
+          )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
