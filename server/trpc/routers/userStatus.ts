@@ -567,17 +567,42 @@ export const userStatusRouter = createTRPCRouter({
     const userKelas = user?.kelas || null
     const isAdmin = user?.isAdmin || false
 
+    // Build where clause for filtering (same logic as thread.getAll)
+    const whereClause = isAdmin
+      ? undefined // Admin sees all
+      : userId && userKelas
+      ? {
+          OR: [
+            // Individual tasks from same kelas
+            {
+              isGroupTask: false,
+              author: {
+                kelas: userKelas,
+              },
+            },
+            // Group tasks where user is a member
+            {
+              isGroupTask: true,
+              groupMembers: {
+                some: {
+                  userId: userId,
+                },
+              },
+            },
+          ],
+        }
+      : userKelas
+      ? {
+          // Fallback: only show tasks from same kelas (if not logged in)
+          author: {
+            kelas: userKelas,
+          },
+        }
+      : undefined // Public sees all
+
     // Get all threads visible to this user (same logic as thread.getAll)
     const threads = await prisma.thread.findMany({
-      where: isAdmin
-        ? undefined // Admin sees all
-        : userKelas
-        ? {
-            author: {
-              kelas: userKelas,
-            },
-          }
-        : undefined,
+      where: whereClause,
       select: {
         id: true,
         comments: {
