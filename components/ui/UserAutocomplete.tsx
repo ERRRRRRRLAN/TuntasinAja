@@ -124,9 +124,10 @@ export default function UserAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  const handleInputFocus = () => {
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     if (!disabled) {
       setIsOpen(true)
+      e.currentTarget.style.borderColor = 'var(--primary)'
     }
   }
 
@@ -337,11 +338,6 @@ export default function UserAutocomplete({
           transition: 'border-color 0.2s',
           opacity: disabled ? 0.6 : 1,
           cursor: disabled ? 'not-allowed' : 'text',
-        }}
-        onFocus={(e) => {
-          if (!disabled) {
-            e.currentTarget.style.borderColor = 'var(--primary)'
-          }
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = 'var(--border)'
