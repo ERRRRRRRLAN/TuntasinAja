@@ -4010,7 +4010,7 @@ textarea::placeholder {
   .fab-feedback-container {
     bottom: 180px !important; /* 70px above Create Thread FAB */
     right: 1rem !important;
-    z-index: 1001 !important;
+    z-index: 999 !important; /* Lower than quickview overlay (1000) */
   }
 
   .feedback-fab-container button,
