@@ -333,17 +333,33 @@ export default function PushNotificationSetup() {
                 onError: (error) => {
                   console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
                   console.error('[PushNotificationSetup] Error type:', typeof error)
-                  console.error('[PushNotificationSetup] Error message:', error?.message)
-                  console.error('[PushNotificationSetup] Error data:', error?.data)
-                  console.error('[PushNotificationSetup] Error shape:', error?.shape)
+                  
+                  // TRPC errors have different structure
+                  let errorMsg = 'Unknown error'
+                  if (error instanceof Error) {
+                    errorMsg = error.message
+                  } else if (error && typeof error === 'object') {
+                    // Try to extract message from TRPC error structure
+                    const trpcError = error as any
+                    errorMsg = trpcError.message || 
+                               trpcError.data?.message || 
+                               trpcError.shape?.message || 
+                               trpcError.cause?.message ||
+                               String(error)
+                  } else {
+                    errorMsg = String(error)
+                  }
+                  
+                  console.error('[PushNotificationSetup] Error message:', errorMsg)
+                  console.error('[PushNotificationSetup] Error data:', (error as any)?.data)
+                  console.error('[PushNotificationSetup] Error shape:', (error as any)?.shape)
                   
                   // TRPC errors don't have stack property
                   const errorDetails = error instanceof Error 
                     ? { message: error.message, stack: error.stack }
-                    : { message: error?.message || String(error) }
+                    : { message: errorMsg, error: String(error) }
                   console.error('[PushNotificationSetup] Error details:', errorDetails)
                   
-                  const errorMsg = error?.message || error?.data?.message || 'Unknown error'
                   const fullErrorMsg = 'Failed to register device token: ' + errorMsg
                   setRegistrationError(fullErrorMsg)
                   
