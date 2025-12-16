@@ -1,6 +1,6 @@
 'use client'
 
-import { BookIcon, UsersIcon, ClockIcon, CheckCircleIcon, BellIcon, CalendarIcon, SmartphoneIcon, GlobeIcon } from '@/components/ui/Icons'
+import { BookIcon, UserIcon, ClockIcon, CheckCircleIcon, BellIcon, CalendarIcon, SmartphoneIcon, GlobeIcon } from '@/components/ui/Icons'
 
 export default function AboutPage() {
   return (
@@ -81,7 +81,7 @@ export default function AboutPage() {
 
           <div className="about-feature-card">
             <div className="about-feature-icon">
-              <UsersIcon size={32} />
+              <UserIcon size={32} />
             </div>
             <h3 className="about-feature-title">Kolaborasi Kelas</h3>
             <p className="about-feature-description">
