@@ -2,86 +2,37 @@
 
 Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih enak! 🎉
 
----
-
-## 🆕 Update Terbaru
-
-*Fitur Pengaturan Waktu Pengingat Deadline* ⏰
-- Sekarang kamu bisa atur sendiri waktu pengingat deadline sesuai jadwal kamu
-- Pilih waktu kapan mau dikasih tau kalau ada tugas yang deadline-nya besok
-- Waktu pengingat bisa diatur dari 00:00 sampai 23:30 dengan interval 30 menit
-- Notifikasi akan otomatis dikirim sesuai waktu yang kamu set
-- Fitur ini membantu kamu gak ketinggalan tugas penting!
-
-*Fitur Auto-Delete Tugas yang Sudah Lewat Deadline*
-- Tugas dan sub-tugas yang deadline-nya sudah lewat akan otomatis terhapus dari feed
-- Database akan dibersihkan otomatis setiap jam untuk menjaga performa aplikasi
-- History tugas yang sudah selesai tetap tersimpan untuk laporan
-- Fitur ini berjalan otomatis di background, jadi feed kamu selalu bersih dan hanya menampilkan tugas yang masih relevan
-
-*Perbaikan Tampilan Deadline*
-- Sekarang deadline ditampilkan lebih jelas di card tugas
-- Informasi deadline juga muncul di sub-tugas (tidak hanya di quickview)
-- Multiple deadline ditampilkan jika ada sub-tugas dengan deadline berbeda
-
-*Halaman FAQ*
-- Sekarang ada halaman FAQ yang bisa diakses dari login page
-- Berisi informasi tentang cara lupa password, cara register, dan cara membeli subscription
-- Semua pertanyaan umum ada di satu tempat yang mudah diakses
-
-*Tombol Testing untuk Admin*
-- Admin sekarang bisa test fitur auto-delete expired threads secara manual
-- Tombol testing ada di Admin Panel > Pengaturan
-- Berguna untuk cleanup langsung tanpa menunggu cron job
-
----
-
 ## ✨ Fitur Baru
 
-*1. Tab "Me" - Profil & Pengaturan Lengkap* ⚠️ BETA
-- Sekarang ada tab *"Me"* yang nampilin profil kamu di atas
-- Semua pengaturan ada di satu tempat, gak perlu bolak-balik halaman
-- ⚠️ *Catatan*: Fitur pengaturan ini masih dalam *masa pengujian (BETA)*, jadi mungkin masih ada bug atau fitur yang belum sempurna. Kalau nemuin masalah, langsung kasih tau lewat feedback ya!
-- Bisa atur notifikasi sesuai kebutuhan: mau terima notifikasi tugas? komentar? pengumuman? semua bisa diatur sendiri
-- Ada fitur *"Jangan Ganggu"* buat set waktu tertentu supaya notifikasi gak muncul (misalnya pas tidur malam)
-- Bisa set *waktu pengingat deadline* sendiri, jadi kamu bisa pilih kapan mau dikasih tau kalau ada tugas yang deadline-nya besok
+*1. Halaman FAQ - Bantuan Lengkap*
+- Sekarang ada halaman *FAQ* yang bisa diakses dari halaman login
+- Ada jawaban untuk pertanyaan umum seperti lupa password, cara daftar, dan cara membeli subscription
+- Bisa diakses tanpa perlu login dulu, jadi lebih mudah
 
-*2. Tema Aplikasi*
-- Sekarang bisa pilih tema *Light*, *Dark*, atau *Auto* (ikutin tema HP kamu)
-- Tema langsung berubah tanpa perlu refresh aplikasi
-- Semua halaman otomatis ikut tema yang dipilih
+*2. Tampilan Deadline yang Lebih Jelas*
+- Sekarang deadline tugas ditampilkan lebih jelas di card tugas
+- Kalau ada beberapa sub-tugas dengan deadline berbeda, semua deadline akan ditampilkan
+- Deadline yang sudah lewat akan otomatis dihapus dari daftar tugas
 
-*3. Navigasi Baru yang Lebih Nyaman*
-- Di HP: sekarang pakai *bottom navigation* yang lebih gampang dijangkau jempol
-- Di desktop: pakai *sidebar* yang lebih rapi dan gak makan tempat
-- Icon-nya sekarang konsisten dan lebih jelas
-
-*4. Pengaturan Tampilan*
-- Bisa atur berapa banyak tugas yang ditampilkan per halaman
-- Bisa pilih urutan tugas: terbaru, terlama, atau berdasarkan deadline
-- Bisa sembunyikan/tampilkan tugas yang sudah selesai
-- Bisa matikan animasi kalau gak suka
-
-*5. Pengaturan Suara & Getar*
-- Bisa aktifkan/nonaktifkan suara notifikasi
-- Bisa aktifkan/nonaktifkan getaran notifikasi
-- Semua bisa diatur sesuai selera masing-masing
+*3. Perbaikan Tampilan Login*
+- Tampilan login sekarang lebih modern dan rapi
+- Lebih mudah digunakan di HP maupun desktop
+- Ada link FAQ untuk bantuan seputar login
 
 ## 🔧 Yang Diperbaiki
 
-- *Scrollbar* sekarang lebih tipis dan gak ada panahnya, lebih rapi
-- *UI Mobile* diperbaiki, bottom navbar gak nutupin konten lagi
-- *Tombol buat tugas baru* posisinya lebih baik, gak ketabrak navbar
-- *Dropdown pengaturan* sekarang lebih fleksibel dan gak semua pakai search box
-- Kalau ada *perubahan pengaturan yang belum disimpan*, aplikasi bakal ngingetin dulu sebelum pindah halaman (biar gak kehilangan perubahan)
-- *Layout* lebih rapi dan responsif di semua ukuran layar
-- *Animasi* lebih halus dan bisa dimatikan kalau gak suka
+- *Tampilan deadline* sekarang lebih informatif dan mudah dibaca
+- *Card tugas* menampilkan informasi deadline dengan lebih jelas
+- *Sub-tugas* juga menampilkan deadline masing-masing
+- *Tugas yang sudah lewat deadline* otomatis tidak muncul lagi di feed
+- *Tombol feedback* posisinya diperbaiki agar tidak menutupi konten
+- *UI login* lebih rapi dan konsisten di semua perangkat
 
 ## 💡 Tips
 
-- Atur *waktu pengingat deadline* sesuai jadwal kamu biar gak ketinggalan tugas (misalnya set jam 19:00 untuk reminder malam hari)
-- Coba fitur *"Jangan Ganggu"* kalau gak mau diganggu notifikasi pas waktu tertentu
-- Coba tema *Dark* kalau suka yang gelap-gelapan, atau *Auto* biar ikutin tema HP
+- Cek halaman *FAQ* kalau ada pertanyaan tentang cara menggunakan aplikasi
+- Perhatikan *deadline* yang ditampilkan di card tugas untuk tidak ketinggalan
+- Gunakan fitur *pengingat deadline* di pengaturan untuk mendapatkan notifikasi otomatis
 
 ## ℹ️ Info Penting
 
