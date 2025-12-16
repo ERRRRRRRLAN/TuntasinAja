@@ -163,19 +163,19 @@ export default function MePage() {
     onError: (error) => {
       setIsSaving(false)
       // Check if it's a real network error
-      const isNetworkError = error.message?.includes('ERR_NAME_NOT_RESOLVED') ||
-                           error.message?.includes('Failed to fetch') ||
-                           error.message?.includes('NetworkError') ||
-                           error.message?.includes('Network request failed') ||
-                           error.name === 'NetworkError' ||
-                           error.name === 'TypeError'
+      const errorMessage = error.message || ''
+      const isNetworkError = errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
+                           errorMessage.includes('Failed to fetch') ||
+                           errorMessage.includes('NetworkError') ||
+                           errorMessage.includes('Network request failed') ||
+                           errorMessage.includes('TypeError')
       
       if (isNetworkError) {
         toast.error('Gagal menyimpan: Koneksi ke server terputus. Pastikan koneksi internet Anda aktif.')
       } else {
         // Show the actual error message for non-network errors
-        const errorMessage = error.message || 'Gagal menyimpan pengaturan'
-        toast.error(`Gagal menyimpan: ${errorMessage}`)
+        const displayMessage = errorMessage || 'Gagal menyimpan pengaturan'
+        toast.error(`Gagal menyimpan: ${displayMessage}`)
       }
     },
   })
