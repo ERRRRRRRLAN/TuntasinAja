@@ -140,11 +140,55 @@ export const threadRouter = createTRPCRouter({
         take: limit,
       })
 
+      // Get current time for deadline filtering
+      const { getUTCDate } = await import('@/lib/date-utils')
+      const now = getUTCDate()
+
+      // Filter out expired threads and comments
+      // A thread is expired if:
+      // 1. Thread has deadline and it's expired, AND
+      // 2. All comments with deadline are expired (if thread has no deadline)
+      const filteredByDeadline = threads.filter((thread) => {
+        // If thread has deadline and it's expired, exclude it
+        if (thread.deadline) {
+          const threadDeadline = new Date(thread.deadline)
+          if (threadDeadline < now) {
+            return false // Thread deadline expired, exclude
+          }
+        }
+
+        // Filter expired comments
+        const validComments = thread.comments.filter((comment) => {
+          if (!comment.deadline) return true // Comments without deadline are always valid
+          const commentDeadline = new Date(comment.deadline)
+          return commentDeadline >= now // Only include non-expired comments
+        })
+
+        // If thread has no deadline, check if all comments with deadline are expired
+        if (!thread.deadline) {
+          const commentsWithDeadline = thread.comments.filter((c) => c.deadline !== null)
+          if (commentsWithDeadline.length > 0) {
+            // If all comments with deadline are expired, exclude the thread
+            const allExpired = commentsWithDeadline.every((comment) => {
+              if (!comment.deadline) return false
+              return new Date(comment.deadline) < now
+            })
+            if (allExpired) {
+              return false // All subtasks expired, exclude thread
+            }
+          }
+        }
+
+        // Update thread comments to only include non-expired ones
+        thread.comments = validComments
+        return true
+      })
+
       // Filter out threads that are already completed by this user
       // Behavior depends on showCompleted setting:
       // - If showCompleted = true: Show all threads (including completed ones)
       // - If showCompleted = false: Filter out completed threads (regardless of completion time)
-      let filteredThreads = threads
+      let filteredThreads = filteredByDeadline
       const showCompleted = input?.showCompleted ?? true
       
       if (userId && !isAdmin && !showCompleted) {
