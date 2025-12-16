@@ -16,6 +16,7 @@ import TestingReminderButton from '@/components/admin/TestingReminderButton'
 import DatabaseHealth from '@/components/admin/DatabaseHealth'
 import BulkOperations from '@/components/admin/BulkOperations'
 import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
+import AutoDeleteExpiredButton from '@/components/admin/AutoDeleteExpiredButton'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -334,6 +335,9 @@ export default function ProfilePage() {
                   <DatabaseHealth />
                   <div style={{ marginTop: '1.5rem' }}>
                     <BulkOperations />
+                  </div>
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <AutoDeleteExpiredButton />
                   </div>
                   <div style={{ marginTop: '1.5rem' }}>
                     <TestingReminderButton />
