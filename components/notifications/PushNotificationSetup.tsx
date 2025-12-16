@@ -206,61 +206,114 @@ export default function PushNotificationSetup() {
         console.log('[PushNotificationSetup] ✅ Permission granted, registering with FCM...')
 
         // Register with FCM
+        console.log('[PushNotificationSetup] 📡 Calling PushNotifications.register()...')
         await PushNotifications.register()
-        console.log('[PushNotificationSetup] 📡 Registration request sent to FCM')
+        console.log('[PushNotificationSetup] 📡 Registration request sent to FCM, waiting for token...')
+
+        // Check if token is already available (sometimes it comes immediately)
+        try {
+          const checkToken = await PushNotifications.checkPermissions()
+          console.log('[PushNotificationSetup] Current permissions after register:', checkToken)
+        } catch (e) {
+          console.log('[PushNotificationSetup] Could not check permissions:', e)
+        }
 
         // Listen for registration - this is async, token will come later
         const registrationListener = PushNotifications.addListener('registration', async (token: any) => {
-          if (!isMounted) return
+          console.log('[PushNotificationSetup] 🎯 Registration event received!', {
+            hasToken: !!token,
+            tokenType: typeof token,
+            tokenKeys: token ? Object.keys(token) : [],
+            fullToken: token,
+          })
           
-          const tokenValue = token.value
+          if (!isMounted) {
+            console.log('[PushNotificationSetup] ⚠️ Component unmounted, ignoring token')
+            return
+          }
+          
+          const tokenValue = token?.value || token?.token || token
+          
+          if (!tokenValue || typeof tokenValue !== 'string') {
+            console.error('[PushNotificationSetup] ❌ Invalid token received:', {
+              token,
+              tokenValue,
+              tokenType: typeof tokenValue,
+            })
+            setRegistrationError('Invalid token received from FCM')
+            setupAttempted.current = false
+            return
+          }
+          
           deviceTokenRef.current = tokenValue
           
           console.log('[PushNotificationSetup] ✅ Push registration success!')
-          console.log('[PushNotificationSetup] Token:', tokenValue.substring(0, 30) + '...')
+          console.log('[PushNotificationSetup] Token length:', tokenValue.length)
+          console.log('[PushNotificationSetup] Token (first 50 chars):', tokenValue.substring(0, 50) + '...')
           console.log('[PushNotificationSetup] User ID:', session?.user?.id)
           console.log('[PushNotificationSetup] User Name:', session?.user?.name)
+          console.log('[PushNotificationSetup] User Email:', session?.user?.email)
           
-            // Register token with backend
-            console.log('[PushNotificationSetup] 📤 Sending token to backend...', {
-              tokenPrefix: tokenValue.substring(0, 30) + '...',
-              userId: session?.user?.id,
-              userName: session?.user?.name,
-              userEmail: session?.user?.email,
+          if (!session?.user?.id) {
+            console.error('[PushNotificationSetup] ❌ No user session when token received!')
+            setRegistrationError('No user session available')
+            setupAttempted.current = false
+            return
+          }
+          
+          // Register token with backend
+          console.log('[PushNotificationSetup] 📤 Sending token to backend...', {
+            tokenLength: tokenValue.length,
+            tokenPrefix: tokenValue.substring(0, 30) + '...',
+            userId: session?.user?.id,
+            userName: session?.user?.name,
+            userEmail: session?.user?.email,
+            deviceInfo: Capacitor.getPlatform(),
+          })
+          
+          try {
+            registerToken.mutate({
+              token: tokenValue,
               deviceInfo: Capacitor.getPlatform(),
+            }, {
+              onSuccess: (data) => {
+                console.log('[PushNotificationSetup] ✅✅ Token registered successfully in backend!', {
+                  data,
+                  userId: session?.user?.id,
+                  userName: session?.user?.name,
+                  userEmail: session?.user?.email,
+                })
+                setIsRegistered(true)
+                setRegistrationError(null)
+                // Update lastUserId to current user
+                lastUserIdRef.current = session?.user?.id || null
+              },
+              onError: (error) => {
+                console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
+                console.error('[PushNotificationSetup] Error type:', typeof error)
+                console.error('[PushNotificationSetup] Error message:', error?.message)
+                console.error('[PushNotificationSetup] Error stack:', error?.stack)
+                console.error('[PushNotificationSetup] Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+                setRegistrationError('Failed to register device token: ' + (error?.message || 'Unknown error'))
+                // Reset setupAttempted to allow retry
+                setupAttempted.current = false
+              },
             })
-            try {
-              registerToken.mutate({
-                token: tokenValue,
-                deviceInfo: Capacitor.getPlatform(),
-              }, {
-                onSuccess: (data) => {
-                  console.log('[PushNotificationSetup] ✅✅ Token registered successfully in backend!', {
-                    data,
-                    userId: session?.user?.id,
-                    userName: session?.user?.name,
-                    userEmail: session?.user?.email,
-                  })
-                  setIsRegistered(true)
-                  setRegistrationError(null)
-                  // Update lastUserId to current user
-                  lastUserIdRef.current = session?.user?.id || null
-                },
-                onError: (error) => {
-                  console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
-                  console.error('[PushNotificationSetup] Error details:', JSON.stringify(error, null, 2))
-                  setRegistrationError('Failed to register device token: ' + (error?.message || 'Unknown error'))
-                  // Reset setupAttempted to allow retry
-                  setupAttempted.current = false
-                },
-              })
-            } catch (error) {
-              console.error('[PushNotificationSetup] ❌ Exception registering token:', error)
-              setRegistrationError('Exception registering token: ' + (error instanceof Error ? error.message : 'Unknown error'))
-              setupAttempted.current = false
-            }
+          } catch (error) {
+            console.error('[PushNotificationSetup] ❌ Exception registering token:', error)
+            console.error('[PushNotificationSetup] Exception details:', {
+              error,
+              errorType: typeof error,
+              errorMessage: error instanceof Error ? error.message : String(error),
+              errorStack: error instanceof Error ? error.stack : undefined,
+            })
+            setRegistrationError('Exception registering token: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            setupAttempted.current = false
+          }
         })
         listenersRef.current.push(registrationListener)
+        
+        console.log('[PushNotificationSetup] ✅ Registration listener added, waiting for FCM token...')
 
         // Listen for registration errors
         const registrationErrorListener = PushNotifications.addListener('registrationError', (error: any) => {
