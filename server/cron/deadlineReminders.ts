@@ -38,9 +38,6 @@ export async function sendDeadlineReminders() {
     })
 
     console.log(`[DeadlineReminders] Found ${usersWithReminders.length} users with deadline reminders enabled`)
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:sendDeadlineReminders',message:'Found users with reminders',data:{userCount:usersWithReminders.length,currentTime,users:usersWithReminders.map(u=>({userId:u.user.id,reminderTime:u.reminderTime,kelas:u.user.kelas}))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
 
     let totalSent = 0
 
@@ -59,26 +56,20 @@ export async function sendDeadlineReminders() {
       
       // Check if we're within 30 minutes of reminder time
       const timeDiff = Math.abs(currentMinutes - reminderMinutes)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:timeCheck',message:'Time matching check',data:{userId:user.id,reminderTime,currentTime,reminderMinutes,currentMinutes,timeDiff,withinWindow:timeDiff<=30},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       if (timeDiff > 30) {
         continue // Skip if not within 30 minute window
       }
       
       if (!user.kelas) {
         console.log(`[DeadlineReminders] Skipping user ${user.id} - no kelas`)
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:noKelas',message:'User has no kelas',data:{userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-        // #endregion
         continue
       }
 
       // Get threads for this user's kelas that have upcoming deadlines (within next 24 hours)
       const tomorrow = addDays(jakartaNow, 1)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:queryThreads',message:'Before query threads',data:{userId:user.id,kelas:user.kelas,jakartaNow:jakartaNow.toISOString(),tomorrow:tomorrow.toISOString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
+      const tomorrowEnd = new Date(tomorrow)
+      tomorrowEnd.setHours(23, 59, 59, 999)
+      
       const threads = await prisma.thread.findMany({
         where: {
           author: {
@@ -86,7 +77,7 @@ export async function sendDeadlineReminders() {
           },
           deadline: {
             gte: jakartaNow,
-            lte: tomorrow,
+            lte: tomorrowEnd,
           },
         },
         include: {
@@ -98,9 +89,35 @@ export async function sendDeadlineReminders() {
           },
         },
       })
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:queryThreads',message:'After query threads',data:{userId:user.id,threadCount:threads.length,threadIds:threads.map(t=>t.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
+
+      // Get comments (sub-tasks) with deadline from threads in user's kelas
+      const comments = await prisma.comment.findMany({
+        where: {
+          thread: {
+            author: {
+              kelas: user.kelas,
+            },
+          },
+          deadline: {
+            gte: jakartaNow,
+            lte: tomorrowEnd,
+          },
+        },
+        include: {
+          thread: {
+            select: {
+              id: true,
+              title: true,
+              author: {
+                select: {
+                  name: true,
+                  kelas: true,
+                },
+              },
+            },
+          },
+        },
+      })
 
       // Check if user has completed these threads
       const completedThreadIds = await prisma.history.findMany({
@@ -115,22 +132,42 @@ export async function sendDeadlineReminders() {
         },
       })
 
-      const completedIds = new Set(completedThreadIds.map(h => h.threadId).filter((id): id is string => id !== null))
-      const uncompletedThreads = threads.filter(t => !completedIds.has(t.id))
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:filterThreads',message:'Filtered uncompleted threads',data:{userId:user.id,totalThreads:threads.length,uncompletedCount:uncompletedThreads.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
+      const completedThreadIdSet = new Set(completedThreadIds.map(h => h.threadId).filter((id): id is string => id !== null))
+      const uncompletedThreads = threads.filter(t => !completedThreadIdSet.has(t.id))
 
-      if (uncompletedThreads.length === 0) {
-        continue // No uncompleted threads with upcoming deadlines
+      // Check if user has completed these comments (sub-tasks)
+      const completedCommentIds = await prisma.userStatus.findMany({
+        where: {
+          userId: user.id,
+          commentId: {
+            in: comments.map(c => c.id),
+          },
+          isCompleted: true,
+        },
+        select: {
+          commentId: true,
+        },
+      })
+
+      const completedCommentIdSet = new Set(completedCommentIds.map(s => s.commentId).filter((id): id is string => id !== null))
+      const uncompletedComments = comments.filter(c => !completedCommentIdSet.has(c.id))
+
+      // Combine threads and comments for notification
+      const allUncompleted = [
+        ...uncompletedThreads.map(t => ({ type: 'thread' as const, id: t.id, title: t.title })),
+        ...uncompletedComments.map(c => ({ type: 'comment' as const, id: c.id, title: `${c.thread.title} - ${c.content.substring(0, 30)}${c.content.length > 30 ? '...' : ''}` })),
+      ]
+
+      if (allUncompleted.length === 0) {
+        continue // No uncompleted tasks with upcoming deadlines
       }
 
       // Send notification to this user's class
-      const threadTitles = uncompletedThreads.map(t => t.title).slice(0, 3) // Limit to 3 titles
+      const taskTitles = allUncompleted.map(t => t.title).slice(0, 3) // Limit to 3 titles
       const title = 'Pengingat Deadline'
-      const body = uncompletedThreads.length === 1
-        ? `Tugas "${threadTitles[0]}" deadline besok!`
-        : `${uncompletedThreads.length} tugas deadline besok: ${threadTitles.join(', ')}${uncompletedThreads.length > 3 ? '...' : ''}`
+      const body = allUncompleted.length === 1
+        ? `Tugas "${taskTitles[0]}" deadline besok!`
+        : `${allUncompleted.length} tugas deadline besok: ${taskTitles.join(', ')}${allUncompleted.length > 3 ? '...' : ''}`
 
       try {
         await sendNotificationToClass(
@@ -139,12 +176,13 @@ export async function sendDeadlineReminders() {
           body,
           {
             type: 'deadline_reminder',
-            threadIds: uncompletedThreads.map(t => t.id).join(','),
+            threadIds: allUncompleted.filter(t => t.type === 'thread').map(t => t.id).join(','),
+            commentIds: allUncompleted.filter(t => t.type === 'comment').map(t => t.id).join(','),
           },
           'deadline'
         )
         totalSent++
-        console.log(`[DeadlineReminders] ✅ Sent reminder to class ${user.kelas} for ${uncompletedThreads.length} tasks`)
+        console.log(`[DeadlineReminders] ✅ Sent reminder to class ${user.kelas} for ${allUncompleted.length} tasks (${uncompletedThreads.length} threads, ${uncompletedComments.length} comments)`)
       } catch (error) {
         console.error(`[DeadlineReminders] ❌ Error sending reminder to class ${user.kelas}:`, error)
       }
@@ -161,4 +199,3 @@ export async function sendDeadlineReminders() {
     throw error
   }
 }
-
