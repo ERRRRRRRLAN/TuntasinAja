@@ -20,7 +20,6 @@ export const notificationRouter = createTRPCRouter({
         userId: ctx.session.user.id,
         userName: ctx.session.user.name,
         userEmail: ctx.session.user.email,
-        userKelas: ctx.session.user.kelas,
         tokenLength: input.token.length,
         tokenPrefix: input.token.substring(0, 30) + '...',
         tokenSuffix: '...' + input.token.substring(input.token.length - 10),
