@@ -268,6 +268,9 @@ export default function PushNotificationSetup() {
             deviceInfo: Capacitor.getPlatform(),
           })
           
+          // Show toast to user
+          toast.info('📱 Mendaftarkan device token...', 2000)
+          
           try {
             registerToken.mutate({
               token: tokenValue,
@@ -284,6 +287,9 @@ export default function PushNotificationSetup() {
                 setRegistrationError(null)
                 // Update lastUserId to current user
                 lastUserIdRef.current = session?.user?.id || null
+                
+                // Show success toast
+                toast.success('✅ Device token berhasil terdaftar!', 3000)
               },
               onError: (error) => {
                 console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
@@ -294,20 +300,35 @@ export default function PushNotificationSetup() {
                   ? { message: error.message, stack: error.stack }
                   : { message: error?.message || String(error) }
                 console.error('[PushNotificationSetup] Error details:', errorDetails)
-                setRegistrationError('Failed to register device token: ' + (error?.message || 'Unknown error'))
+                const errorMsg = 'Failed to register device token: ' + (error?.message || 'Unknown error')
+                setRegistrationError(errorMsg)
+                
+                // Show error toast
+                toast.error('❌ ' + errorMsg, 5000)
+                
                 // Reset setupAttempted to allow retry
                 setupAttempted.current = false
               },
             })
           } catch (error) {
             console.error('[PushNotificationSetup] ❌ Exception registering token:', error)
-            console.error('[PushNotificationSetup] Exception details:', {
-              error,
-              errorType: typeof error,
-              errorMessage: error instanceof Error ? error.message : String(error),
-              errorStack: error instanceof Error ? error.stack : undefined,
-            })
-            setRegistrationError('Exception registering token: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            const errorDetails = error instanceof Error
+              ? {
+                  errorType: typeof error,
+                  errorMessage: error.message,
+                  errorStack: error.stack,
+                }
+              : {
+                  errorType: typeof error,
+                  errorMessage: String(error),
+                }
+            console.error('[PushNotificationSetup] Exception details:', errorDetails)
+            const errorMsg = 'Exception registering token: ' + (error instanceof Error ? error.message : 'Unknown error')
+            setRegistrationError(errorMsg)
+            
+            // Show error toast
+            toast.error('❌ ' + errorMsg, 5000)
+            
             setupAttempted.current = false
           }
         })
