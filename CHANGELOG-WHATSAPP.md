@@ -2,6 +2,33 @@
 
 Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih enak! 🎉
 
+---
+
+## 🆕 Update Terbaru
+
+*Fitur Auto-Delete Tugas yang Sudah Lewat Deadline*
+- Tugas dan sub-tugas yang deadline-nya sudah lewat akan otomatis terhapus dari feed
+- Database akan dibersihkan otomatis setiap jam untuk menjaga performa aplikasi
+- History tugas yang sudah selesai tetap tersimpan untuk laporan
+- Fitur ini berjalan otomatis di background, jadi feed kamu selalu bersih dan hanya menampilkan tugas yang masih relevan
+
+*Perbaikan Tampilan Deadline*
+- Sekarang deadline ditampilkan lebih jelas di card tugas
+- Informasi deadline juga muncul di sub-tugas (tidak hanya di quickview)
+- Multiple deadline ditampilkan jika ada sub-tugas dengan deadline berbeda
+
+*Halaman FAQ*
+- Sekarang ada halaman FAQ yang bisa diakses dari login page
+- Berisi informasi tentang cara lupa password, cara register, dan cara membeli subscription
+- Semua pertanyaan umum ada di satu tempat yang mudah diakses
+
+*Tombol Testing untuk Admin*
+- Admin sekarang bisa test fitur auto-delete expired threads secara manual
+- Tombol testing ada di Admin Panel > Pengaturan
+- Berguna untuk cleanup langsung tanpa menunggu cron job
+
+---
+
 ## ✨ Fitur Baru
 
 *1. Tab "Me" - Profil & Pengaturan Lengkap* ⚠️ BETA
