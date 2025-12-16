@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport = {
-  themeColor: '#6366f1',
+  themeColor: '#10b981',
 }
 
 export default function RootLayout({
@@ -35,7 +35,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#10b981" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="TuntasinAja" />

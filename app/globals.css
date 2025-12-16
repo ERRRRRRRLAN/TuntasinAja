@@ -9,8 +9,8 @@
 }
 
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
+  --primary: #10b981;
+  --primary-dark: #059669;
   --secondary: #64748b;
   --success: #10b981;
   --danger: #ef4444;
@@ -34,8 +34,8 @@
 
 /* Dark mode */
 .dark {
-  --primary: #818cf8;
-  --primary-dark: #6366f1;
+  --primary: #34d399;
+  --primary-dark: #10b981;
   --secondary: #94a3b8;
   --success: #34d399;
   --danger: #f87171;
@@ -704,7 +704,7 @@ body {
 .signin-form-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -764,7 +764,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 0;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -787,7 +787,7 @@ body {
 .signin-form-button:hover:not(:disabled) {
   background: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.3);
 }
 
 .signin-form-button:active:not(:disabled) {
@@ -888,7 +888,7 @@ body {
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
   }
 }
 
@@ -930,7 +930,7 @@ body {
 .form-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .form-input:disabled {
@@ -953,7 +953,7 @@ body {
 .form-group select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .form-group select {
@@ -1170,7 +1170,7 @@ textarea::placeholder {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.05), transparent);
   transition: left 0.5s ease;
 }
 

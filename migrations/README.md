@@ -78,3 +78,5 @@ ALTER TABLE threads DROP COLUMN IF EXISTS group_task_title;
 - Semua foreign key menggunakan `ON DELETE CASCADE` untuk data integrity
 - Index dibuat otomatis untuk performa query yang optimal
 
+
+
