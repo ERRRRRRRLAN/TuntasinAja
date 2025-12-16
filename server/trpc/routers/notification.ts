@@ -14,11 +14,18 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const startTime = Date.now()
+      console.log('[NotificationRouter] ========== REGISTER TOKEN START ==========')
       console.log('[NotificationRouter] Registering device token:', {
         userId: ctx.session.user.id,
         userName: ctx.session.user.name,
-        tokenPrefix: input.token.substring(0, 20) + '...',
+        userEmail: ctx.session.user.email,
+        userKelas: ctx.session.user.kelas,
+        tokenLength: input.token.length,
+        tokenPrefix: input.token.substring(0, 30) + '...',
+        tokenSuffix: '...' + input.token.substring(input.token.length - 10),
         deviceInfo: input.deviceInfo,
+        timestamp: new Date().toISOString(),
       })
 
       try {
@@ -80,6 +87,7 @@ export const notificationRouter = createTRPCRouter({
           },
         })
 
+        const duration = Date.now() - startTime
         console.log('[NotificationRouter] ✅ Device token registered/updated successfully:', {
           id: result.id,
           userId: result.userId,
@@ -89,11 +97,29 @@ export const notificationRouter = createTRPCRouter({
           deviceInfo: result.deviceInfo,
           wasUpdated: !!existingToken,
           previousUserId: existingToken?.userId,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+          duration: `${duration}ms`,
         })
+        console.log('[NotificationRouter] ========== REGISTER TOKEN SUCCESS ==========')
 
         return { success: true }
       } catch (error) {
-        console.error('[NotificationRouter] ❌ Error registering device token:', error)
+        const duration = Date.now() - startTime
+        console.error('[NotificationRouter] ========== REGISTER TOKEN ERROR ==========')
+        console.error('[NotificationRouter] ❌ Error registering device token:', {
+          error,
+          errorType: typeof error,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          userId: ctx.session.user.id,
+          userName: ctx.session.user.name,
+          tokenLength: input.token.length,
+          tokenPrefix: input.token.substring(0, 30) + '...',
+          duration: `${duration}ms`,
+          timestamp: new Date().toISOString(),
+        })
+        console.error('[NotificationRouter] ========== REGISTER TOKEN ERROR END ==========')
         throw error
       }
     }),

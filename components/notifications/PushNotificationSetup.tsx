@@ -228,16 +228,37 @@ export default function PushNotificationSetup() {
             return
           }
           
-          const tokenValue = token?.value || token?.token || token
+          // Extract token with multiple fallback strategies
+          let tokenValue: string | null = null
           
-          if (!tokenValue || typeof tokenValue !== 'string') {
+          // Try different token formats
+          if (typeof token === 'string') {
+            tokenValue = token
+          } else if (token?.value && typeof token.value === 'string') {
+            tokenValue = token.value
+          } else if (token?.token && typeof token.token === 'string') {
+            tokenValue = token.token
+          } else if (token?.data?.token && typeof token.data.token === 'string') {
+            tokenValue = token.data.token
+          }
+          
+          console.log('[PushNotificationSetup] Token extraction result:', {
+            originalToken: token,
+            extractedToken: tokenValue,
+            tokenType: typeof tokenValue,
+            tokenLength: tokenValue?.length,
+          })
+          
+          if (!tokenValue || typeof tokenValue !== 'string' || tokenValue.length < 10) {
             console.error('[PushNotificationSetup] ❌ Invalid token received:', {
               token,
               tokenValue,
               tokenType: typeof tokenValue,
+              tokenLength: tokenValue?.length,
             })
-            setRegistrationError('Invalid token received from FCM')
+            setRegistrationError('Invalid token received from FCM: ' + JSON.stringify(token))
             setupAttempted.current = false
+            toast.error('❌ Format token FCM tidak valid', 5000)
             return
           }
           
@@ -250,67 +271,91 @@ export default function PushNotificationSetup() {
           console.log('[PushNotificationSetup] User Name:', session?.user?.name)
           console.log('[PushNotificationSetup] User Email:', session?.user?.email)
           
-          if (!session?.user?.id) {
-            console.error('[PushNotificationSetup] ❌ No user session when token received!')
-            setRegistrationError('No user session available')
+          // Double-check session is still valid
+          const currentSession = session
+          if (!currentSession?.user?.id) {
+            console.error('[PushNotificationSetup] ❌ No user session when token received!', {
+              hasSession: !!currentSession,
+              hasUser: !!currentSession?.user,
+              userId: currentSession?.user?.id,
+            })
+            setRegistrationError('No user session available when token received')
             setupAttempted.current = false
+            toast.error('❌ Session tidak tersedia. Silakan login ulang.', 5000)
             return
           }
+          
+          const userId = currentSession.user.id
+          const userName = currentSession.user.name
+          const userEmail = currentSession.user.email
+          const deviceInfo = Capacitor.getPlatform()
           
           // Register token with backend
           console.log('[PushNotificationSetup] 📤 Sending token to backend...', {
             tokenLength: tokenValue.length,
             tokenPrefix: tokenValue.substring(0, 30) + '...',
-            userId: session?.user?.id,
-            userName: session?.user?.name,
-            userEmail: session?.user?.email,
-            deviceInfo: Capacitor.getPlatform(),
+            userId,
+            userName,
+            userEmail,
+            deviceInfo,
+            sessionValid: !!currentSession,
           })
           
           // Show toast to user
           toast.info('📱 Mendaftarkan device token...', 2000)
           
+          // Use a promise-based approach to ensure we can catch errors properly
           try {
-            registerToken.mutate({
-              token: tokenValue,
-              deviceInfo: Capacitor.getPlatform(),
-            }, {
-              onSuccess: (data) => {
-                console.log('[PushNotificationSetup] ✅✅ Token registered successfully in backend!', {
-                  data,
-                  userId: session?.user?.id,
-                  userName: session?.user?.name,
-                  userEmail: session?.user?.email,
-                })
-                setIsRegistered(true)
-                setRegistrationError(null)
-                // Update lastUserId to current user
-                lastUserIdRef.current = session?.user?.id || null
-                
-                // Show success toast
-                toast.success('✅ Device token berhasil terdaftar!', 3000)
-                
-                // Show success toast
-                toast.success('✅ Device token berhasil terdaftar!', 3000)
-              },
-              onError: (error) => {
-                console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
-                console.error('[PushNotificationSetup] Error type:', typeof error)
-                console.error('[PushNotificationSetup] Error message:', error?.message)
-                // TRPC errors don't have stack property
-                const errorDetails = error instanceof Error 
-                  ? { message: error.message, stack: error.stack }
-                  : { message: error?.message || String(error) }
-                console.error('[PushNotificationSetup] Error details:', errorDetails)
-                const errorMsg = 'Failed to register device token: ' + (error?.message || 'Unknown error')
-                setRegistrationError(errorMsg)
-                
-                // Show error toast
-                toast.error('❌ ' + errorMsg, 5000)
-                
-                // Reset setupAttempted to allow retry
-                setupAttempted.current = false
-              },
+            await new Promise<void>((resolve, reject) => {
+              registerToken.mutate({
+                token: tokenValue,
+                deviceInfo,
+              }, {
+                onSuccess: (data) => {
+                  console.log('[PushNotificationSetup] ✅✅ Token registered successfully in backend!', {
+                    data,
+                    userId,
+                    userName,
+                    userEmail,
+                    tokenLength: tokenValue.length,
+                    tokenPrefix: tokenValue.substring(0, 30) + '...',
+                  })
+                  setIsRegistered(true)
+                  setRegistrationError(null)
+                  // Update lastUserId to current user
+                  lastUserIdRef.current = userId
+                  
+                  // Show success toast
+                  toast.success('✅ Device token berhasil terdaftar!', 3000)
+                  
+                  resolve()
+                },
+                onError: (error) => {
+                  console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
+                  console.error('[PushNotificationSetup] Error type:', typeof error)
+                  console.error('[PushNotificationSetup] Error message:', error?.message)
+                  console.error('[PushNotificationSetup] Error data:', error?.data)
+                  console.error('[PushNotificationSetup] Error shape:', error?.shape)
+                  
+                  // TRPC errors don't have stack property
+                  const errorDetails = error instanceof Error 
+                    ? { message: error.message, stack: error.stack }
+                    : { message: error?.message || String(error) }
+                  console.error('[PushNotificationSetup] Error details:', errorDetails)
+                  
+                  const errorMsg = error?.message || error?.data?.message || 'Unknown error'
+                  const fullErrorMsg = 'Failed to register device token: ' + errorMsg
+                  setRegistrationError(fullErrorMsg)
+                  
+                  // Show error toast
+                  toast.error('❌ Gagal mendaftarkan token: ' + errorMsg, 5000)
+                  
+                  // Reset setupAttempted to allow retry
+                  setupAttempted.current = false
+                  
+                  reject(error)
+                },
+              })
             })
           } catch (error) {
             console.error('[PushNotificationSetup] ❌ Exception registering token:', error)
@@ -332,6 +377,17 @@ export default function PushNotificationSetup() {
             toast.error('❌ ' + errorMsg, 5000)
             
             setupAttempted.current = false
+            
+            // Retry after 5 seconds
+            console.log('[PushNotificationSetup] ⏳ Will retry token registration in 5 seconds...')
+            setTimeout(() => {
+              if (isMounted && currentSession?.user?.id && deviceTokenRef.current) {
+                console.log('[PushNotificationSetup] 🔄 Retrying token registration...')
+                setupAttempted.current = false
+                // Trigger re-initialization by resetting lastUserId
+                lastUserIdRef.current = null
+              }
+            }, 5000)
           }
         })
         listenersRef.current.push(registrationListener)
