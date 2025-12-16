@@ -104,7 +104,7 @@ export default async function handler(
     })
 
     // Filter threads where all comments with deadline have expired
-    // If a thread has comments without deadline, it won't be deleted
+    // If a thread has comments without deadline, it won't be deleted (only comments with deadline count)
     const threadsWithAllExpiredComments = threadsWithComments.filter((thread) => {
       if (thread.comments.length === 0) return false // Skip threads with no comments
       
@@ -115,10 +115,14 @@ export default async function handler(
       if (commentsWithDeadline.length === 0) return false
       
       // Check if ALL comments with deadline have expired
-      return commentsWithDeadline.every((comment) => {
+      // If all comments with deadline are expired, delete the thread
+      // Comments without deadline don't count (they don't expire)
+      const allDeadlinesExpired = commentsWithDeadline.every((comment) => {
         if (!comment.deadline) return false // Should not happen, but just in case
         return new Date(comment.deadline) < now
       })
+      
+      return allDeadlinesExpired
     })
 
     // Combine both lists

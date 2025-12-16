@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { format, differenceInHours, differenceInMinutes, addDays } from 'date-fns'
+import { format, differenceInHours, differenceInMinutes, differenceInDays, addDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { toJakartaDate } from '@/lib/date-utils'
+import { toJakartaDate, getUTCDate } from '@/lib/date-utils'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
@@ -1170,6 +1170,55 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               {comment?.author?.kelas}
                             </span>
                           )}
+                          {comment?.deadline && (() => {
+                            const now = getUTCDate()
+                            const deadlineUTC = new Date(comment.deadline)
+                            const deadlineJakarta = toJakartaDate(deadlineUTC)
+                            const nowJakarta = toJakartaDate(now)
+                            const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+                            const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+                            let deadlineText = ''
+                            let deadlineColor = 'var(--text-light)'
+                            let deadlineBg = 'var(--bg-secondary)'
+
+                            if (hoursUntilDeadline < 0) {
+                              deadlineText = 'Deadline lewat'
+                              deadlineColor = 'var(--danger)'
+                              deadlineBg = 'var(--danger)20'
+                            } else if (hoursUntilDeadline < 2) {
+                              deadlineText = `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`
+                              deadlineColor = 'var(--danger)'
+                              deadlineBg = 'var(--danger)20'
+                            } else if (hoursUntilDeadline < 24) {
+                              deadlineText = `${hoursUntilDeadline}j lagi`
+                              deadlineColor = 'var(--danger)'
+                              deadlineBg = 'var(--danger)20'
+                            } else if (daysUntilDeadline < 3) {
+                              deadlineText = `${daysUntilDeadline}d lagi`
+                              deadlineColor = 'var(--warning)'
+                              deadlineBg = 'var(--warning)20'
+                            } else {
+                              deadlineText = format(deadlineJakarta, 'd MMM', { locale: id })
+                            }
+
+                            return (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                padding: '0.125rem 0.375rem',
+                                borderRadius: '0.25rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                color: deadlineColor,
+                                background: deadlineBg,
+                              }}>
+                                <ClockIcon size={12} />
+                                {deadlineText}
+                              </span>
+                            )
+                          })()}
                         </div>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CalendarIcon size={12} />

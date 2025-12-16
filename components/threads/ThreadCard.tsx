@@ -185,57 +185,103 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  // Calculate deadline badge
-  const getDeadlineBadge = () => {
-    if (!thread.deadline) return null
-
+  // Calculate all deadline badges (from thread and comments)
+  const getAllDeadlineBadges = () => {
     const now = getUTCDate()
-    const deadlineUTC = new Date(thread.deadline)
-    const deadlineJakarta = toJakartaDate(deadlineUTC)
     const nowJakarta = toJakartaDate(now)
+    const badges: Array<{ text: string; color: string; bg: string }> = []
 
-    const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
-    const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+    // Add thread deadline if exists
+    if (thread.deadline) {
+      const deadlineUTC = new Date(thread.deadline)
+      const deadlineJakarta = toJakartaDate(deadlineUTC)
+      const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+      const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
 
-    if (hoursUntilDeadline < 0) {
-      // Deadline sudah lewat
-      return {
-        text: 'Deadline lewat',
-        color: 'var(--danger)',
-        bg: 'var(--danger)20',
-      }
-    } else if (hoursUntilDeadline < 2) {
-      // Kurang dari 2 jam
-      return {
-        text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`,
-        color: 'var(--danger)',
-        bg: 'var(--danger)20',
-      }
-    } else if (hoursUntilDeadline < 24) {
-      // Kurang dari 24 jam
-      return {
-        text: `${hoursUntilDeadline}j lagi`,
-        color: 'var(--danger)',
-        bg: 'var(--danger)20',
-      }
-    } else if (daysUntilDeadline < 3) {
-      // Kurang dari 3 hari
-      return {
-        text: `${daysUntilDeadline}d lagi`,
-        color: 'var(--warning)',
-        bg: 'var(--warning)20',
-      }
-    } else {
-      // Lebih dari 3 hari
-      return {
-        text: format(deadlineJakarta, 'd MMM', { locale: id }),
-        color: 'var(--text-light)',
-        bg: 'var(--bg-secondary)',
+      if (hoursUntilDeadline < 0) {
+        badges.push({
+          text: 'Deadline lewat',
+          color: 'var(--danger)',
+          bg: 'var(--danger)20',
+        })
+      } else if (hoursUntilDeadline < 2) {
+        badges.push({
+          text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`,
+          color: 'var(--danger)',
+          bg: 'var(--danger)20',
+        })
+      } else if (hoursUntilDeadline < 24) {
+        badges.push({
+          text: `${hoursUntilDeadline}j lagi`,
+          color: 'var(--danger)',
+          bg: 'var(--danger)20',
+        })
+      } else if (daysUntilDeadline < 3) {
+        badges.push({
+          text: `${daysUntilDeadline}d lagi`,
+          color: 'var(--warning)',
+          bg: 'var(--warning)20',
+        })
+      } else {
+        badges.push({
+          text: format(deadlineJakarta, 'd MMM', { locale: id }),
+          color: 'var(--text-light)',
+          bg: 'var(--bg-secondary)',
+        })
       }
     }
+
+    // Add comment deadlines
+    thread.comments.forEach((comment) => {
+      if (comment.deadline) {
+        const deadlineUTC = new Date(comment.deadline)
+        const deadlineJakarta = toJakartaDate(deadlineUTC)
+        const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+        const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+        if (hoursUntilDeadline < 0) {
+          badges.push({
+            text: 'Deadline lewat',
+            color: 'var(--danger)',
+            bg: 'var(--danger)20',
+          })
+        } else if (hoursUntilDeadline < 2) {
+          badges.push({
+            text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`,
+            color: 'var(--danger)',
+            bg: 'var(--danger)20',
+          })
+        } else if (hoursUntilDeadline < 24) {
+          badges.push({
+            text: `${hoursUntilDeadline}j lagi`,
+            color: 'var(--danger)',
+            bg: 'var(--danger)20',
+          })
+        } else if (daysUntilDeadline < 3) {
+          badges.push({
+            text: `${daysUntilDeadline}d lagi`,
+            color: 'var(--warning)',
+            bg: 'var(--warning)20',
+          })
+        } else {
+          badges.push({
+            text: format(deadlineJakarta, 'd MMM', { locale: id }),
+            color: 'var(--text-light)',
+            bg: 'var(--bg-secondary)',
+          })
+        }
+      }
+    })
+
+    // Remove duplicates and sort by urgency (shorter time first)
+    const uniqueBadges = Array.from(
+      new Map(badges.map(badge => [badge.text, badge])).values()
+    )
+
+    return uniqueBadges
   }
 
-  const deadlineBadge = getDeadlineBadge()
+  const deadlineBadges = getAllDeadlineBadges()
 
 
   return (
@@ -369,23 +415,28 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
           </span>
-          {deadlineBadge && (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: deadlineBadge.color,
-                background: deadlineBadge.bg,
-              }}
-            >
-              <ClockIcon size={14} />
-              {deadlineBadge.text}
-            </span>
+          {deadlineBadges.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
+              {deadlineBadges.map((badge, index) => (
+                <span
+                  key={index}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: badge.color,
+                    background: badge.bg,
+                  }}
+                >
+                  <ClockIcon size={14} />
+                  {badge.text}
+                </span>
+              ))}
+            </div>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
@@ -465,7 +516,7 @@ function CommentItem({
   statuses,
   threadAuthorId
 }: { 
-  comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
+  comment: { id: string; content: string; deadline?: Date | null; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
   threadAuthorId: string
@@ -535,8 +586,57 @@ function CommentItem({
         }}>
           {comment.content}
         </div>
-        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative' }}>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative', flexWrap: 'wrap', gap: '0.375rem' }}>
           <span>- {comment.author.name}</span>
+          {comment.deadline && (() => {
+            const now = getUTCDate()
+            const deadlineUTC = new Date(comment.deadline)
+            const deadlineJakarta = toJakartaDate(deadlineUTC)
+            const nowJakarta = toJakartaDate(now)
+            const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+            const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+            let deadlineText = ''
+            let deadlineColor = 'var(--text-light)'
+            let deadlineBg = 'var(--bg-secondary)'
+
+            if (hoursUntilDeadline < 0) {
+              deadlineText = 'Deadline lewat'
+              deadlineColor = 'var(--danger)'
+              deadlineBg = 'var(--danger)20'
+            } else if (hoursUntilDeadline < 2) {
+              deadlineText = `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`
+              deadlineColor = 'var(--danger)'
+              deadlineBg = 'var(--danger)20'
+            } else if (hoursUntilDeadline < 24) {
+              deadlineText = `${hoursUntilDeadline}j lagi`
+              deadlineColor = 'var(--danger)'
+              deadlineBg = 'var(--danger)20'
+            } else if (daysUntilDeadline < 3) {
+              deadlineText = `${daysUntilDeadline}d lagi`
+              deadlineColor = 'var(--warning)'
+              deadlineBg = 'var(--warning)20'
+            } else {
+              deadlineText = format(deadlineJakarta, 'd MMM', { locale: id })
+            }
+
+            return (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.125rem 0.375rem',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: deadlineColor,
+                background: deadlineBg,
+              }}>
+                <ClockIcon size={12} />
+                {deadlineText}
+              </span>
+            )
+          })()}
           {comment.author.kelas && (
             <span style={{
               display: 'inline-block',
@@ -546,7 +646,6 @@ function CommentItem({
               color: 'var(--primary)',
               fontSize: '0.75rem',
               fontWeight: 600,
-              marginLeft: 'auto',
               background: 'transparent'
             }}>
               {comment.author.kelas}
