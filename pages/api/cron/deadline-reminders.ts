@@ -25,7 +25,13 @@ export default async function handler(
   }
 
   try {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadline-reminders.ts:handler',message:'Cron job called',data:{method:req.method,hasAuth:!!req.headers.authorization},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     const result = await sendDeadlineReminders()
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadline-reminders.ts:handler',message:'Cron job completed',data:{result},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     return res.status(200).json(result)
   } catch (error) {
     console.error('[DeadlineReminders API] Error:', error)

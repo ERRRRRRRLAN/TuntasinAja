@@ -191,6 +191,9 @@ export default function MePage() {
 
   const handleTimeChange = (key: string, value: string) => {
     if (!localSettings) return
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MePage.tsx:handleTimeChange',message:'User changed reminder time',data:{key,value,oldValue:localSettings[key as keyof typeof localSettings]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     setLocalSettings({ ...localSettings, [key]: value || null })
     // hasUnsavedChanges will be updated by useEffect
   }
@@ -231,6 +234,9 @@ export default function MePage() {
       return
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MePage.tsx:handleSave',message:'Saving settings to database',data:{updateData,hasReminderTime:!!updateData.reminderTime,reminderTimeValue:updateData.reminderTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     updateSettings.mutate(updateData)
   }
 

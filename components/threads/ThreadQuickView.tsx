@@ -198,6 +198,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const threadStatus = statuses?.find((s) => s.threadId === threadId && !s.commentId)
   const isThreadCompleted = threadStatus?.isCompleted || false
+  const isGroupTask = (thread as any)?.isGroupTask || false
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
@@ -773,7 +774,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
-          {session && canActuallyPostEdit && (
+          {session && canActuallyPostEdit && !(isGroupTask && isThreadCompleted) && (
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="form-group">
                 <label htmlFor="newComment" className="form-label">
@@ -866,7 +867,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 const isCommentAuthor = session?.user?.id === comment?.author?.id
                 const commentAuthorKelas = comment?.author?.kelas || null
                 const isDantonOfCommentClass = isDanton && dantonKelas === commentAuthorKelas && dantonKelas !== null
-                const canEditComment = isCommentAuthor && canActuallyPostEdit // Only author can edit, and must have post/edit permission AND subscription active
+                // For group tasks: disable edit if comment is completed
+                const isGroupTask = (thread as any)?.isGroupTask || false
+                const canEditCommentForGroupTask = isGroupTask ? !isCommentCompleted : true
+                const canEditComment = isCommentAuthor && canActuallyPostEdit && canEditCommentForGroupTask // Only author can edit, must have permission, and for group tasks: comment must not be completed
                 const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isDantonOfCommentClass
                 const isEditing = editingCommentId === comment.id
 

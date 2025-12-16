@@ -157,6 +157,9 @@ export const userSettingsRouter = createTRPCRouter({
         updateData.reduceAnimations = input.reduceAnimations
       }
 
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'userSettings.ts:update',message:'Before upsert settings',data:{userId,updateData,hasReminderTime:!!updateData.reminderTime,reminderTimeValue:updateData.reminderTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       // Upsert settings
       const settings = await prisma.userSettings.upsert({
         where: { userId },
@@ -166,6 +169,9 @@ export const userSettingsRouter = createTRPCRouter({
           ...updateData,
         },
       })
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'userSettings.ts:update',message:'After upsert settings',data:{userId,reminderTime:settings.reminderTime,deadlineReminderEnabled:settings.deadlineReminderEnabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
 
       return settings
     }),

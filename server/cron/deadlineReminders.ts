@@ -38,6 +38,9 @@ export async function sendDeadlineReminders() {
     })
 
     console.log(`[DeadlineReminders] Found ${usersWithReminders.length} users with deadline reminders enabled`)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:sendDeadlineReminders',message:'Found users with reminders',data:{userCount:usersWithReminders.length,currentTime,users:usersWithReminders.map(u=>({userId:u.user.id,reminderTime:u.reminderTime,kelas:u.user.kelas}))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
 
     let totalSent = 0
 
@@ -56,17 +59,26 @@ export async function sendDeadlineReminders() {
       
       // Check if we're within 30 minutes of reminder time
       const timeDiff = Math.abs(currentMinutes - reminderMinutes)
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:timeCheck',message:'Time matching check',data:{userId:user.id,reminderTime,currentTime,reminderMinutes,currentMinutes,timeDiff,withinWindow:timeDiff<=30},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       if (timeDiff > 30) {
         continue // Skip if not within 30 minute window
       }
       
       if (!user.kelas) {
         console.log(`[DeadlineReminders] Skipping user ${user.id} - no kelas`)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:noKelas',message:'User has no kelas',data:{userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
         continue
       }
 
       // Get threads for this user's kelas that have upcoming deadlines (within next 24 hours)
       const tomorrow = addDays(jakartaNow, 1)
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:queryThreads',message:'Before query threads',data:{userId:user.id,kelas:user.kelas,jakartaNow:jakartaNow.toISOString(),tomorrow:tomorrow.toISOString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
       const threads = await prisma.thread.findMany({
         where: {
           author: {
@@ -86,6 +98,9 @@ export async function sendDeadlineReminders() {
           },
         },
       })
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:queryThreads',message:'After query threads',data:{userId:user.id,threadCount:threads.length,threadIds:threads.map(t=>t.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
 
       // Check if user has completed these threads
       const completedThreadIds = await prisma.history.findMany({
@@ -102,6 +117,9 @@ export async function sendDeadlineReminders() {
 
       const completedIds = new Set(completedThreadIds.map(h => h.threadId).filter((id): id is string => id !== null))
       const uncompletedThreads = threads.filter(t => !completedIds.has(t.id))
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deadlineReminders.ts:filterThreads',message:'Filtered uncompleted threads',data:{userId:user.id,totalThreads:threads.length,uncompletedCount:uncompletedThreads.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
 
       if (uncompletedThreads.length === 0) {
         continue // No uncompleted threads with upcoming deadlines
