@@ -31,8 +31,7 @@ Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja ja
 ## 💡 Tips
 
 - Cek halaman *FAQ* kalau ada pertanyaan tentang cara menggunakan aplikasi
-- Perhatikan *deadline* yang ditampilkan di card tugas untuk tidak ketinggalan
-- Gunakan fitur *pengingat deadline* di pengaturan untuk mendapatkan notifikasi otomatis
+- Perhatikan *deadline* yang ditampilkan di card tugas supaya tidak ketinggalan
 
 ## ℹ️ Info Penting
 
