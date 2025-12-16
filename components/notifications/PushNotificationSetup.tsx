@@ -292,8 +292,11 @@ export default function PushNotificationSetup() {
                 console.error('[PushNotificationSetup] ❌ Error registering token in backend:', error)
                 console.error('[PushNotificationSetup] Error type:', typeof error)
                 console.error('[PushNotificationSetup] Error message:', error?.message)
-                console.error('[PushNotificationSetup] Error stack:', error?.stack)
-                console.error('[PushNotificationSetup] Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+                // TRPC errors don't have stack property
+                const errorDetails = error instanceof Error 
+                  ? { message: error.message, stack: error.stack }
+                  : { message: error?.message || String(error) }
+                console.error('[PushNotificationSetup] Error details:', errorDetails)
                 setRegistrationError('Failed to register device token: ' + (error?.message || 'Unknown error'))
                 // Reset setupAttempted to allow retry
                 setupAttempted.current = false
