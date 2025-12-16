@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
+import { toast } from '@/components/ui/ToastContainer'
 
 // Helper to safely load Capacitor modules (only available in native builds)
 async function loadCapacitorModules() {
