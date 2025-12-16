@@ -20,6 +20,11 @@ const faqData: FAQItem[] = [
     id: 'register',
     question: 'Bagaimana cara mendaftar/membuat akun?',
     answer: 'Untuk mendapatkan akun di TuntasinAja, Anda perlu membeli subscription untuk kelas Anda terlebih dahulu. Setelah membeli subscription, Anda akan mendapatkan akses untuk membuat akun dan menggunakan platform ini.'
+  },
+  {
+    id: 'buy-subscription',
+    question: 'Bagaimana cara membeli subscription TuntasinAja?',
+    answer: 'Untuk membeli subscription TuntasinAja, silakan hubungi nomor WhatsApp: 085813139399. Harga subscription adalah Rp 20.000 untuk 1 bulan. Sebelum menghubungi, pastikan Anda telah menyiapkan daftar nama-nama siswa di kelas Anda yang akan menggunakan subscription ini.'
   }
 ]
 
