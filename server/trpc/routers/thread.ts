@@ -1459,4 +1459,11 @@ export const threadRouter = createTRPCRouter({
       message: `Berhasil menghapus ${deletedThreadCount} thread dan ${deletedCommentCount} comment yang sudah expired`,
     }
   }),
+
+  // Admin procedure to manually trigger deadline reminders
+  testDeadlineReminder: adminProcedure.mutation(async () => {
+    const { sendDeadlineReminders } = await import('@/server/cron/deadlineReminders')
+    const result = await sendDeadlineReminders()
+    return result
+  }),
 })
