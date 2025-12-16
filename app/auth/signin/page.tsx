@@ -94,7 +94,7 @@ export default function SignInPage() {
             {/* Header */}
             <div className="signin-page-header-section">
               <h1 className="signin-page-title">Login</h1>
-              <p className="signin-page-subtitle">Welcome Back Please Login To Your Account</p>
+              <p className="signin-page-subtitle">Login untuk masuk kedalam TuntasinAja</p>
             </div>
             
             {error && (
