@@ -1225,6 +1225,70 @@ export const threadRouter = createTRPCRouter({
       }
     }),
 
+  // Get group task progress (public - for progress bar display)
+  getGroupTaskProgress: publicProcedure
+    .input(z.object({ threadId: z.string() }))
+    .query(async ({ input }) => {
+      const thread = await prisma.thread.findUnique({
+        where: { id: input.threadId },
+        select: {
+          id: true,
+          isGroupTask: true,
+          comments: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      })
+
+      if (!thread || !thread.isGroupTask) {
+        return null
+      }
+
+      if (!thread.comments || thread.comments.length === 0) {
+        return {
+          completed: 0,
+          total: 0,
+          percentage: 0,
+        }
+      }
+
+      // Count how many comments have at least one completed status
+      // For group tasks, a comment is considered "completed" if at least one member has completed it
+      const commentIds = thread.comments.map((c) => c.id)
+      
+      const completedStatuses = await prisma.userStatus.findMany({
+        where: {
+          threadId: input.threadId,
+          commentId: {
+            in: commentIds,
+          },
+          isCompleted: true,
+        },
+        select: {
+          commentId: true,
+        },
+        distinct: ['commentId'],
+      })
+
+      const completedCommentIds = new Set(
+        completedStatuses
+          .map((s) => s.commentId)
+          .filter((id): id is string => id !== null)
+      )
+
+      const totalComments = thread.comments.length
+      const completedCount = completedCommentIds.size
+      const percentage = totalComments > 0 ? Math.round((completedCount / totalComments) * 100) : 0
+
+      return {
+        completed: completedCount,
+        total: totalComments,
+        percentage,
+      }
+    }),
+
   // Manual trigger for deleting expired threads and comments (Admin only)
   deleteExpired: adminProcedure.mutation(async () => {
     const { getUTCDate } = await import('@/lib/date-utils')

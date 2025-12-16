@@ -58,10 +58,16 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const [showCompletionStatsModal, setShowCompletionStatsModal] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
 
-  // Get thread status
+  // Get thread status (for current user)
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
     { threadId: thread.id },
     { enabled: !!session }
+  )
+
+  // Get group task progress (for all users - public data)
+  const { data: groupTaskProgress } = trpc.thread.getGroupTaskProgress.useQuery(
+    { threadId: thread.id },
+    { enabled: thread.isGroupTask === true }
   )
 
   // Check if user is admin
@@ -80,6 +86,27 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const threadStatus = statuses?.find((s) => s.threadId === thread.id && !s.commentId)
   const isCompleted = threadStatus?.isCompleted || false
+
+  // Use server-calculated progress for group tasks (works for all users)
+  // Fallback to client-side calculation if server data not available
+  const groupProgress = thread.isGroupTask && groupTaskProgress
+    ? groupTaskProgress
+    : thread.isGroupTask && thread.comments && thread.comments.length > 0 && statuses
+    ? (() => {
+        const completedComments = thread.comments.filter((comment) => {
+          const commentStatus = statuses.find((s) => s.commentId === comment.id)
+          return commentStatus?.isCompleted || false
+        })
+        const totalComments = thread.comments.length
+        const completedCount = completedComments.length
+        const percentage = totalComments > 0 ? Math.round((completedCount / totalComments) * 100) : 0
+        return {
+          completed: completedCount,
+          total: totalComments,
+          percentage,
+        }
+      })()
+    : null
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
@@ -364,6 +391,38 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             }}>
               👥 {thread.groupMembers.length} anggota
             </span>
+          )}
+          {thread.isGroupTask && groupProgress && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              width: '100%',
+              marginTop: '0.5rem',
+            }}>
+              <div style={{
+                flex: 1,
+                height: '8px',
+                background: 'var(--bg-secondary)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  width: `${groupProgress.percentage}%`,
+                  height: '100%',
+                  background: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: 'var(--text-light)',
+                whiteSpace: 'nowrap',
+              }}>
+                {groupProgress.completed}/{groupProgress.total}
+              </span>
+            </div>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <CalendarIcon size={16} />
