@@ -1213,4 +1213,173 @@ export const threadRouter = createTRPCRouter({
         completedUsers: completedUsers.sort((a, b) => a.name.localeCompare(b.name)),
       }
     }),
+
+  // Manual trigger for deleting expired threads and comments (Admin only)
+  deleteExpired: adminProcedure.mutation(async () => {
+    const { getUTCDate } = await import('@/lib/date-utils')
+    const now = getUTCDate()
+
+    let deletedThreadCount = 0
+    let deletedCommentCount = 0
+
+    // Step 1: Find all threads that have passed their deadline
+    const expiredThreads = await prisma.thread.findMany({
+      where: {
+        deadline: {
+          not: null,
+          lt: now, // Deadline is in the past
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            deadline: true,
+          },
+        },
+      },
+    })
+
+    // Step 2: Find threads that don't have deadline but all their comments have expired
+    const threadsWithComments = await prisma.thread.findMany({
+      where: {
+        deadline: null, // Thread itself doesn't have deadline
+        comments: {
+          some: {
+            deadline: {
+              not: null, // Has at least one comment with deadline
+            },
+          },
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            deadline: true,
+          },
+        },
+      },
+    })
+
+    // Filter threads where all comments with deadline have expired
+    const threadsWithAllExpiredComments = threadsWithComments.filter((thread) => {
+      if (thread.comments.length === 0) return false
+      
+      const commentsWithDeadline = thread.comments.filter((c) => c.deadline !== null)
+      if (commentsWithDeadline.length === 0) return false
+      
+      const allDeadlinesExpired = commentsWithDeadline.every((comment) => {
+        if (!comment.deadline) return false
+        return new Date(comment.deadline) < now
+      })
+      
+      return allDeadlinesExpired
+    })
+
+    // Combine both lists
+    const allExpiredThreads = [...expiredThreads, ...threadsWithAllExpiredComments]
+    
+    // Step 3: Find standalone expired comments
+    const allThreadIds = allExpiredThreads.map((t) => t.id)
+    const expiredComments = await prisma.comment.findMany({
+      where: {
+        deadline: {
+          not: null,
+          lt: now,
+        },
+        threadId: {
+          notIn: allThreadIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    // Step 4: Delete standalone expired comments
+    const standaloneExpiredCommentIds = expiredComments.map((c) => c.id)
+    if (standaloneExpiredCommentIds.length > 0) {
+      await prisma.userStatus.deleteMany({
+        where: {
+          commentId: {
+            in: standaloneExpiredCommentIds,
+          },
+        },
+      })
+
+      await prisma.comment.deleteMany({
+        where: {
+          id: {
+            in: standaloneExpiredCommentIds,
+          },
+        },
+      })
+
+      deletedCommentCount = standaloneExpiredCommentIds.length
+    }
+
+    // Step 5: Delete expired threads (preserve history)
+    for (const thread of allExpiredThreads) {
+      // Update histories with denormalized data
+      await prisma.history.updateMany({
+        where: {
+          threadId: thread.id,
+        },
+        data: {
+          threadTitle: thread.title,
+          threadAuthorId: thread.author.id,
+          threadAuthorName: thread.author.name,
+          threadId: null,
+        },
+      })
+
+      const commentIds = thread.comments.map((c) => c.id)
+
+      // Delete UserStatus related to this thread
+      await prisma.userStatus.deleteMany({
+        where: {
+          threadId: thread.id,
+        },
+      })
+
+      if (commentIds.length > 0) {
+        await prisma.userStatus.deleteMany({
+          where: {
+            commentId: {
+              in: commentIds,
+            },
+          },
+        })
+      }
+
+      // Delete the thread
+      await prisma.thread.delete({
+        where: { id: thread.id },
+      })
+
+      deletedThreadCount++
+    }
+
+    return {
+      success: true,
+      deleted: {
+        threads: deletedThreadCount,
+        comments: deletedCommentCount,
+      },
+      message: `Berhasil menghapus ${deletedThreadCount} thread dan ${deletedCommentCount} comment yang sudah expired`,
+    }
+  }),
 })
