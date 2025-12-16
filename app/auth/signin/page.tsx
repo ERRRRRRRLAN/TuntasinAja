@@ -209,10 +209,7 @@ export default function SignInPage() {
                   />
                   <span>Remember Me</span>
                 </label>
-                <a href="#" className="signin-faq-link" onClick={(e) => {
-                  e.preventDefault()
-                  // TODO: Implement FAQ modal or page
-                }}>
+                <a href="/faq" className="signin-faq-link">
                   FAQ untuk seputar login
                 </a>
               </div>
