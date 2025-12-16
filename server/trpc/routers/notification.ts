@@ -116,6 +116,26 @@ export const notificationRouter = createTRPCRouter({
 
       return { success: true }
     }),
+
+  // Check if current user has device token registered
+  checkDeviceToken: protectedProcedure.query(async ({ ctx }) => {
+    const deviceToken = await prisma.deviceToken.findFirst({
+      where: {
+        userId: ctx.session.user.id,
+      },
+      select: {
+        token: true,
+        deviceInfo: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    })
+
+    return deviceToken
+  }),
 })
 
 // Helper function to send notification to users in a class

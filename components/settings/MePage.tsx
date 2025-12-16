@@ -14,6 +14,7 @@ import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/comp
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 import { toast } from '@/components/ui/ToastContainer'
+import DeviceTokenStatus from './DeviceTokenStatus'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -577,6 +578,8 @@ export default function MePage() {
                 />
               </div>
             )}
+
+            <DeviceTokenStatus />
 
             <ToggleSwitch
               checked={displaySettings.dndEnabled ?? false}
