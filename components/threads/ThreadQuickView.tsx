@@ -771,6 +771,73 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           )}
         </div>
 
+        {/* Group Members Section */}
+        {isGroupTask && (thread as any)?.groupMembers && (thread as any).groupMembers.length > 0 && (
+          <div style={{
+            padding: '1rem',
+            background: 'var(--bg-secondary)',
+            borderRadius: '0.5rem',
+            marginBottom: '1.5rem',
+            border: '1px solid var(--border)',
+          }}>
+            <h4 style={{
+              margin: '0 0 0.75rem 0',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: 'var(--text)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}>
+              <UserIcon size={16} />
+              Anggota Kelompok ({((thread as any).groupMembers || []).length})
+            </h4>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+            }}>
+              {((thread as any).groupMembers || []).map((member: any, index: number) => (
+                <div
+                  key={member.userId || index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem',
+                    background: 'var(--card)',
+                    borderRadius: '0.375rem',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}>
+                    {member.user?.name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: 'var(--text)',
+                    fontWeight: 500,
+                  }}>
+                    {member.user?.name || 'Unknown'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="comments-section">
           <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
 
