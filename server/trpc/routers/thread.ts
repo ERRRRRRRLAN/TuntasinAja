@@ -146,18 +146,18 @@ export const threadRouter = createTRPCRouter({
 
       // Filter out expired threads and comments
       // A thread is expired if:
-      // 1. Thread has deadline and it's expired, AND
-      // 2. All comments with deadline are expired (if thread has no deadline)
+      // 1. Thread has deadline and it's expired
+      // 2. Thread has no deadline but all comments with deadline are expired
       const filteredByDeadline = threads.filter((thread) => {
         // If thread has deadline and it's expired, exclude it
         if (thread.deadline) {
           const threadDeadline = new Date(thread.deadline)
           if (threadDeadline < now) {
-            return false // Thread deadline expired, exclude
+            return false // Thread deadline expired, exclude from feed
           }
         }
 
-        // Filter expired comments
+        // Filter out expired comments
         const validComments = thread.comments.filter((comment) => {
           if (!comment.deadline) return true // Comments without deadline are always valid
           const commentDeadline = new Date(comment.deadline)
@@ -174,7 +174,7 @@ export const threadRouter = createTRPCRouter({
               return new Date(comment.deadline) < now
             })
             if (allExpired) {
-              return false // All subtasks expired, exclude thread
+              return false // All subtasks expired, exclude from feed
             }
           }
         }
