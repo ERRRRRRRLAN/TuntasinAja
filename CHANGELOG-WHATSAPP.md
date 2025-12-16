@@ -6,6 +6,13 @@ Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja ja
 
 ## 🆕 Update Terbaru
 
+*Fitur Pengaturan Waktu Pengingat Deadline* ⏰
+- Sekarang kamu bisa atur sendiri waktu pengingat deadline sesuai jadwal kamu
+- Pilih waktu kapan mau dikasih tau kalau ada tugas yang deadline-nya besok
+- Waktu pengingat bisa diatur dari 00:00 sampai 23:30 dengan interval 30 menit
+- Notifikasi akan otomatis dikirim sesuai waktu yang kamu set
+- Fitur ini membantu kamu gak ketinggalan tugas penting!
+
 *Fitur Auto-Delete Tugas yang Sudah Lewat Deadline*
 - Tugas dan sub-tugas yang deadline-nya sudah lewat akan otomatis terhapus dari feed
 - Database akan dibersihkan otomatis setiap jam untuk menjaga performa aplikasi
@@ -72,8 +79,8 @@ Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja ja
 
 ## 💡 Tips
 
+- Atur *waktu pengingat deadline* sesuai jadwal kamu biar gak ketinggalan tugas (misalnya set jam 19:00 untuk reminder malam hari)
 - Coba fitur *"Jangan Ganggu"* kalau gak mau diganggu notifikasi pas waktu tertentu
-- Atur *waktu pengingat deadline* sesuai jadwal kamu biar gak ketinggalan tugas
 - Coba tema *Dark* kalau suka yang gelap-gelapan, atau *Auto* biar ikutin tema HP
 
 ## ℹ️ Info Penting
