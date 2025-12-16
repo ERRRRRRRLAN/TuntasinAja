@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
+import { toast } from '@/components/ui/ToastContainer'
 
 // Helper to safely load Capacitor modules (only available in native builds)
 async function loadCapacitorModules() {
@@ -207,19 +208,15 @@ export default function PushNotificationSetup() {
 
         // Register with FCM
         console.log('[PushNotificationSetup] 📡 Calling PushNotifications.register()...')
-        await PushNotifications.register()
-        console.log('[PushNotificationSetup] 📡 Registration request sent to FCM, waiting for token...')
-
-        // Check if token is already available (sometimes it comes immediately)
-        try {
-          const checkToken = await PushNotifications.checkPermissions()
-          console.log('[PushNotificationSetup] Current permissions after register:', checkToken)
-        } catch (e) {
-          console.log('[PushNotificationSetup] Could not check permissions:', e)
-        }
-
-        // Listen for registration - this is async, token will come later
+        
+        // Set up listener BEFORE calling register() to ensure we don't miss the event
+        let tokenReceived = false
         const registrationListener = PushNotifications.addListener('registration', async (token: any) => {
+          if (tokenReceived) {
+            console.log('[PushNotificationSetup] ⚠️ Duplicate registration event, ignoring')
+            return
+          }
+          tokenReceived = true
           console.log('[PushNotificationSetup] 🎯 Registration event received!', {
             hasToken: !!token,
             tokenType: typeof token,
