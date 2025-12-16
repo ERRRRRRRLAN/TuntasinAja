@@ -198,7 +198,7 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Remember Me and Forgot Password */}
+              {/* Remember Me and FAQ */}
               <div className="signin-form-options">
                 <label className="signin-remember-me">
                   <input
@@ -209,11 +209,11 @@ export default function SignInPage() {
                   />
                   <span>Remember Me</span>
                 </label>
-                <a href="#" className="signin-forgot-password" onClick={(e) => {
+                <a href="#" className="signin-faq-link" onClick={(e) => {
                   e.preventDefault()
-                  // TODO: Implement forgot password functionality
+                  // TODO: Implement FAQ modal or page
                 }}>
-                  Forgot Password?
+                  FAQ untuk seputar login
                 </a>
               </div>
 
