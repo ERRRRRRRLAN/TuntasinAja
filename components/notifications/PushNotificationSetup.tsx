@@ -204,13 +204,12 @@ export default function PushNotificationSetup() {
           return
         }
 
-        console.log('[PushNotificationSetup] ✅ Permission granted, registering with FCM...')
-
-        // Register with FCM
-        console.log('[PushNotificationSetup] 📡 Calling PushNotifications.register()...')
+        console.log('[PushNotificationSetup] ✅ Permission granted!')
+        
+        // Track if token was received (needs to be in wider scope for timeout check)
+        let tokenReceived = false
         
         // Set up listener BEFORE calling register() to ensure we don't miss the event
-        let tokenReceived = false
         const registrationListener = PushNotifications.addListener('registration', async (token: any) => {
           if (tokenReceived) {
             console.log('[PushNotificationSetup] ⚠️ Duplicate registration event, ignoring')
@@ -287,6 +286,9 @@ export default function PushNotificationSetup() {
                 setRegistrationError(null)
                 // Update lastUserId to current user
                 lastUserIdRef.current = session?.user?.id || null
+                
+                // Show success toast
+                toast.success('✅ Device token berhasil terdaftar!', 3000)
                 
                 // Show success toast
                 toast.success('✅ Device token berhasil terdaftar!', 3000)
@@ -420,7 +422,33 @@ export default function PushNotificationSetup() {
         listenersRef.current.push(actionListener)
 
         console.log('[PushNotificationSetup] ✅ All listeners registered')
-        console.log('[PushNotificationSetup] ⏳ Waiting for FCM token...')
+        
+        // Now call register() to trigger FCM token generation
+        console.log('[PushNotificationSetup] 🚀 Calling PushNotifications.register() to get FCM token...')
+        toast.info('📱 Mendaftarkan device token...', 3000)
+        await PushNotifications.register()
+        console.log('[PushNotificationSetup] ⏳ Waiting for registration event...')
+        
+        // Set timeout to detect if token is never received
+        setTimeout(() => {
+          if (!tokenReceived) {
+            console.warn('[PushNotificationSetup] ⚠️ Token not received after 10 seconds!')
+            console.warn('[PushNotificationSetup] This might indicate:')
+            console.warn('[PushNotificationSetup] 1. FCM configuration issue (google-services.json)')
+            console.warn('[PushNotificationSetup] 2. Network connectivity issue')
+            console.warn('[PushNotificationSetup] 3. Registration event listener not firing')
+            console.warn('[PushNotificationSetup] Current state:', {
+              setupAttempted: setupAttempted.current,
+              hasSession: !!session,
+              userId: session?.user?.id,
+              tokenReceived: tokenReceived,
+            })
+            
+            setRegistrationError('FCM token not received. Please check your internet connection and try again.')
+            toast.error('❌ Gagal mendapatkan token FCM. Cek koneksi internet Anda.', 5000)
+            setupAttempted.current = false // Allow retry
+          }
+        }, 10000) // 10 second timeout
 
       } catch (error) {
         console.error('[PushNotificationSetup] ❌ Error setting up push notifications:', error)
