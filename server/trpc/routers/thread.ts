@@ -1258,9 +1258,11 @@ export const threadRouter = createTRPCRouter({
       // For group tasks, a comment is considered "completed" if at least one member has completed it
       const commentIds = thread.comments.map((c) => c.id)
       
+      // Get all completed statuses for these comments
+      // Note: comment statuses don't have threadId set (to avoid unique constraint)
+      // So we query by commentId only
       const completedStatuses = await prisma.userStatus.findMany({
         where: {
-          threadId: input.threadId,
           commentId: {
             in: commentIds,
           },
@@ -1269,9 +1271,9 @@ export const threadRouter = createTRPCRouter({
         select: {
           commentId: true,
         },
-        distinct: ['commentId'],
       })
 
+      // Get unique comment IDs that have at least one completed status
       const completedCommentIds = new Set(
         completedStatuses
           .map((s) => s.commentId)
