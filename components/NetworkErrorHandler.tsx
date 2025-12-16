@@ -35,16 +35,28 @@ export default function NetworkErrorHandler() {
     // Check for JSON error displayed in body (like {"error":"Network request failed"})
     const checkForJsonError = () => {
       if (typeof document !== 'undefined') {
+        // Don't check if React app is already rendered - errors should be handled by React/TRPC
+        if (document.getElementById('__next') || document.querySelector('[data-reactroot]') || window.__NEXT_DATA__) {
+          return false
+        }
+        
         const bodyText = document.body?.textContent || ''
         
-        // Check if body contains JSON error with network request failed
-        if (bodyText.includes('"error"') && bodyText.includes('Network request failed')) {
+        // Only check for real network errors, not API errors
+        // Must contain specific network error codes, not just "Network request failed"
+        if (bodyText.includes('"error"') && 
+            (bodyText.includes('ERR_NAME_NOT_RESOLVED') || 
+             bodyText.includes('ERR_FAILED') ||
+             bodyText.includes('ERR_INTERNET_DISCONNECTED'))) {
           try {
             // Try to parse JSON from body
             const jsonMatch = bodyText.match(/\{[^}]*"error"[^}]*\}/)
             if (jsonMatch) {
               const errorData = JSON.parse(jsonMatch[0])
-              if (errorData.error && errorData.error.includes('Network request failed')) {
+              if (errorData.error && 
+                  (errorData.error.includes('ERR_NAME_NOT_RESOLVED') ||
+                   errorData.error.includes('ERR_FAILED') ||
+                   errorData.error.includes('ERR_INTERNET_DISCONNECTED'))) {
                 console.error('[NetworkErrorHandler] JSON error detected in body:', errorData)
                 setHasNetworkError(true)
                 setErrorMessage(errorData.error)
@@ -56,10 +68,12 @@ export default function NetworkErrorHandler() {
             }
           } catch (e) {
             // If parsing fails, just check for the error text
-            if (bodyText.includes('Network request failed')) {
+            if (bodyText.includes('ERR_NAME_NOT_RESOLVED') || 
+                bodyText.includes('ERR_FAILED') ||
+                bodyText.includes('ERR_INTERNET_DISCONNECTED')) {
               console.error('[NetworkErrorHandler] Network error text detected in body')
               setHasNetworkError(true)
-              setErrorMessage('Network request failed')
+              setErrorMessage('Network connection failed')
               setRetryCount(0)
               document.body.innerHTML = ''
               return true
@@ -75,9 +89,34 @@ export default function NetworkErrorHandler() {
       return
     }
 
+    // Track handled errors to avoid false positives
+    const handledErrors = new WeakSet()
+    
     // Listen for unhandled promise rejections (network errors)
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const error = event.reason
+      
+      // Skip if this error was already handled
+      if (handledErrors.has(error)) {
+        return
+      }
+      
+      // Skip if React app is already rendered (errors should be handled by React/TRPC)
+      if (document.getElementById('__next') || document.querySelector('[data-reactroot]') || window.__NEXT_DATA__) {
+        // Only handle errors if they're from initial page load or critical failures
+        // Check if error is from a mutation/query that should be handled by TRPC
+        const errorMessage = error?.message || error?.toString() || ''
+        
+        // If error contains TRPC-specific patterns, it's likely already handled
+        if (errorMessage.includes('TRPC') || 
+            errorMessage.includes('UNAUTHORIZED') ||
+            errorMessage.includes('FORBIDDEN') ||
+            errorMessage.includes('BAD_REQUEST') ||
+            errorMessage.includes('NOT_FOUND')) {
+          return
+        }
+      }
+      
       const errorMessage = error?.message || error?.toString() || ''
       
       // Also check if error is a JSON object
@@ -93,21 +132,26 @@ export default function NetworkErrorHandler() {
         // Ignore parsing errors
       }
       
+      // Only treat as network error if it's a real network failure
+      // Not errors from mutations/queries that are handled by TRPC
       const isNetworkError = 
-        errorMessage.includes('Network request failed') ||
-        errorMessage.includes('Failed to fetch') ||
-        errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
-        errorMessage.includes('NetworkError') ||
-        errorMessage.includes('ERR_FAILED') ||
-        jsonError !== null ||
-        error?.name === 'NetworkError' ||
-        error?.name === 'TypeError'
+        (errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
+         errorMessage.includes('ERR_FAILED') ||
+         errorMessage.includes('ERR_INTERNET_DISCONNECTED') ||
+         errorMessage.includes('ERR_NETWORK_CHANGED')) &&
+        !errorMessage.includes('TRPC') &&
+        !errorMessage.includes('UNAUTHORIZED') &&
+        !errorMessage.includes('FORBIDDEN') &&
+        !errorMessage.includes('BAD_REQUEST')
 
       if (isNetworkError) {
         console.error('[NetworkErrorHandler] Network error detected:', error)
         setHasNetworkError(true)
         setErrorMessage(jsonError?.error || errorMessage)
         setRetryCount(0)
+        
+        // Mark as handled
+        handledErrors.add(error)
         
         // Prevent default error handling
         event.preventDefault()
@@ -156,14 +200,16 @@ export default function NetworkErrorHandler() {
       } catch (error: any) {
         const errorMessage = error?.message || error?.toString() || ''
         
+        // Only handle real network errors, not errors from API responses
+        // API errors (4xx, 5xx) should be handled by the calling code
         const isNetworkError = 
-          errorMessage.includes('Network request failed') ||
-          errorMessage.includes('Failed to fetch') ||
-          errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
-          errorMessage.includes('NetworkError') ||
-          errorMessage.includes('ERR_FAILED') ||
-          error?.name === 'NetworkError' ||
-          error?.name === 'TypeError'
+          (errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
+           errorMessage.includes('ERR_FAILED') ||
+           errorMessage.includes('ERR_INTERNET_DISCONNECTED') ||
+           errorMessage.includes('ERR_NETWORK_CHANGED')) &&
+          !errorMessage.includes('TRPC') &&
+          !errorMessage.includes('HTTP 4') &&
+          !errorMessage.includes('HTTP 5')
 
         if (isNetworkError) {
           console.error('[NetworkErrorHandler] Fetch network error:', error)

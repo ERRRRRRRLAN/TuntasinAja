@@ -82,17 +82,23 @@ export default function RootLayout({
               
               // Only check for actual network errors, not all JSON errors
               if (bodyText) {
-                // Must contain both "error" AND network-related keywords
+                // Must contain both "error" AND specific network error keywords
+                // Exclude TRPC errors and API errors (4xx, 5xx)
                 var hasNetworkError = (bodyText.indexOf('"error"') !== -1 || bodyText.indexOf('{"error":') !== -1) &&
-                                      (bodyText.indexOf('Network request failed') !== -1 ||
-                                       bodyText.indexOf('Failed to fetch') !== -1 ||
-                                       bodyText.indexOf('ERR_NAME_NOT_RESOLVED') !== -1 ||
-                                       bodyText.indexOf('NetworkError') !== -1);
+                                      (bodyText.indexOf('ERR_NAME_NOT_RESOLVED') !== -1 ||
+                                       bodyText.indexOf('ERR_FAILED') !== -1 ||
+                                       bodyText.indexOf('ERR_INTERNET_DISCONNECTED') !== -1) &&
+                                      bodyText.indexOf('TRPC') === -1 &&
+                                      bodyText.indexOf('HTTP 4') === -1 &&
+                                      bodyText.indexOf('HTTP 5') === -1;
                 
                 // Also check if it's a pure JSON error response (not from React)
+                // But exclude common API error patterns
                 var isJsonErrorOnly = bodyText.trim().startsWith('{') && 
                                      bodyText.indexOf('"error"') !== -1 &&
-                                     bodyText.indexOf('Network') !== -1 &&
+                                     (bodyText.indexOf('ERR_NAME_NOT_RESOLVED') !== -1 ||
+                                      bodyText.indexOf('ERR_FAILED') !== -1) &&
+                                     bodyText.indexOf('TRPC') === -1 &&
                                      bodyText.length < 500; // JSON errors are usually short
                 
                 if (hasNetworkError || isJsonErrorOnly) {
