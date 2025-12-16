@@ -72,13 +72,30 @@ export default function RootLayout({
             
             function checkForNetworkError() {
               if (errorShown) return true;
+              
+              // Don't show error if React app is already rendered (let React handle errors)
+              if (document.getElementById('__next') || document.querySelector('[data-reactroot]') || window.__NEXT_DATA__) {
+                return false;
+              }
+              
               var bodyText = document.body ? document.body.textContent || document.body.innerText : '';
-              // Check for JSON error patterns
+              
+              // Only check for actual network errors, not all JSON errors
               if (bodyText) {
-                var hasError = (bodyText.indexOf('"error"') !== -1 && bodyText.indexOf('Network request failed') !== -1) ||
-                               (bodyText.indexOf('{"error":') !== -1) ||
-                               (bodyText.trim().startsWith('{') && bodyText.indexOf('Network') !== -1);
-                if (hasError) {
+                // Must contain both "error" AND network-related keywords
+                var hasNetworkError = (bodyText.indexOf('"error"') !== -1 || bodyText.indexOf('{"error":') !== -1) &&
+                                      (bodyText.indexOf('Network request failed') !== -1 ||
+                                       bodyText.indexOf('Failed to fetch') !== -1 ||
+                                       bodyText.indexOf('ERR_NAME_NOT_RESOLVED') !== -1 ||
+                                       bodyText.indexOf('NetworkError') !== -1);
+                
+                // Also check if it's a pure JSON error response (not from React)
+                var isJsonErrorOnly = bodyText.trim().startsWith('{') && 
+                                     bodyText.indexOf('"error"') !== -1 &&
+                                     bodyText.indexOf('Network') !== -1 &&
+                                     bodyText.length < 500; // JSON errors are usually short
+                
+                if (hasNetworkError || isJsonErrorOnly) {
                   showErrorPage();
                   return true;
                 }

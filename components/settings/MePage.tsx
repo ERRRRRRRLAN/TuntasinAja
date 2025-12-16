@@ -13,6 +13,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
+import { toast } from '@/components/ui/ToastContainer'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -157,9 +158,25 @@ export default function MePage() {
       setIsNotificationClosing(false) // Ensure notification doesn't show closing animation
       justSavedRef.current = true // Set flag to skip comparison on next settings update
       utils.userSettings.get.invalidate()
+      toast.success('Pengaturan berhasil disimpan')
     },
     onError: (error) => {
       setIsSaving(false)
+      // Check if it's a real network error
+      const isNetworkError = error.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                           error.message?.includes('Failed to fetch') ||
+                           error.message?.includes('NetworkError') ||
+                           error.message?.includes('Network request failed') ||
+                           error.name === 'NetworkError' ||
+                           error.name === 'TypeError'
+      
+      if (isNetworkError) {
+        toast.error('Gagal menyimpan: Koneksi ke server terputus. Pastikan koneksi internet Anda aktif.')
+      } else {
+        // Show the actual error message for non-network errors
+        const errorMessage = error.message || 'Gagal menyimpan pengaturan'
+        toast.error(`Gagal menyimpan: ${errorMessage}`)
+      }
     },
   })
 
