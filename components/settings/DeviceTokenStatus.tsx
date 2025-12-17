@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { Capacitor } from '@capacitor/core'
+import ManualPushRegistration from './ManualPushRegistration'
 
 export default function DeviceTokenStatus() {
   const { data: session } = useSession()
@@ -163,23 +164,29 @@ export default function DeviceTokenStatus() {
                 <li>Logout dan login ulang</li>
                 <li>Atau restart aplikasi</li>
               </ol>
-              <button
-                onClick={handleRetry}
-                disabled={isChecking}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: isChecking ? 'var(--bg-secondary)' : '#6366f1',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.75rem',
-                  fontWeight: 500,
-                  cursor: isChecking ? 'not-allowed' : 'pointer',
-                  opacity: isChecking ? 0.6 : 1,
-                }}
-              >
-                {isChecking ? '🔄 Mengecek...' : '🔄 Cek Ulang'}
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <button
+                  onClick={handleRetry}
+                  disabled={isChecking}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: isChecking ? 'var(--bg-secondary)' : '#6366f1',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    cursor: isChecking ? 'not-allowed' : 'pointer',
+                    opacity: isChecking ? 0.6 : 1,
+                  }}
+                >
+                  {isChecking ? '🔄 Mengecek...' : '🔄 Cek Ulang'}
+                </button>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                Atau coba daftar ulang secara manual:
+              </div>
+              <ManualPushRegistration />
             </div>
           )}
 
