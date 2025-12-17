@@ -42,60 +42,61 @@ export default function ManualPushRegistration() {
         return
       }
 
-      // Setup listener
-      console.log('[ManualRegister] Setting up listener...')
-      let tokenReceived = false
+        // Setup listener
+        console.log('[ManualRegister] Setting up listener...')
+        let tokenReceived = false
 
-      const registrationListener = PushNotifications.addListener(
-        'registration',
-        async (token: any) => {
-          if (tokenReceived) return
-          tokenReceived = true
+        const registrationListener = await PushNotifications.addListener(
+          'registration',
+          async (token: any) => {
+            if (tokenReceived) return
+            tokenReceived = true
 
-          console.log('[ManualRegister] Token received:', token)
-          
-          const tokenValue = token?.value || token?.token || token
-          
-          if (!tokenValue || typeof tokenValue !== 'string') {
-            console.error('[ManualRegister] Invalid token:', token)
-            toast.error('❌ Token tidak valid', 5000)
-            return
-          }
-
-          console.log('[ManualRegister] Token length:', tokenValue.length)
-          console.log('[ManualRegister] Registering with backend...')
-
-          registerToken.mutate(
-            {
-              token: tokenValue,
-              deviceInfo: platform,
-            },
-            {
-              onSuccess: () => {
-                console.log('[ManualRegister] ========== SUCCESS ==========')
-                toast.success('✅ Notifikasi berhasil terdaftar!', 3000)
-                setIsLoading(false)
-                // Remove listener
-                registrationListener.remove()
-              },
-              onError: (error) => {
-                console.error('[ManualRegister] ========== ERROR ==========')
-                console.error('[ManualRegister] Error:', error)
-                
-                const errorMsg = 
-                  error instanceof Error ? error.message :
-                  (error as any)?.message || 
-                  'Unknown error'
-                
-                toast.error(`❌ Gagal: ${errorMsg}`, 5000)
-                setIsLoading(false)
-                // Remove listener
-                registrationListener.remove()
-              },
+            console.log('[ManualRegister] Token received:', token)
+            
+            const tokenValue = token?.value || token?.token || token
+            
+            if (!tokenValue || typeof tokenValue !== 'string') {
+              console.error('[ManualRegister] Invalid token:', token)
+              toast.error('❌ Token tidak valid', 5000)
+              setIsLoading(false)
+              return
             }
-          )
-        }
-      )
+
+            console.log('[ManualRegister] Token length:', tokenValue.length)
+            console.log('[ManualRegister] Registering with backend...')
+
+            registerToken.mutate(
+              {
+                token: tokenValue,
+                deviceInfo: platform,
+              },
+              {
+                onSuccess: async () => {
+                  console.log('[ManualRegister] ========== SUCCESS ==========')
+                  toast.success('✅ Notifikasi berhasil terdaftar!', 3000)
+                  setIsLoading(false)
+                  // Remove listener
+                  await registrationListener.remove()
+                },
+                onError: async (error) => {
+                  console.error('[ManualRegister] ========== ERROR ==========')
+                  console.error('[ManualRegister] Error:', error)
+                  
+                  const errorMsg = 
+                    error instanceof Error ? error.message :
+                    (error as any)?.message || 
+                    'Unknown error'
+                  
+                  toast.error(`❌ Gagal: ${errorMsg}`, 5000)
+                  setIsLoading(false)
+                  // Remove listener
+                  await registrationListener.remove()
+                },
+              }
+            )
+          }
+        )
 
       // Register with FCM
       console.log('[ManualRegister] Calling FCM register()...')
