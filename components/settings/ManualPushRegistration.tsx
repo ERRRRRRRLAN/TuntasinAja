@@ -104,12 +104,12 @@ export default function ManualPushRegistration() {
       await PushNotifications.register()
 
       // Timeout
-      setTimeout(() => {
+      setTimeout(async () => {
         if (!tokenReceived) {
           console.error('[ManualRegister] TIMEOUT - No token received')
           toast.error('❌ Timeout - Cek koneksi internet', 5000)
           setIsLoading(false)
-          registrationListener.remove()
+          await registrationListener.remove()
         }
       }, 15000)
 
