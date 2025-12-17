@@ -14,7 +14,6 @@ import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/comp
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 import { toast } from '@/components/ui/ToastContainer'
-import DeviceTokenStatus from './DeviceTokenStatus'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -290,12 +289,19 @@ export default function MePage() {
   }
 
   const handleDownloadAPK = () => {
+    // Direct download from public folder
+    const apkUrl = '/TuntasinAja.apk'
     const link = document.createElement('a')
-    link.href = '/TuntasinAja.apk'
+    link.href = apkUrl
     link.download = 'TuntasinAja.apk'
+    link.style.display = 'none'
     document.body.appendChild(link)
     link.click()
-    document.body.removeChild(link)
+    
+    // Clean up after a short delay
+    setTimeout(() => {
+      document.body.removeChild(link)
+    }, 100)
   }
 
   if (status === 'loading' || isLoadingSettings) {
@@ -578,8 +584,6 @@ export default function MePage() {
                 />
               </div>
             )}
-
-            <DeviceTokenStatus />
 
             <ToggleSwitch
               checked={displaySettings.dndEnabled ?? false}

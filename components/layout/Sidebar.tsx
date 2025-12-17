@@ -420,6 +420,10 @@ export default function Sidebar() {
               <a
                 href="/TuntasinAja.apk"
                 download="TuntasinAja.apk"
+                onClick={(e) => {
+                  // Ensure download attribute works
+                  e.currentTarget.setAttribute('download', 'TuntasinAja.apk')
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
