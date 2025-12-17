@@ -38,25 +38,33 @@ if ($LASTEXITCODE -ne 0) {
 
 cd ..
 
+# Ensure we're back in script directory
+Set-Location $scriptDir
+
 # Copy APK to public folder for download
 Write-Host "`nCopying APK to public folder..." -ForegroundColor Cyan
 
-# Resolve absolute paths
-$apkSource = Resolve-Path (Join-Path $scriptDir "android\app\build\outputs\apk\release\TuntasinAja.apk") -ErrorAction SilentlyContinue
-$apkDest = Join-Path $scriptDir "public\TuntasinAja.apk"
+# Build absolute paths using current directory (which should be scriptDir)
+$currentDir = (Get-Location).Path
+$apkSource = Join-Path $currentDir "android\app\build\outputs\apk\release\TuntasinAja.apk"
+$apkDest = Join-Path $currentDir "public\TuntasinAja.apk"
 
-# If Resolve-Path failed, try alternative path construction
+# Convert to absolute paths
+$apkSource = (Resolve-Path $apkSource -ErrorAction SilentlyContinue).Path
 if (-not $apkSource) {
-    $apkSource = (Get-Item (Join-Path $scriptDir "android\app\build\outputs\apk\release\TuntasinAja.apk")).FullName
+    # Try alternative method
+    $apkSource = (Get-Item (Join-Path $currentDir "android\app\build\outputs\apk\release\TuntasinAja.apk") -ErrorAction SilentlyContinue).FullName
 }
 
-# Resolve destination to absolute path
-$apkDest = (Resolve-Path (Split-Path $apkDest -Parent) -ErrorAction SilentlyContinue).Path
-if (-not $apkDest) {
-    $apkDest = (New-Item -ItemType Directory -Path (Join-Path $scriptDir "public") -Force).FullName
+# Ensure destination directory exists and get absolute path
+$publicDir = Join-Path $currentDir "public"
+if (-not (Test-Path $publicDir)) {
+    New-Item -ItemType Directory -Path $publicDir -Force | Out-Null
 }
-$apkDest = Join-Path $apkDest "TuntasinAja.apk"
+$publicDir = (Resolve-Path $publicDir).Path
+$apkDest = Join-Path $publicDir "TuntasinAja.apk"
 
+Write-Host "   Current directory: $currentDir" -ForegroundColor Gray
 Write-Host "   Source: $apkSource" -ForegroundColor Gray
 Write-Host "   Destination: $apkDest" -ForegroundColor Gray
 
