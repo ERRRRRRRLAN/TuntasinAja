@@ -110,45 +110,49 @@ export default function AppUpdateChecker() {
     setIsDownloading(true)
 
     try {
+      // Always use the correct download URL from tuntasinaja-livid.vercel.app
+      // Ensure URL is correct - replace any wrong domain with correct one
+      let downloadUrl = updateInfo.downloadUrl || 'https://tuntasinaja-livid.vercel.app/api/app/download'
+      
+      // Fix URL if it points to wrong domain
+      if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
+        downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
+      }
+      
+      // If URL is relative or doesn't start with http, use the correct base URL
+      if (!downloadUrl.startsWith('http')) {
+        downloadUrl = `https://tuntasinaja-livid.vercel.app${downloadUrl.startsWith('/') ? downloadUrl : '/api/app/download'}`
+      }
+      
+      // Ensure it points to the download endpoint
+      if (!downloadUrl.includes('/api/app/download')) {
+        downloadUrl = 'https://tuntasinaja-livid.vercel.app/api/app/download'
+      }
+
+      console.log('[AppUpdateChecker] Download URL:', downloadUrl)
+
       if (Capacitor.getPlatform() === 'android') {
-        // For Android, use Browser plugin to open download URL in external browser
-        // This ensures proper download handling
+        // For Android, directly trigger download using Browser plugin
         try {
           const { Browser } = await import('@capacitor/browser')
+          // Open download URL in system browser - Android will handle APK download automatically
           await Browser.open({
-            url: updateInfo.downloadUrl,
-            windowName: '_system', // Open in system browser
+            url: downloadUrl,
+            windowName: '_system',
           })
           toast.success('Membuka browser untuk download APK...')
         } catch (browserError) {
-          // Fallback: try using window.open
+          // Fallback: use window.open
           console.log('[AppUpdateChecker] Browser plugin not available, using window.open')
-          const downloadUrl = updateInfo.downloadUrl.startsWith('http')
-            ? updateInfo.downloadUrl
-            : `${window.location.origin}${updateInfo.downloadUrl}`
-          
-          // Use API endpoint if relative URL
-          const finalUrl = updateInfo.downloadUrl.startsWith('/')
-            ? `${window.location.origin}/api/app/download`
-            : downloadUrl
-          
-          window.open(finalUrl, '_blank', 'noopener,noreferrer')
+          window.open(downloadUrl, '_blank', 'noopener,noreferrer')
           toast.success('Membuka browser untuk download APK...')
         }
         
         setShowUpdateDialog(false)
       } else {
-        // For web, use standard download
-        const downloadUrl = updateInfo.downloadUrl.startsWith('http')
-          ? updateInfo.downloadUrl
-          : `${window.location.origin}${updateInfo.downloadUrl}`
-        
-        const finalUrl = updateInfo.downloadUrl.startsWith('/')
-          ? `${window.location.origin}/api/app/download`
-          : downloadUrl
-        
+        // For web, trigger direct download
         const link = document.createElement('a')
-        link.href = finalUrl
+        link.href = downloadUrl
         link.download = 'TuntasinAja.apk'
         link.target = '_blank'
         document.body.appendChild(link)

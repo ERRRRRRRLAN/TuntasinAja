@@ -41,10 +41,22 @@ export default async function handler(
 
   // Get version info from environment variables
   // Set these in Vercel Dashboard → Settings → Environment Variables
+  let downloadUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/api/app/download'
+  
+  // Ensure download URL always points to tuntasinaja-livid.vercel.app
+  if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
+    downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
+  }
+  
+  // If URL doesn't include the correct domain, use default
+  if (!downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
+    downloadUrl = 'https://tuntasinaja-livid.vercel.app/api/app/download'
+  }
+  
   const latestVersion: VersionInfo = {
     versionCode: parseInt(process.env.APP_VERSION_CODE || '1'),
     versionName: process.env.APP_VERSION_NAME || '1.0',
-    downloadUrl: process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/api/app/download',
+    downloadUrl,
     releaseNotes: process.env.APP_RELEASE_NOTES || 'Update terbaru dengan perbaikan bug dan fitur baru',
     forceUpdate: process.env.APP_FORCE_UPDATE === 'true',
     updateEnabled, // From database (priority) or environment variable (fallback)
