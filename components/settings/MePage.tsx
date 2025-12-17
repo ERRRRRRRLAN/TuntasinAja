@@ -289,18 +289,28 @@ export default function MePage() {
   }
 
   const handleDownloadAPK = () => {
-    // Direct download from public folder
-    const apkUrl = '/TuntasinAja.apk'
+    // Use full URL to ensure we get the latest version from public folder
+    // Add timestamp to bypass browser cache
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : 'https://tuntasinaja-livid.vercel.app'
+    const apkUrl = `${baseUrl}/TuntasinAja.apk?t=${Date.now()}`
+    
+    console.log('[MePage] Downloading APK from:', apkUrl)
+    
     const link = document.createElement('a')
     link.href = apkUrl
     link.download = 'TuntasinAja.apk'
+    link.target = '_blank' // Open in new tab as fallback
     link.style.display = 'none'
     document.body.appendChild(link)
     link.click()
     
     // Clean up after a short delay
     setTimeout(() => {
-      document.body.removeChild(link)
+      if (document.body.contains(link)) {
+        document.body.removeChild(link)
+      }
     }, 100)
   }
 

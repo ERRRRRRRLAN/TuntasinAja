@@ -418,11 +418,15 @@ export default function Sidebar() {
 
             {!Capacitor.isNativePlatform() && (
               <a
-                href="/TuntasinAja.apk"
+                href={`/TuntasinAja.apk?t=${Date.now()}`}
                 download="TuntasinAja.apk"
                 onClick={(e) => {
-                  // Ensure download attribute works
+                  // Ensure download attribute works and use full URL with cache busting
+                  const baseUrl = window.location.origin
+                  const apkUrl = `${baseUrl}/TuntasinAja.apk?t=${Date.now()}`
+                  e.currentTarget.href = apkUrl
                   e.currentTarget.setAttribute('download', 'TuntasinAja.apk')
+                  console.log('[Sidebar] Downloading APK from:', apkUrl)
                 }}
                 style={{
                   display: 'flex',
