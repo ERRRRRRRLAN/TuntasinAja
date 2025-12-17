@@ -418,15 +418,54 @@ export default function Sidebar() {
 
             {!Capacitor.isNativePlatform() && (
               <a
-                href={`/TuntasinAja.apk?t=${Date.now()}`}
-                download="TuntasinAja.apk"
-                onClick={(e) => {
-                  // Ensure download attribute works and use full URL with cache busting
-                  const baseUrl = window.location.origin
-                  const apkUrl = `${baseUrl}/TuntasinAja.apk?t=${Date.now()}`
-                  e.currentTarget.href = apkUrl
-                  e.currentTarget.setAttribute('download', 'TuntasinAja.apk')
-                  console.log('[Sidebar] Downloading APK from:', apkUrl)
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  
+                  try {
+                    // Always use production URL to ensure latest version
+                    const baseUrl = 'https://tuntasinaja-livid.vercel.app'
+                    const apkUrl = `${baseUrl}/TuntasinAja.apk?v=${Date.now()}&nocache=1`
+                    
+                    console.log('[Sidebar] Starting APK download from:', apkUrl)
+                    
+                    // Use fetch to download and create blob
+                    const response = await fetch(apkUrl, {
+                      method: 'GET',
+                      cache: 'no-store',
+                      headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                      },
+                    })
+                    
+                    if (!response.ok) {
+                      throw new Error(`Failed to download: ${response.status}`)
+                    }
+                    
+                    const blob = await response.blob()
+                    const url = window.URL.createObjectURL(blob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = 'TuntasinAja.apk'
+                    link.style.display = 'none'
+                    
+                    document.body.appendChild(link)
+                    link.click()
+                    
+                    setTimeout(() => {
+                      window.URL.revokeObjectURL(url)
+                      if (document.body.contains(link)) {
+                        document.body.removeChild(link)
+                      }
+                    }, 100)
+                    
+                    console.log('[Sidebar] APK download completed')
+                  } catch (error) {
+                    console.error('[Sidebar] Error downloading APK:', error)
+                    // Fallback: direct link
+                    window.open('https://tuntasinaja-livid.vercel.app/TuntasinAja.apk', '_blank')
+                  }
                 }}
                 style={{
                   display: 'flex',
@@ -438,6 +477,7 @@ export default function Sidebar() {
                   borderRadius: '0.5rem',
                   transition: 'background 0.2s',
                   marginBottom: '0.5rem',
+                  cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'
