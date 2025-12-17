@@ -8,6 +8,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebResourceError;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -18,6 +20,26 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Inject versionCode and versionName to JavaScript
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            int versionCode = pInfo.versionCode;
+            String versionName = pInfo.versionName;
+            
+            // Inject to window object for JavaScript access
+            String injectScript = 
+                "(function() {" +
+                "  window.__APP_VERSION_CODE__ = " + versionCode + ";" +
+                "  window.__APP_VERSION_NAME__ = '" + versionName + "';" +
+                "  console.log('[MainActivity] Injected version: code=' + " + versionCode + " + ', name=' + '" + versionName + "');" +
+                "})();";
+            
+            getBridge().getWebView().evaluateJavascript(injectScript, null);
+            Log.d(TAG, "Injected versionCode: " + versionCode + ", versionName: " + versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Error getting package info: " + e.getMessage());
+        }
         
         // Get the WebView and add custom error handling
         getBridge().getWebView().setWebViewClient(new WebViewClient() {

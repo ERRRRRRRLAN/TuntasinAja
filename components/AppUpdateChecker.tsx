@@ -28,39 +28,35 @@ export default function AppUpdateChecker() {
 
     try {
       const info = await App.getInfo()
-      // Capacitor App.getInfo() doesn't provide versionCode directly
-      // We'll parse from versionName and use a simple mapping
-      // Format: "1.0" -> code 1, "1.1" -> code 2, "2.0" -> code 3, etc.
-      // This assumes versionCode increments by 1 for each version
-      // For more accurate versionCode, we'd need to inject it from native side
-      // For now, we'll use a simple calculation: major * 10 + minor
-      // But this should match the actual versionCode in build.gradle
-      const versionParts = info.version.split('.')
-      const major = parseInt(versionParts[0] || '1')
-      const minor = parseInt(versionParts[1] || '0')
       
-      // Calculate versionCode from versionName
-      // Format: "1.10" -> code 11, "1.11" -> code 12, "2.0" -> code 20, etc.
-      // This matches the versionCode in build.gradle (major * 10 + minor)
-      // Example: 1.10 = 1*10 + 10 = 20, but we need to match actual versionCode
-      // Better approach: major * 10 + minor (1.10 = 1*10 + 10 = 20)
-      // But actual versionCode in build.gradle is 11 for 1.10, so we use: major * 10 + minor
-      // Actually, let's use a simpler approach: parse the version string directly
-      // If version is "1.10", versionCode should be 11 (from build.gradle)
-      // So we calculate: major * 10 + minor (1*10 + 10 = 20) but that's wrong
-      // Let's check: versionCode 11 for versionName "1.10"
-      // Pattern: versionCode increments by 1 for each build
-      // We'll use: major * 10 + minor, but adjust for actual versionCode
-      // For 1.10 -> versionCode 11, so: (major - 1) * 10 + minor + 1 = (1-1)*10 + 10 + 1 = 11 ✓
-      const versionCode = (major - 1) * 10 + minor + 1
+      // Try to get versionCode from injected window object (from native Android)
+      let versionCode: number | null = null
+      if (typeof window !== 'undefined' && (window as any).__APP_VERSION_CODE__) {
+        versionCode = (window as any).__APP_VERSION_CODE__
+        console.log('[AppUpdateChecker] Using injected versionCode from native:', versionCode)
+      }
+      
+      // Fallback: calculate from versionName if not injected
+      if (versionCode === null) {
+        const versionParts = info.version.split('.')
+        const major = parseInt(versionParts[0] || '1')
+        const minor = parseInt(versionParts[1] || '0')
+        
+        // Calculate versionCode: (major - 1) * 10 + minor + 1
+        // Example: 1.5 -> (1-1)*10 + 5 + 1 = 6
+        // Example: 1.10 -> (1-1)*10 + 10 + 1 = 11
+        versionCode = (major - 1) * 10 + minor + 1
+        console.log('[AppUpdateChecker] Calculated versionCode from versionName:', versionCode)
+      }
       
       console.log('[AppUpdateChecker] Current version:', {
         versionName: info.version,
-        calculatedVersionCode: versionCode,
+        versionCode: versionCode,
+        source: (window as any).__APP_VERSION_CODE__ ? 'native' : 'calculated',
       })
       
       return {
-        versionCode,
+        versionCode: versionCode,
         versionName: info.version,
       }
     } catch (error) {
