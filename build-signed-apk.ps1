@@ -1,6 +1,17 @@
-# Get script directory
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Get script directory - use multiple methods for reliability
+if ($PSScriptRoot) {
+    $scriptDir = $PSScriptRoot
+} elseif ($MyInvocation.MyCommand.Path) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+} else {
+    $scriptDir = Get-Location
+}
+
+# Convert to absolute path
+$scriptDir = (Resolve-Path $scriptDir).Path
 Set-Location $scriptDir
+
+Write-Host "Script directory: $scriptDir" -ForegroundColor Cyan
 
 # Auto-increment version before build
 Write-Host "Incrementing version..." -ForegroundColor Cyan
@@ -29,17 +40,33 @@ cd ..
 
 # Copy APK to public folder for download
 Write-Host "`nCopying APK to public folder..." -ForegroundColor Cyan
-$apkSource = Join-Path $scriptDir "android\app\build\outputs\apk\release\TuntasinAja.apk"
+
+# Resolve absolute paths
+$apkSource = Resolve-Path (Join-Path $scriptDir "android\app\build\outputs\apk\release\TuntasinAja.apk") -ErrorAction SilentlyContinue
 $apkDest = Join-Path $scriptDir "public\TuntasinAja.apk"
 
+# If Resolve-Path failed, try alternative path construction
+if (-not $apkSource) {
+    $apkSource = (Get-Item (Join-Path $scriptDir "android\app\build\outputs\apk\release\TuntasinAja.apk")).FullName
+}
+
+# Resolve destination to absolute path
+$apkDest = (Resolve-Path (Split-Path $apkDest -Parent) -ErrorAction SilentlyContinue).Path
+if (-not $apkDest) {
+    $apkDest = (New-Item -ItemType Directory -Path (Join-Path $scriptDir "public") -Force).FullName
+}
+$apkDest = Join-Path $apkDest "TuntasinAja.apk"
+
+Write-Host "   Source: $apkSource" -ForegroundColor Gray
+Write-Host "   Destination: $apkDest" -ForegroundColor Gray
+
 # Wait a bit to ensure file is fully written
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 3
 
 if (Test-Path $apkSource) {
     # Get file info before copy
-    $srcFile = Get-Item $apkSource
-    Write-Host "   Source APK:" -ForegroundColor Gray
-    Write-Host "      Path: $apkSource" -ForegroundColor Gray
+    $srcFile = Get-Item $apkSource -Force
+    Write-Host "   Source APK found:" -ForegroundColor Gray
     Write-Host "      Size: $([math]::Round($srcFile.Length / 1MB, 2)) MB" -ForegroundColor Gray
     Write-Host "      Modified: $($srcFile.LastWriteTime)" -ForegroundColor Gray
     
@@ -50,29 +77,63 @@ if (Test-Path $apkSource) {
         Write-Host "   Created public folder: $publicDir" -ForegroundColor Gray
     }
     
-    # Copy APK
-    Copy-Item -Path $apkSource -Destination $apkDest -Force
-    
-    # Verify copy
+    # Remove existing file if it exists (to avoid any lock issues)
     if (Test-Path $apkDest) {
-        $destFile = Get-Item $apkDest
-        Write-Host "`n✅ APK copied to public folder successfully!" -ForegroundColor Green
-        Write-Host "   Destination: $apkDest" -ForegroundColor Gray
-        Write-Host "   Size: $([math]::Round($destFile.Length / 1MB, 2)) MB" -ForegroundColor Gray
-        Write-Host "   Modified: $($destFile.LastWriteTime)" -ForegroundColor Gray
+        Remove-Item $apkDest -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 500
+    }
+    
+    # Copy APK with explicit error handling
+    try {
+        Write-Host "   Copying file..." -ForegroundColor Gray
+        Copy-Item -Path $apkSource -Destination $apkDest -Force -ErrorAction Stop
         
-        # Verify sizes match
-        if ($srcFile.Length -eq $destFile.Length) {
-            Write-Host "   ✅ File sizes match - copy verified" -ForegroundColor Green
+        # Wait a bit for file system to sync
+        Start-Sleep -Seconds 1
+        
+        # Verify copy
+        if (Test-Path $apkDest) {
+            $destFile = Get-Item $apkDest -Force
+            Write-Host "`n✅ APK copied to public folder successfully!" -ForegroundColor Green
+            Write-Host "   Destination: $apkDest" -ForegroundColor Gray
+            Write-Host "   Size: $([math]::Round($destFile.Length / 1MB, 2)) MB" -ForegroundColor Gray
+            Write-Host "   Modified: $($destFile.LastWriteTime)" -ForegroundColor Gray
+            
+            # Verify sizes match
+            if ($srcFile.Length -eq $destFile.Length) {
+                Write-Host "   ✅ File sizes match - copy verified" -ForegroundColor Green
+            } else {
+                Write-Host "   ⚠️  File sizes don't match! Source: $($srcFile.Length) bytes, Dest: $($destFile.Length) bytes" -ForegroundColor Yellow
+                Write-Host "   Retrying copy..." -ForegroundColor Yellow
+                Copy-Item -Path $apkSource -Destination $apkDest -Force -ErrorAction Stop
+                Start-Sleep -Seconds 1
+                $destFile = Get-Item $apkDest -Force
+                if ($srcFile.Length -eq $destFile.Length) {
+                    Write-Host "   ✅ Retry successful - file sizes now match" -ForegroundColor Green
+                } else {
+                    Write-Host "   ❌ Retry failed - sizes still don't match" -ForegroundColor Red
+                    exit 1
+                }
+            }
+            
+            # Verify timestamps are close (within 5 seconds)
+            $timeDiff = [math]::Abs(($srcFile.LastWriteTime - $destFile.LastWriteTime).TotalSeconds)
+            if ($timeDiff -gt 5) {
+                Write-Host "   ⚠️  Warning: Timestamps differ by $([math]::Round($timeDiff, 1)) seconds" -ForegroundColor Yellow
+            }
         } else {
-            Write-Host "   ⚠️  File sizes don't match! Source: $($srcFile.Length) bytes, Dest: $($destFile.Length) bytes" -ForegroundColor Yellow
+            Write-Host "❌ Copy failed - destination file not found after copy!" -ForegroundColor Red
+            exit 1
         }
-    } else {
-        Write-Host "❌ Copy failed - destination file not found!" -ForegroundColor Red
+    } catch {
+        Write-Host "❌ Error copying file: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "   Full error: $_" -ForegroundColor Red
         exit 1
     }
 } else {
     Write-Host "❌ APK file not found at: $apkSource" -ForegroundColor Red
+    Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Yellow
+    Write-Host "   Script directory: $scriptDir" -ForegroundColor Yellow
     Write-Host "   Please check if build was successful" -ForegroundColor Yellow
     exit 1
 }
