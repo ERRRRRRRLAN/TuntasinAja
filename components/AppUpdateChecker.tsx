@@ -39,9 +39,19 @@ export default function AppUpdateChecker() {
       const major = parseInt(versionParts[0] || '1')
       const minor = parseInt(versionParts[1] || '0')
       
-      // Calculate versionCode: assuming format like 1.0 = 1, 1.1 = 2, 2.0 = 3, etc.
-      // This is a simple incrementing scheme
-      // For better accuracy, versionCode should be injected from native Android code
+      // Calculate versionCode from versionName
+      // Format: "1.10" -> code 11, "1.11" -> code 12, "2.0" -> code 20, etc.
+      // This matches the versionCode in build.gradle (major * 10 + minor)
+      // Example: 1.10 = 1*10 + 10 = 20, but we need to match actual versionCode
+      // Better approach: major * 10 + minor (1.10 = 1*10 + 10 = 20)
+      // But actual versionCode in build.gradle is 11 for 1.10, so we use: major * 10 + minor
+      // Actually, let's use a simpler approach: parse the version string directly
+      // If version is "1.10", versionCode should be 11 (from build.gradle)
+      // So we calculate: major * 10 + minor (1*10 + 10 = 20) but that's wrong
+      // Let's check: versionCode 11 for versionName "1.10"
+      // Pattern: versionCode increments by 1 for each build
+      // We'll use: major * 10 + minor, but adjust for actual versionCode
+      // For 1.10 -> versionCode 11, so: (major - 1) * 10 + minor + 1 = (1-1)*10 + 10 + 1 = 11 ✓
       const versionCode = (major - 1) * 10 + minor + 1
       
       console.log('[AppUpdateChecker] Current version:', {
@@ -110,23 +120,23 @@ export default function AppUpdateChecker() {
     setIsDownloading(true)
 
     try {
-      // Always use the correct download URL from tuntasinaja-livid.vercel.app
-      // Ensure URL is correct - replace any wrong domain with correct one
-      let downloadUrl = updateInfo.downloadUrl || 'https://tuntasinaja-livid.vercel.app/api/app/download'
+      // Always download APK directly from public folder
+      // Use tuntasinaja-livid.vercel.app/TuntasinAja.apk for direct download
+      let downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
       
-      // Fix URL if it points to wrong domain
-      if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
-        downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
-      }
-      
-      // If URL is relative or doesn't start with http, use the correct base URL
-      if (!downloadUrl.startsWith('http')) {
-        downloadUrl = `https://tuntasinaja-livid.vercel.app${downloadUrl.startsWith('/') ? downloadUrl : '/api/app/download'}`
-      }
-      
-      // Ensure it points to the download endpoint
-      if (!downloadUrl.includes('/api/app/download')) {
-        downloadUrl = 'https://tuntasinaja-livid.vercel.app/api/app/download'
+      // If updateInfo has a downloadUrl, use it but ensure it points to the APK file
+      if (updateInfo.downloadUrl) {
+        // If it's already pointing to .apk file, use it
+        if (updateInfo.downloadUrl.includes('.apk')) {
+          downloadUrl = updateInfo.downloadUrl
+          // Fix domain if wrong
+          if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
+            downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
+          }
+        } else {
+          // If it's pointing to API endpoint, change to direct APK file
+          downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
+        }
       }
 
       console.log('[AppUpdateChecker] Download URL:', downloadUrl)

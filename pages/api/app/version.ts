@@ -41,16 +41,22 @@ export default async function handler(
 
   // Get version info from environment variables
   // Set these in Vercel Dashboard → Settings → Environment Variables
-  let downloadUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/api/app/download'
+  // Always point to APK file in public folder for direct download
+  let downloadUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
   
-  // Ensure download URL always points to tuntasinaja-livid.vercel.app
+  // Ensure download URL always points to APK file in public folder
   if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
     downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
   }
   
-  // If URL doesn't include the correct domain, use default
-  if (!downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
-    downloadUrl = 'https://tuntasinaja-livid.vercel.app/api/app/download'
+  // If URL points to API endpoint, change to direct APK file
+  if (downloadUrl.includes('/api/app/download')) {
+    downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
+  }
+  
+  // If URL doesn't include .apk, ensure it points to the APK file
+  if (!downloadUrl.includes('.apk')) {
+    downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
   }
   
   const latestVersion: VersionInfo = {
