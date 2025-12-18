@@ -654,12 +654,9 @@ function CommentItem({
   // Calculate deadline badge for comment
   const getCommentDeadlineBadge = () => {
     if (!comment.deadline) {
-      // Debug: log if deadline is missing
-      console.log('[CommentItem] No deadline for comment:', comment.id, comment.content.substring(0, 30))
+      console.log('[CommentItem] No deadline:', comment.id, comment.content.substring(0, 20))
       return null
     }
-
-    console.log('[CommentItem] Has deadline:', comment.id, comment.deadline)
 
     const now = getUTCDate()
     const deadlineUTC = new Date(comment.deadline)
@@ -669,40 +666,59 @@ function CommentItem({
     const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
     const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
 
+    let badge = null
+    
     if (hoursUntilDeadline < 0) {
-      return {
+      badge = {
         text: 'Lewat',
         color: 'var(--danger)',
         bg: 'var(--danger)20',
       }
     } else if (hoursUntilDeadline < 2) {
-      return {
+      badge = {
         text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m`,
         color: 'var(--danger)',
         bg: 'var(--danger)20',
       }
     } else if (hoursUntilDeadline < 24) {
-      return {
+      badge = {
         text: `${hoursUntilDeadline}j`,
         color: 'var(--danger)',
         bg: 'var(--danger)20',
       }
     } else if (daysUntilDeadline < 3) {
-      return {
+      badge = {
         text: `${daysUntilDeadline}d`,
         color: 'var(--warning)',
         bg: 'var(--warning)20',
       }
     } else {
-      return {
+      badge = {
         text: format(deadlineJakarta, 'd MMM', { locale: id }),
         color: 'var(--text-light)',
         bg: 'var(--bg-secondary)',
       }
     }
+    
+    console.log('[CommentItem] Badge calculated:', {
+      commentId: comment.id,
+      content: comment.content.substring(0, 20),
+      deadline: comment.deadline,
+      hoursUntilDeadline,
+      badge
+    })
+    
+    return badge
   }
 
   const commentDeadlineBadge = getCommentDeadlineBadge()
+  
+  console.log('[CommentItem] Final badge:', {
+    commentId: comment.id,
+    content: comment.content.substring(0, 20),
+    hasBadge: !!commentDeadlineBadge,
+    badge: commentDeadlineBadge
+  })
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
