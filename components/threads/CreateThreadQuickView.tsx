@@ -94,19 +94,15 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       } else {
         // Toast notification removed: User requested to remove UI notifications
       }
-      setTitle('')
-      setComment('')
-      setIsGroupTask(false)
-      setGroupTaskTitle('')
-      setSelectedMembers([])
-      // Reset deadline to default (1 week from now at 00:00)
-      setDeadline(getDefaultDeadline())
-      setIsSubmitting(false)
+      
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
       await utils.thread.getAll.refetch()
       router.refresh()
-      onClose()
+      
+      // Close immediately after success without resetting fields
+      setIsSubmitting(false)
+      handleClose()
     },
     onError: (error) => {
       setIsSubmitting(false)
@@ -235,27 +231,65 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   }
 
   return (
-    <div 
-      ref={overlayRef}
-      className="quickview-overlay" 
-      onClick={handleOverlayClick}
-      onTransitionEnd={handleTransitionEnd}
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-out',
-        pointerEvents: isVisible ? 'auto' : 'none'
-      }}
-    >
+    <>
+      {/* Loading Overlay - Full Screen */}
+      {isSubmitting && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '2rem',
+              background: 'var(--card)',
+              borderRadius: '1rem',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <LoadingSpinner size={48} color="var(--primary)" />
+            <p style={{ color: 'var(--text)', fontSize: '1rem', margin: 0, fontWeight: 500 }}>
+              Membuat PR...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div 
-        ref={contentRef}
-        className="quickview-content" 
-        onClick={(e) => e.stopPropagation()}
+        ref={overlayRef}
+        className="quickview-overlay" 
+        onClick={handleOverlayClick}
+        onTransitionEnd={handleTransitionEnd}
         style={{
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          transition: 'opacity 0.3s ease-out',
+          pointerEvents: isVisible ? 'auto' : 'none'
         }}
       >
+        <div 
+          ref={contentRef}
+          className="quickview-content" 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          }}
+        >
         <div className="quickview-header">
           <div className="quickview-header-top">
             <div className="quickview-header-left">
@@ -446,12 +480,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 className="btn btn-primary" 
                 disabled={createThread.isLoading || isSubmitting}
               >
-                {createThread.isLoading || isSubmitting ? (
-                  <>
-                    <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
-                    Membuat...
-                  </>
-                ) : isGroupTask ? 'Buat Tugas Kelompok' : 'Buat PR'}
+                {isGroupTask ? 'Buat Tugas Kelompok' : 'Buat PR'}
               </button>
               <button 
                 type="button" 
@@ -466,6 +495,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
         </div>
       </div>
     </div>
+    </>
   )
 }
 
