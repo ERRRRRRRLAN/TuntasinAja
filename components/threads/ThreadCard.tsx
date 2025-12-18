@@ -295,9 +295,30 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   // Filter out comments with expired deadline (hide them)
   const visibleComments = thread.comments.filter(comment => {
     if (!comment.deadline) return true // Show comments without deadline
+    
     const deadlineDate = new Date(comment.deadline)
     const now = getUTCDate()
-    return deadlineDate > now // Only show if deadline hasn't passed
+    const isExpired = deadlineDate <= now
+    
+    console.log('[ThreadCard] Comment deadline check:', {
+      commentId: comment.id,
+      content: comment.content.substring(0, 30),
+      deadline: comment.deadline,
+      deadlineDate: deadlineDate.toISOString(),
+      now: now.toISOString(),
+      isExpired,
+      willShow: !isExpired
+    })
+    
+    return !isExpired // Only show if deadline hasn't passed
+  })
+
+  console.log('[ThreadCard] Thread visibility:', {
+    threadId: thread.id,
+    title: thread.title,
+    totalComments: thread.comments.length,
+    visibleComments: visibleComments.length,
+    shouldHide: thread.comments.length > 0 && visibleComments.length === 0
   })
 
   // Check if thread should be hidden (all comments are hidden due to expired deadline)
