@@ -292,6 +292,22 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const allDeadlines = getAllDeadlines()
   const deadlineBadges = allDeadlines.map(deadline => getDeadlineBadge(deadline)).filter(Boolean)
 
+  // Filter out comments with expired deadline (hide them)
+  const visibleComments = thread.comments.filter(comment => {
+    if (!comment.deadline) return true // Show comments without deadline
+    const deadlineDate = new Date(comment.deadline)
+    const now = getUTCDate()
+    return deadlineDate > now // Only show if deadline hasn't passed
+  })
+
+  // Check if thread should be hidden (all comments are hidden due to expired deadline)
+  const shouldHideThread = thread.comments.length > 0 && visibleComments.length === 0
+
+
+  // Don't render if thread should be hidden
+  if (shouldHideThread) {
+    return null
+  }
 
   return (
     <div 
@@ -481,7 +497,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
-            <span>{thread._count.comments} sub tugas</span>
+            <span>{visibleComments.length} sub tugas</span>
           </span>
           {isCompleted && timeRemaining && (
             <span style={{ 
@@ -497,32 +513,20 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           )}
         </div>
 
-        {thread.comments.length > 0 && (
+        {visibleComments.length > 0 && (
           <div className="thread-comments-preview">
-            {thread.comments.slice(0, 2).map((comment, index) => {
-              // Debug: log comment data
-              if (index === 0) {
-                console.log('[ThreadCard] First comment data:', {
-                  id: comment.id,
-                  content: comment.content.substring(0, 30),
-                  deadline: comment.deadline,
-                  hasDeadline: !!comment.deadline,
-                  allKeys: Object.keys(comment)
-                })
-              }
-              return (
-                <CommentItem 
-                  key={comment.id} 
-                  comment={comment} 
-                  threadId={thread.id}
-                  statuses={statuses || []}
-                  threadAuthorId={thread.author.id}
-                />
-              )
-            })}
-            {thread.comments.length > 2 && (
+            {visibleComments.slice(0, 2).map((comment) => (
+              <CommentItem 
+                key={comment.id} 
+                comment={comment} 
+                threadId={thread.id}
+                statuses={statuses || []}
+                threadAuthorId={thread.author.id}
+              />
+            ))}
+            {visibleComments.length > 2 && (
               <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
-                + {thread.comments.length - 2} sub tugas lainnya
+                + {visibleComments.length - 2} sub tugas lainnya
               </p>
             )}
           </div>

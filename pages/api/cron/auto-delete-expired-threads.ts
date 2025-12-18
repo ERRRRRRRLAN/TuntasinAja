@@ -2,15 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
 
 // This API route can be called by Vercel Cron Jobs or external cron services
-// Auto-deletes threads and comments that have passed their deadline
-// - Deletes comments that have passed their deadline
-// - Deletes threads that have passed their deadline OR if all their comments have expired
+// Auto-deletes threads and comments that have passed their deadline + 1 hour grace period
+// - Deletes comments that have passed their deadline by at least 1 hour
+// - Deletes threads that have passed their deadline by at least 1 hour OR if all their comments have expired
 // History remains stored (not deleted) - especially for completed tasks
 // To set up Vercel Cron, add this to vercel.json:
 // {
 //   "crons": [{
 //     "path": "/api/cron/auto-delete-expired-threads",
-//     "schedule": "0 0 * * *" // Every day at midnight
+//     "schedule": "0 * * * *" // Every hour
 //   }]
 // }
 
@@ -33,17 +33,21 @@ export default async function handler(
   try {
     const { getUTCDate } = await import('@/lib/date-utils')
     const now = getUTCDate()
+    
+    // Calculate 1 hour ago from now (grace period)
+    const oneHourAgo = new Date(now)
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1)
 
     let deletedThreadCount = 0
     let deletedCommentCount = 0
 
-    // Step 1: Find all threads that have passed their deadline OR all their comments have expired
-    // First, get threads with deadline
+    // Step 1: Find all threads that have passed their deadline + 1 hour grace period
+    // First, get threads with deadline that expired at least 1 hour ago
     const expiredThreads = await prisma.thread.findMany({
       where: {
         deadline: {
           not: null,
-          lt: now, // Deadline is in the past
+          lt: oneHourAgo, // Deadline is in the past by at least 1 hour
         },
       },
       include: {
@@ -103,7 +107,7 @@ export default async function handler(
       },
     })
 
-    // Filter threads where all comments with deadline have expired
+    // Filter threads where all comments with deadline have expired (+ 1 hour grace period)
     // If a thread has comments without deadline, it won't be deleted (only comments with deadline count)
     const threadsWithAllExpiredComments = threadsWithComments.filter((thread) => {
       if (thread.comments.length === 0) return false // Skip threads with no comments
@@ -114,12 +118,12 @@ export default async function handler(
       // If thread has no comments with deadline, don't delete it
       if (commentsWithDeadline.length === 0) return false
       
-      // Check if ALL comments with deadline have expired
-      // If all comments with deadline are expired, delete the thread
+      // Check if ALL comments with deadline have expired by at least 1 hour
+      // If all comments with deadline are expired + 1 hour, delete the thread
       // Comments without deadline don't count (they don't expire)
       const allDeadlinesExpired = commentsWithDeadline.every((comment) => {
         if (!comment.deadline) return false // Should not happen, but just in case
-        return new Date(comment.deadline) < now
+        return new Date(comment.deadline) < oneHourAgo
       })
       
       return allDeadlinesExpired
@@ -129,13 +133,13 @@ export default async function handler(
     const allExpiredThreads = [...expiredThreads, ...threadsWithAllExpiredComments]
     
     // Step 3: Find standalone expired comments (comments in threads that are NOT expired)
-    // These are comments that have expired deadline but their thread is not expired
+    // These are comments that have expired deadline + 1 hour but their thread is not expired
     const allThreadIds = allExpiredThreads.map((t) => t.id)
     const expiredComments = await prisma.comment.findMany({
       where: {
         deadline: {
           not: null,
-          lt: now, // Deadline is in the past
+          lt: oneHourAgo, // Deadline is in the past by at least 1 hour
         },
         threadId: {
           notIn: allThreadIds, // Not in threads that will be deleted
@@ -223,7 +227,7 @@ export default async function handler(
         threads: deletedThreadCount,
         comments: deletedCommentCount,
       },
-      message: `Successfully deleted ${deletedThreadCount} expired thread(s) and ${deletedCommentCount} expired comment(s). History preserved for completed tasks.`,
+      message: `Successfully deleted ${deletedThreadCount} expired thread(s) and ${deletedCommentCount} expired comment(s) that passed deadline by at least 1 hour. History preserved for completed tasks.`,
     })
   } catch (error) {
     console.error('Error in auto-delete-expired-threads cron:', error)

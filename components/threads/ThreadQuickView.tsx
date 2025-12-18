@@ -921,12 +921,25 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           )}
 
           <div className="comments-list">
-            {!((thread as any).comments?.length > 0) ? (
-              <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '2rem' }}>
-                Belum ada sub tugas. Jadilah yang pertama!
-              </p>
-            ) : (
-              ((thread as any).comments || []).map((comment: any) => {
+            {(() => {
+              // Filter out comments with expired deadline
+              const allComments = (thread as any).comments || []
+              const visibleComments = allComments.filter((comment: any) => {
+                if (!comment.deadline) return true // Show comments without deadline
+                const deadlineDate = new Date(comment.deadline)
+                const now = getUTCDate()
+                return deadlineDate > now // Only show if deadline hasn't passed
+              })
+
+              if (visibleComments.length === 0) {
+                return (
+                  <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '2rem' }}>
+                    Belum ada sub tugas. Jadilah yang pertama!
+                  </p>
+                )
+              }
+
+              return visibleComments.map((comment: any) => {
                 const commentStatus = statuses?.find((s) => s.commentId === comment.id)
                 const isCommentCompleted = commentStatus?.isCompleted || false
                 
@@ -1301,7 +1314,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   </div>
                 )
               })
-            )}
+            })()}
           </div>
         </div>
         <QuickViewConfirmDialog
