@@ -474,23 +474,25 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   if (isLoading) {
     return (
       <div 
-        ref={overlayRef}
-        className="quickview-overlay" 
-        onClick={handleCloseQuickView}
         style={{
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.3s ease-out',
-          pointerEvents: isVisible ? 'auto' : 'none',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           background: 'rgba(0, 0, 0, 0.75)',
           backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
         }}
+        onClick={handleCloseQuickView}
       >
         <div
           style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -499,9 +501,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             background: 'var(--card)',
             borderRadius: '1.25rem',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
-            opacity: isVisible ? 1 : 0,
             animation: isVisible ? 'fadeInUp 0.3s ease-out' : 'none',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Custom spinner with guaranteed animation */}
           <div
