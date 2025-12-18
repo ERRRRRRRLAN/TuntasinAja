@@ -241,12 +241,13 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.7)',
+            background: 'rgba(0, 0, 0, 0.75)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10000,
             backdropFilter: 'blur(4px)',
+            animation: 'fadeIn 0.2s ease-out',
           }}
         >
           <div
@@ -254,15 +255,41 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '1rem',
-              padding: '2rem',
+              gap: '1.25rem',
+              padding: '2.5rem 3rem',
               background: 'var(--card)',
-              borderRadius: '1rem',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              borderRadius: '1.25rem',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+              animation: 'fadeInUp 0.3s ease-out',
             }}
           >
-            <LoadingSpinner size={48} color="var(--primary)" />
-            <p style={{ color: 'var(--text)', fontSize: '1rem', margin: 0, fontWeight: 500 }}>
+            {/* Custom spinner with guaranteed animation */}
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: '4px solid rgba(59, 130, 246, 0.2)',
+                  borderTopColor: '#3b82f6',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                  WebkitAnimation: 'spin 0.8s linear infinite', // For Safari
+                }}
+              />
+            </div>
+            <p style={{ 
+              color: 'var(--text)', 
+              fontSize: '1.125rem', 
+              margin: 0, 
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+            }}>
               Membuat PR...
             </p>
           </div>
