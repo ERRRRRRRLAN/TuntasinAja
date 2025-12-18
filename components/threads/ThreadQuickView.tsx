@@ -480,22 +480,58 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         style={{
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
-          pointerEvents: isVisible ? 'auto' : 'none'
+          pointerEvents: isVisible ? 'auto' : 'none',
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)',
         }}
       >
-        <div 
-          ref={contentRef}
-          className="quickview-content" 
-          onClick={(e) => e.stopPropagation()}
+        <div
           style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.25rem',
+            padding: '2.5rem 3rem',
+            background: 'var(--card)',
+            borderRadius: '1.25rem',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
             opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+            animation: isVisible ? 'fadeInUp 0.3s ease-out' : 'none',
           }}
         >
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-light)' }}>Memuat PR...</p>
+          {/* Custom spinner with guaranteed animation */}
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                border: '4px solid rgba(59, 130, 246, 0.2)',
+                borderTopColor: '#3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+                WebkitAnimation: 'spin 0.8s linear infinite',
+              }}
+            />
           </div>
+          <p style={{ 
+            color: 'var(--text)', 
+            fontSize: '1.125rem', 
+            margin: 0, 
+            fontWeight: 600,
+            letterSpacing: '-0.01em',
+          }}>
+            Memuat PR...
+          </p>
         </div>
       </div>
     )
