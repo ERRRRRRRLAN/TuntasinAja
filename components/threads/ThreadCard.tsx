@@ -499,15 +499,27 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
         {thread.comments.length > 0 && (
           <div className="thread-comments-preview">
-            {thread.comments.slice(0, 2).map((comment) => (
-              <CommentItem 
-                key={comment.id} 
-                comment={comment} 
-                threadId={thread.id}
-                statuses={statuses || []}
-                threadAuthorId={thread.author.id}
-              />
-            ))}
+            {thread.comments.slice(0, 2).map((comment, index) => {
+              // Debug: log comment data
+              if (index === 0) {
+                console.log('[ThreadCard] First comment data:', {
+                  id: comment.id,
+                  content: comment.content.substring(0, 30),
+                  deadline: comment.deadline,
+                  hasDeadline: !!comment.deadline,
+                  allKeys: Object.keys(comment)
+                })
+              }
+              return (
+                <CommentItem 
+                  key={comment.id} 
+                  comment={comment} 
+                  threadId={thread.id}
+                  statuses={statuses || []}
+                  threadAuthorId={thread.author.id}
+                />
+              )
+            })}
             {thread.comments.length > 2 && (
               <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
                 + {thread.comments.length - 2} sub tugas lainnya
@@ -608,7 +620,13 @@ function CommentItem({
 
   // Calculate deadline badge for comment
   const getCommentDeadlineBadge = () => {
-    if (!comment.deadline) return null
+    if (!comment.deadline) {
+      // Debug: log if deadline is missing
+      console.log('[CommentItem] No deadline for comment:', comment.id, comment.content.substring(0, 30))
+      return null
+    }
+
+    console.log('[CommentItem] Has deadline:', comment.id, comment.deadline)
 
     const now = getUTCDate()
     const deadlineUTC = new Date(comment.deadline)
