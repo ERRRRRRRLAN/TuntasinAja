@@ -248,6 +248,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             zIndex: 10000,
             backdropFilter: 'blur(4px)',
             animation: 'fadeIn 0.2s ease-out',
+            padding: '1rem', // Padding for mobile
           }}
         >
           <div
@@ -255,12 +256,16 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '1.25rem',
-              padding: '2.5rem 3rem',
+              justifyContent: 'center',
+              gap: '1.5rem',
+              padding: '2.5rem',
               background: 'var(--card)',
               borderRadius: '1.25rem',
               boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
               animation: 'fadeInUp 0.3s ease-out',
+              maxWidth: '90vw',
+              width: 'auto',
+              minWidth: '280px',
             }}
           >
             {/* Custom spinner with guaranteed animation */}
@@ -269,6 +274,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 width: '64px',
                 height: '64px',
                 position: 'relative',
+                flexShrink: 0,
               }}
             >
               <div
@@ -289,6 +295,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               margin: 0, 
               fontWeight: 600,
               letterSpacing: '-0.01em',
+              textAlign: 'center',
+              width: '100%',
             }}>
               Membuat PR...
             </p>
