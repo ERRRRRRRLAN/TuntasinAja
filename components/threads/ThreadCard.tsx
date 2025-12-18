@@ -212,12 +212,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  // Calculate deadline badge
-  const getDeadlineBadge = () => {
-    if (!thread.deadline) return null
+  // Calculate deadline badge for a single deadline
+  const getDeadlineBadge = (deadline: Date | null | undefined) => {
+    if (!deadline) return null
 
     const now = getUTCDate()
-    const deadlineUTC = new Date(thread.deadline)
+    const deadlineUTC = new Date(deadline)
     const deadlineJakarta = toJakartaDate(deadlineUTC)
     const nowJakarta = toJakartaDate(now)
 
@@ -262,7 +262,35 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  const deadlineBadge = getDeadlineBadge()
+  // Get all unique deadlines from thread and comments
+  const getAllDeadlines = () => {
+    const deadlines: Date[] = []
+    
+    // Add thread deadline if exists
+    if (thread.deadline) {
+      deadlines.push(new Date(thread.deadline))
+    }
+    
+    // Add comment deadlines if they exist and are different from thread deadline
+    thread.comments.forEach(comment => {
+      if (comment.deadline) {
+        const commentDeadline = new Date(comment.deadline)
+        // Check if this deadline is different from existing ones (compare timestamps)
+        const isDifferent = !deadlines.some(d => 
+          Math.abs(d.getTime() - commentDeadline.getTime()) < 60000 // Within 1 minute = same
+        )
+        if (isDifferent) {
+          deadlines.push(commentDeadline)
+        }
+      }
+    })
+    
+    // Sort deadlines by date (earliest first)
+    return deadlines.sort((a, b) => a.getTime() - b.getTime())
+  }
+
+  const allDeadlines = getAllDeadlines()
+  const deadlineBadges = allDeadlines.map(deadline => getDeadlineBadge(deadline)).filter(Boolean)
 
 
   return (
@@ -428,23 +456,28 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
           </span>
-          {deadlineBadge && (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: deadlineBadge.color,
-                background: deadlineBadge.bg,
-              }}
-            >
-              <ClockIcon size={14} />
-              {deadlineBadge.text}
-            </span>
+          {deadlineBadges.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {deadlineBadges.map((badge, index) => (
+                <span
+                  key={index}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: badge!.color,
+                    background: badge!.bg,
+                  }}
+                >
+                  <ClockIcon size={14} />
+                  {badge!.text}
+                </span>
+              ))}
+            </div>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
@@ -524,7 +557,7 @@ function CommentItem({
   statuses,
   threadAuthorId
 }: { 
-  comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
+  comment: { id: string; content: string; deadline?: Date | null; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
   threadAuthorId: string
@@ -573,6 +606,52 @@ function CommentItem({
     }
   }
 
+  // Calculate deadline badge for comment
+  const getCommentDeadlineBadge = () => {
+    if (!comment.deadline) return null
+
+    const now = getUTCDate()
+    const deadlineUTC = new Date(comment.deadline)
+    const deadlineJakarta = toJakartaDate(deadlineUTC)
+    const nowJakarta = toJakartaDate(now)
+
+    const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+    const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+    if (hoursUntilDeadline < 0) {
+      return {
+        text: 'Lewat',
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 2) {
+      return {
+        text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 24) {
+      return {
+        text: `${hoursUntilDeadline}j`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (daysUntilDeadline < 3) {
+      return {
+        text: `${daysUntilDeadline}d`,
+        color: 'var(--warning)',
+        bg: 'var(--warning)20',
+      }
+    } else {
+      return {
+        text: format(deadlineJakarta, 'd MMM', { locale: id }),
+        color: 'var(--text-light)',
+        bg: 'var(--bg-secondary)',
+      }
+    }
+  }
+
+  const commentDeadlineBadge = getCommentDeadlineBadge()
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
@@ -594,7 +673,7 @@ function CommentItem({
         }}>
           {comment.content}
         </div>
-        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative' }}>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', position: 'relative', flexWrap: 'wrap' }}>
           <span>- {comment.author.name}</span>
           {comment.author.kelas && (
             <span style={{
@@ -605,10 +684,25 @@ function CommentItem({
               color: 'var(--primary)',
               fontSize: '0.75rem',
               fontWeight: 600,
-              marginLeft: 'auto',
               background: 'transparent'
             }}>
               {comment.author.kelas}
+            </span>
+          )}
+          {commentDeadlineBadge && (
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              color: commentDeadlineBadge.color,
+              background: commentDeadlineBadge.bg,
+            }}>
+              <ClockIcon size={12} />
+              {commentDeadlineBadge.text}
             </span>
           )}
         </div>
