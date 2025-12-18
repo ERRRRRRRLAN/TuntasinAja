@@ -30,7 +30,7 @@ interface ThreadCardProps {
     comments: Array<{
       id: string
       content: string
-      deadline?: Date | null
+      deadline?: Date | null // Make sure this is included
       author: {
         id: string
         name: string
@@ -212,12 +212,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  // Calculate deadline badge
-  const getDeadlineBadge = () => {
-    if (!thread.deadline) return null
+  // Calculate deadline badge for a single deadline
+  const getDeadlineBadge = (deadline: Date | null | undefined) => {
+    if (!deadline) return null
 
     const now = getUTCDate()
-    const deadlineUTC = new Date(thread.deadline)
+    const deadlineUTC = new Date(deadline)
     const deadlineJakarta = toJakartaDate(deadlineUTC)
     const nowJakarta = toJakartaDate(now)
 
@@ -262,8 +262,63 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  const deadlineBadge = getDeadlineBadge()
+  // Get all unique deadlines from thread and comments (only show non-expired)
+  const getAllDeadlines = () => {
+    const deadlines: Date[] = []
+    const now = getUTCDate()
+    
+    // Add thread deadline if exists and not expired
+    if (thread.deadline) {
+      const threadDeadline = new Date(thread.deadline)
+      if (threadDeadline > now) {
+        deadlines.push(threadDeadline)
+      }
+    }
+    
+    // Add comment deadlines if they exist, not expired, and different from thread deadline
+    thread.comments.forEach(comment => {
+      if (comment.deadline) {
+        const commentDeadline = new Date(comment.deadline)
+        
+        // Only include if not expired
+        if (commentDeadline <= now) return
+        
+        // Check if this deadline is different from existing ones (compare timestamps)
+        const isDifferent = !deadlines.some(d => 
+          Math.abs(d.getTime() - commentDeadline.getTime()) < 60000 // Within 1 minute = same
+        )
+        if (isDifferent) {
+          deadlines.push(commentDeadline)
+        }
+      }
+    })
+    
+    // Sort deadlines by date (earliest first)
+    return deadlines.sort((a, b) => a.getTime() - b.getTime())
+  }
 
+  const allDeadlines = getAllDeadlines()
+  const deadlineBadges = allDeadlines.map(deadline => getDeadlineBadge(deadline)).filter(Boolean)
+
+  // Filter out comments with expired deadline (hide them)
+  const visibleComments = thread.comments.filter(comment => {
+    if (!comment.deadline) return true // Show comments without deadline
+    
+    const deadlineDate = new Date(comment.deadline)
+    const now = getUTCDate()
+    const isExpired = deadlineDate <= now
+    
+    return !isExpired // Only show if deadline hasn't passed
+  })
+
+  // Check if thread should be hidden (all comments are hidden due to expired deadline)
+  const shouldHideThread = thread.comments.length > 0 && visibleComments.length === 0
+
+
+  // Don't render if thread should be hidden
+  if (shouldHideThread) {
+    return null
+  }
 
   return (
     <div 
@@ -428,27 +483,32 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <CalendarIcon size={16} />
             <span>{format(new Date(thread.date), 'EEEE, d MMM yyyy', { locale: id })}</span>
           </span>
-          {deadlineBadge && (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: deadlineBadge.color,
-                background: deadlineBadge.bg,
-              }}
-            >
-              <ClockIcon size={14} />
-              {deadlineBadge.text}
-            </span>
+          {deadlineBadges.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {deadlineBadges.map((badge, index) => (
+                <span
+                  key={index}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: badge!.color,
+                    background: badge!.bg,
+                  }}
+                >
+                  <ClockIcon size={14} />
+                  {badge!.text}
+                </span>
+              ))}
+            </div>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <MessageIcon size={16} />
-            <span>{thread._count.comments} sub tugas</span>
+            <span>{visibleComments.length} sub tugas</span>
           </span>
           {isCompleted && timeRemaining && (
             <span style={{ 
@@ -464,9 +524,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           )}
         </div>
 
-        {thread.comments.length > 0 && (
+        {visibleComments.length > 0 && (
           <div className="thread-comments-preview">
-            {thread.comments.slice(0, 2).map((comment) => (
+            {visibleComments.slice(0, 2).map((comment) => (
               <CommentItem 
                 key={comment.id} 
                 comment={comment} 
@@ -475,9 +535,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 threadAuthorId={thread.author.id}
               />
             ))}
-            {thread.comments.length > 2 && (
+            {visibleComments.length > 2 && (
               <p style={{ marginTop: '0.5rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
-                + {thread.comments.length - 2} sub tugas lainnya
+                + {visibleComments.length - 2} sub tugas lainnya
               </p>
             )}
           </div>
@@ -524,7 +584,7 @@ function CommentItem({
   statuses,
   threadAuthorId
 }: { 
-  comment: { id: string; content: string; author: { id: string; name: string; kelas?: string | null } }
+  comment: { id: string; content: string; deadline?: Date | null; author: { id: string; name: string; kelas?: string | null } }
   threadId: string
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>
   threadAuthorId: string
@@ -573,6 +633,74 @@ function CommentItem({
     }
   }
 
+  // Calculate deadline badge for comment
+  const getCommentDeadlineBadge = () => {
+    if (!comment.deadline) {
+      console.log('[CommentItem] No deadline:', comment.id, comment.content.substring(0, 20))
+      return null
+    }
+
+    const now = getUTCDate()
+    const deadlineUTC = new Date(comment.deadline)
+    const deadlineJakarta = toJakartaDate(deadlineUTC)
+    const nowJakarta = toJakartaDate(now)
+
+    const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+    const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
+
+    let badge = null
+    
+    if (hoursUntilDeadline < 0) {
+      badge = {
+        text: 'Lewat',
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 2) {
+      badge = {
+        text: `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (hoursUntilDeadline < 24) {
+      badge = {
+        text: `${hoursUntilDeadline}j`,
+        color: 'var(--danger)',
+        bg: 'var(--danger)20',
+      }
+    } else if (daysUntilDeadline < 3) {
+      badge = {
+        text: `${daysUntilDeadline}d`,
+        color: 'var(--warning)',
+        bg: 'var(--warning)20',
+      }
+    } else {
+      badge = {
+        text: format(deadlineJakarta, 'd MMM', { locale: id }),
+        color: 'var(--text-light)',
+        bg: 'var(--bg-secondary)',
+      }
+    }
+    
+    console.log('[CommentItem] Badge calculated:', {
+      commentId: comment.id,
+      content: comment.content.substring(0, 20),
+      deadline: comment.deadline,
+      hoursUntilDeadline,
+      badge
+    })
+    
+    return badge
+  }
+
+  const commentDeadlineBadge = getCommentDeadlineBadge()
+  
+  console.log('[CommentItem] Final badge:', {
+    commentId: comment.id,
+    content: comment.content.substring(0, 20),
+    hasBadge: !!commentDeadlineBadge,
+    badge: commentDeadlineBadge
+  })
 
   return (
     <div className="comment-item" style={{ display: 'flex', alignItems: 'start', gap: '0.5rem', position: 'relative', width: '100%' }}>
@@ -594,7 +722,7 @@ function CommentItem({
         }}>
           {comment.content}
         </div>
-        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem', position: 'relative' }}>
+        <div className="comment-author" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', position: 'relative', flexWrap: 'wrap' }}>
           <span>- {comment.author.name}</span>
           {comment.author.kelas && (
             <span style={{
@@ -605,10 +733,25 @@ function CommentItem({
               color: 'var(--primary)',
               fontSize: '0.75rem',
               fontWeight: 600,
-              marginLeft: 'auto',
               background: 'transparent'
             }}>
               {comment.author.kelas}
+            </span>
+          )}
+          {commentDeadlineBadge && (
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '0.25rem',
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              color: commentDeadlineBadge.color,
+              background: commentDeadlineBadge.bg,
+            }}>
+              <ClockIcon size={12} />
+              {commentDeadlineBadge.text}
             </span>
           )}
         </div>

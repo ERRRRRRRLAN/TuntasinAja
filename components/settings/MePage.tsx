@@ -309,13 +309,71 @@ export default function MePage() {
     await signOut({ callbackUrl: '/auth/signin' })
   }
 
-  const handleDownloadAPK = () => {
-    const link = document.createElement('a')
-    link.href = '/TuntasinAja.apk'
-    link.download = 'TuntasinAja.apk'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleDownloadAPK = async () => {
+    try {
+      // Always use the production URL to ensure we get the latest version
+      const baseUrl = 'https://tuntasinaja-livid.vercel.app'
+      const apkUrl = `${baseUrl}/TuntasinAja.apk?v=${Date.now()}&nocache=1`
+      
+      console.log('[MePage] Starting APK download from:', apkUrl)
+      
+      // Use fetch to download the file and create blob
+      // This ensures we get the latest version and can verify it
+      const response = await fetch(apkUrl, {
+        method: 'GET',
+        cache: 'no-store', // Force no cache
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to download APK: ${response.status} ${response.statusText}`)
+      }
+      
+      // Get file size for verification
+      const contentLength = response.headers.get('content-length')
+      const fileSize = contentLength ? parseInt(contentLength, 10) : 0
+      
+      console.log('[MePage] APK file size:', fileSize, 'bytes')
+      
+      // Create blob from response
+      const blob = await response.blob()
+      
+      // Verify blob size matches
+      if (fileSize > 0 && blob.size !== fileSize) {
+        console.warn('[MePage] File size mismatch:', blob.size, 'vs', fileSize)
+      }
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'TuntasinAja.apk'
+      link.style.display = 'none'
+      
+      document.body.appendChild(link)
+      link.click()
+      
+      // Clean up
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url)
+        if (document.body.contains(link)) {
+          document.body.removeChild(link)
+        }
+        console.log('[MePage] APK download completed')
+      }, 100)
+      
+      toast.success('📥 Download APK dimulai...', 2000)
+    } catch (error) {
+      console.error('[MePage] Error downloading APK:', error)
+      toast.error('❌ Gagal mengunduh APK. Silakan coba lagi.', 5000)
+      
+      // Fallback: try direct link
+      const fallbackUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
+      window.open(fallbackUrl, '_blank')
+    }
   }
 
   if (status === 'loading' || isLoadingSettings) {
