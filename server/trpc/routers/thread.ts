@@ -449,6 +449,7 @@ export const threadRouter = createTRPCRouter({
                     authorId: ctx.session.user.id,
                     content: input.comment,
                     createdAt: now,
+                    deadline: input.deadline || null, // Apply deadline to first comment
                   },
                 }
               : undefined,
