@@ -262,19 +262,27 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
   }
 
-  // Get all unique deadlines from thread and comments
+  // Get all unique deadlines from thread and comments (only show non-expired)
   const getAllDeadlines = () => {
     const deadlines: Date[] = []
+    const now = getUTCDate()
     
-    // Add thread deadline if exists
+    // Add thread deadline if exists and not expired
     if (thread.deadline) {
-      deadlines.push(new Date(thread.deadline))
+      const threadDeadline = new Date(thread.deadline)
+      if (threadDeadline > now) {
+        deadlines.push(threadDeadline)
+      }
     }
     
-    // Add comment deadlines if they exist and are different from thread deadline
+    // Add comment deadlines if they exist, not expired, and different from thread deadline
     thread.comments.forEach(comment => {
       if (comment.deadline) {
         const commentDeadline = new Date(comment.deadline)
+        
+        // Only include if not expired
+        if (commentDeadline <= now) return
+        
         // Check if this deadline is different from existing ones (compare timestamps)
         const isDifferent = !deadlines.some(d => 
           Math.abs(d.getTime() - commentDeadline.getTime()) < 60000 // Within 1 minute = same
