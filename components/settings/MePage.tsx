@@ -26,6 +26,7 @@ export default function MePage() {
   const [localSettings, setLocalSettings] = useState<any>(null)
   const [showNavigationDialog, setShowNavigationDialog] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
+  const [appVersion, setAppVersion] = useState<{versionName: string, versionCode: number} | null>(null)
   const prevHasUnsavedChangesRef = useRef(false)
   const justSavedRef = useRef(false) // Flag to skip comparison after save
   const utils = trpc.useUtils()
@@ -43,6 +44,26 @@ export default function MePage() {
     setOnSave,
     setOnDiscard,
   } = useUnsavedChanges()
+
+  // Fetch app version
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const response = await fetch('/api/app/version')
+        if (response.ok) {
+          const data = await response.json()
+          setAppVersion({
+            versionName: data.versionName,
+            versionCode: data.versionCode
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch app version:', error)
+      }
+    }
+    
+    fetchVersion()
+  }, [])
 
   // Check if session cookie exists (even if session data not loaded yet)
   useEffect(() => {
@@ -360,6 +381,11 @@ export default function MePage() {
               <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--text-light)' }}>
                 {session.user.email}
               </p>
+              {appVersion && (
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-light)', opacity: 0.7 }}>
+                  Versi {appVersion.versionName} ({appVersion.versionCode})
+                </p>
+              )}
             </div>
           </div>
           
