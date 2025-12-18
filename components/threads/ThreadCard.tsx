@@ -30,7 +30,7 @@ interface ThreadCardProps {
     comments: Array<{
       id: string
       content: string
-      deadline?: Date | null
+      deadline?: Date | null // Make sure this is included
       author: {
         id: string
         name: string
