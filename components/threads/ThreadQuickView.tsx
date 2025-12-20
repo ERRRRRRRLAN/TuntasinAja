@@ -828,10 +828,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         {/* Group Members Section - Collapsible dropdown for both mobile and desktop */}
         {isGroupTask && hasGroupMembers && (
           <div style={{
-            padding: isMobile ? '0 1rem' : '0 2rem',
+            width: '100%',
             marginBottom: '1.5rem',
+            padding: isMobile ? '0 1rem' : '0 2rem',
+            boxSizing: 'border-box',
           }}>
             <div style={{
+              width: '100%',
               background: 'var(--bg-secondary)',
               borderRadius: '0.5rem',
               border: '1px solid var(--border)',
@@ -851,6 +854,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 cursor: 'pointer',
                 outline: 'none',
                 WebkitTapHighlightColor: 'transparent',
+                boxSizing: 'border-box',
               }}
             >
               <div style={{
