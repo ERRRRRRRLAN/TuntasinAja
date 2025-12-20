@@ -289,10 +289,11 @@ export async function sendNotificationToClass(
       },
       select: {
         token: true,
-        // Only select user kelas for validation, skip other fields for speed
+        // Select user id (needed for filterTokensBySettings) and kelas (for validation)
         user: {
           select: {
-            kelas: true, // Only kelas needed for validation
+            id: true, // Required for filterTokensBySettings
+            kelas: true, // Needed for validation
           },
         },
       },
