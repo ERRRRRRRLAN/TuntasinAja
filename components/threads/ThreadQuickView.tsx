@@ -200,6 +200,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const threadStatus = statuses?.find((s) => s.threadId === threadId && !s.commentId)
   const isThreadCompleted = threadStatus?.isCompleted || false
   const isGroupTask = (thread as any)?.isGroupTask || false
+  const groupMembers = (thread as any)?.groupMembers || []
+  const hasGroupMembers = Array.isArray(groupMembers) && groupMembers.length > 0
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
@@ -811,7 +813,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         </div>
 
         {/* Group Members Section - Collapsible dropdown for both mobile and desktop */}
-        {isGroupTask && (thread as any)?.groupMembers && (thread as any).groupMembers.length > 0 && (
+        {isGroupTask && hasGroupMembers && (
           <div style={{
             background: 'var(--bg-secondary)',
             borderRadius: '0.5rem',
@@ -846,7 +848,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   fontWeight: 600,
                   color: 'var(--text)',
                 }}>
-                  Anggota Kelompok ({((thread as any).groupMembers || []).length})
+                  Anggota Kelompok ({groupMembers.length})
                 </span>
               </div>
               <div style={{
@@ -872,7 +874,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 flexDirection: 'column',
                 gap: '0.5rem',
               }}>
-                {((thread as any).groupMembers || []).map((member: any, index: number) => (
+                {groupMembers.map((member: any, index: number) => (
                   <div
                     key={member.userId || index}
                     style={{
