@@ -830,7 +830,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           <div style={{
             width: '100%',
             marginBottom: '1.5rem',
-            padding: isMobile ? '0 1rem' : '0 2rem',
+            padding: 0,
             boxSizing: 'border-box',
           }}>
             <div style={{
@@ -839,13 +839,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               borderRadius: '0.5rem',
               border: '1px solid var(--border)',
               overflow: 'hidden',
+              boxSizing: 'border-box',
             }}>
             <button
               onClick={() => setShowGroupMembers(!showGroupMembers)}
               type="button"
               style={{
                 width: '100%',
-                padding: '1rem',
+                padding: isMobile ? '1rem' : '1rem 2rem',
                 background: 'transparent',
                 border: 'none',
                 display: 'flex',
@@ -889,7 +890,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               }}
             >
               <div style={{
-                padding: '0 1rem 1rem 1rem',
+                padding: isMobile ? '0 1rem 1rem 1rem' : '0 2rem 1rem 2rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.5rem',
