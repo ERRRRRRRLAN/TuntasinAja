@@ -16,10 +16,11 @@ Mengoptimalkan React Query caching untuk mengurangi network requests dan meningk
    - Tidak akan refetch jika data masih fresh
    - **Impact:** Mengurangi 70-90% unnecessary requests
 
-2. **gcTime: 5 minutes** (garbage collection time)
+2. **cacheTime: 5 minutes** (cache time - React Query v4)
    - Data disimpan di cache selama 5 menit
    - Bisa digunakan kembali tanpa network request
    - **Impact:** Instant response untuk repeat requests
+   - **Note:** React Query v4 uses `cacheTime`, v5 uses `gcTime`
 
 3. **refetchOnMount: true**
    - Refetch hanya jika data sudah stale (>30s)
@@ -72,10 +73,10 @@ staleTime: 30 * 1000
 // 31s: User navigates back → Refetch (data might be outdated)
 ```
 
-### gcTime (5 minutes)
+### cacheTime (5 minutes)
 ```typescript
-// Data disimpan di cache selama 5 menit
-gcTime: 5 * 60 * 1000
+// Data disimpan di cache selama 5 menit (React Query v4)
+cacheTime: 5 * 60 * 1000
 
 // Timeline:
 // 0s:   Request → Cache data
