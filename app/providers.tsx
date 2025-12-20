@@ -30,7 +30,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false,
+        // CACHING OPTIMIZATION: Reduce unnecessary refetches
+        staleTime: 30 * 1000, // Data considered fresh for 30 seconds (was: 0)
+        gcTime: 5 * 60 * 1000, // Cache data for 5 minutes (was: cacheTime, default: 5min)
+        
+        // REFETCH OPTIMIZATION: Reduce network requests
+        refetchOnWindowFocus: false, // Don't refetch on window focus (already set)
+        refetchOnMount: true, // Refetch on mount if data is stale
+        refetchOnReconnect: true, // Refetch when network reconnects
+        
+        // RETRY CONFIGURATION: Keep existing retry logic
         retry: (failureCount, error: any) => {
           // Retry network errors up to 3 times
           const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
@@ -49,6 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 30000), // Exponential backoff, max 30s
       },
       mutations: {
+        // MUTATION OPTIMIZATION: Keep existing retry logic
         retry: (failureCount, error: any) => {
           // Retry network errors once
           const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
