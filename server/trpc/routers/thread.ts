@@ -220,7 +220,7 @@ export const threadRouter = createTRPCRouter({
         const completedIds = new Set(
           completedThreadIds
             .map((h: any) => h.threadId)
-            .filter((id): id is string => id !== null)
+            .filter((id: string | null): id is string => id !== null)
         )
 
         // Filter out completed threads
