@@ -451,45 +451,29 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
+              gap: '0.5rem',
               width: '100%',
               marginTop: '0.5rem',
-              padding: '0.5rem',
-              background: 'var(--bg-secondary)',
-              borderRadius: '0.5rem',
             }}>
               <div style={{
                 flex: 1,
-                height: '12px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: '6px',
+                height: '8px',
+                background: 'var(--bg-secondary)',
+                borderRadius: '4px',
                 overflow: 'hidden',
-                minHeight: '12px',
-                position: 'relative',
-                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
               }}>
                 <div style={{
                   width: `${groupProgress.percentage}%`,
                   height: '100%',
-                  background: groupProgress.percentage === 100 
-                    ? 'linear-gradient(90deg, var(--success), #22c55e)' 
-                    : 'linear-gradient(90deg, var(--primary), #3b82f6)',
+                  background: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
                   transition: 'width 0.3s ease',
-                  minWidth: groupProgress.percentage > 0 ? '4px' : '0',
-                  borderRadius: '6px',
-                  boxShadow: groupProgress.percentage > 0 ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none',
                 }} />
               </div>
               <span style={{
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                color: 'var(--text)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: 'var(--text-light)',
                 whiteSpace: 'nowrap',
-                minWidth: 'fit-content',
-                padding: '0.25rem 0.5rem',
-                background: 'var(--card)',
-                borderRadius: '0.25rem',
-                border: '1px solid var(--border)',
               }}>
                 {groupProgress.completed}/{groupProgress.total}
               </span>
