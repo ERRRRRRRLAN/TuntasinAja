@@ -1,81 +1,114 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import Toast, { ToastType } from './Toast'
+import NotificationPopup, { NotificationType } from './NotificationPopup'
 
-interface ToastItem {
+interface NotificationItem {
   id: string
   message: string
-  type: ToastType
+  type: NotificationType
   duration?: number
 }
 
-let toastIdCounter = 0
-const toastListeners: Array<(toasts: ToastItem[]) => void> = []
-let toasts: ToastItem[] = []
+let notificationIdCounter = 0
+const notificationListeners: Array<(notification: NotificationItem | null) => void> = []
+let notificationQueue: NotificationItem[] = []
+let currentNotification: NotificationItem | null = null
 
 const notifyListeners = () => {
-  toastListeners.forEach(listener => listener([...toasts]))
+  notificationListeners.forEach(listener => listener(currentNotification))
+}
+
+const showNextNotification = () => {
+  if (notificationQueue.length > 0) {
+    currentNotification = notificationQueue.shift() || null
+  } else {
+    currentNotification = null
+  }
+  notifyListeners()
 }
 
 export const toast = {
   success: (message: string, duration?: number) => {
-    const id = `toast-${++toastIdCounter}`
-    toasts.push({ id, message, type: 'success', duration })
-    notifyListeners()
+    const id = `notification-${++notificationIdCounter}`
+    const notification: NotificationItem = { id, message, type: 'success', duration }
+    
+    // If there's already a notification showing, queue this one
+    if (currentNotification) {
+      notificationQueue.push(notification)
+    } else {
+      currentNotification = notification
+      notifyListeners()
+    }
   },
   error: (message: string, duration?: number) => {
-    const id = `toast-${++toastIdCounter}`
-    toasts.push({ id, message, type: 'error', duration })
-    notifyListeners()
+    const id = `notification-${++notificationIdCounter}`
+    const notification: NotificationItem = { id, message, type: 'error', duration }
+    
+    if (currentNotification) {
+      notificationQueue.push(notification)
+    } else {
+      currentNotification = notification
+      notifyListeners()
+    }
   },
   warning: (message: string, duration?: number) => {
-    const id = `toast-${++toastIdCounter}`
-    toasts.push({ id, message, type: 'warning', duration })
-    notifyListeners()
+    const id = `notification-${++notificationIdCounter}`
+    const notification: NotificationItem = { id, message, type: 'warning', duration }
+    
+    if (currentNotification) {
+      notificationQueue.push(notification)
+    } else {
+      currentNotification = notification
+      notifyListeners()
+    }
   },
   info: (message: string, duration?: number) => {
-    const id = `toast-${++toastIdCounter}`
-    toasts.push({ id, message, type: 'info', duration })
-    notifyListeners()
+    const id = `notification-${++notificationIdCounter}`
+    const notification: NotificationItem = { id, message, type: 'info', duration }
+    
+    if (currentNotification) {
+      notificationQueue.push(notification)
+    } else {
+      currentNotification = notification
+      notifyListeners()
+    }
   },
 }
 
 export default function ToastContainer() {
-  const [toastList, setToastList] = useState<ToastItem[]>([])
+  const [notification, setNotification] = useState<NotificationItem | null>(null)
 
   useEffect(() => {
-    const listener = (newToasts: ToastItem[]) => {
-      setToastList(newToasts)
+    const listener = (notification: NotificationItem | null) => {
+      setNotification(notification)
     }
-    toastListeners.push(listener)
-    setToastList([...toasts])
+    notificationListeners.push(listener)
+    setNotification(currentNotification)
 
     return () => {
-      const index = toastListeners.indexOf(listener)
+      const index = notificationListeners.indexOf(listener)
       if (index > -1) {
-        toastListeners.splice(index, 1)
+        notificationListeners.splice(index, 1)
       }
     }
   }, [])
 
-  const removeToast = useCallback((id: string) => {
-    toasts = toasts.filter(t => t.id !== id)
-    notifyListeners()
+  const handleClose = useCallback(() => {
+    showNextNotification()
   }, [])
 
   return (
-    <div className="toast-container">
-      {toastList.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => removeToast(toast.id)}
+    <>
+      {notification && (
+        <NotificationPopup
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration}
+          onClose={handleClose}
         />
-      ))}
-    </div>
+      )}
+    </>
   )
 }
 
