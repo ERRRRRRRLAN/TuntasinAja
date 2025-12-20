@@ -459,9 +459,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               width: '100%',
               marginTop: '0.75rem',
               padding: '0.75rem',
-              backgroundColor: '#f9fafb',
+              backgroundColor: 'var(--bg-secondary)',
               borderRadius: '0.5rem',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
             }}>
               <div style={{
                 display: 'flex',
@@ -472,14 +472,14 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 <span style={{
                   fontSize: '0.8125rem',
                   fontWeight: 600,
-                  color: '#374151',
+                  color: 'var(--text)',
                 }}>
                   Progress Tugas
                 </span>
                 <span style={{
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: '#3b82f6',
+                  color: 'var(--primary)',
                 }}>
                   {groupProgress ? `${groupProgress.completed}/${groupProgress.total}` : '0/0'}
                 </span>
@@ -487,7 +487,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               <div style={{
                 width: '100%',
                 height: '12px',
-                backgroundColor: '#e5e7eb',
+                backgroundColor: 'var(--bg-tertiary)',
                 borderRadius: '6px',
                 overflow: 'hidden',
                 position: 'relative',
@@ -497,10 +497,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                   <div style={{
                     width: `${Math.max(0, Math.min(100, groupProgress.percentage))}%`,
                     height: '100%',
-                    backgroundColor: groupProgress.percentage === 100 ? '#10b981' : '#3b82f6',
+                    backgroundColor: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
                     borderRadius: '6px',
                     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 1px 3px rgba(59, 130, 246, 0.3)',
+                    boxShadow: '0 1px 3px rgba(99, 102, 241, 0.3)',
                     position: 'relative',
                     overflow: 'hidden',
                   }}>
@@ -518,7 +518,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                   <div style={{
                     width: '0%',
                     height: '100%',
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: 'var(--primary)',
                     borderRadius: '6px',
                   }} />
                 )}
@@ -531,7 +531,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                   <span style={{
                     fontSize: '0.75rem',
                     fontWeight: 500,
-                    color: '#6b7280',
+                    color: 'var(--text-light)',
                   }}>
                     {groupProgress.percentage}% selesai
                   </span>
