@@ -32,7 +32,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       queries: {
         // CACHING OPTIMIZATION: Reduce unnecessary refetches
         staleTime: 30 * 1000, // Data considered fresh for 30 seconds (was: 0)
-        gcTime: 5 * 60 * 1000, // Cache data for 5 minutes (was: cacheTime, default: 5min)
+        cacheTime: 5 * 60 * 1000, // Cache data for 5 minutes (React Query v4 uses cacheTime, v5 uses gcTime)
         
         // REFETCH OPTIMIZATION: Reduce network requests
         refetchOnWindowFocus: false, // Don't refetch on window focus (already set)
