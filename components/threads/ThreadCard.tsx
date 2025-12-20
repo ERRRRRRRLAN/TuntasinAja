@@ -464,24 +464,29 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               <div style={{
                 flex: 1,
                 height: '8px',
-                background: 'var(--bg-secondary)',
+                backgroundColor: 'var(--bg-secondary)',
                 borderRadius: '4px',
                 overflow: 'hidden',
+                position: 'relative',
+                minHeight: '8px',
               }}>
-                {groupProgress && (
-                  <div style={{
-                    width: `${groupProgress.percentage}%`,
-                    height: '100%',
-                    background: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
-                    transition: 'width 0.3s ease',
-                  }} />
-                )}
+                <div style={{
+                  width: groupProgress ? `${Math.max(0, Math.min(100, groupProgress.percentage))}%` : '0%',
+                  height: '100%',
+                  backgroundColor: groupProgress && groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
+                  transition: 'width 0.3s ease',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  minWidth: groupProgress && groupProgress.percentage > 0 ? '2px' : '0',
+                }} />
               </div>
               <span style={{
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 color: 'var(--text-light)',
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}>
                 {groupProgress ? `${groupProgress.completed}/${groupProgress.total}` : '0/0'}
               </span>
