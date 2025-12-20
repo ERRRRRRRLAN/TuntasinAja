@@ -277,6 +277,7 @@ export async function sendNotificationToClass(
     // #region agent log
     const deviceTokensStart = Date.now();
     // #endregion
+    // OPTIMIZATION: Get only device tokens (minimal select for speed)
     // Get all device tokens for users in this class
     // Use exact match with trimmed kelas
     const deviceTokens = await prisma.deviceToken.findMany({
@@ -288,12 +289,10 @@ export async function sendNotificationToClass(
       },
       select: {
         token: true,
+        // Only select user kelas for validation, skip other fields for speed
         user: {
           select: {
-            id: true,
-            name: true,
-            kelas: true,
-            email: true,
+            kelas: true, // Only kelas needed for validation
           },
         },
       },
@@ -309,7 +308,6 @@ export async function sendNotificationToClass(
       if (!matches) {
         console.warn('[sendNotificationToClass] ⚠️ Filtered out token with mismatched kelas:', {
           tokenPrefix: dt.token.substring(0, 20) + '...',
-          userName: dt.user.name,
           expectedKelas: normalizedKelas,
           actualKelas: userKelas,
         })
@@ -322,8 +320,6 @@ export async function sendNotificationToClass(
       afterFilter: filteredTokens.length,
       tokens: filteredTokens.map(dt => ({
         tokenPrefix: dt.token.substring(0, 20) + '...',
-        userName: dt.user.name,
-        userEmail: dt.user.email,
         userKelas: dt.user.kelas,
         matches: dt.user.kelas?.trim() === normalizedKelas,
       })),

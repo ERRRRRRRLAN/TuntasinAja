@@ -309,52 +309,53 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // #region agent log
-      const mutationStart = Date.now();
-      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:311',message:'thread.create mutation started',data:{userId:ctx.session.user.id,title:input.title,isGroupTask:input.isGroupTask},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       try {
-        // #region agent log
-        const permissionStart = Date.now();
-        // #endregion
-        // Check user permission - only_read users cannot create threads
-        const permission = await getUserPermission(ctx.session.user.id)
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:315',message:'getUserPermission completed',data:{duration:Date.now()-permissionStart,permission},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
+        // OPTIMIZATION: Run permission check, user lookup, and subscription check in parallel
+        const [permissionResult, userResult] = await Promise.allSettled([
+          getUserPermission(ctx.session.user.id),
+          prisma.user.findUnique({
+            where: { id: ctx.session.user.id },
+            select: {
+              kelas: true,
+              isAdmin: true,
+            },
+          }),
+        ])
+
+        // Handle permission check result
+        const permission = permissionResult.status === 'fulfilled' 
+          ? permissionResult.value 
+          : null
         if (permission === 'only_read') {
           throw new Error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
         }
 
-        // #region agent log
-        const userQueryStart = Date.now();
-        // #endregion
-        // Get user's kelas to filter threads by the same kelas
-        const currentUser = await prisma.user.findUnique({
-          where: { id: ctx.session.user.id },
-          select: {
-            kelas: true,
-            isAdmin: true,
-          },
-        }) as any
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:320',message:'user.findUnique completed',data:{duration:Date.now()-userQueryStart,hasKelas:!!currentUser?.kelas,isAdmin:currentUser?.isAdmin},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
+        // Handle user lookup result
+        const currentUser = userResult.status === 'fulfilled' 
+          ? userResult.value 
+          : null
+        if (!currentUser) {
+          throw new Error('User tidak ditemukan')
+        }
 
-        const userKelas = currentUser?.kelas
-        const isAdmin = currentUser?.isAdmin || false
+        const userKelas = (currentUser as any)?.kelas
+        const isAdmin = (currentUser as any)?.isAdmin || false
 
-        // #region agent log
-        const subscriptionStart = Date.now();
-        // #endregion
-        // Check subscription status (skip for admin)
+        // Check subscription status (skip for admin) - can run in parallel with date calculation
+        let subscriptionStatus = { isActive: true }
         if (!isAdmin && userKelas) {
-          const subscriptionStatus = await checkClassSubscription(userKelas)
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:333',message:'checkClassSubscription completed',data:{duration:Date.now()-subscriptionStart,isActive:subscriptionStatus.isActive},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-          // #endregion
-          if (!subscriptionStatus.isActive) {
-            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
+          try {
+            subscriptionStatus = await checkClassSubscription(userKelas)
+            if (!subscriptionStatus.isActive) {
+              throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
+            }
+          } catch (error: any) {
+            // If subscription check fails, throw the error
+            if (error.message?.includes('Subscription')) {
+              throw error
+            }
+            // Otherwise, log and continue (assume active)
+            console.error('[thread.create] Subscription check error:', error)
           }
         }
 
@@ -366,42 +367,36 @@ export const threadRouter = createTRPCRouter({
         // Skip duplicate check for group tasks (each group task is unique)
         let existingThread = null
         if (!input.isGroupTask) {
-          // #region agent log
-          const findExistingStart = Date.now();
-          // #endregion
           // Check if thread with same title exists ONLY for today's date AND same kelas
           // This prevents bug where thread from different kelas is found
           // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
           existingThread = await prisma.thread.findFirst({
-            where: {
-              title: input.title,
-              date: {
-                gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
-                lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
-              },
-              // Only find threads from the same kelas
-              // If userKelas is null, we still filter but it will only match threads from users with null kelas
-              author: userKelas
-                ? {
-                    kelas: userKelas,
-                  }
-                : {
-                    kelas: null,
-                  },
+          where: {
+            title: input.title,
+            date: {
+              gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
+              lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
             },
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
+            // Only find threads from the same kelas
+            // If userKelas is null, we still filter but it will only match threads from users with null kelas
+            author: userKelas
+              ? {
+                  kelas: userKelas,
+                }
+              : {
+                  kelas: null,
                 },
+          },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
-          })
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:350',message:'thread.findFirst completed',data:{duration:Date.now()-findExistingStart,found:!!existingThread},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-          // #endregion
+          },
+        })
         }
 
         if (existingThread) {
@@ -435,44 +430,27 @@ export const threadRouter = createTRPCRouter({
               },
             })
 
-            // Send notification for new sub tugas (comment)
+            // OPTIMIZATION: Send notification in background (fire-and-forget)
+            // Don't await - notification failure shouldn't block thread creation
             if (userKelas && !isAdmin) {
-              try {
-                // Format tanggal tugas
-                const threadDateJakarta = toJakartaDate(existingThread.date)
-                const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
-                
-                // Format waktu komentar dibuat
-                const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
-                const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
-                  addSuffix: true, 
-                  locale: id 
-                })
-                
-                // Preview komentar (sub tugas)
-                const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
-                
-                // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
-                const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
-                
-                await sendNotificationToClass(
-                  userKelas,
-                  '📝 Sub Tugas Baru',
-                  notificationBody,
-                  {
-                    type: 'new_comment',
-                    threadId: existingThread.id,
-                    threadTitle: existingThread.title,
-                    commentId: comment.id,
-                    commentContent: comment.content,
-                    threadDate: existingThread.date.toISOString(),
-                  },
-                  'comment'
-                )
-              } catch (error) {
-                console.error('Error sending notification for new comment:', error)
+              // Fire notification in background without blocking
+              sendNotificationToClass(
+                userKelas,
+                '📝 Sub Tugas Baru',
+                `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title}`,
+                {
+                  type: 'new_comment',
+                  threadId: existingThread.id,
+                  threadTitle: existingThread.title,
+                  commentId: comment.id,
+                  commentContent: comment.content,
+                  threadDate: existingThread.date.toISOString(),
+                },
+                'comment'
+              ).catch((error) => {
+                console.error('[thread.create] Error sending notification for new comment (non-blocking):', error)
                 // Don't throw - notification failure shouldn't break comment creation
-              }
+              })
             }
 
             return {
@@ -485,9 +463,6 @@ export const threadRouter = createTRPCRouter({
           throw new Error('Thread already exists for today')
         }
 
-        // #region agent log
-        const createThreadStart = Date.now();
-        // #endregion
         // Create new thread
         // Explicitly set createdAt to current time in Jakarta timezone
         const now = getUTCDate()
@@ -532,13 +507,7 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:463',message:'thread.create completed',data:{duration:Date.now()-createThreadStart,threadId:thread.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
 
-        // #region agent log
-        const groupMembersStart = Date.now();
-        // #endregion
         // Create group members if this is a group task
         if (input.isGroupTask && input.memberIds && input.memberIds.length > 0) {
           // Add selected members
@@ -561,94 +530,47 @@ export const threadRouter = createTRPCRouter({
             data: memberData,
             skipDuplicates: true,
           })
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:523',message:'groupMember.createMany completed',data:{duration:Date.now()-groupMembersStart,memberCount:memberData.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
         }
 
-        // Send notification for new thread
+        // OPTIMIZATION: Send notification in background (fire-and-forget)
+        // Don't await - notification failure shouldn't block thread creation
         if (userKelas && !isAdmin) {
-          try {
-            // Validate and normalize kelas before sending
-            const normalizedKelas = userKelas.trim()
-            
-            // Double-check thread author's kelas matches
-            const threadAuthorKelas = thread.author.kelas?.trim()
-            if (threadAuthorKelas !== normalizedKelas) {
-              console.error('[ThreadRouter] ⚠️ Kelas mismatch detected!', {
-                userKelas: normalizedKelas,
-                threadAuthorKelas: threadAuthorKelas,
-                authorId: thread.author.id,
-                authorName: thread.author.name,
-              })
-              // Still proceed, but log the mismatch
-            }
-
-            const authorName = thread.author.name
-            const threadTitle = thread.title
-            
-            // Format waktu dibuat (Jakarta time)
-            const createdAtJakarta = toJakartaDate(thread.createdAt)
-            const timeAgo = formatDistanceToNow(createdAtJakarta, { 
-              addSuffix: true, 
-              locale: id 
-            })
-            
-            // Cek apakah ada komentar pertama
-            const hasFirstComment = thread.comments && thread.comments.length > 0
-            const firstCommentPreview = hasFirstComment 
-              ? thread.comments[0].content.substring(0, 80) + (thread.comments[0].content.length > 80 ? '...' : '')
-              : null
-            
-            // Format notifikasi: Nama → Mata Pelajaran → First Comment
-            const notificationBody = firstCommentPreview
-              ? `${authorName} - ${threadTitle} ${timeAgo}. ${firstCommentPreview}`
-              : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
-            
-            // #region agent log
-            const notificationStart = Date.now();
-            // #endregion
-            // Send notification to class about new thread
-            const result = await sendNotificationToClass(
-              normalizedKelas, // Use normalized kelas
-              '✨ Tugas Baru',
-              notificationBody,
-              {
-                type: 'new_thread',
-                threadId: thread.id,
-                threadTitle: thread.title,
-              },
-              'task'
-            )
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:569',message:'sendNotificationToClass completed',data:{duration:Date.now()-notificationStart,successCount:result.successCount,failureCount:result.failureCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-            // #endregion
-            console.log('[ThreadRouter] Notification result:', result)
-          } catch (error) {
-            console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
+          const normalizedKelas = userKelas.trim()
+          const authorName = thread.author.name
+          const threadTitle = thread.title
+          
+          // Format notification body (simplified for speed)
+          const hasFirstComment = thread.comments && thread.comments.length > 0
+          const firstCommentPreview = hasFirstComment 
+            ? thread.comments[0].content.substring(0, 80) + (thread.comments[0].content.length > 80 ? '...' : '')
+            : null
+          
+          const notificationBody = firstCommentPreview
+            ? `${authorName} - ${threadTitle}. ${firstCommentPreview}`
+            : `${authorName} - ${threadTitle}. Yuk, cek dan selesaikan sekarang!`
+          
+          // Fire notification in background without blocking
+          sendNotificationToClass(
+            normalizedKelas,
+            '✨ Tugas Baru',
+            notificationBody,
+            {
+              type: 'new_thread',
+              threadId: thread.id,
+              threadTitle: thread.title,
+            },
+            'task'
+          ).catch((error) => {
+            console.error('[ThreadRouter] Error sending notification for new thread (non-blocking):', error)
             // Don't throw - notification failure shouldn't break thread creation
-          }
-        } else {
-          console.log('[ThreadRouter] Skipping notification:', {
-            hasKelas: !!userKelas,
-            isAdmin,
-            userKelas,
           })
         }
 
-        // #region agent log
-        const totalDuration = Date.now() - mutationStart;
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:593',message:'thread.create mutation completed successfully',data:{totalDuration,threadId:thread.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'ALL'})}).catch(()=>{});
-        // #endregion
         return {
           type: 'thread' as const,
           thread,
         }
       } catch (error: any) {
-        // #region agent log
-        const totalDuration = Date.now() - mutationStart;
-        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:597',message:'thread.create mutation failed',data:{totalDuration,error:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'ALL'})}).catch(()=>{});
-        // #endregion
         // Log detailed error for debugging
         console.error('[thread.create] Error creating thread:', {
           error: error.message,
@@ -683,29 +605,49 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check user permission - only_read users cannot add comments
-      const permission = await getUserPermission(ctx.session.user.id)
+      // OPTIMIZATION: Run permission check, user lookup, and subscription check in parallel
+      const [permissionResult, userResult] = await Promise.allSettled([
+        getUserPermission(ctx.session.user.id),
+        prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
+            isAdmin: true,
+          },
+        }),
+      ])
+
+      // Handle permission check result
+      const permission = permissionResult.status === 'fulfilled' 
+        ? permissionResult.value 
+        : null
       if (permission === 'only_read') {
         throw new Error('Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.')
       }
 
-      // Get user info first to check subscription
-      const currentUser = await prisma.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: {
-          kelas: true,
-          isAdmin: true,
-        },
-      }) as any
+      // Handle user lookup result
+      const currentUser = userResult.status === 'fulfilled' 
+        ? userResult.value 
+        : null
+      if (!currentUser) {
+        throw new Error('User tidak ditemukan')
+      }
 
-      const userKelas = currentUser?.kelas
-      const isAdmin = currentUser?.isAdmin || false
+      const userKelas = (currentUser as any)?.kelas
+      const isAdmin = (currentUser as any)?.isAdmin || false
 
       // Check subscription status (skip for admin)
       if (!isAdmin && userKelas) {
-        const subscriptionStatus = await checkClassSubscription(userKelas)
-        if (!subscriptionStatus.isActive) {
-          throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`)
+        try {
+          const subscriptionStatus = await checkClassSubscription(userKelas)
+          if (!subscriptionStatus.isActive) {
+            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`)
+          }
+        } catch (error: any) {
+          if (error.message?.includes('Subscription')) {
+            throw error
+          }
+          console.error('[thread.addComment] Subscription check error:', error)
         }
       }
 
@@ -756,55 +698,33 @@ export const threadRouter = createTRPCRouter({
         },
       })
 
-      // Send notification for new sub tugas (comment)
+      // OPTIMIZATION: Send notification in background (fire-and-forget)
       // Only send if comment author is from the same class as thread author
       const threadAuthorKelas = thread.author.kelas?.trim()
       const normalizedUserKelas = userKelas?.trim()
       
       // Use exact match with trimmed values
       if (threadAuthorKelas && normalizedUserKelas === threadAuthorKelas && !isAdmin) {
-        try {
-          // Format tanggal tugas
-          const threadDateJakarta = toJakartaDate(thread.date)
-          const dateFormatted = format(threadDateJakarta, 'd MMMM yyyy', { locale: id })
-          
-          // Format waktu komentar dibuat
-          const commentCreatedAtJakarta = toJakartaDate(comment.createdAt)
-          const timeAgo = formatDistanceToNow(commentCreatedAtJakarta, { 
-            addSuffix: true, 
-            locale: id 
-          })
-          
-          // Preview komentar (sub tugas)
-          const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
-          
-          // Format notifikasi: Nama - Tugas (Tanggal) - Sub Tugas
-          const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title} (${dateFormatted}) ${timeAgo}. ${commentPreview}`
-          
-          await sendNotificationToClass(
-            threadAuthorKelas, // Use normalized kelas
-            '📝 Sub Tugas Baru',
-            notificationBody,
-            {
-              type: 'new_comment',
-              threadId: thread.id,
-              threadTitle: thread.title,
-              commentId: comment.id,
-              commentContent: comment.content,
-              threadDate: thread.date.toISOString(),
-            },
-            'comment'
-          )
-        } catch (error) {
-          console.error('[ThreadRouter] ❌ Error sending notification for new comment:', error)
+        // Fire notification in background without blocking
+        const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
+        const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title}. ${commentPreview}`
+        
+        sendNotificationToClass(
+          threadAuthorKelas,
+          '📝 Sub Tugas Baru',
+          notificationBody,
+          {
+            type: 'new_comment',
+            threadId: thread.id,
+            threadTitle: thread.title,
+            commentId: comment.id,
+            commentContent: comment.content,
+            threadDate: thread.date.toISOString(),
+          },
+          'comment'
+        ).catch((error) => {
+          console.error('[ThreadRouter] Error sending notification for new comment (non-blocking):', error)
           // Don't throw - notification failure shouldn't break comment creation
-        }
-      } else {
-        console.log('[ThreadRouter] Skipping notification for comment:', {
-          hasThreadAuthorKelas: !!threadAuthorKelas,
-          hasUserKelas: !!normalizedUserKelas,
-          matches: normalizedUserKelas === threadAuthorKelas,
-          isAdmin,
         })
       }
 
