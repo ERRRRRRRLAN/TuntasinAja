@@ -248,6 +248,10 @@ export async function sendNotificationToClass(
   data?: Record<string, string>,
   notificationType: NotificationType = 'task'
 ) {
+  // #region agent log
+  const notificationStart = Date.now();
+  fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:244',message:'sendNotificationToClass started',data:{kelas,notificationType},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+  // #endregion
   try {
     console.log('[sendNotificationToClass] Starting notification send:', {
       kelas,
@@ -270,6 +274,9 @@ export async function sendNotificationToClass(
       kelasLength: normalizedKelas.length,
     })
 
+    // #region agent log
+    const deviceTokensStart = Date.now();
+    // #endregion
     // Get all device tokens for users in this class
     // Use exact match with trimmed kelas
     const deviceTokens = await prisma.deviceToken.findMany({
@@ -291,6 +298,9 @@ export async function sendNotificationToClass(
         },
       },
     })
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:275',message:'deviceToken.findMany completed',data:{duration:Date.now()-deviceTokensStart,tokenCount:deviceTokens.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
 
     // Additional validation: filter out any tokens that don't match exactly
     const filteredTokens = deviceTokens.filter(dt => {
@@ -351,8 +361,14 @@ export async function sendNotificationToClass(
       }
     }
 
+    // #region agent log
+    const filterSettingsStart = Date.now();
+    // #endregion
     // Filter tokens based on user notification settings
     const tokensToSend = await filterTokensBySettings(filteredTokens, notificationType)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:355',message:'filterTokensBySettings completed',data:{duration:Date.now()-filterSettingsStart,tokensToSend:tokensToSend.length,filteredFrom:filteredTokens.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
     
     if (tokensToSend.length === 0) {
       console.log('[sendNotificationToClass] No tokens to send after filtering by user settings')
@@ -363,14 +379,24 @@ export async function sendNotificationToClass(
       }
     }
 
+    // #region agent log
+    const pushNotificationStart = Date.now();
+    // #endregion
     console.log('[sendNotificationToClass] Sending to', tokensToSend.length, 'devices (filtered from', filteredTokens.length, 'total)')
     const result = await sendPushNotification(tokensToSend, title, body, data)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:367',message:'sendPushNotification completed',data:{duration:Date.now()-pushNotificationStart,successCount:result.successCount,failureCount:result.failureCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
     
     console.log('[sendNotificationToClass] ✅ Notification send result:', {
       successCount: result.successCount,
       failureCount: result.failureCount,
     })
 
+    // #region agent log
+    const totalDuration = Date.now() - notificationStart;
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:374',message:'sendNotificationToClass completed',data:{totalDuration,successCount:result.successCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
     return result
   } catch (error) {
     console.error('[sendNotificationToClass] ❌ Error sending notification to class:', error)

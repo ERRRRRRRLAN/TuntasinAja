@@ -309,13 +309,26 @@ export const threadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // #region agent log
+      const mutationStart = Date.now();
+      fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:311',message:'thread.create mutation started',data:{userId:ctx.session.user.id,title:input.title,isGroupTask:input.isGroupTask},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       try {
+        // #region agent log
+        const permissionStart = Date.now();
+        // #endregion
         // Check user permission - only_read users cannot create threads
         const permission = await getUserPermission(ctx.session.user.id)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:315',message:'getUserPermission completed',data:{duration:Date.now()-permissionStart,permission},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         if (permission === 'only_read') {
           throw new Error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
         }
 
+        // #region agent log
+        const userQueryStart = Date.now();
+        // #endregion
         // Get user's kelas to filter threads by the same kelas
         const currentUser = await prisma.user.findUnique({
           where: { id: ctx.session.user.id },
@@ -324,13 +337,22 @@ export const threadRouter = createTRPCRouter({
             isAdmin: true,
           },
         }) as any
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:320',message:'user.findUnique completed',data:{duration:Date.now()-userQueryStart,hasKelas:!!currentUser?.kelas,isAdmin:currentUser?.isAdmin},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
 
         const userKelas = currentUser?.kelas
         const isAdmin = currentUser?.isAdmin || false
 
+        // #region agent log
+        const subscriptionStart = Date.now();
+        // #endregion
         // Check subscription status (skip for admin)
         if (!isAdmin && userKelas) {
           const subscriptionStatus = await checkClassSubscription(userKelas)
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:333',message:'checkClassSubscription completed',data:{duration:Date.now()-subscriptionStart,isActive:subscriptionStatus.isActive},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+          // #endregion
           if (!subscriptionStatus.isActive) {
             throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
           }
@@ -344,36 +366,42 @@ export const threadRouter = createTRPCRouter({
         // Skip duplicate check for group tasks (each group task is unique)
         let existingThread = null
         if (!input.isGroupTask) {
+          // #region agent log
+          const findExistingStart = Date.now();
+          // #endregion
           // Check if thread with same title exists ONLY for today's date AND same kelas
           // This prevents bug where thread from different kelas is found
           // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
           existingThread = await prisma.thread.findFirst({
-          where: {
-            title: input.title,
-            date: {
-              gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
-              lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+            where: {
+              title: input.title,
+              date: {
+                gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
+                lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+              },
+              // Only find threads from the same kelas
+              // If userKelas is null, we still filter but it will only match threads from users with null kelas
+              author: userKelas
+                ? {
+                    kelas: userKelas,
+                  }
+                : {
+                    kelas: null,
+                  },
             },
-            // Only find threads from the same kelas
-            // If userKelas is null, we still filter but it will only match threads from users with null kelas
-            author: userKelas
-              ? {
-                  kelas: userKelas,
-                }
-              : {
-                  kelas: null,
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
                 },
-          },
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
               },
             },
-          },
-        })
+          })
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:350',message:'thread.findFirst completed',data:{duration:Date.now()-findExistingStart,found:!!existingThread},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
         }
 
         if (existingThread) {
@@ -457,6 +485,9 @@ export const threadRouter = createTRPCRouter({
           throw new Error('Thread already exists for today')
         }
 
+        // #region agent log
+        const createThreadStart = Date.now();
+        // #endregion
         // Create new thread
         // Explicitly set createdAt to current time in Jakarta timezone
         const now = getUTCDate()
@@ -501,7 +532,13 @@ export const threadRouter = createTRPCRouter({
             },
           },
         })
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:463',message:'thread.create completed',data:{duration:Date.now()-createThreadStart,threadId:thread.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
 
+        // #region agent log
+        const groupMembersStart = Date.now();
+        // #endregion
         // Create group members if this is a group task
         if (input.isGroupTask && input.memberIds && input.memberIds.length > 0) {
           // Add selected members
@@ -524,6 +561,9 @@ export const threadRouter = createTRPCRouter({
             data: memberData,
             skipDuplicates: true,
           })
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:523',message:'groupMember.createMany completed',data:{duration:Date.now()-groupMembersStart,memberCount:memberData.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
         }
 
         // Send notification for new thread
@@ -565,6 +605,9 @@ export const threadRouter = createTRPCRouter({
               ? `${authorName} - ${threadTitle} ${timeAgo}. ${firstCommentPreview}`
               : `${authorName} - ${threadTitle} ${timeAgo}. Yuk, cek dan selesaikan sekarang!`
             
+            // #region agent log
+            const notificationStart = Date.now();
+            // #endregion
             // Send notification to class about new thread
             const result = await sendNotificationToClass(
               normalizedKelas, // Use normalized kelas
@@ -577,6 +620,9 @@ export const threadRouter = createTRPCRouter({
               },
               'task'
             )
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:569',message:'sendNotificationToClass completed',data:{duration:Date.now()-notificationStart,successCount:result.successCount,failureCount:result.failureCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+            // #endregion
             console.log('[ThreadRouter] Notification result:', result)
           } catch (error) {
             console.error('[ThreadRouter] ❌ Error sending notification for new thread:', error)
@@ -590,11 +636,19 @@ export const threadRouter = createTRPCRouter({
           })
         }
 
+        // #region agent log
+        const totalDuration = Date.now() - mutationStart;
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:593',message:'thread.create mutation completed successfully',data:{totalDuration,threadId:thread.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'ALL'})}).catch(()=>{});
+        // #endregion
         return {
           type: 'thread' as const,
           thread,
         }
       } catch (error: any) {
+        // #region agent log
+        const totalDuration = Date.now() - mutationStart;
+        fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'thread.ts:597',message:'thread.create mutation failed',data:{totalDuration,error:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'ALL'})}).catch(()=>{});
+        // #endregion
         // Log detailed error for debugging
         console.error('[thread.create] Error creating thread:', {
           error: error.message,
