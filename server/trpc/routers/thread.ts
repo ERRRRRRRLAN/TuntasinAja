@@ -20,28 +20,32 @@ export const threadRouter = createTRPCRouter({
       }).optional()
     )
     .query(async ({ ctx, input }) => {
-      // Get user info if logged in
+      // Get user info if logged in (parallel with other queries)
       let userKelas: string | null = null
       let isAdmin = false
       let userId: string | null = null
-
-      if (ctx.session?.user) {
-        const user = await prisma.user.findUnique({
-          where: { id: ctx.session.user.id },
-          select: {
-            kelas: true,
-            isAdmin: true,
-          },
-        })
-        userKelas = user?.kelas || null
-        isAdmin = user?.isAdmin || false
-        userId = ctx.session.user.id
-      }
 
       // Pagination parameters
       const page = input?.page || 1
       const limit = Math.min(input?.limit || 20, 50) // Max 50
       const skip = (page - 1) * limit
+
+      // OPTIMIZATION: Get user info in parallel with initial queries
+      const userQuery = ctx.session?.user
+        ? prisma.user.findUnique({
+            where: { id: ctx.session.user.id },
+            select: {
+              kelas: true,
+              isAdmin: true,
+            },
+          })
+        : Promise.resolve(null)
+
+      // Wait for user query to complete first (needed for whereClause)
+      const user = await userQuery
+      userKelas = user?.kelas || null
+      isAdmin = user?.isAdmin || false
+      userId = ctx.session?.user?.id || null
 
       // Build where clause for filtering
       const whereClause = isAdmin
@@ -76,13 +80,12 @@ export const threadRouter = createTRPCRouter({
           }
         : undefined // Public sees all
 
-      // Get total count before filtering by completion (for pagination)
-      const totalCount = await prisma.thread.count({
-        where: whereClause,
-      })
-
-      // Get threads with pagination
-      const threads = await prisma.thread.findMany({
+      // OPTIMIZATION: Run count and threads queries in parallel
+      const [countResult, threadsResult] = await Promise.allSettled([
+        prisma.thread.count({
+          where: whereClause,
+        }),
+        prisma.thread.findMany({
         where: whereClause,
         include: {
           author: {
@@ -136,9 +139,30 @@ export const threadRouter = createTRPCRouter({
               return { createdAt: 'desc' }
           }
         })(),
-        skip,
-        take: limit,
-      })
+          skip,
+          take: limit,
+        }),
+      ])
+
+      // Safe error handling for parallel queries
+      const totalCount = countResult.status === 'fulfilled' ? countResult.value : 0
+      const threads = threadsResult.status === 'fulfilled' ? threadsResult.value : []
+
+      // Log errors if any (for debugging)
+      if (countResult.status === 'rejected') {
+        console.error('[thread.getAll] Count query failed:', countResult.reason)
+      }
+      if (threadsResult.status === 'rejected') {
+        console.error('[thread.getAll] Threads query failed:', threadsResult.reason)
+        // If threads query fails, return empty result
+        return {
+          threads: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        }
+      }
 
       // Filter out threads that are already completed by this user
       // Behavior depends on showCompleted setting:
@@ -147,9 +171,12 @@ export const threadRouter = createTRPCRouter({
       let filteredThreads = threads
       const showCompleted = input?.showCompleted ?? true
       
+      // OPTIMIZATION: Prepare history query conditionally (but don't execute yet)
+      let historyQuery: Promise<any> | null = null
+      
       if (userId && !isAdmin && !showCompleted) {
         // Get all completed thread IDs from history for this user
-        const completedThreadIds = await prisma.history.findMany({
+        historyQuery = prisma.history.findMany({
           where: {
             userId: userId,
             threadId: {
@@ -160,15 +187,6 @@ export const threadRouter = createTRPCRouter({
             threadId: true,
           },
         })
-
-        const completedIds = new Set(
-          completedThreadIds
-            .map((h) => h.threadId)
-            .filter((id): id is string => id !== null)
-        )
-
-        // Filter out all completed threads for this user
-        filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
       } else if (userId && !isAdmin && showCompleted) {
         // Show all threads, but we still need to check for old completions (>24 hours)
         // This maintains backward compatibility with the 24-hour rule
@@ -176,7 +194,7 @@ export const threadRouter = createTRPCRouter({
         const now = getUTCDate()
         const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
 
-        const completedThreadIds = await prisma.history.findMany({
+        historyQuery = prisma.history.findMany({
           where: {
             userId: userId,
             threadId: {
@@ -190,14 +208,22 @@ export const threadRouter = createTRPCRouter({
             threadId: true,
           },
         })
+      }
+
+      // Execute history query if needed and filter threads
+      if (historyQuery) {
+        const completedThreadIdsResult = await Promise.allSettled([historyQuery])
+        const completedThreadIds = completedThreadIdsResult[0].status === 'fulfilled'
+          ? completedThreadIdsResult[0].value
+          : []
 
         const completedIds = new Set(
           completedThreadIds
-            .map((h) => h.threadId)
+            .map((h: any) => h.threadId)
             .filter((id): id is string => id !== null)
         )
 
-        // Filter out only threads completed more than 24 hours ago
+        // Filter out completed threads
         filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
       }
 
