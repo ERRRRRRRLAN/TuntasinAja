@@ -202,6 +202,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const isGroupTask = (thread as any)?.isGroupTask || false
   const groupMembers = (thread as any)?.groupMembers || []
   const hasGroupMembers = Array.isArray(groupMembers) && groupMembers.length > 0
+  
+  // Debug: Log group members data (remove in production if not needed)
+  useEffect(() => {
+    if (isGroupTask && thread) {
+      console.log('[ThreadQuickView] Group task detected:', {
+        isGroupTask,
+        groupMembers,
+        hasGroupMembers,
+        groupMembersLength: groupMembers.length,
+        threadId: thread.id,
+      })
+    }
+  }, [isGroupTask, groupMembers, hasGroupMembers, thread])
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
