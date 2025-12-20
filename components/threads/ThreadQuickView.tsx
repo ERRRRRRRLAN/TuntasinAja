@@ -828,12 +828,15 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         {/* Group Members Section - Collapsible dropdown for both mobile and desktop */}
         {isGroupTask && hasGroupMembers && (
           <div style={{
-            background: 'var(--bg-secondary)',
-            borderRadius: '0.5rem',
+            padding: isMobile ? '0 1rem' : '0 2rem',
             marginBottom: '1.5rem',
-            border: '1px solid var(--border)',
-            overflow: 'hidden',
           }}>
+            <div style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '0.5rem',
+              border: '1px solid var(--border)',
+              overflow: 'hidden',
+            }}>
             <button
               onClick={() => setShowGroupMembers(!showGroupMembers)}
               type="button"
@@ -926,6 +929,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 ))}
               </div>
             </div>
+          </div>
           </div>
         )}
 
