@@ -106,6 +106,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           percentage,
         }
       })()
+    : thread.isGroupTask && thread.comments && thread.comments.length > 0
+    ? {
+        completed: 0,
+        total: thread.comments.length,
+        percentage: 0,
+      }
     : null
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
@@ -447,7 +453,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               👥 {thread.groupMembers.length} anggota
             </span>
           )}
-          {thread.isGroupTask && groupProgress && (
+          {thread.isGroupTask && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -462,12 +468,14 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 borderRadius: '4px',
                 overflow: 'hidden',
               }}>
-                <div style={{
-                  width: `${groupProgress.percentage}%`,
-                  height: '100%',
-                  background: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
-                  transition: 'width 0.3s ease',
-                }} />
+                {groupProgress && (
+                  <div style={{
+                    width: `${groupProgress.percentage}%`,
+                    height: '100%',
+                    background: groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
+                    transition: 'width 0.3s ease',
+                  }} />
+                )}
               </div>
               <span style={{
                 fontSize: '0.75rem',
@@ -475,7 +483,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 color: 'var(--text-light)',
                 whiteSpace: 'nowrap',
               }}>
-                {groupProgress.completed}/{groupProgress.total}
+                {groupProgress ? `${groupProgress.completed}/${groupProgress.total}` : '0/0'}
               </span>
             </div>
           )}
