@@ -99,6 +99,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
         })
         const totalComments = thread.comments.length
         const completedCount = completedComments.length
+        // Calculate percentage: 1/2 = 50%, 2/2 = 100%, etc.
         const percentage = totalComments > 0 ? Math.round((completedCount / totalComments) * 100) : 0
         return {
           completed: completedCount,
@@ -464,22 +465,26 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               <div style={{
                 flex: 1,
                 height: '8px',
-                backgroundColor: 'var(--bg-secondary)',
+                backgroundColor: '#e5e7eb',
                 borderRadius: '4px',
                 overflow: 'hidden',
                 position: 'relative',
                 minHeight: '8px',
+                width: '100%',
               }}>
-                <div style={{
-                  width: groupProgress ? `${Math.max(0, Math.min(100, groupProgress.percentage))}%` : '0%',
-                  height: '100%',
-                  backgroundColor: groupProgress && groupProgress.percentage === 100 ? 'var(--success)' : 'var(--primary)',
-                  transition: 'width 0.3s ease',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  minWidth: groupProgress && groupProgress.percentage > 0 ? '2px' : '0',
-                }} />
+                {groupProgress && groupProgress.total > 0 && (
+                  <div style={{
+                    width: `${Math.max(0, Math.min(100, groupProgress.percentage))}%`,
+                    height: '100%',
+                    backgroundColor: groupProgress.percentage === 100 ? '#10b981' : '#3b82f6',
+                    transition: 'width 0.3s ease',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    borderRadius: '4px',
+                    minWidth: groupProgress.percentage > 0 ? '2px' : '0',
+                  }} />
+                )}
               </div>
               <span style={{
                 fontSize: '0.75rem',
