@@ -810,7 +810,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           )}
         </div>
 
-        {/* Group Members Section */}
+        {/* Group Members Section - Collapsible dropdown for both mobile and desktop */}
         {isGroupTask && (thread as any)?.groupMembers && (thread as any).groupMembers.length > 0 && (
           <div style={{
             background: 'var(--bg-secondary)',
