@@ -821,6 +821,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           }}>
             <button
               onClick={() => setShowGroupMembers(!showGroupMembers)}
+              type="button"
               style={{
                 width: '100%',
                 padding: '1rem',
@@ -830,6 +831,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 cursor: 'pointer',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               <div style={{
