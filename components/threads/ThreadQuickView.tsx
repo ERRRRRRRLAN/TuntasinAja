@@ -9,7 +9,7 @@ import { trpc } from '@/lib/trpc'
 import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
 import CompletionStatsModal from '@/components/ui/CompletionStatsModal'
 import { toast } from '@/components/ui/ToastContainer'
-import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, SettingsIcon, EditIcon, AlertTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -40,6 +40,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isVisible, setIsVisible] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [isMobile, setIsMobile] = useState(false)
+  const [showGroupMembers, setShowGroupMembers] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -812,66 +813,107 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         {/* Group Members Section */}
         {isGroupTask && (thread as any)?.groupMembers && (thread as any).groupMembers.length > 0 && (
           <div style={{
-            padding: '1rem',
             background: 'var(--bg-secondary)',
             borderRadius: '0.5rem',
             marginBottom: '1.5rem',
             border: '1px solid var(--border)',
+            overflow: 'hidden',
           }}>
-            <h4 style={{
-              margin: '0 0 0.75rem 0',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              color: 'var(--text)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}>
-              <UserIcon size={16} />
-              Anggota Kelompok ({((thread as any).groupMembers || []).length})
-            </h4>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-            }}>
-              {((thread as any).groupMembers || []).map((member: any, index: number) => (
-                <div
-                  key={member.userId || index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem',
-                    background: 'var(--card)',
-                    borderRadius: '0.375rem',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    flexShrink: 0,
-                  }}>
-                    {member.user?.name?.charAt(0)?.toUpperCase() || '?'}
+            <button
+              onClick={() => setShowGroupMembers(!showGroupMembers)}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: 'transparent',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}>
+                <UserIcon size={16} />
+                <span style={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  color: 'var(--text)',
+                }}>
+                  Anggota Kelompok ({((thread as any).groupMembers || []).length})
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: showGroupMembers ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}>
+                <ChevronDownIcon size={20} style={{ color: 'var(--text-light)' }} />
+              </div>
+            </button>
+            <div
+              style={{
+                maxHeight: showGroupMembers ? '1000px' : '0',
+                overflow: 'hidden',
+                opacity: showGroupMembers ? 1 : 0,
+                transition: 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              <div style={{
+                padding: '0 1rem 1rem 1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+              }}>
+                {((thread as any).groupMembers || []).map((member: any, index: number) => (
+                  <div
+                    key={member.userId || index}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'var(--card)',
+                      borderRadius: '0.375rem',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}>
+                      {member.user?.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--text)',
+                      fontWeight: 500,
+                    }}>
+                      {member.user?.name || 'Unknown'}
+                    </span>
                   </div>
-                  <span style={{
-                    fontSize: '0.875rem',
-                    color: 'var(--text)',
-                    fontWeight: 500,
-                  }}>
-                    {member.user?.name || 'Unknown'}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
