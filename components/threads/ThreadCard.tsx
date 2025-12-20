@@ -456,45 +456,87 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
           )}
           {thread.isGroupTask && (
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
               width: '100%',
-              marginTop: '0.5rem',
+              marginTop: '0.75rem',
+              padding: '0.75rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: '0.5rem',
+              border: '1px solid #e5e7eb',
             }}>
               <div style={{
-                flex: 1,
-                height: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.5rem',
+              }}>
+                <span style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: '#374151',
+                }}>
+                  Progress Tugas
+                </span>
+                <span style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: '#3b82f6',
+                }}>
+                  {groupProgress ? `${groupProgress.completed}/${groupProgress.total}` : '0/0'}
+                </span>
+              </div>
+              <div style={{
+                width: '100%',
+                height: '12px',
                 backgroundColor: '#e5e7eb',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 overflow: 'hidden',
                 position: 'relative',
-                minHeight: '8px',
-                width: '100%',
+                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
               }}>
-                {groupProgress && groupProgress.total > 0 && (
+                {groupProgress && groupProgress.total > 0 ? (
                   <div style={{
                     width: `${Math.max(0, Math.min(100, groupProgress.percentage))}%`,
                     height: '100%',
                     backgroundColor: groupProgress.percentage === 100 ? '#10b981' : '#3b82f6',
-                    transition: 'width 0.3s ease',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    borderRadius: '4px',
-                    minWidth: groupProgress.percentage > 0 ? '2px' : '0',
+                    borderRadius: '6px',
+                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 1px 3px rgba(59, 130, 246, 0.3)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, transparent 50%)',
+                      borderRadius: '6px',
+                    }} />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#3b82f6',
+                    borderRadius: '6px',
                   }} />
                 )}
               </div>
-              <span style={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: 'var(--text-light)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}>
-                {groupProgress ? `${groupProgress.completed}/${groupProgress.total}` : '0/0'}
-              </span>
+              {groupProgress && groupProgress.total > 0 && (
+                <div style={{
+                  marginTop: '0.375rem',
+                  textAlign: 'right',
+                }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    color: '#6b7280',
+                  }}>
+                    {groupProgress.percentage}% selesai
+                  </span>
+                </div>
+              )}
             </div>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
