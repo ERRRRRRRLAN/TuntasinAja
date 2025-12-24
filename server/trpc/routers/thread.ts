@@ -1,34 +1,51 @@
-import { z } from 'zod'
-import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure, rateLimitedProtectedProcedure, rateLimitedAdminProcedure } from '../trpc'
-import { prisma } from '@/lib/prisma'
-import { getJakartaTodayAsUTC, getUTCDate, toJakartaDate } from '@/lib/date-utils'
-import { getUserPermission, checkIsDanton } from '../trpc'
-import { checkClassSubscription } from './subscription'
-import { sendNotificationToClass } from './notification'
-import { format, formatDistanceToNow } from 'date-fns'
-import { id } from 'date-fns/locale'
+import { z } from "zod";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+  adminProcedure,
+  rateLimitedProtectedProcedure,
+  rateLimitedAdminProcedure,
+} from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { prisma } from "@/lib/prisma";
+import {
+  getJakartaTodayAsUTC,
+  getUTCDate,
+  toJakartaDate,
+} from "@/lib/date-utils";
+import { getUserPermission, checkIsDanton } from "../trpc";
+import { checkClassSubscription } from "./subscription";
+import { sendNotificationToClass } from "./notification";
+import { format, formatDistanceToNow } from "date-fns";
+import { id } from "date-fns/locale";
 
 export const threadRouter = createTRPCRouter({
   // Get all threads with pagination
   getAll: publicProcedure
     .input(
-      z.object({
-        page: z.number().min(1).default(1).optional(),
-        limit: z.number().min(1).max(50).default(20).optional(),
-        sort: z.enum(['newest', 'oldest', 'dueDate']).default('newest').optional(),
-        showCompleted: z.boolean().default(true).optional(),
-      }).optional()
+      z
+        .object({
+          page: z.number().min(1).default(1).optional(),
+          limit: z.number().min(1).max(50).default(20).optional(),
+          sort: z
+            .enum(["newest", "oldest", "dueDate"])
+            .default("newest")
+            .optional(),
+          showCompleted: z.boolean().default(true).optional(),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       // Get user info if logged in (parallel with other queries)
-      let userKelas: string | null = null
-      let isAdmin = false
-      let userId: string | null = null
+      let userKelas: string | null = null;
+      let isAdmin = false;
+      let userId: string | null = null;
 
       // Pagination parameters
-      const page = input?.page || 1
-      const limit = Math.min(input?.limit || 20, 50) // Max 50
-      const skip = (page - 1) * limit
+      const page = input?.page || 1;
+      const limit = Math.min(input?.limit || 20, 50); // Max 50
+      const skip = (page - 1) * limit;
 
       // OPTIMIZATION: Get user info in parallel with initial queries
       const userQuery = ctx.session?.user
@@ -39,46 +56,46 @@ export const threadRouter = createTRPCRouter({
               isAdmin: true,
             },
           })
-        : Promise.resolve(null)
+        : Promise.resolve(null);
 
       // Wait for user query to complete first (needed for whereClause)
-      const user = await userQuery
-      userKelas = user?.kelas || null
-      isAdmin = user?.isAdmin || false
-      userId = ctx.session?.user?.id || null
+      const user = await userQuery;
+      userKelas = user?.kelas || null;
+      isAdmin = user?.isAdmin || false;
+      userId = ctx.session?.user?.id || null;
 
       // Build where clause for filtering
       const whereClause = isAdmin
         ? undefined // Admin sees all
         : userId && userKelas
-        ? {
-            OR: [
-              // Individual tasks from same kelas
-              {
-                isGroupTask: false,
+          ? {
+              OR: [
+                // Individual tasks from same kelas
+                {
+                  isGroupTask: false,
+                  author: {
+                    kelas: userKelas,
+                  },
+                },
+                // Group tasks where user is a member
+                {
+                  isGroupTask: true,
+                  groupMembers: {
+                    some: {
+                      userId: userId,
+                    },
+                  },
+                },
+              ],
+            }
+          : userKelas
+            ? {
+                // Fallback: only show tasks from same kelas (if not logged in)
                 author: {
                   kelas: userKelas,
                 },
-              },
-              // Group tasks where user is a member
-              {
-                isGroupTask: true,
-                groupMembers: {
-                  some: {
-                    userId: userId,
-                  },
-                },
-              },
-            ],
-          }
-        : userKelas
-        ? {
-            // Fallback: only show tasks from same kelas (if not logged in)
-            author: {
-              kelas: userKelas,
-            },
-          }
-        : undefined // Public sees all
+              }
+            : undefined; // Public sees all
 
       // OPTIMIZATION: Run count and threads queries in parallel
       const [countResult, threadsResult] = await Promise.allSettled([
@@ -86,74 +103,82 @@ export const threadRouter = createTRPCRouter({
           where: whereClause,
         }),
         prisma.thread.findMany({
-        where: whereClause,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              kelas: true,
+          where: whereClause,
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                kelas: true,
+              },
             },
-          },
-          comments: {
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
-                  kelas: true,
+            comments: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                    kelas: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+            },
+            _count: {
+              select: {
+                comments: true,
+              },
+            },
+            groupMembers: {
+              select: {
+                userId: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
-            orderBy: {
-              createdAt: 'asc',
-            },
           },
-          _count: {
-            select: {
-              comments: true,
-            },
-          },
-          groupMembers: {
-            select: {
-              userId: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: (() => {
-          const sort = input?.sort || 'newest'
-          switch (sort) {
-            case 'oldest':
-              return { createdAt: 'asc' }
-            case 'dueDate':
-              return { dueDate: 'asc' }
-            case 'newest':
-            default:
-              return { createdAt: 'desc' }
-          }
-        })(),
+          orderBy: (() => {
+            const sort = input?.sort || "newest";
+            switch (sort) {
+              case "oldest":
+                return { createdAt: "asc" };
+              case "dueDate":
+                return { dueDate: "asc" };
+              case "newest":
+              default:
+                return { createdAt: "desc" };
+            }
+          })(),
           skip,
           take: limit,
         }),
-      ])
+      ]);
 
       // Safe error handling for parallel queries
-      const totalCount = countResult.status === 'fulfilled' ? countResult.value : 0
-      const threads = threadsResult.status === 'fulfilled' ? threadsResult.value : []
+      const totalCount =
+        countResult.status === "fulfilled" ? countResult.value : 0;
+      const threads =
+        threadsResult.status === "fulfilled" ? threadsResult.value : [];
 
       // Log errors if any (for debugging)
-      if (countResult.status === 'rejected') {
-        console.error('[thread.getAll] Count query failed:', countResult.reason)
+      if (countResult.status === "rejected") {
+        console.error(
+          "[thread.getAll] Count query failed:",
+          countResult.reason,
+        );
       }
-      if (threadsResult.status === 'rejected') {
-        console.error('[thread.getAll] Threads query failed:', threadsResult.reason)
+      if (threadsResult.status === "rejected") {
+        console.error(
+          "[thread.getAll] Threads query failed:",
+          threadsResult.reason,
+        );
         // If threads query fails, return empty result
         return {
           threads: [],
@@ -161,19 +186,19 @@ export const threadRouter = createTRPCRouter({
           page,
           limit,
           totalPages: 0,
-        }
+        };
       }
 
       // Filter out threads that are already completed by this user
       // Behavior depends on showCompleted setting:
       // - If showCompleted = true: Show all threads (including completed ones)
       // - If showCompleted = false: Filter out completed threads (regardless of completion time)
-      let filteredThreads = threads
-      const showCompleted = input?.showCompleted ?? true
-      
+      let filteredThreads = threads;
+      const showCompleted = input?.showCompleted ?? true;
+
       // OPTIMIZATION: Prepare history query conditionally (but don't execute yet)
-      let historyQuery: Promise<any> | null = null
-      
+      let historyQuery: Promise<any> | null = null;
+
       if (userId && !isAdmin && !showCompleted) {
         // Get all completed thread IDs from history for this user
         historyQuery = prisma.history.findMany({
@@ -186,13 +211,15 @@ export const threadRouter = createTRPCRouter({
           select: {
             threadId: true,
           },
-        })
+        });
       } else if (userId && !isAdmin && showCompleted) {
         // Show all threads, but we still need to check for old completions (>24 hours)
         // This maintains backward compatibility with the 24-hour rule
-        const { getUTCDate } = await import('@/lib/date-utils')
-        const now = getUTCDate()
-        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
+        const { getUTCDate } = await import("@/lib/date-utils");
+        const now = getUTCDate();
+        const twentyFourHoursAgo = new Date(
+          now.getTime() - 24 * 60 * 60 * 1000,
+        );
 
         historyQuery = prisma.history.findMany({
           where: {
@@ -207,30 +234,35 @@ export const threadRouter = createTRPCRouter({
           select: {
             threadId: true,
           },
-        })
+        });
       }
 
       // Execute history query if needed and filter threads
       if (historyQuery) {
-        const completedThreadIdsResult = await Promise.allSettled([historyQuery])
-        const completedThreadIds = completedThreadIdsResult[0].status === 'fulfilled'
-          ? completedThreadIdsResult[0].value
-          : []
+        const completedThreadIdsResult = await Promise.allSettled([
+          historyQuery,
+        ]);
+        const completedThreadIds =
+          completedThreadIdsResult[0].status === "fulfilled"
+            ? completedThreadIdsResult[0].value
+            : [];
 
         const completedIds = new Set(
           completedThreadIds
             .map((h: any) => h.threadId)
-            .filter((id: string | null): id is string => id !== null)
-        )
+            .filter((id: string | null): id is string => id !== null),
+        );
 
         // Filter out completed threads
-        filteredThreads = threads.filter((thread) => !completedIds.has(thread.id))
+        filteredThreads = threads.filter(
+          (thread) => !completedIds.has(thread.id),
+        );
       }
 
       // Calculate total pages based on total count (before filtering by completion)
       // Note: This is an approximation since we filter by completion after pagination
       // For exact count, we would need to count after filtering, but that's expensive
-      const totalPages = Math.ceil(totalCount / limit)
+      const totalPages = Math.ceil(totalCount / limit);
 
       return {
         threads: filteredThreads,
@@ -238,7 +270,7 @@ export const threadRouter = createTRPCRouter({
         page,
         limit,
         totalPages,
-      }
+      };
     }),
 
   // Get thread by ID
@@ -267,7 +299,7 @@ export const threadRouter = createTRPCRouter({
               },
             },
             orderBy: {
-              createdAt: 'asc',
+              createdAt: "asc",
             },
           },
           _count: {
@@ -287,13 +319,13 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!thread) {
-        throw new Error('Thread not found')
+        throw new Error("Thread not found");
       }
 
-      return thread
+      return thread;
     }),
 
   // Create thread
@@ -306,7 +338,7 @@ export const threadRouter = createTRPCRouter({
         isGroupTask: z.boolean().optional().default(false),
         groupTaskTitle: z.string().optional(),
         memberIds: z.array(z.string()).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -320,83 +352,87 @@ export const threadRouter = createTRPCRouter({
               isAdmin: true,
             },
           }),
-        ])
+        ]);
 
         // Handle permission check result
-        const permission = permissionResult.status === 'fulfilled' 
-          ? permissionResult.value 
-          : null
-        if (permission === 'only_read') {
-          throw new Error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+        const permission =
+          permissionResult.status === "fulfilled"
+            ? permissionResult.value
+            : null;
+        if (permission === "only_read") {
+          throw new Error(
+            "Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.",
+          );
         }
 
         // Handle user lookup result
-        const currentUser = userResult.status === 'fulfilled' 
-          ? userResult.value 
-          : null
+        const currentUser =
+          userResult.status === "fulfilled" ? userResult.value : null;
         if (!currentUser) {
-          throw new Error('User tidak ditemukan')
+          throw new Error("User tidak ditemukan");
         }
 
-        const userKelas = (currentUser as any)?.kelas
-        const isAdmin = (currentUser as any)?.isAdmin || false
+        const userKelas = (currentUser as any)?.kelas;
+        const isAdmin = (currentUser as any)?.isAdmin || false;
 
         // Check subscription status (skip for admin) - can run in parallel with date calculation
-        let subscriptionStatus = { isActive: true }
+        let subscriptionStatus = { isActive: true };
         if (!isAdmin && userKelas) {
           try {
-            subscriptionStatus = await checkClassSubscription(userKelas)
+            subscriptionStatus = await checkClassSubscription(userKelas);
             if (!subscriptionStatus.isActive) {
-              throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`)
+              throw new Error(
+                `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`,
+              );
             }
           } catch (error: any) {
             // If subscription check fails, throw the error
-            if (error.message?.includes('Subscription')) {
-              throw error
+            if (error.message?.includes("Subscription")) {
+              throw error;
             }
             // Otherwise, log and continue (assume active)
-            console.error('[thread.create] Subscription check error:', error)
+            console.error("[thread.create] Subscription check error:", error);
           }
         }
 
         // Get today's date in Jakarta timezone, converted to UTC for database
         // This ensures we only check threads created TODAY, not yesterday or tomorrow
-        const today = getJakartaTodayAsUTC() // 00:00:00 today in Jakarta (converted to UTC)
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000) // 00:00:00 tomorrow
+        const today = getJakartaTodayAsUTC(); // 00:00:00 today in Jakarta (converted to UTC)
+        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // 00:00:00 tomorrow
 
         // Skip duplicate check for group tasks (each group task is unique)
-        let existingThread = null
+        let existingThread = null;
         if (!input.isGroupTask) {
           // Check if thread with same title exists ONLY for today's date AND same kelas
           // This prevents bug where thread from different kelas is found
           // Example: Thread MTK from X RPL 1 will NOT be found when creating thread from XI BC 1
           existingThread = await prisma.thread.findFirst({
-          where: {
-            title: input.title,
-            date: {
-              gte: today,    // >= 00:00:00 today (Jakarta time, UTC stored)
-              lt: tomorrow,  // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+            where: {
+              title: input.title,
+              date: {
+                gte: today, // >= 00:00:00 today (Jakarta time, UTC stored)
+                lt: tomorrow, // < 00:00:00 tomorrow (Jakarta time, UTC stored)
+              },
+              // Only find threads from the same kelas
+              // If userKelas is null, we still filter but it will only match threads from users with null kelas
+              author: userKelas
+                ? {
+                    kelas: userKelas,
+                  }
+                : {
+                    kelas: null,
+                  },
             },
-            // Only find threads from the same kelas
-            // If userKelas is null, we still filter but it will only match threads from users with null kelas
-            author: userKelas
-              ? {
-                  kelas: userKelas,
-                }
-              : {
-                  kelas: null,
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
                 },
-          },
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
               },
             },
-          },
-        })
+          });
         }
 
         if (existingThread) {
@@ -409,10 +445,10 @@ export const threadRouter = createTRPCRouter({
                 kelas: true,
                 name: true,
               },
-            })
+            });
 
             // Use Jakarta time for comment creation
-            const now = getUTCDate()
+            const now = getUTCDate();
             const comment = await prisma.comment.create({
               data: {
                 threadId: existingThread.id,
@@ -428,7 +464,7 @@ export const threadRouter = createTRPCRouter({
                   },
                 },
               },
-            })
+            });
 
             // OPTIMIZATION: Send notification in background (fire-and-forget)
             // Don't await - notification failure shouldn't block thread creation
@@ -436,36 +472,50 @@ export const threadRouter = createTRPCRouter({
               // Fire notification in background without blocking
               sendNotificationToClass(
                 userKelas,
-                '📝 Sub Tugas Baru',
-                `${commentAuthor?.name || 'Seseorang'} - ${existingThread.title}`,
+                "📝 Sub Tugas Baru",
+                `${commentAuthor?.name || "Seseorang"} - ${existingThread.title}`,
                 {
-                  type: 'new_comment',
+                  type: "new_comment",
                   threadId: existingThread.id,
                   threadTitle: existingThread.title,
                   commentId: comment.id,
                   commentContent: comment.content,
                   threadDate: existingThread.date.toISOString(),
                 },
-                'comment'
+                "comment",
               ).catch((error) => {
-                console.error('[thread.create] Error sending notification for new comment (non-blocking):', error)
+                console.error(
+                  "[thread.create] Error sending notification for new comment (non-blocking):",
+                  error,
+                );
                 // Don't throw - notification failure shouldn't break comment creation
-              })
+              });
             }
 
             return {
-              type: 'comment' as const,
+              type: "comment" as const,
               thread: existingThread,
               comment,
-            }
+            };
           }
 
-          throw new Error('Thread already exists for today')
+          throw new Error("Thread already exists for today");
         }
 
         // Create new thread
         // Explicitly set createdAt to current time in Jakarta timezone
-        const now = getUTCDate()
+        const now = getUTCDate();
+        // Validate deadline if provided
+        if (input.deadline) {
+          const deadlineDate = new Date(input.deadline);
+          if (deadlineDate <= now) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Deadline tidak boleh di masa lalu atau waktu sekarang",
+            });
+          }
+        }
+
         const thread = await prisma.thread.create({
           data: {
             title: input.title,
@@ -485,7 +535,7 @@ export const threadRouter = createTRPCRouter({
                   },
                 }
               : undefined,
-          },
+          } as any,
           include: {
             author: {
               select: {
@@ -501,21 +551,26 @@ export const threadRouter = createTRPCRouter({
                   select: {
                     id: true,
                     name: true,
+                    kelas: true,
                   },
                 },
               },
             },
           },
-        })
+        });
 
         // Create group members if this is a group task
-        if (input.isGroupTask && input.memberIds && input.memberIds.length > 0) {
+        if (
+          input.isGroupTask &&
+          input.memberIds &&
+          input.memberIds.length > 0
+        ) {
           // Add selected members
-          const memberData = input.memberIds.map(memberId => ({
+          const memberData = input.memberIds.map((memberId) => ({
             threadId: thread.id,
             userId: memberId,
             addedBy: ctx.session.user.id,
-          }))
+          }));
 
           // Auto-add creator as member if not already in the list
           if (!input.memberIds.includes(ctx.session.user.id)) {
@@ -523,75 +578,80 @@ export const threadRouter = createTRPCRouter({
               threadId: thread.id,
               userId: ctx.session.user.id,
               addedBy: ctx.session.user.id,
-            })
+            });
           }
 
           await prisma.groupMember.createMany({
             data: memberData,
             skipDuplicates: true,
-          })
+          });
         }
 
         // OPTIMIZATION: Send notification in background (fire-and-forget)
         // Don't await - notification failure shouldn't block thread creation
         if (userKelas && !isAdmin) {
-          const normalizedKelas = userKelas.trim()
-          const authorName = thread.author.name
-          const threadTitle = thread.title
-          
+          const normalizedKelas = userKelas.trim();
+          const authorName = (thread as any).author.name;
+          const threadTitle = thread.title;
+
           // Format notification body (simplified for speed)
-          const hasFirstComment = thread.comments && thread.comments.length > 0
-          const firstCommentPreview = hasFirstComment 
-            ? thread.comments[0].content.substring(0, 80) + (thread.comments[0].content.length > 80 ? '...' : '')
-            : null
-          
+          const hasFirstComment =
+            (thread as any).comments && (thread as any).comments.length > 0;
+          const firstCommentPreview = hasFirstComment
+            ? (thread as any).comments[0].content.substring(0, 80) +
+              ((thread as any).comments[0].content.length > 80 ? "..." : "")
+            : null;
+
           const notificationBody = firstCommentPreview
             ? `${authorName} - ${threadTitle}. ${firstCommentPreview}`
-            : `${authorName} - ${threadTitle}. Yuk, cek dan selesaikan sekarang!`
-          
+            : `${authorName} - ${threadTitle}. Yuk, cek dan selesaikan sekarang!`;
+
           // Fire notification in background without blocking
           sendNotificationToClass(
             normalizedKelas,
-            '✨ Tugas Baru',
+            "✨ Tugas Baru",
             notificationBody,
             {
-              type: 'new_thread',
+              type: "new_thread",
               threadId: thread.id,
               threadTitle: thread.title,
             },
-            'task'
+            "task",
           ).catch((error) => {
-            console.error('[ThreadRouter] Error sending notification for new thread (non-blocking):', error)
+            console.error(
+              "[ThreadRouter] Error sending notification for new thread (non-blocking):",
+              error,
+            );
             // Don't throw - notification failure shouldn't break thread creation
-          })
+          });
         }
 
         return {
-          type: 'thread' as const,
+          type: "thread" as const,
           thread,
-        }
+        };
       } catch (error: any) {
         // Log detailed error for debugging
-        console.error('[thread.create] Error creating thread:', {
+        console.error("[thread.create] Error creating thread:", {
           error: error.message,
           code: error.code,
           meta: error.meta,
           cause: error.cause,
           userId: ctx.session.user.id,
           title: input.title,
-        })
-        
+        });
+
         // If it's a unique constraint error, provide a more helpful message
-        if (error.code === 'P2002') {
+        if (error.code === "P2002") {
           throw new Error(
             `Thread dengan mata pelajaran "${input.title}" sudah ada untuk hari ini. ` +
-            `Jika Anda dari kelas yang berbeda, pastikan constraint database sudah dihapus. ` +
-            `Error detail: ${error.meta?.target || 'unknown constraint'}`
-          )
+              `Jika Anda dari kelas yang berbeda, pastikan constraint database sudah dihapus. ` +
+              `Error detail: ${error.meta?.target || "unknown constraint"}`,
+          );
         }
-        
+
         // Re-throw the error with original message
-        throw error
+        throw error;
       }
     }),
 
@@ -602,7 +662,7 @@ export const threadRouter = createTRPCRouter({
         threadId: z.string(),
         content: z.string().min(1),
         deadline: z.date().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // OPTIMIZATION: Run permission check, user lookup, and subscription check in parallel
@@ -615,39 +675,41 @@ export const threadRouter = createTRPCRouter({
             isAdmin: true,
           },
         }),
-      ])
+      ]);
 
       // Handle permission check result
-      const permission = permissionResult.status === 'fulfilled' 
-        ? permissionResult.value 
-        : null
-      if (permission === 'only_read') {
-        throw new Error('Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.')
+      const permission =
+        permissionResult.status === "fulfilled" ? permissionResult.value : null;
+      if (permission === "only_read") {
+        throw new Error(
+          "Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.",
+        );
       }
 
       // Handle user lookup result
-      const currentUser = userResult.status === 'fulfilled' 
-        ? userResult.value 
-        : null
+      const currentUser =
+        userResult.status === "fulfilled" ? userResult.value : null;
       if (!currentUser) {
-        throw new Error('User tidak ditemukan')
+        throw new Error("User tidak ditemukan");
       }
 
-      const userKelas = (currentUser as any)?.kelas
-      const isAdmin = (currentUser as any)?.isAdmin || false
+      const userKelas = (currentUser as any)?.kelas;
+      const isAdmin = (currentUser as any)?.isAdmin || false;
 
       // Check subscription status (skip for admin)
       if (!isAdmin && userKelas) {
         try {
-          const subscriptionStatus = await checkClassSubscription(userKelas)
+          const subscriptionStatus = await checkClassSubscription(userKelas);
           if (!subscriptionStatus.isActive) {
-            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`)
+            throw new Error(
+              `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`,
+            );
           }
         } catch (error: any) {
-          if (error.message?.includes('Subscription')) {
-            throw error
+          if (error.message?.includes("Subscription")) {
+            throw error;
           }
-          console.error('[thread.addComment] Subscription check error:', error)
+          console.error("[thread.addComment] Subscription check error:", error);
         }
       }
 
@@ -663,10 +725,10 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!thread) {
-        throw new Error('Thread not found')
+        throw new Error("Thread not found");
       }
 
       // Get comment author info
@@ -676,10 +738,21 @@ export const threadRouter = createTRPCRouter({
           kelas: true,
           name: true,
         },
-      })
+      });
 
       // Use Jakarta time for comment creation
-      const now = getUTCDate()
+      const now = getUTCDate();
+      // Validate deadline if provided
+      if (input.deadline) {
+        const deadlineDate = new Date(input.deadline);
+        if (deadlineDate <= now) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Deadline tidak boleh di masa lalu atau waktu sekarang",
+          });
+        }
+      }
+
       const comment = await prisma.comment.create({
         data: {
           threadId: input.threadId,
@@ -696,39 +769,48 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       // OPTIMIZATION: Send notification in background (fire-and-forget)
       // Only send if comment author is from the same class as thread author
-      const threadAuthorKelas = thread.author.kelas?.trim()
-      const normalizedUserKelas = userKelas?.trim()
-      
+      const threadAuthorKelas = thread.author.kelas?.trim();
+      const normalizedUserKelas = userKelas?.trim();
+
       // Use exact match with trimmed values
-      if (threadAuthorKelas && normalizedUserKelas === threadAuthorKelas && !isAdmin) {
+      if (
+        threadAuthorKelas &&
+        normalizedUserKelas === threadAuthorKelas &&
+        !isAdmin
+      ) {
         // Fire notification in background without blocking
-        const commentPreview = comment.content.substring(0, 80) + (comment.content.length > 80 ? '...' : '')
-        const notificationBody = `${commentAuthor?.name || 'Seseorang'} - ${thread.title}. ${commentPreview}`
-        
+        const commentPreview =
+          comment.content.substring(0, 80) +
+          (comment.content.length > 80 ? "..." : "");
+        const notificationBody = `${commentAuthor?.name || "Seseorang"} - ${thread.title}. ${commentPreview}`;
+
         sendNotificationToClass(
           threadAuthorKelas,
-          '📝 Sub Tugas Baru',
+          "📝 Sub Tugas Baru",
           notificationBody,
           {
-            type: 'new_comment',
+            type: "new_comment",
             threadId: thread.id,
             threadTitle: thread.title,
             commentId: comment.id,
             commentContent: comment.content,
             threadDate: thread.date.toISOString(),
           },
-          'comment'
+          "comment",
         ).catch((error) => {
-          console.error('[ThreadRouter] Error sending notification for new comment (non-blocking):', error)
+          console.error(
+            "[ThreadRouter] Error sending notification for new comment (non-blocking):",
+            error,
+          );
           // Don't throw - notification failure shouldn't break comment creation
-        })
+        });
       }
 
-      return comment
+      return comment;
     }),
 
   // Delete thread (Author only or Admin)
@@ -747,41 +829,46 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!thread) {
-        throw new Error('Thread not found')
+        throw new Error("Thread not found");
       }
 
       // Check if user is admin or danton of the same class
-      const currentUser = await prisma.user.findUnique({
+      const currentUser = (await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
           isDanton: true,
           kelas: true,
         },
-      }) as any
+      })) as any;
 
-      const isAdmin = currentUser?.isAdmin || false
-      const isDanton = currentUser?.isDanton || false
-      const userKelas = currentUser?.kelas || null
+      const isAdmin = currentUser?.isAdmin || false;
+      const isDanton = currentUser?.isDanton || false;
+      const userKelas = currentUser?.kelas || null;
 
       // Get thread author's kelas
       const threadAuthor = await prisma.user.findUnique({
         where: { id: thread.authorId },
         select: { kelas: true },
-      })
-      const threadAuthorKelas = threadAuthor?.kelas || null
+      });
+      const threadAuthorKelas = threadAuthor?.kelas || null;
 
       // Only allow deletion if:
       // 1. User is the author, OR
       // 2. User is admin, OR
       // 3. User is danton of the same class as thread author
-      const isDantonOfSameClass = isDanton && userKelas === threadAuthorKelas && userKelas !== null
+      const isDantonOfSameClass =
+        isDanton && userKelas === threadAuthorKelas && userKelas !== null;
 
-      if (thread.authorId !== ctx.session.user.id && !isAdmin && !isDantonOfSameClass) {
-        throw new Error('Anda tidak memiliki izin untuk menghapus thread ini')
+      if (
+        thread.authorId !== ctx.session.user.id &&
+        !isAdmin &&
+        !isDantonOfSameClass
+      ) {
+        throw new Error("Anda tidak memiliki izin untuk menghapus thread ini");
       }
 
       // Update all histories related to this thread with denormalized data
@@ -797,14 +884,14 @@ export const threadRouter = createTRPCRouter({
           threadAuthorName: thread.author.name,
           threadId: null, // Set to null explicitly before deleting thread
         },
-      })
+      });
 
       // Delete the thread (histories will remain with threadId = null)
       await prisma.thread.delete({
         where: { id: input.id },
-      })
+      });
 
-      return { success: true }
+      return { success: true };
     }),
 
   // Edit comment (Author of comment only)
@@ -812,34 +899,38 @@ export const threadRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        content: z.string().min(1, 'Konten komentar tidak boleh kosong'),
-      })
+        content: z.string().min(1, "Konten komentar tidak boleh kosong"),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
         // Check user permission - only_read users cannot edit comments
-        const permission = await getUserPermission(ctx.session.user.id)
-        if (permission === 'only_read') {
-          throw new Error('Anda hanya memiliki izin membaca. Tidak dapat mengedit komentar.')
+        const permission = await getUserPermission(ctx.session.user.id);
+        if (permission === "only_read") {
+          throw new Error(
+            "Anda hanya memiliki izin membaca. Tidak dapat mengedit komentar.",
+          );
         }
 
         // Get user info to check subscription
-        const currentUser = await prisma.user.findUnique({
+        const currentUser = (await prisma.user.findUnique({
           where: { id: ctx.session.user.id },
           select: {
             kelas: true,
             isAdmin: true,
           },
-        }) as any
+        })) as any;
 
-        const userKelas = currentUser?.kelas
-        const isAdmin = currentUser?.isAdmin || false
+        const userKelas = currentUser?.kelas;
+        const isAdmin = currentUser?.isAdmin || false;
 
         // Check subscription status (skip for admin)
         if (!isAdmin && userKelas) {
-          const subscriptionStatus = await checkClassSubscription(userKelas)
+          const subscriptionStatus = await checkClassSubscription(userKelas);
           if (!subscriptionStatus.isActive) {
-            throw new Error(`Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat mengedit komentar.`)
+            throw new Error(
+              `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat mengedit komentar.`,
+            );
           }
         }
 
@@ -853,24 +944,26 @@ export const threadRouter = createTRPCRouter({
               },
             },
           },
-        })
+        });
 
         if (!comment) {
-          throw new Error('Komentar tidak ditemukan')
+          throw new Error("Komentar tidak ditemukan");
         }
 
         // Only allow edit if user is the author of the comment
         if (comment.authorId !== ctx.session.user.id) {
-          throw new Error('Anda tidak memiliki izin untuk mengedit komentar ini')
+          throw new Error(
+            "Anda tidak memiliki izin untuk mengedit komentar ini",
+          );
         }
 
         // Validate content
         if (!input.content.trim()) {
-          throw new Error('Konten komentar tidak boleh kosong')
+          throw new Error("Konten komentar tidak boleh kosong");
         }
 
         // Update comment with Jakarta time
-        const now = getUTCDate()
+        const now = getUTCDate();
         const updatedComment = await prisma.comment.update({
           where: { id: input.id },
           data: {
@@ -886,20 +979,22 @@ export const threadRouter = createTRPCRouter({
               },
             },
           },
-        })
+        });
 
-        return updatedComment
+        return updatedComment;
       } catch (error: any) {
         // Log error for debugging
-        console.error('[thread.editComment] Error editing comment:', {
+        console.error("[thread.editComment] Error editing comment:", {
           error: error.message,
           code: error.code,
           commentId: input.id,
           userId: ctx.session.user.id,
-        })
+        });
 
         // Re-throw with user-friendly message
-        throw new Error(error.message || 'Gagal mengedit komentar. Silakan coba lagi.')
+        throw new Error(
+          error.message || "Gagal mengedit komentar. Silakan coba lagi.",
+        );
       }
     }),
 
@@ -926,57 +1021,65 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!comment) {
-        throw new Error('Comment not found')
+        throw new Error("Comment not found");
       }
 
       // Check if user is admin or danton of the same class
-      const currentUser = await prisma.user.findUnique({
+      const currentUser = (await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
           isDanton: true,
           kelas: true,
         },
-      }) as any
+      })) as any;
 
-      const isAdmin = currentUser?.isAdmin || false
-      const isDanton = currentUser?.isDanton || false
-      const userKelas = currentUser?.kelas || null
+      const isAdmin = currentUser?.isAdmin || false;
+      const isDanton = currentUser?.isDanton || false;
+      const userKelas = currentUser?.kelas || null;
 
       // Get comment author's kelas
       const commentAuthor = await prisma.user.findUnique({
         where: { id: comment.authorId },
         select: { kelas: true },
-      })
-      const commentAuthorKelas = commentAuthor?.kelas || null
+      });
+      const commentAuthorKelas = commentAuthor?.kelas || null;
 
       // Allow deletion if:
       // 1. User is the author of the comment, OR
       // 2. User is the author of the thread, OR
       // 3. User is admin, OR
       // 4. User is danton of the same class as comment author
-      const isCommentAuthor = comment.authorId === ctx.session.user.id
-      const isThreadAuthor = comment.thread.authorId === ctx.session.user.id
-      const isDantonOfSameClass = isDanton && userKelas === commentAuthorKelas && userKelas !== null
+      const isCommentAuthor = comment.authorId === ctx.session.user.id;
+      const isThreadAuthor = comment.thread.authorId === ctx.session.user.id;
+      const isDantonOfSameClass =
+        isDanton && userKelas === commentAuthorKelas && userKelas !== null;
 
-      if (!isCommentAuthor && !isThreadAuthor && !isAdmin && !isDantonOfSameClass) {
-        throw new Error('Anda tidak memiliki izin untuk menghapus komentar ini')
+      if (
+        !isCommentAuthor &&
+        !isThreadAuthor &&
+        !isAdmin &&
+        !isDantonOfSameClass
+      ) {
+        throw new Error(
+          "Anda tidak memiliki izin untuk menghapus komentar ini",
+        );
       }
 
       await prisma.comment.delete({
         where: { id: input.id },
-      })
+      });
 
-      return { success: true }
+      return { success: true };
     }),
 
   // Auto-delete threads older than 1 day (for cron job)
   autoDeleteOldThreads: publicProcedure.mutation(async () => {
-    const oneDayAgo = getUTCDate()
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+    const oneDayAgo = getUTCDate();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
     // Find threads older than 1 day
     const oldThreads = await prisma.thread.findMany({
@@ -994,9 +1097,9 @@ export const threadRouter = createTRPCRouter({
         },
         histories: true,
       },
-    })
+    });
 
-    let deletedCount = 0
+    let deletedCount = 0;
 
     // For each old thread, update histories to store thread data before deletion
     for (const thread of oldThreads) {
@@ -1012,7 +1115,7 @@ export const threadRouter = createTRPCRouter({
           threadAuthorName: thread.author.name,
           threadId: null, // Set to null explicitly before deleting thread
         },
-      })
+      });
 
       // Get comment IDs before deleting thread
       const threadWithComments = await prisma.thread.findUnique({
@@ -1022,16 +1125,16 @@ export const threadRouter = createTRPCRouter({
             select: { id: true },
           },
         },
-      })
+      });
 
-      const commentIds = threadWithComments?.comments.map((c) => c.id) || []
+      const commentIds = threadWithComments?.comments.map((c) => c.id) || [];
 
       // Delete UserStatus related to this thread (cascade should handle this, but we do it explicitly to be sure)
       await prisma.userStatus.deleteMany({
         where: {
           threadId: thread.id,
         },
-      })
+      });
 
       // Delete UserStatus related to comments in this thread
       if (commentIds.length > 0) {
@@ -1041,19 +1144,19 @@ export const threadRouter = createTRPCRouter({
               in: commentIds,
             },
           },
-        })
+        });
       }
 
       // Delete the thread (histories will remain with threadId = null)
       // Cascade delete should handle UserStatus, but we already deleted them explicitly above
       await prisma.thread.delete({
         where: { id: thread.id },
-      })
+      });
 
-      deletedCount++
+      deletedCount++;
     }
 
-    return { deleted: deletedCount }
+    return { deleted: deletedCount };
   }),
 
   // Cleanup expired threads (Admin only) - Delete threads that have passed their deadline
@@ -1061,15 +1164,17 @@ export const threadRouter = createTRPCRouter({
     .input(
       z.object({
         confirm: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       if (!input.confirm) {
-        throw new Error('Konfirmasi diperlukan untuk menghapus expired threads')
+        throw new Error(
+          "Konfirmasi diperlukan untuk menghapus expired threads",
+        );
       }
 
-      const { getUTCDate } = await import('@/lib/date-utils')
-      const now = getUTCDate()
+      const { getUTCDate } = await import("@/lib/date-utils");
+      const now = getUTCDate();
 
       // Find all threads that have passed their deadline
       // Only threads with deadline that is not null and is in the past
@@ -1099,9 +1204,9 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
-      let deletedCount = 0
+      let deletedCount = 0;
 
       // For each expired thread, update histories and delete thread
       for (const thread of expiredThreads) {
@@ -1118,17 +1223,17 @@ export const threadRouter = createTRPCRouter({
             threadAuthorName: thread.author.name,
             threadId: null, // Set to null explicitly before deleting thread
           },
-        })
+        });
 
         // Get comment IDs before deleting thread
-        const commentIds = thread.comments.map((c) => c.id)
+        const commentIds = thread.comments.map((c) => c.id);
 
         // Delete UserStatus related to this thread
         await prisma.userStatus.deleteMany({
           where: {
             threadId: thread.id,
           },
-        })
+        });
 
         // Delete UserStatus related to comments in this thread
         if (commentIds.length > 0) {
@@ -1138,22 +1243,22 @@ export const threadRouter = createTRPCRouter({
                 in: commentIds,
               },
             },
-          })
+          });
         }
 
         // Delete the thread (histories will remain with threadId = null)
         // Comments will be deleted via cascade
         await prisma.thread.delete({
           where: { id: thread.id },
-        })
+        });
 
-        deletedCount++
+        deletedCount++;
       }
 
       return {
         deleted: deletedCount,
         message: `Berhasil menghapus ${deletedCount} thread yang deadline-nya sudah lewat`,
-      }
+      };
     }),
 
   // Get thread completion statistics (Admin only)
@@ -1169,13 +1274,13 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!thread) {
-        throw new Error('Thread not found')
+        throw new Error("Thread not found");
       }
 
-      const authorKelas = (thread.author as any)?.kelas
+      const authorKelas = (thread.author as any)?.kelas;
 
       if (!authorKelas) {
         // Thread by admin or no kelas - return empty stats
@@ -1183,7 +1288,7 @@ export const threadRouter = createTRPCRouter({
           completedCount: 0,
           totalCount: 0,
           completedUsers: [],
-        }
+        };
       }
 
       // Get all users in the same kelas (excluding admins)
@@ -1195,7 +1300,7 @@ export const threadRouter = createTRPCRouter({
         select: {
           id: true,
         },
-      })
+      });
 
       // Get all users who have completed this thread (have history)
       const completedHistories = await prisma.history.findMany({
@@ -1211,19 +1316,21 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-        distinct: ['userId'],
-      })
+        distinct: ["userId"],
+      });
 
       const completedUsers = completedHistories.map((h) => ({
         id: h.user.id,
         name: h.user.name,
-      }))
+      }));
 
       return {
         completedCount: completedUsers.length,
         totalCount: totalUsers.length,
-        completedUsers: completedUsers.sort((a, b) => a.name.localeCompare(b.name)),
-      }
+        completedUsers: completedUsers.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      };
     }),
 
   // Get group task progress (public - for progress bar display)
@@ -1241,10 +1348,10 @@ export const threadRouter = createTRPCRouter({
             },
           },
         },
-      })
+      });
 
       if (!thread || !thread.isGroupTask) {
-        return null
+        return null;
       }
 
       if (!thread.comments || thread.comments.length === 0) {
@@ -1252,13 +1359,13 @@ export const threadRouter = createTRPCRouter({
           completed: 0,
           total: 0,
           percentage: 0,
-        }
+        };
       }
 
       // Count how many comments have at least one completed status
       // For group tasks, a comment is considered "completed" if at least one member has completed it
-      const commentIds = thread.comments.map((c) => c.id)
-      
+      const commentIds = thread.comments.map((c) => c.id);
+
       // Get all completed statuses for these comments
       // Note: comment statuses don't have threadId set (to avoid unique constraint)
       // So we query by commentId only
@@ -1272,33 +1379,36 @@ export const threadRouter = createTRPCRouter({
         select: {
           commentId: true,
         },
-      })
+      });
 
       // Get unique comment IDs that have at least one completed status
       const completedCommentIds = new Set(
         completedStatuses
           .map((s) => s.commentId)
-          .filter((id): id is string => id !== null)
-      )
+          .filter((id): id is string => id !== null),
+      );
 
-      const totalComments = thread.comments.length
-      const completedCount = completedCommentIds.size
-      const percentage = totalComments > 0 ? Math.round((completedCount / totalComments) * 100) : 0
+      const totalComments = thread.comments.length;
+      const completedCount = completedCommentIds.size;
+      const percentage =
+        totalComments > 0
+          ? Math.round((completedCount / totalComments) * 100)
+          : 0;
 
       return {
         completed: completedCount,
         total: totalComments,
         percentage,
-      }
+      };
     }),
 
   // Manual trigger for deleting expired threads and comments (Admin only)
   deleteExpired: adminProcedure.mutation(async () => {
-    const { getUTCDate } = await import('@/lib/date-utils')
-    const now = getUTCDate()
+    const { getUTCDate } = await import("@/lib/date-utils");
+    const now = getUTCDate();
 
-    let deletedThreadCount = 0
-    let deletedCommentCount = 0
+    let deletedThreadCount = 0;
+    let deletedCommentCount = 0;
 
     // Step 1: Find all threads that have passed their deadline
     const expiredThreads = await prisma.thread.findMany({
@@ -1322,7 +1432,7 @@ export const threadRouter = createTRPCRouter({
           },
         },
       },
-    })
+    });
 
     // Step 2: Find threads that don't have deadline but all their comments have expired
     const threadsWithComments = await prisma.thread.findMany({
@@ -1350,28 +1460,35 @@ export const threadRouter = createTRPCRouter({
           },
         },
       },
-    })
+    });
 
     // Filter threads where all comments with deadline have expired
-    const threadsWithAllExpiredComments = threadsWithComments.filter((thread) => {
-      if (thread.comments.length === 0) return false
-      
-      const commentsWithDeadline = thread.comments.filter((c) => c.deadline !== null)
-      if (commentsWithDeadline.length === 0) return false
-      
-      const allDeadlinesExpired = commentsWithDeadline.every((comment) => {
-        if (!comment.deadline) return false
-        return new Date(comment.deadline) < now
-      })
-      
-      return allDeadlinesExpired
-    })
+    const threadsWithAllExpiredComments = threadsWithComments.filter(
+      (thread) => {
+        if (thread.comments.length === 0) return false;
+
+        const commentsWithDeadline = thread.comments.filter(
+          (c) => c.deadline !== null,
+        );
+        if (commentsWithDeadline.length === 0) return false;
+
+        const allDeadlinesExpired = commentsWithDeadline.every((comment) => {
+          if (!comment.deadline) return false;
+          return new Date(comment.deadline) < now;
+        });
+
+        return allDeadlinesExpired;
+      },
+    );
 
     // Combine both lists
-    const allExpiredThreads = [...expiredThreads, ...threadsWithAllExpiredComments]
-    
+    const allExpiredThreads = [
+      ...expiredThreads,
+      ...threadsWithAllExpiredComments,
+    ];
+
     // Step 3: Find standalone expired comments
-    const allThreadIds = allExpiredThreads.map((t) => t.id)
+    const allThreadIds = allExpiredThreads.map((t) => t.id);
     const expiredComments = await prisma.comment.findMany({
       where: {
         deadline: {
@@ -1385,10 +1502,10 @@ export const threadRouter = createTRPCRouter({
       select: {
         id: true,
       },
-    })
+    });
 
     // Step 4: Delete standalone expired comments
-    const standaloneExpiredCommentIds = expiredComments.map((c) => c.id)
+    const standaloneExpiredCommentIds = expiredComments.map((c) => c.id);
     if (standaloneExpiredCommentIds.length > 0) {
       await prisma.userStatus.deleteMany({
         where: {
@@ -1396,7 +1513,7 @@ export const threadRouter = createTRPCRouter({
             in: standaloneExpiredCommentIds,
           },
         },
-      })
+      });
 
       await prisma.comment.deleteMany({
         where: {
@@ -1404,9 +1521,9 @@ export const threadRouter = createTRPCRouter({
             in: standaloneExpiredCommentIds,
           },
         },
-      })
+      });
 
-      deletedCommentCount = standaloneExpiredCommentIds.length
+      deletedCommentCount = standaloneExpiredCommentIds.length;
     }
 
     // Step 5: Delete expired threads (preserve history)
@@ -1422,16 +1539,16 @@ export const threadRouter = createTRPCRouter({
           threadAuthorName: thread.author.name,
           threadId: null,
         },
-      })
+      });
 
-      const commentIds = thread.comments.map((c) => c.id)
+      const commentIds = thread.comments.map((c) => c.id);
 
       // Delete UserStatus related to this thread
       await prisma.userStatus.deleteMany({
         where: {
           threadId: thread.id,
         },
-      })
+      });
 
       if (commentIds.length > 0) {
         await prisma.userStatus.deleteMany({
@@ -1440,15 +1557,15 @@ export const threadRouter = createTRPCRouter({
               in: commentIds,
             },
           },
-        })
+        });
       }
 
       // Delete the thread
       await prisma.thread.delete({
         where: { id: thread.id },
-      })
+      });
 
-      deletedThreadCount++
+      deletedThreadCount++;
     }
 
     return {
@@ -1458,13 +1575,14 @@ export const threadRouter = createTRPCRouter({
         comments: deletedCommentCount,
       },
       message: `Berhasil menghapus ${deletedThreadCount} thread dan ${deletedCommentCount} comment yang sudah expired`,
-    }
+    };
   }),
 
   // Admin procedure to manually trigger deadline reminders
   testDeadlineReminder: adminProcedure.mutation(async () => {
-    const { sendDeadlineReminders } = await import('@/server/cron/deadlineReminders')
-    const result = await sendDeadlineReminders()
-    return result
+    const { sendDeadlineReminders } =
+      await import("@/server/cron/deadlineReminders");
+    const result = await sendDeadlineReminders();
+    return result;
   }),
-})
+});
