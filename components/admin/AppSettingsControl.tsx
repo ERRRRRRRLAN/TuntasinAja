@@ -22,12 +22,12 @@ export default function AppSettingsControl() {
   // Mutation to toggle update enabled
   const toggleUpdateEnabled = trpc.appSettings.setUpdateEnabled.useMutation({
     onSuccess: () => {
-      toast.success('Pengaturan update berhasil diubah')
+      console.log('[SUCCESS] Pengaturan update berhasil diubah')
       refetch()
       setIsUpdating(false)
     },
     onError: (error) => {
-      toast.error(`Gagal mengubah pengaturan: ${error.message}`)
+      console.error('[ERROR]', `Gagal mengubah pengaturan: ${error.message}`)
       setIsUpdating(false)
     },
   })

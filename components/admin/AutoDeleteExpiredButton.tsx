@@ -11,17 +11,14 @@ export default function AutoDeleteExpiredButton() {
 
   const deleteExpired = trpc.thread.deleteExpired.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        `✅ Auto-delete expired berhasil!\n` +
+      console.log('[SUCCESS]', `✅ Auto-delete expired berhasil!\n` +
         `Thread yang dihapus: ${data.deleted.threads}\n` +
         `Comment yang dihapus: ${data.deleted.comments}\n` +
-        `${data.message}`,
-        5000
-      )
+        `${data.message}`)
       setDeleting(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, 5000)
+      console.error('[ERROR]', `❌ Error: ${error.message}`)
       setDeleting(false)
     },
   })

@@ -109,7 +109,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
 
   const editUser = trpc.danton.editUserData.useMutation({
     onSuccess: () => {
-      toast.success('Data user berhasil diupdate')
+      console.log('[SUCCESS] Data user berhasil diupdate')
       utils.danton.getClassUsers.invalidate()
       utils.danton.getClassStats.invalidate()
       if (onSuccess) onSuccess()
@@ -117,25 +117,25 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     },
     onError: (error: any) => {
       console.error('Error editing user:', error)
-      toast.error(error.message || 'Gagal mengupdate user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengupdate user. Silakan coba lagi.')
     },
   })
 
   const updatePermission = trpc.danton.updateUserPermission.useMutation({
     onSuccess: () => {
-      toast.success('Permission berhasil diupdate')
+      console.log('[SUCCESS] Permission berhasil diupdate')
       utils.danton.getClassUsers.invalidate()
       if (onSuccess) onSuccess()
     },
     onError: (error: any) => {
       console.error('Error updating permission:', error)
-      toast.error(error.message || 'Gagal mengupdate permission. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengupdate permission. Silakan coba lagi.')
     },
   })
 
   const deleteUser = trpc.danton.deleteUserFromClass.useMutation({
     onSuccess: () => {
-      toast.success('User berhasil dihapus')
+      console.log('[SUCCESS] User berhasil dihapus')
       utils.danton.getClassUsers.invalidate()
       utils.danton.getClassStats.invalidate()
       setShowDeleteDialog(false)
@@ -144,7 +144,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     },
     onError: (error: any) => {
       console.error('Error deleting user:', error)
-      toast.error(error.message || 'Gagal menghapus user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal menghapus user. Silakan coba lagi.')
       setShowDeleteDialog(false)
     },
   })

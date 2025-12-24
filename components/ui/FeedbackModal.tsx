@@ -35,12 +35,12 @@ export default function FeedbackModal({
 
   const submitFeedback = trpc.feedback.submit.useMutation({
     onSuccess: () => {
-      toast.success('Saran dan masukan berhasil dikirim! Terima kasih.')
+      console.log('[SUCCESS] Saran dan masukan berhasil dikirim! Terima kasih.')
       setContent('')
       handleClose()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal mengirim saran dan masukan. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengirim saran dan masukan. Silakan coba lagi.')
     },
   })
 
@@ -106,7 +106,7 @@ export default function FeedbackModal({
     e.preventDefault()
     
     if (!content.trim() || content.trim().length < 10) {
-      toast.warning('Saran dan masukan harus minimal 10 karakter')
+      console.warn('[WARNING] Saran dan masukan harus minimal 10 karakter')
       return
     }
 

@@ -179,7 +179,7 @@ export default function MePage() {
       setIsNotificationClosing(false) // Ensure notification doesn't show closing animation
       justSavedRef.current = true // Set flag to skip comparison on next settings update
       utils.userSettings.get.invalidate()
-      toast.success('Pengaturan berhasil disimpan')
+      console.log('[SUCCESS] Pengaturan berhasil disimpan')
     },
     onError: (error) => {
       setIsSaving(false)
@@ -192,11 +192,11 @@ export default function MePage() {
                            errorMessage.includes('TypeError')
       
       if (isNetworkError) {
-        toast.error('Gagal menyimpan: Koneksi ke server terputus. Pastikan koneksi internet Anda aktif.')
+        console.error('[ERROR] Gagal menyimpan: Koneksi ke server terputus. Pastikan koneksi internet Anda aktif.')
       } else {
         // Show the actual error message for non-network errors
         const displayMessage = errorMessage || 'Gagal menyimpan pengaturan'
-        toast.error(`Gagal menyimpan: ${displayMessage}`)
+        console.error('[ERROR]', `Gagal menyimpan: ${displayMessage}`)
       }
     },
   })
@@ -365,10 +365,10 @@ export default function MePage() {
         console.log('[MePage] APK download completed')
       }, 100)
       
-      toast.success('📥 Download APK dimulai...', 2000)
+      console.log('[SUCCESS] 📥 Download APK dimulai...')
     } catch (error) {
       console.error('[MePage] Error downloading APK:', error)
-      toast.error('❌ Gagal mengunduh APK. Silakan coba lagi.', 5000)
+      console.error('[ERROR] ❌ Gagal mengunduh APK. Silakan coba lagi.')
       
       // Fallback: try direct link
       const fallbackUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'

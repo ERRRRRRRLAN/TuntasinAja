@@ -18,7 +18,7 @@ export default function ManualPushRegistration() {
       const { Capacitor, PushNotifications } = await loadCapacitor()
       
       if (!Capacitor || !PushNotifications) {
-        toast.error('❌ Fitur ini hanya tersedia di aplikasi mobile', 3000)
+        console.error('[ERROR] ❌ Fitur ini hanya tersedia di aplikasi mobile')
         return
       }
 
@@ -26,19 +26,19 @@ export default function ManualPushRegistration() {
       console.log('[ManualRegister] Platform:', platform)
 
       if (platform !== 'android' && platform !== 'ios') {
-        toast.error('❌ Fitur ini hanya tersedia di aplikasi mobile', 3000)
+        console.error('[ERROR] ❌ Fitur ini hanya tersedia di aplikasi mobile')
         return
       }
 
       // Request permissions
       console.log('[ManualRegister] Requesting permissions...')
-      toast.info('🔐 Meminta izin notifikasi...', 2000)
+      console.info('[INFO] 🔐 Meminta izin notifikasi...')
       
       const permResult = await PushNotifications.requestPermissions()
       console.log('[ManualRegister] Permission result:', permResult)
 
       if (permResult.receive !== 'granted') {
-        toast.error('❌ Izin notifikasi ditolak. Aktifkan di Pengaturan sistem.', 5000)
+        console.error('[ERROR] ❌ Izin notifikasi ditolak. Aktifkan di Pengaturan sistem.')
         return
       }
 
@@ -58,7 +58,7 @@ export default function ManualPushRegistration() {
             
             if (!tokenValue || typeof tokenValue !== 'string') {
               console.error('[ManualRegister] Invalid token:', token)
-              toast.error('❌ Token tidak valid', 5000)
+              console.error('[ERROR] ❌ Token tidak valid')
               setIsLoading(false)
               return
             }
@@ -74,7 +74,7 @@ export default function ManualPushRegistration() {
               {
                 onSuccess: async () => {
                   console.log('[ManualRegister] ========== SUCCESS ==========')
-                  toast.success('✅ Notifikasi berhasil terdaftar!', 3000)
+                  console.log('[SUCCESS] ✅ Notifikasi berhasil terdaftar!')
                   setIsLoading(false)
                   // Remove listener
                   await registrationListener.remove()
@@ -88,7 +88,7 @@ export default function ManualPushRegistration() {
                     (error as any)?.message || 
                     'Unknown error'
                   
-                  toast.error(`❌ Gagal: ${errorMsg}`, 5000)
+                  console.error('[ERROR]', `❌ Gagal: ${errorMsg}`)
                   setIsLoading(false)
                   // Remove listener
                   await registrationListener.remove()
@@ -100,14 +100,14 @@ export default function ManualPushRegistration() {
 
       // Register with FCM
       console.log('[ManualRegister] Calling FCM register()...')
-      toast.info('📱 Mendaftarkan dengan FCM...', 2000)
+      console.info('[INFO] 📱 Mendaftarkan dengan FCM...')
       await PushNotifications.register()
 
       // Timeout
       setTimeout(async () => {
         if (!tokenReceived) {
           console.error('[ManualRegister] TIMEOUT - No token received')
-          toast.error('❌ Timeout - Cek koneksi internet', 5000)
+          console.error('[ERROR] ❌ Timeout - Cek koneksi internet')
           setIsLoading(false)
           await registrationListener.remove()
         }
@@ -115,7 +115,7 @@ export default function ManualPushRegistration() {
 
     } catch (error) {
       console.error('[ManualRegister] Error:', error)
-      toast.error('❌ Terjadi kesalahan', 5000)
+      console.error('[ERROR] ❌ Terjadi kesalahan')
       setIsLoading(false)
     }
   }

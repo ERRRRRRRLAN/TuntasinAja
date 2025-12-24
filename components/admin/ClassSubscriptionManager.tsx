@@ -56,12 +56,12 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
           onSuccess()
         }, 1500)
       }
-      toast.success(successMessage)
+      console.log('[SUCCESS]', successMessage)
     },
     onError: (err: any) => {
       setError(err.message || 'Terjadi kesalahan. Silakan coba lagi.')
       setSuccess('')
-      toast.error(err.message || 'Terjadi kesalahan. Silakan coba lagi.')
+      console.error('[ERROR]', err.message || 'Terjadi kesalahan. Silakan coba lagi.')
     },
   })
 

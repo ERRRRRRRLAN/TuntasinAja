@@ -61,7 +61,7 @@ export default function PushNotificationSetup() {
 
         if (permResult.receive !== 'granted') {
           console.warn('[PushSetup] Permission denied')
-          toast.error('❌ Izin notifikasi ditolak', 3000)
+          console.error('[ERROR] ❌ Izin notifikasi ditolak')
           setupAttempted.current = false
           return
         }
@@ -89,7 +89,7 @@ export default function PushNotificationSetup() {
             
             if (!tokenValue || typeof tokenValue !== 'string') {
               console.error('[PushSetup] ❌ Invalid token:', token)
-              toast.error('❌ Token FCM tidak valid', 5000)
+              console.error('[ERROR] ❌ Token FCM tidak valid')
               setupAttempted.current = false
               return
             }
@@ -100,14 +100,14 @@ export default function PushNotificationSetup() {
             // Check session still valid
             if (!session?.user?.id) {
               console.error('[PushSetup] ❌ Session lost!')
-              toast.error('❌ Session hilang, silakan login ulang', 5000)
+              console.error('[ERROR] ❌ Session hilang, silakan login ulang')
               setupAttempted.current = false
               return
             }
 
             // Register with backend
             console.log('[PushSetup] Registering with backend...')
-            toast.info('📱 Mendaftarkan notifikasi...', 2000)
+            console.info('[INFO] 📱 Mendaftarkan notifikasi...')
 
             registerToken.mutate(
               {
@@ -118,7 +118,7 @@ export default function PushNotificationSetup() {
                 onSuccess: () => {
                   console.log('[PushSetup] ========== REGISTRATION SUCCESS ==========')
                   setIsRegistered(true)
-                  toast.success('✅ Notifikasi berhasil terdaftar!', 3000)
+                  console.log('[SUCCESS] ✅ Notifikasi berhasil terdaftar!')
                 },
                 onError: (error) => {
                   console.error('[PushSetup] ========== REGISTRATION ERROR ==========')
@@ -130,7 +130,7 @@ export default function PushNotificationSetup() {
                     (error as any)?.data?.message || 
                     'Unknown error'
                   
-                  toast.error(`❌ Gagal mendaftar: ${errorMsg}`, 5000)
+                  console.error('[ERROR]', `❌ Gagal mendaftar: ${errorMsg}`)
                   setupAttempted.current = false
                 },
               }
@@ -144,7 +144,7 @@ export default function PushNotificationSetup() {
           'registrationError',
           (error: any) => {
             console.error('[PushSetup] ❌ Registration error:', error)
-            toast.error('❌ Gagal mendaftarkan FCM', 5000)
+            console.error('[ERROR] ❌ Gagal mendaftarkan FCM')
             setupAttempted.current = false
           }
         )
@@ -198,14 +198,14 @@ export default function PushNotificationSetup() {
             console.error('[PushSetup] 3. Network connectivity issue')
             console.error('[PushSetup] 4. Registration event not firing')
             
-            toast.error('❌ Timeout mendapatkan token FCM', 5000)
+            console.error('[ERROR] ❌ Timeout mendapatkan token FCM')
             setupAttempted.current = false
           }
         }, 15000)
 
       } catch (error) {
         console.error('[PushSetup] ❌ Setup error:', error)
-        toast.error('❌ Gagal setup notifikasi', 5000)
+        console.error('[ERROR] ❌ Gagal setup notifikasi')
         setupAttempted.current = false
       }
     }

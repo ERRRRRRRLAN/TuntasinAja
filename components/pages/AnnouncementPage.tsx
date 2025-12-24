@@ -84,7 +84,7 @@ export default function AnnouncementPage() {
       refetch()
     },
     onError: (error) => {
-      toast.error(`Gagal menghapus pengumuman: ${error.message}`)
+      console.error('[ERROR]', `Gagal menghapus pengumuman: ${error.message}`)
       setShowDeleteDialog(false)
     },
   })

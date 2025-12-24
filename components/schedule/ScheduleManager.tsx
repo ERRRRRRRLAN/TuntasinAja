@@ -32,19 +32,19 @@ export default function ScheduleManager() {
       // Handled in handleAddSubject
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Gagal menambahkan jadwal')
+      console.error('[ERROR]', error.message || 'Gagal menambahkan jadwal')
     },
   })
 
   const deleteSchedule = trpc.schedule.delete.useMutation({
     onSuccess: () => {
-      toast.success('Jadwal berhasil dihapus')
+      console.log('[SUCCESS] Jadwal berhasil dihapus')
       setDeletingId(null)
       refetch()
       utils.schedule.getByKelas.invalidate()
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Gagal menghapus jadwal')
+      console.error('[ERROR]', error.message || 'Gagal menghapus jadwal')
       setDeletingId(null)
     },
   })
@@ -52,13 +52,13 @@ export default function ScheduleManager() {
   const handleAddSubjectToDay = (dayValue: string) => {
     const subject = tempSubjects[dayValue]?.trim()
     if (!subject) {
-      toast.warning('Pilih mata pelajaran terlebih dahulu')
+      console.warn('[WARNING] Pilih mata pelajaran terlebih dahulu')
       return
     }
 
     const daySubjects = selectedSubjects[dayValue] || []
     if (daySubjects.includes(subject)) {
-      toast.warning('Mata pelajaran sudah ada di daftar')
+      console.warn('[WARNING] Mata pelajaran sudah ada di daftar')
       return
     }
 
@@ -86,7 +86,7 @@ export default function ScheduleManager() {
   const handleSaveDay = async (dayValue: string) => {
     const daySubjects = selectedSubjects[dayValue] || []
     if (daySubjects.length === 0) {
-      toast.warning('Pilih minimal satu mata pelajaran')
+      console.warn('[WARNING] Pilih minimal satu mata pelajaran')
       return
     }
 
@@ -109,11 +109,11 @@ export default function ScheduleManager() {
 
     // Show appropriate message
     if (successCount > 0 && errorCount === 0) {
-      toast.success(`${successCount} jadwal berhasil ditambahkan untuk ${WEEKDAYS.find(d => d.value === dayValue)?.label}`)
+      console.log('[SUCCESS]', `${successCount} jadwal berhasil ditambahkan untuk ${WEEKDAYS.find(d => d.value === dayValue)?.label}`)
     } else if (successCount > 0 && errorCount > 0) {
-      toast.warning(`${successCount} jadwal berhasil ditambahkan, ${errorCount} gagal`)
+      console.warn('[WARNING]', `${successCount} jadwal berhasil ditambahkan, ${errorCount} gagal`)
     } else {
-      toast.error('Gagal menambahkan jadwal')
+      console.error('[ERROR] Gagal menambahkan jadwal')
     }
 
     // Clear selected subjects for this day

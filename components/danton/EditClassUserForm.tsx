@@ -32,12 +32,12 @@ export default function EditClassUserForm({ userId, onClose, onSuccess }: EditCl
 
   const editUser = trpc.danton.editUserData.useMutation({
     onSuccess: () => {
-      toast.success('Data user berhasil diupdate')
+      console.log('[SUCCESS] Data user berhasil diupdate')
       onSuccess()
     },
     onError: (error: any) => {
       console.error('Error editing user:', error)
-      toast.error(error.message || 'Gagal mengupdate user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengupdate user. Silakan coba lagi.')
     },
   })
 

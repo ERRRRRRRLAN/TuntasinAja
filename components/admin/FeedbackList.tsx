@@ -22,10 +22,10 @@ export default function FeedbackList() {
     onSuccess: () => {
       utils.feedback.getAll.invalidate()
       utils.feedback.getUnreadCount.invalidate()
-      toast.success('Feedback ditandai sebagai sudah dibaca')
+      console.log('[SUCCESS] Feedback ditandai sebagai sudah dibaca')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal mengubah status feedback')
+      console.error('[ERROR]', error.message || 'Gagal mengubah status feedback')
     },
   })
 
@@ -33,10 +33,10 @@ export default function FeedbackList() {
     onSuccess: () => {
       utils.feedback.getAll.invalidate()
       utils.feedback.getUnreadCount.invalidate()
-      toast.success('Feedback ditandai sebagai belum dibaca')
+      console.log('[SUCCESS] Feedback ditandai sebagai belum dibaca')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal mengubah status feedback')
+      console.error('[ERROR]', error.message || 'Gagal mengubah status feedback')
     },
   })
 
@@ -45,10 +45,10 @@ export default function FeedbackList() {
       setShowDeleteDialog(null)
       utils.feedback.getAll.invalidate()
       utils.feedback.getUnreadCount.invalidate()
-      toast.success('Feedback berhasil dihapus')
+      console.log('[SUCCESS] Feedback berhasil dihapus')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus feedback')
+      console.error('[ERROR]', error.message || 'Gagal menghapus feedback')
     },
   })
 

@@ -23,7 +23,7 @@ export default function AddUserToClassForm({ onClose, onSuccess }: AddUserToClas
 
   const addUser = trpc.danton.addUserToClass.useMutation({
     onSuccess: () => {
-      toast.success('User berhasil ditambahkan ke kelas')
+      console.log('[SUCCESS] User berhasil ditambahkan ke kelas')
       utils.danton.getClassUsers.invalidate()
       utils.danton.getClassStats.invalidate()
       onSuccess()
@@ -33,7 +33,7 @@ export default function AddUserToClassForm({ onClose, onSuccess }: AddUserToClas
     },
     onError: (error: any) => {
       console.error('Error adding user:', error)
-      toast.error(error.message || 'Gagal menambahkan user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal menambahkan user. Silakan coba lagi.')
     },
   })
 

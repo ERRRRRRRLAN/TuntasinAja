@@ -146,12 +146,12 @@ export default function AppUpdateChecker() {
             url: downloadUrl,
             windowName: '_system',
           })
-          toast.success('Membuka browser untuk download APK...')
+          console.log('[SUCCESS] Membuka browser untuk download APK...')
         } catch (browserError) {
           // Fallback: use window.open
           console.log('[AppUpdateChecker] Browser plugin not available, using window.open')
           window.open(downloadUrl, '_blank', 'noopener,noreferrer')
-          toast.success('Membuka browser untuk download APK...')
+          console.log('[SUCCESS] Membuka browser untuk download APK...')
         }
         
         setShowUpdateDialog(false)
@@ -165,12 +165,12 @@ export default function AppUpdateChecker() {
         link.click()
         document.body.removeChild(link)
         
-        toast.success('Download dimulai...')
+        console.log('[SUCCESS] Download dimulai...')
         setShowUpdateDialog(false)
       }
     } catch (error) {
       console.error('[AppUpdateChecker] Error downloading update:', error)
-      toast.error('Gagal mengunduh update. Silakan coba lagi.')
+      console.error('[ERROR] Gagal mengunduh update. Silakan coba lagi.')
     } finally {
       setIsDownloading(false)
     }

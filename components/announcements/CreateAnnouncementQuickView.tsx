@@ -101,7 +101,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
     },
     onError: (error) => {
       setIsSubmitting(false)
-      toast.error(error.message || 'Gagal membuat pengumuman')
+      console.error('[ERROR]', error.message || 'Gagal membuat pengumuman')
     },
   })
 
@@ -179,17 +179,17 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
     }
 
     if (!title.trim() || !content.trim()) {
-      toast.error('Judul dan konten harus diisi')
+      console.error('[ERROR] Judul dan konten harus diisi')
       return
     }
 
     if (targetType === 'class' && !targetKelas) {
-      toast.error('Kelas harus dipilih untuk pengumuman kelas')
+      console.error('[ERROR] Kelas harus dipilih untuk pengumuman kelas')
       return
     }
 
     if (targetType === 'subject' && (!targetKelas || !targetSubject)) {
-      toast.error('Kelas dan mata pelajaran harus dipilih untuk pengumuman mata pelajaran')
+      console.error('[ERROR] Kelas dan mata pelajaran harus dipilih untuk pengumuman mata pelajaran')
       return
     }
 

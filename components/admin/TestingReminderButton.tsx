@@ -12,35 +12,29 @@ export default function TestingReminderButton() {
 
   const testReminder = trpc.schedule.testReminder.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        `✅ Test Reminder berhasil!\n` +
+      console.log('[SUCCESS]', `✅ Test Reminder berhasil!\n` +
         `Dikirim ke ${data.totalSent} device\n` +
         `Gagal: ${data.totalFailed} device\n` +
         `Kelas yang diproses: ${data.processedClasses}\n` +
-        `Besok: ${data.tomorrow}`,
-        5000
-      )
+        `Besok: ${data.tomorrow}`)
       setTesting(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, 5000)
+      console.error('[ERROR]', `❌ Error: ${error.message}`)
       setTesting(false)
     },
   })
 
   const syncSchedules = trpc.schedule.syncFromWeeklySchedule.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        `✅ Sync berhasil!\n` +
+      console.log('[SUCCESS]', `✅ Sync berhasil!\n` +
         `Data yang di-sync: ${data.syncedCount}\n` +
         `Data yang dilewati: ${data.skippedCount}\n` +
-        `Total jadwal: ${data.totalWeeklySchedules}`,
-        5000
-      )
+        `Total jadwal: ${data.totalWeeklySchedules}`)
       setSyncing(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, 5000)
+      console.error('[ERROR]', `❌ Error: ${error.message}`)
       setSyncing(false)
     },
   })

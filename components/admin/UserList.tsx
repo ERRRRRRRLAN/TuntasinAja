@@ -91,7 +91,7 @@ export default function UserList() {
     },
     onError: (error: any) => {
       console.error('Error deleting user:', error)
-      toast.error(error.message || 'Gagal menghapus user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal menghapus user. Silakan coba lagi.')
       setDeleteUserId(null)
       setDeleteUserName('')
       setDeleteUserEmail('')
@@ -104,15 +104,15 @@ export default function UserList() {
       setSelectedUserIds(new Set())
       setShowBulkDeleteConfirm(false)
       if (data.success > 0) {
-        toast.success(`Berhasil menghapus ${data.success} user`)
+        console.log('[SUCCESS]', `Berhasil menghapus ${data.success} user`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal menghapus ${data.failed} user. ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal menghapus ${data.failed} user. ${data.errors.join('; ')}`)
       }
     },
     onError: (error: any) => {
       console.error('Error bulk deleting users:', error)
-      toast.error(error.message || 'Gagal menghapus user. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal menghapus user. Silakan coba lagi.')
       setShowBulkDeleteConfirm(false)
     },
   })
@@ -148,7 +148,7 @@ export default function UserList() {
   const handleBulkDelete = () => {
     const userIds = Array.from(selectedUserIds)
     if (userIds.length === 0) {
-      toast.error('Pilih minimal satu user untuk dihapus')
+      console.error('[ERROR] Pilih minimal satu user untuk dihapus')
       return
     }
     bulkDeleteUsers.mutate({ userIds })

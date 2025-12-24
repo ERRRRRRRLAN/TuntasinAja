@@ -36,25 +36,25 @@ export default function ClassSubjectList() {
 
   const addSubjectMutation = trpc.classSubject.addClassSubject.useMutation({
     onSuccess: () => {
-      toast.success('Mata pelajaran berhasil ditambahkan')
+      console.log('[SUCCESS] Mata pelajaran berhasil ditambahkan')
       setNewSubject('')
       setShowAddForm(false)
       utils.classSubject.getAllClassSubjects.invalidate()
       refetch()
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Gagal menambahkan mata pelajaran')
+      console.error('[ERROR]', error.message || 'Gagal menambahkan mata pelajaran')
     },
   })
 
   const removeSubjectMutation = trpc.classSubject.removeClassSubject.useMutation({
     onSuccess: () => {
-      toast.success('Mata pelajaran berhasil dihapus')
+      console.log('[SUCCESS] Mata pelajaran berhasil dihapus')
       utils.classSubject.getAllClassSubjects.invalidate()
       refetch()
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Gagal menghapus mata pelajaran')
+      console.error('[ERROR]', error.message || 'Gagal menghapus mata pelajaran')
     },
   })
 
@@ -65,7 +65,7 @@ export default function ClassSubjectList() {
 
   const handleAddSubject = () => {
     if (!selectedKelas || !newSubject.trim()) {
-      toast.error('Pilih kelas dan masukkan nama mata pelajaran')
+      console.error('[ERROR] Pilih kelas dan masukkan nama mata pelajaran')
       return
     }
 

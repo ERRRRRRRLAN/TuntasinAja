@@ -1,0 +1,165 @@
+╔════════════════════════════════════════════════════════════════╗
+║                 🚀 LOAD TESTING - MULAI DI SINI               ║
+╚════════════════════════════════════════════════════════════════╝
+
+📝 LANGKAH PERTAMA:
+
+1. Buka Vercel Dashboard:
+   https://vercel.com/dashboard
+
+2. Pilih project "TuntasinAja" (atau nama project Anda)
+
+3. Copy URL production Anda, contoh:
+   https://tuntasinaja.vercel.app
+   https://tuntasin.vercel.app
+   atau URL custom domain Anda
+
+4. Ganti [URL-ANDA] di command di bawah dengan URL tersebut
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                      COMMAND UNTUK ANDA                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+Buka PowerShell/Terminal, lalu jalankan:
+
+📍 Step 1: Masuk ke folder load-tests
+────────────────────────────────────────────────────────────────
+cd load-tests
+
+
+📍 Step 2: Run DEMO TEST (Ringan, 40 detik, 10 users)
+────────────────────────────────────────────────────────────────
+k6 run demo-test.js --env BASE_URL=https://[URL-ANDA].vercel.app
+
+ATAU gunakan helper PowerShell:
+
+.\run-test.ps1 -TestType basic -Url https://[URL-ANDA].vercel.app
+
+
+📍 Step 3: Kalau demo lancar, run BASIC TEST (5 menit, 200 users)
+────────────────────────────────────────────────────────────────
+k6 run basic-load-test.js --env BASE_URL=https://[URL-ANDA].vercel.app
+
+
+📍 Step 4: Kalau masih lancar, run STRESS TEST (13 menit, 500 users)
+────────────────────────────────────────────────────────────────
+k6 run stress-test.js --env BASE_URL=https://[URL-ANDA].vercel.app
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                    CONTOH LENGKAP (COPY-PASTE)                 ║
+╚════════════════════════════════════════════════════════════════╝
+
+# Ganti URL ini dengan URL Vercel Anda!
+$URL = "https://tuntasinaja.vercel.app"
+
+# Masuk ke folder
+cd load-tests
+
+# Run demo test
+k6 run demo-test.js --env BASE_URL=$URL
+
+# Kalau lancar, lanjut basic test
+k6 run basic-load-test.js --env BASE_URL=$URL
+
+# Kalau masih lancar, cari breaking point
+k6 run stress-test.js --env BASE_URL=$URL
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                      APA YANG HARUS DILIHAT                    ║
+╚════════════════════════════════════════════════════════════════╝
+
+Setelah test selesai, lihat di output:
+
+1. ✅ Error Rate (http_req_failed):
+   BAGUS:   < 1%
+   OK:      1-5%
+   BURUK:   > 5%
+
+2. ⏱️ Response Time (p95):
+   BAGUS:   < 500ms
+   OK:      < 1500ms
+   BURUK:   > 2000ms
+
+3. 📊 Concurrent Users (vus_max):
+   Ini jumlah user yang berhasil handle tanpa error banyak
+
+CONTOH OUTPUT BAGUS:
+───────────────────────────────────────────────────────────────
+http_req_failed.....: 0.5%   (5 failed / 1000 total)
+http_req_duration...: avg=234ms p(95)=456ms
+vus_max.............: 200
+
+→ Artinya: Server kuat sampai 200 users! ✅
+
+
+CONTOH OUTPUT BURUK:
+───────────────────────────────────────────────────────────────
+http_req_failed.....: 15.3%  (153 failed / 1000 total)
+http_req_duration...: avg=3.2s p(95)=8.9s
+vus_max.............: 100
+
+→ Artinya: Server kewalahan di 100 users! 🔴
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                          TIPS PENTING                          ║
+╚════════════════════════════════════════════════════════════════╝
+
+1. 📱 BUKA VERCEL DASHBOARD saat testing
+   → Monitor real-time function invocations & errors
+
+2. 🌙 TEST SAAT TRAFFIC SEPI
+   → Malam hari atau dini hari
+   → Jangan test saat banyak user aktif
+
+3. ⚠️ JANGAN OVER-TEST
+   → Max 3-5 test per hari
+   → Vercel bisa anggap abuse kalau terlalu sering
+
+4. 🛑 STOP TEST jika:
+   → Error rate >50%
+   → Vercel send warning
+   → Dashboard shows issues
+   → Press Ctrl+C untuk stop
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                      DOKUMENTASI LENGKAP                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+Baca file-file ini untuk info lebih lengkap:
+
+1. LOAD-TESTING-GUIDE.md
+   → Panduan lengkap dalam Bahasa Indonesia
+
+2. load-tests/README.md
+   → Dokumentasi detail semua script
+
+3. load-tests/quick-start.md
+   → Quick start guide
+
+4. load-tests/COMMANDS-CHEATSHEET.md
+   → Command reference cepat
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                         SUPPORT & HELP                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+Kalau bingung atau butuh bantuan:
+1. Screenshot output test Anda
+2. Paste hasil metrics
+3. Tanya untuk analisis
+
+Good luck! 🚀
+
+─────────────────────────────────────────────────────────────────
+k6 Load Testing Setup
+Created: ${new Date().toLocaleDateString('id-ID')}
+Target: Vercel Hobby Plan
+─────────────────────────────────────────────────────────────────
+
+

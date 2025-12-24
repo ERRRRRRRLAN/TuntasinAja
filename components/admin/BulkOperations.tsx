@@ -68,10 +68,10 @@ export default function BulkOperations() {
   const bulkEditKelas = trpc.bulkOperations.bulkEditUserKelas.useMutation({
     onSuccess: (data) => {
       if (data.success > 0) {
-        toast.success(`Berhasil mengubah kelas ${data.success} user`)
+        console.log('[SUCCESS]', `Berhasil mengubah kelas ${data.success} user`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal mengubah ${data.failed} user: ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal mengubah ${data.failed} user: ${data.errors.join('; ')}`)
       }
       setShowUserKelasConfirm(false)
       setSelectedUserIds(new Set())
@@ -79,7 +79,7 @@ export default function BulkOperations() {
       utils.auth.getAllUsers.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal mengubah kelas user')
+      console.error('[ERROR]', error.message || 'Gagal mengubah kelas user')
       setShowUserKelasConfirm(false)
     },
   })
@@ -87,17 +87,17 @@ export default function BulkOperations() {
   const bulkSetPermission = trpc.bulkOperations.bulkSetUserPermission.useMutation({
     onSuccess: (data) => {
       if (data.success > 0) {
-        toast.success(`Berhasil mengubah permission ${data.success} user`)
+        console.log('[SUCCESS]', `Berhasil mengubah permission ${data.success} user`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal mengubah ${data.failed} user: ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal mengubah ${data.failed} user: ${data.errors.join('; ')}`)
       }
       setShowUserPermissionConfirm(false)
       setSelectedUserIds(new Set())
       utils.auth.getAllUsers.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal mengubah permission user')
+      console.error('[ERROR]', error.message || 'Gagal mengubah permission user')
       setShowUserPermissionConfirm(false)
     },
   })
@@ -106,17 +106,17 @@ export default function BulkOperations() {
   const bulkExtendSubscription = trpc.bulkOperations.bulkExtendSubscription.useMutation({
     onSuccess: (data) => {
       if (data.success > 0) {
-        toast.success(`Berhasil extend subscription ${data.success} kelas`)
+        console.log('[SUCCESS]', `Berhasil extend subscription ${data.success} kelas`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal extend ${data.failed} kelas: ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal extend ${data.failed} kelas: ${data.errors.join('; ')}`)
       }
       setShowExtendConfirm(false)
       setSelectedKelasList(new Set())
       utils.subscription.getAllClassSubscriptions.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal extend subscription')
+      console.error('[ERROR]', error.message || 'Gagal extend subscription')
       setShowExtendConfirm(false)
     },
   })
@@ -124,17 +124,17 @@ export default function BulkOperations() {
   const bulkSetSubscription = trpc.bulkOperations.bulkSetSubscription.useMutation({
     onSuccess: (data) => {
       if (data.success > 0) {
-        toast.success(`Berhasil set subscription ${data.success} kelas`)
+        console.log('[SUCCESS]', `Berhasil set subscription ${data.success} kelas`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal set ${data.failed} kelas: ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal set ${data.failed} kelas: ${data.errors.join('; ')}`)
       }
       setShowSetConfirm(false)
       setSelectedKelasList(new Set())
       utils.subscription.getAllClassSubscriptions.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal set subscription')
+      console.error('[ERROR]', error.message || 'Gagal set subscription')
       setShowSetConfirm(false)
     },
   })
@@ -142,17 +142,17 @@ export default function BulkOperations() {
   const bulkExpireSubscription = trpc.bulkOperations.bulkExpireSubscription.useMutation({
     onSuccess: (data) => {
       if (data.success > 0) {
-        toast.success(`Berhasil expire subscription ${data.success} kelas`)
+        console.log('[SUCCESS]', `Berhasil expire subscription ${data.success} kelas`)
       }
       if (data.failed > 0) {
-        toast.error(`Gagal expire ${data.failed} kelas: ${data.errors.join('; ')}`)
+        console.error('[ERROR]', `Gagal expire ${data.failed} kelas: ${data.errors.join('; ')}`)
       }
       setShowExpireConfirm(false)
       setSelectedKelasList(new Set())
       utils.subscription.getAllClassSubscriptions.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal expire subscription')
+      console.error('[ERROR]', error.message || 'Gagal expire subscription')
       setShowExpireConfirm(false)
     },
   })
@@ -160,7 +160,7 @@ export default function BulkOperations() {
   // Content Management Mutations
   const bulkDeleteThreads = trpc.bulkOperations.bulkDeleteThreads.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message)
+      console.log('[SUCCESS]', data.message)
       setShowDeleteThreadsConfirm(false)
       setDeleteStartDate('')
       setDeleteEndDate('')
@@ -168,21 +168,21 @@ export default function BulkOperations() {
       utils.thread.getAll.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus thread')
+      console.error('[ERROR]', error.message || 'Gagal menghapus thread')
       setShowDeleteThreadsConfirm(false)
     },
   })
 
   const bulkDeleteComments = trpc.bulkOperations.bulkDeleteComments.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message)
+      console.log('[SUCCESS]', data.message)
       setShowDeleteCommentsConfirm(false)
       setDeleteStartDate('')
       setDeleteEndDate('')
       utils.thread.getAll.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus comment')
+      console.error('[ERROR]', error.message || 'Gagal menghapus comment')
       setShowDeleteCommentsConfirm(false)
     },
   })
@@ -190,39 +190,39 @@ export default function BulkOperations() {
   // Migration Mutations
   const moveUsers = trpc.bulkOperations.moveUsersBetweenKelas.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message)
+      console.log('[SUCCESS]', data.message)
       setShowMoveConfirm(false)
       setMigrationUserIds(new Set())
       setTargetKelas('')
       utils.auth.getAllUsers.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal memindahkan user')
+      console.error('[ERROR]', error.message || 'Gagal memindahkan user')
       setShowMoveConfirm(false)
     },
   })
 
   const cleanupOrphaned = trpc.bulkOperations.cleanupOrphanedUserStatuses.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message)
+      console.log('[SUCCESS]', data.message)
       setShowCleanupConfirm(false)
       utils.database.getStats.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal cleanup orphaned data')
+      console.error('[ERROR]', error.message || 'Gagal cleanup orphaned data')
       setShowCleanupConfirm(false)
     },
   })
 
   const cleanupExpiredThreads = trpc.thread.cleanupExpiredThreads.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message)
+      console.log('[SUCCESS]', data.message)
       setShowExpiredThreadsConfirm(false)
       utils.thread.getAll.invalidate()
       utils.database.getStats.invalidate()
     },
     onError: (error) => {
-      toast.error(error.message || 'Gagal menghapus expired threads')
+      console.error('[ERROR]', error.message || 'Gagal menghapus expired threads')
       setShowExpiredThreadsConfirm(false)
     },
   })
@@ -445,7 +445,7 @@ export default function BulkOperations() {
               <button
                 onClick={() => {
                   if (selectedUserIds.size === 0) {
-                    toast.error('Pilih minimal satu user')
+                    console.error('[ERROR] Pilih minimal satu user')
                     return
                   }
                   setShowUserKelasConfirm(true)
@@ -490,7 +490,7 @@ export default function BulkOperations() {
               <button
                 onClick={() => {
                   if (selectedUserIds.size === 0) {
-                    toast.error('Pilih minimal satu user')
+                    console.error('[ERROR] Pilih minimal satu user')
                     return
                   }
                   setShowUserPermissionConfirm(true)
@@ -586,7 +586,7 @@ export default function BulkOperations() {
               <button
                 onClick={() => {
                   if (selectedKelasList.size === 0) {
-                    toast.error('Pilih minimal satu kelas')
+                    console.error('[ERROR] Pilih minimal satu kelas')
                     return
                   }
                   setShowExtendConfirm(true)
@@ -636,7 +636,7 @@ export default function BulkOperations() {
               <button
                 onClick={() => {
                   if (selectedKelasList.size === 0) {
-                    toast.error('Pilih minimal satu kelas')
+                    console.error('[ERROR] Pilih minimal satu kelas')
                     return
                   }
                   setShowSetConfirm(true)
@@ -666,7 +666,7 @@ export default function BulkOperations() {
             <button
               onClick={() => {
                 if (selectedKelasList.size === 0) {
-                  toast.error('Pilih minimal satu kelas')
+                  console.error('[ERROR] Pilih minimal satu kelas')
                   return
                 }
                 setShowExpireConfirm(true)
@@ -891,11 +891,11 @@ export default function BulkOperations() {
               <button
                 onClick={() => {
                   if (migrationUserIds.size === 0) {
-                    toast.error('Pilih minimal satu user')
+                    console.error('[ERROR] Pilih minimal satu user')
                     return
                   }
                   if (!targetKelas) {
-                    toast.error('Pilih kelas tujuan')
+                    console.error('[ERROR] Pilih kelas tujuan')
                     return
                   }
                   setShowMoveConfirm(true)

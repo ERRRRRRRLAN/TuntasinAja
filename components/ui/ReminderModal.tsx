@@ -51,7 +51,7 @@ export default function ReminderModal({
 
   const toggleThreadMutation = trpc.userStatus.toggleThread.useMutation({
     onSuccess: async () => {
-      toast.success('Tugas berhasil ditandai sebagai selesai!')
+      console.log('[SUCCESS] Tugas berhasil ditandai sebagai selesai!')
       
       // Small delay to ensure server has processed history entry creation
       // This ensures the 24-hour timer system works correctly
@@ -88,7 +88,7 @@ export default function ReminderModal({
       }
     },
     onError: (error) => {
-      toast.error(`Error: ${error.message}`)
+      console.error('[ERROR]', `Error: ${error.message}`)
     },
   })
 

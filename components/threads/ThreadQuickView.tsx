@@ -275,7 +275,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
-      toast.error('Gagal mengubah status thread. Silakan coba lagi.')
+      console.error('[ERROR] Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
     },
   })
@@ -340,7 +340,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      toast.error('Gagal mengubah status sub tugas. Silakan coba lagi.')
+      console.error('[ERROR] Gagal mengubah status sub tugas. Silakan coba lagi.')
     },
   })
 
@@ -362,7 +362,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error) => {
       setIsSubmittingComment(false)
-      toast.error(error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.')
     },
   })
 
@@ -404,7 +404,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error deleting thread:', error)
-      toast.error('Gagal menghapus thread. Silakan coba lagi.')
+      console.error('[ERROR] Gagal menghapus thread. Silakan coba lagi.')
       setShowDeleteThreadDialog(false)
     },
   })
@@ -425,12 +425,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         utils.thread.getById.refetch(),
         utils.thread.getAll.refetch(),
       ])
-      toast.success('Sub tugas berhasil diubah')
+      console.log('[SUCCESS] Sub tugas berhasil diubah')
     },
     onError: (error: any) => {
       console.error('Error editing comment:', error)
       setIsSubmittingEdit(false)
-      toast.error(error.message || 'Gagal mengedit sub tugas. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengedit sub tugas. Silakan coba lagi.')
     },
   })
 
@@ -451,7 +451,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error: any) => {
       console.error('Error deleting comment:', error)
-      toast.error('Gagal menghapus sub tugas. Silakan coba lagi.')
+      console.error('[ERROR] Gagal menghapus sub tugas. Silakan coba lagi.')
       setShowDeleteCommentDialog(null)
     },
   })
@@ -476,7 +476,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     }
     
     if (!editCommentContent.trim()) {
-      toast.error('Konten sub tugas tidak boleh kosong')
+      console.error('[ERROR] Konten sub tugas tidak boleh kosong')
       return
     }
     

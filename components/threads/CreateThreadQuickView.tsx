@@ -79,7 +79,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   // Close if user doesn't have permission
   useEffect(() => {
     if (isOnlyRead) {
-      toast.error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+      console.error('[ERROR] Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
       onClose()
     }
   }, [isOnlyRead, onClose])
@@ -87,10 +87,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const createThread = trpc.thread.create.useMutation({
     onSuccess: async (data) => {
       if (data.type === 'comment') {
-        toast.info(
-          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`,
-          5000
-        )
+        console.info('[INFO]', `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`)
       } else {
         // Toast notification removed: User requested to remove UI notifications
       }
@@ -106,7 +103,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     },
     onError: (error) => {
       setIsSubmitting(false)
-      toast.error(error.message)
+      console.error('[ERROR]', error.message)
     },
   })
 
@@ -193,7 +190,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     
     // Check permission
     if (isOnlyRead || !canPostEdit) {
-      toast.error('Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
+      console.error('[ERROR] Anda hanya memiliki izin membaca. Tidak dapat membuat thread baru.')
       return
     }
     
@@ -203,18 +200,18 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     }
     
     if (!title) {
-      toast.warning('Pilih mata pelajaran terlebih dahulu!')
+      console.warn('[WARNING] Pilih mata pelajaran terlebih dahulu!')
       return
     }
 
     // Validate group task fields
     if (isGroupTask) {
       if (!groupTaskTitle.trim()) {
-        toast.warning('Judul tugas kelompok harus diisi!')
+        console.warn('[WARNING] Judul tugas kelompok harus diisi!')
         return
       }
       if (selectedMembers.length === 0) {
-        toast.warning('Pilih minimal 1 anggota kelompok!')
+        console.warn('[WARNING] Pilih minimal 1 anggota kelompok!')
         return
       }
     }

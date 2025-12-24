@@ -50,12 +50,12 @@ export default function AnnouncementManagement() {
 
   const deleteAnnouncement = trpc.announcement.delete.useMutation({
     onSuccess: () => {
-      toast.success('Pengumuman berhasil dihapus')
+      console.log('[SUCCESS] Pengumuman berhasil dihapus')
       setDeleteId(null)
       refetch()
     },
     onError: (error) => {
-      toast.error(`Gagal menghapus: ${error.message}`)
+      console.error('[ERROR]', `Gagal menghapus: ${error.message}`)
     },
   })
 
@@ -228,28 +228,28 @@ function CreateAnnouncementForm({
 
   const createAnnouncement = trpc.announcement.create.useMutation({
     onSuccess: () => {
-      toast.success('Pengumuman berhasil dibuat')
+      console.log('[SUCCESS] Pengumuman berhasil dibuat')
       onSuccess()
     },
     onError: (error) => {
-      toast.error(`Gagal membuat pengumuman: ${error.message}`)
+      console.error('[ERROR]', `Gagal membuat pengumuman: ${error.message}`)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim() || !content.trim()) {
-      toast.error('Judul dan konten harus diisi')
+      console.error('[ERROR] Judul dan konten harus diisi')
       return
     }
 
     if (targetType === 'class' && !targetKelas) {
-      toast.error('Kelas harus dipilih untuk pengumuman kelas')
+      console.error('[ERROR] Kelas harus dipilih untuk pengumuman kelas')
       return
     }
 
     if (targetType === 'subject' && (!targetKelas || !targetSubject)) {
-      toast.error('Kelas dan mata pelajaran harus dipilih untuk pengumuman mata pelajaran')
+      console.error('[ERROR] Kelas dan mata pelajaran harus dipilih untuk pengumuman mata pelajaran')
       return
     }
 
@@ -455,18 +455,18 @@ function EditAnnouncementForm({
 
   const updateAnnouncement = trpc.announcement.update.useMutation({
     onSuccess: () => {
-      toast.success('Pengumuman berhasil diperbarui')
+      console.log('[SUCCESS] Pengumuman berhasil diperbarui')
       onSuccess()
     },
     onError: (error) => {
-      toast.error(`Gagal memperbarui: ${error.message}`)
+      console.error('[ERROR]', `Gagal memperbarui: ${error.message}`)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim() || !content.trim()) {
-      toast.error('Judul dan konten harus diisi')
+      console.error('[ERROR] Judul dan konten harus diisi')
       return
     }
 

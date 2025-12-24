@@ -10,16 +10,13 @@ export default function TestDeadlineReminderButton() {
 
   const testReminder = trpc.thread.testDeadlineReminder.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        `✅ Deadline reminder berhasil!\n\n` +
+      console.log('[SUCCESS]', `✅ Deadline reminder berhasil!\n\n` +
         `Users diproses: ${data.usersProcessed}\n` +
-        `Notifikasi terkirim: ${data.totalSent}`,
-        5000
-      )
+        `Notifikasi terkirim: ${data.totalSent}`)
       setIsTesting(false)
     },
     onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`, 5000)
+      console.error('[ERROR]', `❌ Error: ${error.message}`)
       setIsTesting(false)
     },
   })

@@ -30,12 +30,12 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
 
   const updatePermission = trpc.danton.updateUserPermission.useMutation({
     onSuccess: () => {
-      toast.success('Permission berhasil diupdate')
+      console.log('[SUCCESS] Permission berhasil diupdate')
       onSuccess()
     },
     onError: (error: any) => {
       console.error('Error updating permission:', error)
-      toast.error(error.message || 'Gagal mengupdate permission. Silakan coba lagi.')
+      console.error('[ERROR]', error.message || 'Gagal mengupdate permission. Silakan coba lagi.')
     },
   })
 

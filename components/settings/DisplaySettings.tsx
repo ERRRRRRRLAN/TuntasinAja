@@ -17,12 +17,12 @@ export default function DisplaySettings() {
 
   const updateSettings = trpc.userSettings.update.useMutation({
     onSuccess: () => {
-      toast.success('Pengaturan berhasil disimpan')
+      console.log('[SUCCESS] Pengaturan berhasil disimpan')
       setIsSaving(false)
       utils.userSettings.get.invalidate()
     },
     onError: (error) => {
-      toast.error(`Gagal menyimpan: ${error.message}`)
+      console.error('[ERROR]', `Gagal menyimpan: ${error.message}`)
       setIsSaving(false)
     },
   })

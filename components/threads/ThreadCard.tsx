@@ -173,7 +173,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     },
     onError: (error: any) => {
       console.error('Error toggling thread:', error)
-      toast.error('Gagal mengubah status thread. Silakan coba lagi.')
+      console.error('[ERROR] Gagal mengubah status thread. Silakan coba lagi.')
       setShowConfirmDialog(false)
     },
   })
@@ -678,7 +678,7 @@ function CommentItem({
     },
     onError: (error: any) => {
       console.error('Error toggling comment:', error)
-      toast.error('Gagal mengubah status sub tugas. Silakan coba lagi.')
+      console.error('[ERROR] Gagal mengubah status sub tugas. Silakan coba lagi.')
     },
   })
 

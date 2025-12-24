@@ -43,10 +43,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   const createThread = trpc.thread.create.useMutation({
     onSuccess: async (data) => {
       if (data.type === 'comment') {
-        toast.info(
-          `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`,
-          5000
-        )
+        console.info('[INFO]', `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`)
       } else {
         // Toast notification removed: User requested to remove UI notifications
       }
@@ -61,7 +58,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
     },
     onError: (error) => {
       setIsSubmitting(false)
-      toast.error(error.message)
+      console.error('[ERROR]', error.message)
     },
   })
 
@@ -74,7 +71,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
     }
     
     if (!title) {
-      toast.warning('Pilih mata pelajaran terlebih dahulu!')
+      console.warn('[WARNING] Pilih mata pelajaran terlebih dahulu!')
       return
     }
     

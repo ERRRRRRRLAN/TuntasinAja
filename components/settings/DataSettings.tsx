@@ -19,12 +19,12 @@ export default function DataSettings() {
 
   const updateSettings = trpc.userSettings.update.useMutation({
     onSuccess: () => {
-      toast.success('Pengaturan berhasil disimpan')
+      console.log('[SUCCESS] Pengaturan berhasil disimpan')
       setIsSaving(false)
       utils.userSettings.get.invalidate()
     },
     onError: (error) => {
-      toast.error(`Gagal menyimpan: ${error.message}`)
+      console.error('[ERROR]', `Gagal menyimpan: ${error.message}`)
       setIsSaving(false)
     },
   })
@@ -35,11 +35,11 @@ export default function DataSettings() {
 
   const clearCache = trpc.userSettings.clearCache.useMutation({
     onSuccess: () => {
-      toast.success('Cache berhasil dihapus')
+      console.log('[SUCCESS] Cache berhasil dihapus')
       setShowClearCacheDialog(false)
     },
     onError: (error) => {
-      toast.error(`Gagal menghapus cache: ${error.message}`)
+      console.error('[ERROR]', `Gagal menghapus cache: ${error.message}`)
     },
   })
 
@@ -61,10 +61,10 @@ export default function DataSettings() {
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-        toast.success('Data berhasil diekspor')
+        console.log('[SUCCESS] Data berhasil diekspor')
       }
     } catch (error: any) {
-      toast.error(`Gagal mengekspor data: ${error.message}`)
+      console.error('[ERROR]', `Gagal mengekspor data: ${error.message}`)
     }
   }
 
