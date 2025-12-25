@@ -719,194 +719,178 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             />
           </>
         )}
-        <div className="quickview-header">
-          <div className="quickview-header-top">
-            <div className="quickview-header-left">
-              {(thread as any).author?.kelas && (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid var(--primary)',
-                  color: 'var(--primary)',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  background: 'rgba(99, 102, 241, 0.1)',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {(thread as any).author?.kelas}
-                </span>
-              )}
-              {canDeleteThread && (
-                <button
-                  onClick={() => setShowDeleteThreadDialog(true)}
-                  className="quickview-delete-btn"
-                  disabled={deleteThread.isLoading}
-                  style={{
-                    background: deleteThread.isLoading ? '#fca5a5' : '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    padding: '0.625rem',
-                    cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background 0.2s, transform 0.2s',
-                    minWidth: '44px',
-                    minHeight: '44px',
-                    flexShrink: 0,
-                    opacity: deleteThread.isLoading ? 0.7 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!deleteThread.isLoading) {
-                      e.currentTarget.style.background = '#dc2626'
-                      e.currentTarget.style.transform = 'scale(1.05)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!deleteThread.isLoading) {
-                      e.currentTarget.style.background = '#ef4444'
-                      e.currentTarget.style.transform = 'scale(1)'
-                    }
-                  }}
-                  title={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-                  aria-label={isAdmin ? "Hapus PR (Admin)" : "Hapus PR Saya"}
-                >
-                  {deleteThread.isLoading ? (
-                    <LoadingSpinner size={20} color="white" />
-                  ) : (
-                    <TrashIcon size={20} />
-                  )}
-                </button>
-              )}
-            </div>
-            <button
-              onClick={handleCloseQuickView}
-              className="quickview-close-btn"
-              style={{
-                background: 'var(--card)',
-                border: '2px solid var(--border)',
-                cursor: 'pointer',
-                color: 'var(--text)',
-                padding: '0.625rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '0.5rem',
-                minWidth: '44px',
-                minHeight: '44px',
-                transition: 'all 0.2s',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                flexShrink: 0
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-                e.currentTarget.style.borderColor = 'var(--primary)'
-                e.currentTarget.style.color = 'var(--primary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--card)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--text)'
-              }}
-              aria-label="Tutup"
-            >
-              <XCloseIcon size={22} />
-            </button>
-          </div>
-          
-          <div className="quickview-title-section">
-            {session && !isAdmin && (
-              <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
+        {/* Simplified Header */}
+        <div className="quickview-header" style={{
+          padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--card)',
+        }}>
+          {/* Top Row: Close Button & Actions */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem',
+            gap: '0.75rem'
+          }}>
+            {/* Left: Checkbox for completion */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+              {session && !isAdmin && (
                 <Checkbox
                   checked={isThreadCompleted}
                   onClick={handleThreadCheckboxClick}
                   isLoading={toggleThread.isLoading}
                   disabled={toggleThread.isLoading}
-                  size={28}
+                  size={24}
                 />
-              </div>
-            )}
-            {session && isAdmin && (
-              <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
-                <div style={{
-                  minWidth: '28px',
-                  height: '28px',
+              )}
+              {session && isAdmin && completionStats && (
+                <button
+                  onClick={() => setShowCompletionStatsModal(true)}
+                  style={{
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.375rem',
+                    border: '1px solid var(--primary)',
+                    background: 'transparent',
+                    color: 'var(--primary)',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--primary)'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--primary)'
+                  }}
+                >
+                  {completionStats.completedCount}/{completionStats.totalCount} selesai
+                </button>
+              )}
+            </div>
+            
+            {/* Right: Actions & Close */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {canDeleteThread && (
+                <button
+                  onClick={() => setShowDeleteThreadDialog(true)}
+                  disabled={deleteThread.isLoading}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    background: deleteThread.isLoading ? '#fca5a5' : 'transparent',
+                    color: deleteThread.isLoading ? 'white' : 'var(--text-light)',
+                    cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    minWidth: '36px',
+                    minHeight: '36px',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!deleteThread.isLoading) {
+                      e.currentTarget.style.background = '#fee2e2'
+                      e.currentTarget.style.color = '#ef4444'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!deleteThread.isLoading) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = 'var(--text-light)'
+                    }
+                  }}
+                  title="Hapus PR"
+                >
+                  {deleteThread.isLoading ? (
+                    <LoadingSpinner size={18} color="#ef4444" />
+                  ) : (
+                    <TrashIcon size={18} />
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleCloseQuickView}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'var(--text-light)',
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'var(--primary)',
-                  cursor: 'pointer',
-                  padding: '0 0.5rem',
-                  borderRadius: '0.25rem',
-                  border: '1px solid var(--primary)',
-                  background: 'transparent',
                   transition: 'all 0.2s',
-                }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (completionStats) {
-                    setShowCompletionStatsModal(true)
-                  }
+                  minWidth: '36px',
+                  minHeight: '36px',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--primary)'
-                  e.currentTarget.style.color = 'white'
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.color = 'var(--text)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--primary)'
+                  e.currentTarget.style.color = 'var(--text-light)'
                 }}
-                >
-                  {completionStats ? `${completionStats.completedCount}/${completionStats.totalCount}` : '-'}
-                </div>
-              </div>
-            )}
-            <h2 className="thread-detail-title" style={{ 
-              margin: 0,
-              flex: 1,
-              lineHeight: 1.4,
-              minWidth: 0
-            }}>
-              <span style={{
-                textDecoration: isThreadCompleted ? 'line-through' : 'none',
-                color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
-                wordBreak: 'break-word',
-                display: 'block'
-              }}>
-                {thread.title}
-              </span>
-            </h2>
+                aria-label="Tutup"
+              >
+                <XCloseIcon size={20} />
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="thread-detail-meta">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <UserIcon size={14} />
-            <span>{(thread as any).author?.name || 'Unknown'}</span>
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <CalendarIcon size={14} />
-            {format(new Date(thread.date), 'EEEE, d MMMM yyyy', { locale: id })}
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <MessageIcon size={14} />
-            {(thread as any).comments?.length || 0} sub tugas
-          </span>
-          {isThreadCompleted && timeRemaining && (
-            <span style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.25rem',
-              color: 'var(--text-light)'
+          {/* Title Section */}
+          <div>
+            <h2 style={{
+              fontSize: isMobile ? '1.25rem' : '1.5rem',
+              fontWeight: 600,
+              color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
+              margin: '0 0 0.75rem 0',
+              lineHeight: 1.4,
+              textDecoration: isThreadCompleted ? 'line-through' : 'none',
+              wordBreak: 'break-word',
             }}>
-              <ClockIcon size={14} />
-              Auto-hapus: {timeRemaining}
-            </span>
-          )}
+              {thread.title}
+            </h2>
+            
+            {/* Compact Meta Info */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              fontSize: '0.875rem',
+              color: 'var(--text-light)',
+            }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <UserIcon size={14} />
+                {(thread as any).author?.name || 'Unknown'}
+              </span>
+              {(thread as any).author?.kelas && (
+                <span style={{
+                  padding: '0.125rem 0.5rem',
+                  borderRadius: '0.25rem',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-light)',
+                  fontSize: '0.8125rem',
+                }}>
+                  {(thread as any).author?.kelas}
+                </span>
+              )}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <CalendarIcon size={14} />
+                {format(new Date(thread.date), 'd MMM yyyy', { locale: id })}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <MessageIcon size={14} />
+                {(thread as any).comments?.length || 0} sub tugas
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Group Members Section - Collapsible dropdown for both mobile and desktop */}
@@ -1022,72 +1006,89 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           </div>
         )}
 
-        <div className="comments-section">
-          <h3 style={{ marginBottom: '1.5rem' }}>Sub Tugas</h3>
-
+        {/* Simplified Comments Section */}
+        <div className="comments-section" style={{
+          padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+        }}>
+          {/* Add Comment Form - Compact Design */}
           {session && canActuallyPostEdit && !(isGroupTask && isThreadCompleted) && (
-            <form onSubmit={handleAddComment} className="add-comment-form">
-              <div className="form-group">
-                <label htmlFor="newComment" className="form-label">
-                  Tambah Sub Tugas
-                </label>
+            <div style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              marginBottom: '2rem',
+              border: '1px solid var(--border)',
+            }}>
+              <form onSubmit={handleAddComment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <textarea
-                  id="newComment"
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
-                  rows={3}
-                  className="form-input"
-                  placeholder="Tulis sub tugas Anda..."
+                  rows={2}
+                  placeholder="Tulis sub tugas Anda di sini..."
                   required
                   disabled={addComment.isLoading}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="commentDeadline" className="form-label">
-                  Deadline (Opsional)
-                </label>
-                <DateTimePicker
-                  value={commentDeadline}
-                  onChange={(value) => {
-                    setCommentDeadline(value)
-                    setCommentDeadlineError('') // Clear error when user changes deadline
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontSize: '0.9375rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
                   }}
-                  placeholder="Pilih deadline sub tugas"
-                  disabled={addComment.isLoading}
-                  min={new Date().toISOString().slice(0, 16)}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
                 />
-                {commentDeadlineError && (
-                  <div style={{ 
-                    marginTop: '0.5rem', 
-                    fontSize: '0.875rem', 
-                    color: 'var(--danger)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem'
-                  }}>
-                    <span>⚠️</span>
-                    <span>{commentDeadlineError}</span>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <DateTimePicker
+                      value={commentDeadline}
+                      onChange={(value) => {
+                        setCommentDeadline(value)
+                        setCommentDeadlineError('')
+                      }}
+                      placeholder="Deadline (opsional)"
+                      disabled={addComment.isLoading}
+                      min={new Date().toISOString().slice(0, 16)}
+                    />
+                    {commentDeadlineError && (
+                      <div style={{ 
+                        marginTop: '0.375rem', 
+                        fontSize: '0.8125rem', 
+                        color: 'var(--danger)',
+                      }}>
+                        {commentDeadlineError}
+                      </div>
+                    )}
                   </div>
-                )}
-                {!commentDeadlineError && (
-                  <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
-                    Tentukan kapan sub tugas harus selesai (opsional)
-                  </small>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
-              >
-                {addComment.isLoading ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <LoadingSpinner size={16} color="white" />
-                    Mengirim...
-                  </span>
-                ) : 'Tambah Sub Tugas'}
-              </button>
-            </form>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      whiteSpace: 'nowrap',
+                      minWidth: '120px',
+                    }}
+                  >
+                    {addComment.isLoading ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                        <LoadingSpinner size={16} color="white" />
+                        <span>Mengirim...</span>
+                      </span>
+                    ) : 'Tambah'}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
           {session && isOnlyRead && (
             <div className="card subscription-fade-in" style={{ 
@@ -1162,9 +1163,29 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 const isEditing = editingCommentId === comment.id
 
                 return (
-                  <div key={comment.id} className="comment-card" style={{ position: 'relative' }}>
+                  <div key={comment.id} style={{
+                    background: 'var(--card)',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    border: '1px solid var(--border)',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'flex-start',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                  >
+                    {/* Checkbox */}
                     {session && !isAdmin && !isEditing && (
-                      <div style={{ marginTop: '0.25rem' }}>
+                      <div style={{ flexShrink: 0, marginTop: '0.125rem' }}>
                         <Checkbox
                           checked={isCommentCompleted}
                           onClick={() => {
@@ -1178,11 +1199,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           }}
                           isLoading={toggleComment.isLoading}
                           disabled={toggleComment.isLoading}
-                          size={24}
+                          size={20}
                         />
                       </div>
                     )}
-                    <div className="comment-content" style={{ flex: 1, position: 'relative' }}>
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       {isEditing ? (
                         <form onSubmit={handleSubmitEdit} style={{ width: '100%' }}>
                           <div className="form-group" style={{ marginBottom: '0.75rem' }}>
@@ -1238,284 +1260,156 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         </form>
                       ) : (
                         <>
-                          <div className="comment-content-header">
+                          {/* Comment Text */}
+                          <div style={{
+                            textDecoration: isCommentCompleted ? 'line-through' : 'none',
+                            color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                            wordBreak: 'break-word',
+                            lineHeight: 1.6,
+                            fontSize: '0.9375rem',
+                            marginBottom: '0.5rem',
+                          }}>
+                            {comment.content}
+                          </div>
+                          
+                          {/* Comment Meta & Actions */}
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '0.5rem',
+                            paddingTop: '0.5rem',
+                            borderTop: '1px solid var(--border)',
+                          }}>
+                            {/* Left: Author & Deadline */}
                             <div style={{
-                              textDecoration: isCommentCompleted ? 'line-through' : 'none',
-                              color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
-                              flex: 1,
-                              wordBreak: 'break-word',
-                              lineHeight: 1.6
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: '0.75rem',
+                              alignItems: 'center',
+                              fontSize: '0.8125rem',
+                              color: 'var(--text-light)',
                             }}>
-                              {comment.content}
-                            </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                              {canEditComment && (
-                                <button
-                                  onClick={() => handleStartEdit(comment)}
-                                  className="comment-edit-btn comment-edit-btn-desktop"
-                                  disabled={editComment.isLoading}
-                                  style={{
-                                    background: editComment.isLoading ? '#cbd5e1' : '#3b82f6',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '0.375rem',
-                                    padding: '0.5rem',
-                                    cursor: editComment.isLoading ? 'not-allowed' : 'pointer',
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <UserIcon size={12} />
+                                {comment.author?.name || 'Unknown'}
+                              </span>
+                              {comment?.deadline && (() => {
+                                const deadlineUTC = new Date(comment.deadline)
+                                const deadlineJakarta = toJakartaDate(deadlineUTC)
+                                const nowJakarta = toJakartaDate(getUTCDate())
+                                const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
+                                
+                                let badgeColor = 'var(--text-light)'
+                                let badgeBg = 'var(--bg-secondary)'
+                                if (hoursUntilDeadline < 0) {
+                                  badgeColor = 'var(--danger)'
+                                  badgeBg = 'rgba(239, 68, 68, 0.1)'
+                                } else if (hoursUntilDeadline < 24) {
+                                  badgeColor = 'var(--danger)'
+                                  badgeBg = 'rgba(239, 68, 68, 0.1)'
+                                } else if (hoursUntilDeadline < 72) {
+                                  badgeColor = 'var(--warning)'
+                                  badgeBg = 'rgba(245, 158, 11, 0.1)'
+                                }
+                                
+                                return (
+                                  <span style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'background 0.2s, transform 0.2s',
-                                    minWidth: '36px',
-                                    minHeight: '36px',
-                                    flexShrink: 0,
-                                    marginTop: '-0.25rem',
-                                    opacity: editComment.isLoading ? 0.7 : 1
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!editComment.isLoading) {
-                                      e.currentTarget.style.background = '#2563eb'
-                                      e.currentTarget.style.transform = 'scale(1.1)'
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!editComment.isLoading) {
-                                      e.currentTarget.style.background = '#3b82f6'
-                                      e.currentTarget.style.transform = 'scale(1)'
-                                    }
-                                  }}
-                                  title="Edit Sub Tugas"
-                                  aria-label="Edit Sub Tugas"
-                                >
-                                  <EditIcon size={18} />
-                                </button>
-                              )}
-                              {canDeleteComment && (
-                                <button
-                                  onClick={() => setShowDeleteCommentDialog(comment.id)}
-                                  className="comment-delete-btn comment-delete-btn-desktop"
-                                  disabled={deleteComment.isLoading}
-                                  style={{
-                                    background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '0.375rem',
-                                    padding: '0.5rem',
-                                    cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'background 0.2s, transform 0.2s',
-                                    minWidth: '36px',
-                                    minHeight: '36px',
-                                    flexShrink: 0,
-                                    marginTop: '-0.25rem',
-                                    opacity: deleteComment.isLoading ? 0.7 : 1
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!deleteComment.isLoading) {
-                                      e.currentTarget.style.background = '#dc2626'
-                                      e.currentTarget.style.transform = 'scale(1.1)'
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!deleteComment.isLoading) {
-                                      e.currentTarget.style.background = '#ef4444'
-                                      e.currentTarget.style.transform = 'scale(1)'
-                                    }
-                                  }}
-                                  title={
-                                    isAdmin ? "Hapus Sub Tugas (Admin)" :
-                                    isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
-                                    "Hapus Sub Tugas Saya"
-                                  }
-                                  aria-label={
-                                    isAdmin ? "Hapus Sub Tugas (Admin)" :
-                                    isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
-                                    "Hapus Sub Tugas Saya"
-                                  }
-                                >
-                                  {deleteComment.isLoading ? (
-                                    <LoadingSpinner size={16} color="white" />
-                                  ) : (
-                                    <TrashIcon size={18} />
-                                  )}
-                                </button>
-                              )}
+                                    gap: '0.25rem',
+                                    padding: '0.125rem 0.5rem',
+                                    borderRadius: '0.25rem',
+                                    background: badgeBg,
+                                    color: badgeColor,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 500,
+                                  }}>
+                                    <ClockIcon size={12} />
+                                    {format(deadlineJakarta, 'd MMM yyyy, HH:mm', { locale: id })}
+                                  </span>
+                                )
+                              })()}
                             </div>
+                            
+                            {/* Right: Actions */}
+                            {(canEditComment || canDeleteComment) && (
+                              <div style={{ display: 'flex', gap: '0.375rem' }}>
+                                {canEditComment && (
+                                  <button
+                                    onClick={() => handleStartEdit(comment)}
+                                    disabled={editComment.isLoading}
+                                    style={{
+                                      padding: '0.375rem 0.5rem',
+                                      borderRadius: '0.375rem',
+                                      border: 'none',
+                                      background: 'transparent',
+                                      color: 'var(--text-light)',
+                                      cursor: editComment.isLoading ? 'not-allowed' : 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      transition: 'all 0.2s',
+                                      opacity: editComment.isLoading ? 0.5 : 1,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (!editComment.isLoading) {
+                                        e.currentTarget.style.background = 'var(--bg-secondary)'
+                                        e.currentTarget.style.color = 'var(--primary)'
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!editComment.isLoading) {
+                                        e.currentTarget.style.background = 'transparent'
+                                        e.currentTarget.style.color = 'var(--text-light)'
+                                      }
+                                    }}
+                                    title="Edit"
+                                  >
+                                    <EditIcon size={16} />
+                                  </button>
+                                )}
+                                {canDeleteComment && (
+                                  <button
+                                    onClick={() => setShowDeleteCommentDialog(comment.id)}
+                                    disabled={deleteComment.isLoading}
+                                    style={{
+                                      padding: '0.375rem 0.5rem',
+                                      borderRadius: '0.375rem',
+                                      border: 'none',
+                                      background: 'transparent',
+                                      color: 'var(--text-light)',
+                                      cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      transition: 'all 0.2s',
+                                      opacity: deleteComment.isLoading ? 0.5 : 1,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (!deleteComment.isLoading) {
+                                        e.currentTarget.style.background = '#fee2e2'
+                                        e.currentTarget.style.color = '#ef4444'
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!deleteComment.isLoading) {
+                                        e.currentTarget.style.background = 'transparent'
+                                        e.currentTarget.style.color = 'var(--text-light)'
+                                      }
+                                    }}
+                                    title="Hapus"
+                                  >
+                                    {deleteComment.isLoading ? (
+                                      <LoadingSpinner size={14} color="#ef4444" />
+                                    ) : (
+                                      <TrashIcon size={16} />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </>
-                      )}
-                      {!isEditing && (canEditComment || canDeleteComment) && (
-                        <div className="comment-admin-actions">
-                          {canEditComment && (
-                            <button
-                              onClick={() => handleStartEdit(comment)}
-                              className="comment-edit-btn comment-edit-btn-mobile"
-                              disabled={editComment.isLoading}
-                              style={{
-                                background: editComment.isLoading ? '#cbd5e1' : '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '0.375rem',
-                                padding: '0.625rem',
-                                cursor: editComment.isLoading ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'background 0.2s, transform 0.2s',
-                                minWidth: '44px',
-                                minHeight: '44px',
-                                width: 'auto',
-                                opacity: editComment.isLoading ? 0.7 : 1
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!editComment.isLoading) {
-                                  e.currentTarget.style.background = '#2563eb'
-                                  e.currentTarget.style.transform = 'scale(1.05)'
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!editComment.isLoading) {
-                                  e.currentTarget.style.background = '#3b82f6'
-                                  e.currentTarget.style.transform = 'scale(1)'
-                                }
-                              }}
-                              title="Edit Sub Tugas"
-                              aria-label="Edit Sub Tugas"
-                            >
-                              <EditIcon size={20} />
-                            </button>
-                          )}
-                          {canDeleteComment && (
-                            <button
-                              onClick={() => setShowDeleteCommentDialog(comment.id)}
-                              className="comment-delete-btn comment-delete-btn-mobile"
-                              disabled={deleteComment.isLoading}
-                              style={{
-                                background: deleteComment.isLoading ? '#fca5a5' : '#ef4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '0.375rem',
-                                padding: '0.625rem',
-                                cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'background 0.2s, transform 0.2s',
-                                minWidth: '44px',
-                                minHeight: '44px',
-                                width: 'auto',
-                                opacity: deleteComment.isLoading ? 0.7 : 1
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!deleteComment.isLoading) {
-                                  e.currentTarget.style.background = '#dc2626'
-                                  e.currentTarget.style.transform = 'scale(1.05)'
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!deleteComment.isLoading) {
-                                  e.currentTarget.style.background = '#ef4444'
-                                  e.currentTarget.style.transform = 'scale(1)'
-                                }
-                              }}
-                              title={
-                                isAdmin ? "Hapus Sub Tugas (Admin)" :
-                                isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
-                                "Hapus Sub Tugas Saya"
-                              }
-                              aria-label={
-                                isAdmin ? "Hapus Sub Tugas (Admin)" :
-                                isThreadAuthor ? "Hapus Sub Tugas (Author Thread)" :
-                                "Hapus Sub Tugas Saya"
-                              }
-                            >
-                              {deleteComment.isLoading ? (
-                                <LoadingSpinner size={20} color="white" />
-                              ) : (
-                                <TrashIcon size={20} />
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      {!isEditing && (
-                        <div className="comment-footer">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <UserIcon size={12} />
-                            <span>{comment?.author?.name || 'Unknown'}</span>
-                          </span>
-                          {comment?.author?.kelas && (
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '0.125rem 0.375rem',
-                              borderRadius: '0.25rem',
-                              border: '1px solid var(--primary)',
-                              color: 'var(--primary)',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              background: 'transparent',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {comment?.author?.kelas}
-                            </span>
-                          )}
-                          {comment?.deadline && (() => {
-                            const now = getUTCDate()
-                            const deadlineUTC = new Date(comment.deadline)
-                            const deadlineJakarta = toJakartaDate(deadlineUTC)
-                            const nowJakarta = toJakartaDate(now)
-                            const hoursUntilDeadline = differenceInHours(deadlineJakarta, nowJakarta)
-                            const daysUntilDeadline = differenceInDays(deadlineJakarta, nowJakarta)
-
-                            let deadlineText = ''
-                            let deadlineColor = 'var(--text-light)'
-                            let deadlineBg = 'var(--bg-secondary)'
-
-                            if (hoursUntilDeadline < 0) {
-                              deadlineText = 'Deadline lewat'
-                              deadlineColor = 'var(--danger)'
-                              deadlineBg = 'var(--danger)20'
-                            } else if (hoursUntilDeadline < 2) {
-                              deadlineText = `${hoursUntilDeadline * 60 + differenceInMinutes(deadlineJakarta, nowJakarta) % 60}m lagi`
-                              deadlineColor = 'var(--danger)'
-                              deadlineBg = 'var(--danger)20'
-                            } else if (hoursUntilDeadline < 24) {
-                              deadlineText = `${hoursUntilDeadline}j lagi`
-                              deadlineColor = 'var(--danger)'
-                              deadlineBg = 'var(--danger)20'
-                            } else if (daysUntilDeadline < 3) {
-                              deadlineText = `${daysUntilDeadline} hari lagi`
-                              deadlineColor = 'var(--warning)'
-                              deadlineBg = 'var(--warning)20'
-                            } else {
-                              deadlineText = format(deadlineJakarta, 'd MMM', { locale: id })
-                            }
-
-                            return (
-                              <span style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.25rem',
-                                padding: '0.125rem 0.375rem',
-                                borderRadius: '0.25rem',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                color: deadlineColor,
-                                background: deadlineBg,
-                              }}>
-                                <ClockIcon size={12} />
-                                {deadlineText}
-                              </span>
-                            )
-                          })()}
-                        </div>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <CalendarIcon size={12} />
-                          {format(toJakartaDate(comment.createdAt), 'EEEE, d MMM yyyy, HH:mm', { locale: id })}
-                        </span>
-                        </div>
                       )}
                     </div>
                   </div>
