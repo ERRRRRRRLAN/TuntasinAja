@@ -289,7 +289,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     } else if (daysUntilDeadline < 3) {
       // Kurang dari 3 hari
       return {
-        text: `${daysUntilDeadline}d lagi`,
+        text: `${daysUntilDeadline} hari lagi`,
         color: "var(--warning)",
         bg: "var(--warning)20",
       };
@@ -857,7 +857,7 @@ function CommentItem({
       };
     } else if (daysUntilDeadline < 3) {
       badge = {
-        text: `${daysUntilDeadline}d`,
+        text: `${daysUntilDeadline} hari`,
         color: "var(--warning)",
         bg: "var(--warning)20",
       };

@@ -1379,7 +1379,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               deadlineColor = 'var(--danger)'
                               deadlineBg = 'var(--danger)20'
                             } else if (daysUntilDeadline < 3) {
-                              deadlineText = `${daysUntilDeadline}d lagi`
+                              deadlineText = `${daysUntilDeadline} hari lagi`
                               deadlineColor = 'var(--warning)'
                               deadlineBg = 'var(--warning)20'
                             } else {
