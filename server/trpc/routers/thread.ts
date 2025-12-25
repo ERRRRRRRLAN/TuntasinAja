@@ -402,6 +402,18 @@ export const threadRouter = createTRPCRouter({
           }
         }
 
+        // Validate deadline if provided - must be in the future
+        const currentTime = getUTCDate();
+        if (input.deadline) {
+          const deadlineDate = new Date(input.deadline);
+          if (deadlineDate <= currentTime) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Deadline tidak boleh di masa lalu atau waktu sekarang. Silakan pilih waktu yang akan datang.",
+            });
+          }
+        }
+
         // Get today's date in Jakarta timezone, converted to UTC for database
         // This ensures we only check threads created TODAY, not yesterday or tomorrow
         const today = getJakartaTodayAsUTC(); // 00:00:00 today in Jakarta (converted to UTC)
@@ -513,16 +525,6 @@ export const threadRouter = createTRPCRouter({
         // Create new thread
         // Explicitly set createdAt to current time in Jakarta timezone
         const now = getUTCDate();
-        // Validate deadline if provided
-        if (input.deadline) {
-          const deadlineDate = new Date(input.deadline);
-          if (deadlineDate <= now) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Deadline tidak boleh di masa lalu atau waktu sekarang",
-            });
-          }
-        }
 
         const thread = await prisma.thread.create({
           data: {
@@ -756,13 +758,13 @@ export const threadRouter = createTRPCRouter({
 
       // Use Jakarta time for comment creation
       const now = getUTCDate();
-      // Validate deadline if provided
+      // Validate deadline if provided - must be in the future
       if (input.deadline) {
         const deadlineDate = new Date(input.deadline);
         if (deadlineDate <= now) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Deadline tidak boleh di masa lalu atau waktu sekarang",
+            message: "Deadline tidak boleh di masa lalu atau waktu sekarang. Silakan pilih waktu yang akan datang.",
           });
         }
       }
