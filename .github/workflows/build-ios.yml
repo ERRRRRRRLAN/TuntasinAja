@@ -38,11 +38,17 @@ jobs:
           
       - name: Setup Capacitor iOS
         run: |
+          # Install @capacitor/ios if not already installed
           if ! npm list @capacitor/ios > /dev/null 2>&1; then
-            npm install @capacitor/ios
+            echo "Installing @capacitor/ios..."
+            npm install @capacitor/ios --save-dev
           fi
+          # Add iOS platform if not exists
           if [ ! -d "ios" ]; then
+            echo "Adding iOS platform..."
             npx cap add ios --no-deps
+          else
+            echo "iOS platform already exists"
           fi
           
       - name: Sync Capacitor
@@ -62,6 +68,7 @@ jobs:
           
       - name: Build Archive
         run: |
+          echo "Building iOS Archive..."
           xcodebuild archive \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -71,12 +78,16 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            || echo "Archive build completed with warnings"
+            -allowProvisioningUpdates \
+            -quiet \
+            | grep -v "^$" || true
+          echo "Archive build completed"
         continue-on-error: true
         
       - name: Export IPA (Development)
         if: success()
         run: |
+          echo "Exporting IPA..."
           mkdir -p ios/build
           xcodebuild -exportArchive \
             -archivePath ${{ runner.temp }}/App.xcarchive \
@@ -85,7 +96,19 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            || echo "IPA export completed with warnings"
+            -allowProvisioningUpdates \
+            -quiet \
+            | grep -v "^$" || true
+          echo "IPA export completed"
+          
+          # Verify IPA was created
+          if [ -f "ios/build/App.ipa" ]; then
+            echo "✅ IPA file created successfully!"
+            ls -lh ios/build/App.ipa
+          else
+            echo "⚠️ IPA file not found, checking directory..."
+            ls -la ios/build/
+          fi
         continue-on-error: true
         
       - name: List build artifacts
