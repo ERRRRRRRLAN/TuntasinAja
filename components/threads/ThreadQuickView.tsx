@@ -413,18 +413,26 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   // Delete thread (Admin only)
   const deleteThread = trpc.thread.delete.useMutation({
     onSuccess: async () => {
+      // Close dialog and thread immediately for better UX
       setShowDeleteThreadDialog(false)
-      // Invalidate and refetch immediately
-      await Promise.all([
+      onClose()
+      
+      // Invalidate and refetch in background (don't wait for it)
+      // This ensures dialog and thread close together without delay
+      Promise.all([
         utils.thread.getById.invalidate(),
         utils.thread.getAll.invalidate(),
-      ])
-      // Force immediate refetch
-      await Promise.all([
-        utils.thread.getById.refetch(),
-        utils.thread.getAll.refetch(),
-      ])
-      onClose()
+      ]).then(() => {
+        // Force immediate refetch after invalidation
+        Promise.all([
+          utils.thread.getById.refetch(),
+          utils.thread.getAll.refetch(),
+        ]).catch((error) => {
+          console.error('Error refetching after delete:', error)
+        })
+      }).catch((error) => {
+        console.error('Error invalidating after delete:', error)
+      })
     },
     onError: (error: any) => {
       console.error('Error deleting thread:', error)
