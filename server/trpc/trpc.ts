@@ -74,6 +74,9 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
     // Get user-friendly error message
     const userMessage = getUserFriendlyMessage(error)
     
+    // Check if error is AppError (has code property with ErrorCode type)
+    const isAppError = error && typeof error === 'object' && 'code' in error && 'statusCode' in error && 'userMessage' in error
+    
     return {
       ...shape,
       message: userMessage, // Override with user-friendly message
@@ -84,9 +87,9 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
             ? error.cause.flatten()
             : null,
         // Include error code if it's an AppError
-        ...(error instanceof AppError && {
-          code: error.code,
-          statusCode: error.statusCode,
+        ...(isAppError && {
+          code: (error as AppError).code,
+          statusCode: (error as AppError).statusCode,
         }),
       },
     }
