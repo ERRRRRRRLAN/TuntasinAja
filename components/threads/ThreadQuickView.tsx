@@ -1375,36 +1375,33 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                     e.currentTarget.style.borderColor = 'var(--border)'
                   }}
                 />
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <DateTimePicker
-                      value={commentDeadline}
-                      onChange={(value) => {
-                        setCommentDeadline(value)
-                        setCommentDeadlineError('')
-                      }}
-                      placeholder="Deadline (opsional)"
-                      disabled={addComment.isLoading}
-                      min={new Date().toISOString().slice(0, 16)}
-                    />
-                    {commentDeadlineError && (
-                      <div style={{ 
-                        marginTop: '0.375rem', 
-                        fontSize: '0.8125rem', 
-                        color: 'var(--danger)',
-                      }}>
-                        {commentDeadlineError}
-                      </div>
-                    )}
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <DateTimePicker
+                    value={commentDeadline}
+                    onChange={(value) => {
+                      setCommentDeadline(value)
+                      setCommentDeadlineError('')
+                    }}
+                    placeholder="Deadline (opsional)"
+                    disabled={addComment.isLoading}
+                    min={new Date().toISOString().slice(0, 16)}
+                  />
+                  {commentDeadlineError && (
+                    <div style={{ 
+                      fontSize: '0.8125rem', 
+                      color: 'var(--danger)',
+                    }}>
+                      {commentDeadlineError}
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="btn btn-primary"
                     disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
                     style={{
                       padding: '0.75rem 1.5rem',
-                      whiteSpace: 'nowrap',
-                      minWidth: '120px',
+                      width: '100%',
+                      marginTop: '0.25rem',
                     }}
                   >
                     {addComment.isLoading ? (
