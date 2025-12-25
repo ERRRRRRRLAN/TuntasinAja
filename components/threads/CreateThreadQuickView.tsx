@@ -244,38 +244,25 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     setDeadlineError('')
     setIsSubmitting(true)
     
-    // Validate and filter memberIds - only include valid UUIDs
+    // Prepare memberIds - only send if isGroupTask is true and we have valid members
+    // Note: User IDs from Prisma should already be valid UUIDs, so we just need to ensure they exist
     let validMemberIds: string[] | undefined = undefined
-    if (isGroupTask && selectedMembers.length > 0) {
-      // UUID regex pattern
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      
-      // Log for debugging
-      console.log('[DEBUG] Selected members:', selectedMembers.map(m => ({ id: m.id, name: m.name })))
-      
+    if (isGroupTask) {
+      // Validation already checked that selectedMembers.length > 0 above
+      // Just map the IDs - they should already be valid UUIDs from the database
       validMemberIds = selectedMembers
-        .map(m => m.id?.trim())
+        .map(m => m.id)
         .filter((id): id is string => {
-          if (!id || typeof id !== 'string') {
-            console.warn('[WARNING] Invalid member ID (empty or not string):', id)
-            return false
-          }
-          const isValid = uuidRegex.test(id)
-          if (!isValid) {
-            console.warn('[WARNING] Invalid UUID format:', id)
-          }
-          return isValid
+          // Basic validation: must be a non-empty string
+          return !!id && typeof id === 'string' && id.trim().length > 0
         })
       
-      // If after filtering we have no valid IDs, show error
+      // Double-check: if somehow we have no valid IDs after filtering, show error
       if (validMemberIds.length === 0) {
         console.error('[ERROR] Tidak ada ID anggota yang valid. Silakan pilih anggota lagi.')
         setIsSubmitting(false)
         return
       }
-      
-      // Log valid IDs
-      console.log('[DEBUG] Valid member IDs:', validMemberIds)
     }
     
     createThread.mutate({ 
