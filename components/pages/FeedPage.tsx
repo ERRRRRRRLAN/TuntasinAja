@@ -25,6 +25,7 @@ import AdvancedFilter, {
 } from "@/components/ui/AdvancedFilter";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ThreadCardSkeleton from "@/components/threads/ThreadCardSkeleton";
+import EmptyState from "@/components/ui/EmptyState";
 import { useUserPermission } from "@/hooks/useUserPermission";
 import { useClassSubscription } from "@/hooks/useClassSubscription";
 
@@ -887,20 +888,54 @@ export default function FeedPage() {
             </button>
           </div>
         ) : !threads || threads.length === 0 ? (
-          <div className="card" style={{ textAlign: "center" }}>
-            <p style={{ color: "var(--text-light)" }}>
-              Belum ada PR. Buat PR pertama Anda!
-            </p>
+          <div className="card">
+            <EmptyState
+              title="Belum ada PR"
+              description="Yuk, mulai dengan membuat tugas pertama Anda! Klik tombol di bawah untuk membuat PR baru."
+              actionLabel="Buat PR Pertama"
+              onAction={() => setShowCreateForm(true)}
+              variant="default"
+            />
           </div>
         ) : filteredThreads.length === 0 ? (
-          <div className="card" style={{ textAlign: "center" }}>
-            <p style={{ color: "var(--text-light)" }}>
-              {searchQuery ||
-              selectedSubject !== "all" ||
-              (isAdmin && selectedKelas !== "all")
-                ? "Tidak ada PR yang sesuai dengan filter/pencarian Anda."
-                : "Belum ada PR. Buat PR pertama Anda!"}
-            </p>
+          <div className="card">
+            <EmptyState
+              title={
+                searchQuery ||
+                selectedSubject !== "all" ||
+                (isAdmin && selectedKelas !== "all")
+                  ? "Tidak ada hasil"
+                  : "Belum ada PR"
+              }
+              description={
+                searchQuery ||
+                selectedSubject !== "all" ||
+                (isAdmin && selectedKelas !== "all")
+                  ? "Tidak ada PR yang sesuai dengan filter atau pencarian Anda. Coba ubah filter atau kata kunci pencarian."
+                  : "Yuk, mulai dengan membuat tugas pertama Anda! Klik tombol di bawah untuk membuat PR baru."
+              }
+              actionLabel={
+                searchQuery ||
+                selectedSubject !== "all" ||
+                (isAdmin && selectedKelas !== "all")
+                  ? undefined
+                  : "Buat PR Pertama"
+              }
+              onAction={
+                searchQuery ||
+                selectedSubject !== "all" ||
+                (isAdmin && selectedKelas !== "all")
+                  ? undefined
+                  : () => setShowCreateForm(true)
+              }
+              variant={
+                searchQuery ||
+                selectedSubject !== "all" ||
+                (isAdmin && selectedKelas !== "all")
+                  ? "search"
+                  : "default"
+              }
+            />
           </div>
         ) : (
           <>

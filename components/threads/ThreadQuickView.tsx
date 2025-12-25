@@ -13,6 +13,7 @@ import { UserIcon, CalendarIcon, MessageIcon, TrashIcon, XCloseIcon, ClockIcon, 
 import Checkbox from '@/components/ui/Checkbox'
 import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import EmptyState from '@/components/ui/EmptyState'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { useDanton } from '@/hooks/useDanton'
 import { useUserPermission } from '@/hooks/useUserPermission'
@@ -1083,9 +1084,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
               if (visibleComments.length === 0) {
                 return (
-                  <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '2rem' }}>
-                    Belum ada sub tugas. Jadilah yang pertama!
-                  </p>
+                  <div style={{ padding: '1rem 0' }}>
+                    <EmptyState
+                      icon={<MessageIcon size={48} />}
+                      title="Belum ada sub tugas"
+                      description="Jadilah yang pertama menambahkan sub tugas untuk tugas ini!"
+                      variant="info"
+                    />
+                  </div>
                 )
               }
 

@@ -370,8 +370,47 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       style={{
         cursor: "pointer",
         pointerEvents: showConfirmDialog || showUncheckDialog ? "none" : "auto",
+        position: 'relative',
       }}
     >
+      {/* Status Indicator Dot */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          background: isCompleted
+            ? 'var(--success)'
+            : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--danger)'
+            ? 'var(--danger)'
+            : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--warning)'
+            ? 'var(--warning)'
+            : 'var(--primary)',
+          boxShadow: `0 0 0 3px ${
+            isCompleted
+              ? 'rgba(16, 185, 129, 0.2)'
+              : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--danger)'
+              ? 'rgba(239, 68, 68, 0.2)'
+              : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--warning)'
+              ? 'rgba(245, 158, 11, 0.2)'
+              : 'rgba(99, 102, 241, 0.2)'
+          }`,
+          transition: 'all 0.3s ease',
+          zIndex: 1,
+        }}
+        title={
+          isCompleted
+            ? 'Selesai'
+            : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--danger)'
+            ? 'Deadline mendekat'
+            : allDeadlines.length > 0 && deadlineBadges[0]?.color === 'var(--warning)'
+            ? 'Deadline dalam 3 hari'
+            : 'Aktif'
+        }
+      />
       <div className="thread-card-content">
         <div className="thread-card-header">
           {session && !isAdmin && (

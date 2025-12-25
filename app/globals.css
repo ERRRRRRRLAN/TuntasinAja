@@ -987,6 +987,36 @@ body {
   overflow: hidden;
 }
 
+/* Ripple Effect Animation */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Progress Bar Animations */
+@keyframes progressShimmer {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -1313,9 +1343,9 @@ textarea::placeholder {
 
 .thread-card {
   background: var(--card);
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   padding: 1.5rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
@@ -1324,10 +1354,12 @@ textarea::placeholder {
   animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
   position: relative;
   overflow: hidden;
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  /* Subtle gradient border effect */
+  background-clip: padding-box;
 }
 
 .thread-card::before {
@@ -1346,9 +1378,15 @@ textarea::placeholder {
 }
 
 .thread-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+  background: var(--card);
+}
+
+.thread-card:active {
+  transform: translateY(-2px) scale(1.005);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .thread-title {

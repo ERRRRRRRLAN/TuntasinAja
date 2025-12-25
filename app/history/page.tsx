@@ -11,6 +11,7 @@ import { toJakartaDate } from '@/lib/date-utils'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { CheckIcon, ClockIcon, TrashIcon, RotateCcwIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import EmptyState from '@/components/ui/EmptyState'
 
 export default function HistoryPage() {
   const { data: session, status } = useSession()
@@ -179,10 +180,13 @@ export default function HistoryPage() {
               </button>
             </div>
           ) : !histories || histories.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-light)' }}>
-                Belum ada tugas yang selesai.
-              </p>
+            <div className="card">
+              <EmptyState
+                icon={<CheckIcon size={64} />}
+                title="Belum ada tugas yang selesai"
+                description="Tugas yang sudah Anda selesaikan akan muncul di sini. Yuk, selesaikan tugas pertama Anda!"
+                variant="success"
+              />
             </div>
           ) : (
             <div className="history-container">
