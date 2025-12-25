@@ -24,6 +24,7 @@ import AdvancedFilter, {
   AdvancedFilterValue,
 } from "@/components/ui/AdvancedFilter";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ThreadCardSkeleton from "@/components/threads/ThreadCardSkeleton";
 import { useUserPermission } from "@/hooks/useUserPermission";
 import { useClassSubscription } from "@/hooks/useClassSubscription";
 
@@ -843,14 +844,10 @@ export default function FeedPage() {
         (!isAdmin && isLoadingSubjects) ||
         (isInitialLoad && !isDataValidated) ||
         (!isAdmin && isInitialLoad && isLoading && !threads) ? (
-          <div
-            className="card"
-            style={{ textAlign: "center", padding: "3rem" }}
-          >
-            <LoadingSpinner size={32} />
-            <p style={{ color: "var(--text-light)", marginTop: "1rem" }}>
-              {isLoadingUserData ? "Memuat data user..." : "Memuat PR..."}
-            </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <ThreadCardSkeleton key={i} />
+            ))}
           </div>
         ) : threadsError ? (
           <div

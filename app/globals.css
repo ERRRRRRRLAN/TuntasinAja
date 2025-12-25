@@ -971,6 +971,22 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Skeleton Loading Animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
