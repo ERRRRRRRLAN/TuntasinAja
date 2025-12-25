@@ -5,6 +5,7 @@ import { getToken } from 'next-auth/jwt'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { prisma } from '@/lib/prisma'
 import logger from '@/lib/logger'
+import { getUserFriendlyMessage, AppError } from '@/lib/error-handler'
 
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts
@@ -70,14 +71,23 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
+    // Get user-friendly error message
+    const userMessage = getUserFriendlyMessage(error)
+    
     return {
       ...shape,
+      message: userMessage, // Override with user-friendly message
       data: {
         ...shape.data,
         zodError:
           error.cause instanceof ZodError
             ? error.cause.flatten()
             : null,
+        // Include error code if it's an AppError
+        ...(error instanceof AppError && {
+          code: error.code,
+          statusCode: error.statusCode,
+        }),
       },
     }
   },

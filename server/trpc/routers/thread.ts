@@ -21,6 +21,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 import logger, { createLogger } from "@/lib/logger";
 import { threadTitleSchema, commentContentSchema, groupTaskTitleSchema } from "@/lib/validation";
+import { createDeadlineError, handleError, getUserFriendlyMessage } from "@/lib/error-handler";
 
 export const threadRouter = createTRPCRouter({
   // Get all threads with pagination
@@ -325,7 +326,10 @@ export const threadRouter = createTRPCRouter({
       });
 
       if (!thread) {
-        throw new Error("Thread not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Thread tidak ditemukan",
+        });
       }
 
       return thread;
@@ -372,7 +376,10 @@ export const threadRouter = createTRPCRouter({
         const currentUser =
           userResult.status === "fulfilled" ? userResult.value : null;
         if (!currentUser) {
-          throw new Error("User tidak ditemukan");
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User tidak ditemukan",
+          });
         }
 
         const userKelas = (currentUser as any)?.kelas;
@@ -384,9 +391,10 @@ export const threadRouter = createTRPCRouter({
           try {
             subscriptionStatus = await checkClassSubscription(userKelas);
             if (!subscriptionStatus.isActive) {
-              throw new Error(
-                `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`,
-              );
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat membuat thread baru.`,
+              });
             }
           } catch (error: any) {
             // If subscription check fails, throw the error
@@ -409,7 +417,7 @@ export const threadRouter = createTRPCRouter({
           if (deadlineDate <= currentTime) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "Deadline tidak boleh di masa lalu atau waktu sekarang. Silakan pilih waktu yang akan datang.",
+              message: createDeadlineError({ userId: ctx.session.user.id, deadline: input.deadline }).userMessage,
             });
           }
         }
@@ -519,7 +527,10 @@ export const threadRouter = createTRPCRouter({
             };
           }
 
-          throw new Error("Thread already exists for today");
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Thread dengan mata pelajaran ini sudah ada untuk hari ini",
+          });
         }
 
         // Create new thread
@@ -655,11 +666,11 @@ export const threadRouter = createTRPCRouter({
 
         // If it's a unique constraint error, provide a more helpful message
         if (error.code === "P2002") {
-          throw new Error(
-            `Thread dengan mata pelajaran "${input.title}" sudah ada untuk hari ini. ` +
-              `Jika Anda dari kelas yang berbeda, pastikan constraint database sudah dihapus. ` +
-              `Error detail: ${error.meta?.target || "unknown constraint"}`,
-          );
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: `Thread dengan mata pelajaran "${input.title}" sudah ada untuk hari ini. ` +
+              `Jika Anda dari kelas yang berbeda, pastikan constraint database sudah dihapus.`,
+          });
         }
 
         // Re-throw the error with original message
@@ -693,9 +704,10 @@ export const threadRouter = createTRPCRouter({
       const permission =
         permissionResult.status === "fulfilled" ? permissionResult.value : null;
       if (permission === "only_read") {
-        throw new Error(
-          "Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.",
-        );
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.",
+        });
       }
 
       // Handle user lookup result
@@ -713,9 +725,10 @@ export const threadRouter = createTRPCRouter({
         try {
           const subscriptionStatus = await checkClassSubscription(userKelas);
           if (!subscriptionStatus.isActive) {
-            throw new Error(
-              `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`,
-            );
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`,
+            });
           }
         } catch (error: any) {
           if (error.message?.includes("Subscription")) {
@@ -744,7 +757,10 @@ export const threadRouter = createTRPCRouter({
       });
 
       if (!thread) {
-        throw new Error("Thread not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Thread tidak ditemukan",
+        });
       }
 
       // Get comment author info
@@ -764,7 +780,7 @@ export const threadRouter = createTRPCRouter({
         if (deadlineDate <= now) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Deadline tidak boleh di masa lalu atau waktu sekarang. Silakan pilih waktu yang akan datang.",
+            message: createDeadlineError({ userId: ctx.session.user.id, threadId: input.threadId, deadline: input.deadline }).userMessage,
           });
         }
       }
@@ -849,7 +865,10 @@ export const threadRouter = createTRPCRouter({
       });
 
       if (!thread) {
-        throw new Error("Thread not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Thread tidak ditemukan",
+        });
       }
 
       // Check if user is admin or danton of the same class
@@ -1295,7 +1314,10 @@ export const threadRouter = createTRPCRouter({
       });
 
       if (!thread) {
-        throw new Error("Thread not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Thread tidak ditemukan",
+        });
       }
 
       const authorKelas = (thread.author as any)?.kelas;
