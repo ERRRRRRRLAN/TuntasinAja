@@ -362,7 +362,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     },
     onError: (error) => {
       setIsSubmittingComment(false)
-      console.error('[ERROR]', error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.')
+      const errorMessage = error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.'
+      console.error('[ERROR]', errorMessage)
+      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
     },
   })
 

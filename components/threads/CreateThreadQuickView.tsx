@@ -103,7 +103,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     },
     onError: (error) => {
       setIsSubmitting(false)
-      console.error('[ERROR]', error.message)
+      const errorMessage = error.message || 'Gagal membuat tugas. Silakan coba lagi.'
+      console.error('[ERROR]', errorMessage)
+      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
     },
   })
 
