@@ -29,6 +29,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [commentContent, setCommentContent] = useState('')
   const [commentDeadline, setCommentDeadline] = useState<string>('')
   const [commentDeadlineError, setCommentDeadlineError] = useState<string>('')
+  const [hasSetDefaultDeadline, setHasSetDefaultDeadline] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
@@ -218,6 +219,53 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     }
   }, [isGroupTask, groupMembers, hasGroupMembers, thread])
 
+  // Set default deadline from thread or first comment
+  useEffect(() => {
+    if (!thread || hasSetDefaultDeadline || commentDeadline) {
+      // Don't override if user has already set a deadline or already set default
+      return
+    }
+
+    // Try to get deadline from thread first
+    const threadDeadline = (thread as any)?.deadline
+    if (threadDeadline) {
+      const deadlineDate = new Date(threadDeadline)
+      // Format as YYYY-MM-DDTHH:mm for DateTimePicker
+      const year = deadlineDate.getFullYear()
+      const month = String(deadlineDate.getMonth() + 1).padStart(2, '0')
+      const day = String(deadlineDate.getDate()).padStart(2, '0')
+      const hours = String(deadlineDate.getHours()).padStart(2, '0')
+      const minutes = String(deadlineDate.getMinutes()).padStart(2, '0')
+      const formattedDeadline = `${year}-${month}-${day}T${hours}:${minutes}`
+      setCommentDeadline(formattedDeadline)
+      setHasSetDefaultDeadline(true)
+      return
+    }
+
+    // If thread doesn't have deadline, try to get from first comment
+    const comments = (thread as any)?.comments || []
+    if (comments.length > 0) {
+      // Find first comment with deadline
+      const firstCommentWithDeadline = comments.find((comment: any) => comment.deadline)
+      if (firstCommentWithDeadline?.deadline) {
+        const deadlineDate = new Date(firstCommentWithDeadline.deadline)
+        // Format as YYYY-MM-DDTHH:mm for DateTimePicker
+        const year = deadlineDate.getFullYear()
+        const month = String(deadlineDate.getMonth() + 1).padStart(2, '0')
+        const day = String(deadlineDate.getDate()).padStart(2, '0')
+        const hours = String(deadlineDate.getHours()).padStart(2, '0')
+        const minutes = String(deadlineDate.getMinutes()).padStart(2, '0')
+        const formattedDeadline = `${year}-${month}-${day}T${hours}:${minutes}`
+        setCommentDeadline(formattedDeadline)
+        setHasSetDefaultDeadline(true)
+        return
+      }
+    }
+
+    // Mark as set even if no deadline found (to prevent re-running)
+    setHasSetDefaultDeadline(true)
+  }, [thread, hasSetDefaultDeadline, commentDeadline])
+
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
   useEffect(() => {
@@ -349,9 +397,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const addComment = trpc.thread.addComment.useMutation({
     onSuccess: async () => {
       setCommentContent('')
+      // Reset deadline but keep default for next comment
       setCommentDeadline('')
       setCommentDeadlineError('')
       setIsSubmittingComment(false)
+      // Reset flag so default deadline will be set again for next comment
+      setHasSetDefaultDeadline(false)
       // Invalidate and refetch immediately
       await Promise.all([
         utils.thread.getById.invalidate(),
