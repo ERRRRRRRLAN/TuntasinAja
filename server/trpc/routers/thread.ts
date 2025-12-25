@@ -344,7 +344,7 @@ export const threadRouter = createTRPCRouter({
         deadline: z.date().optional(),
         isGroupTask: z.boolean().optional().default(false),
         groupTaskTitle: groupTaskTitleSchema,
-        memberIds: z.array(z.string().uuid('ID anggota tidak valid')).optional(),
+        memberIds: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -244,34 +244,13 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     setDeadlineError('')
     setIsSubmitting(true)
     
-    // Prepare memberIds - only send if isGroupTask is true and we have valid members
-    // Note: User IDs from Prisma should already be valid UUIDs, so we just need to ensure they exist
-    let validMemberIds: string[] | undefined = undefined
-    if (isGroupTask) {
-      // Validation already checked that selectedMembers.length > 0 above
-      // Just map the IDs - they should already be valid UUIDs from the database
-      validMemberIds = selectedMembers
-        .map(m => m.id)
-        .filter((id): id is string => {
-          // Basic validation: must be a non-empty string
-          return !!id && typeof id === 'string' && id.trim().length > 0
-        })
-      
-      // Double-check: if somehow we have no valid IDs after filtering, show error
-      if (validMemberIds.length === 0) {
-        console.error('[ERROR] Tidak ada ID anggota yang valid. Silakan pilih anggota lagi.')
-        setIsSubmitting(false)
-        return
-      }
-    }
-    
     createThread.mutate({ 
       title, 
       comment: comment || undefined,
       deadline: deadline ? new Date(deadline) : undefined,
       isGroupTask,
       groupTaskTitle: isGroupTask ? groupTaskTitle : undefined,
-      memberIds: validMemberIds,
+      memberIds: isGroupTask ? selectedMembers.map(m => m.id) : undefined,
     })
   }
 
