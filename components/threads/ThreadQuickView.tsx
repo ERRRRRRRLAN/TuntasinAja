@@ -1010,86 +1010,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         <div className="comments-section" style={{
           padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
         }}>
-          {/* Add Comment Form - Compact Design */}
-          {session && canActuallyPostEdit && !(isGroupTask && isThreadCompleted) && (
-            <div style={{
-              background: 'var(--bg-secondary)',
-              borderRadius: '0.75rem',
-              padding: '1rem',
-              marginBottom: '2rem',
-              border: '1px solid var(--border)',
-            }}>
-              <form onSubmit={handleAddComment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <textarea
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.target.value)}
-                  rows={2}
-                  placeholder="Tulis sub tugas Anda di sini..."
-                  required
-                  disabled={addComment.isLoading}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    borderRadius: '0.5rem',
-                    border: '1px solid var(--border)',
-                    background: 'var(--card)',
-                    color: 'var(--text)',
-                    fontSize: '0.9375rem',
-                    fontFamily: 'inherit',
-                    resize: 'vertical',
-                    outline: 'none',
-                    transition: 'border-color 0.2s',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--primary)'
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                  }}
-                />
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <DateTimePicker
-                      value={commentDeadline}
-                      onChange={(value) => {
-                        setCommentDeadline(value)
-                        setCommentDeadlineError('')
-                      }}
-                      placeholder="Deadline (opsional)"
-                      disabled={addComment.isLoading}
-                      min={new Date().toISOString().slice(0, 16)}
-                    />
-                    {commentDeadlineError && (
-                      <div style={{ 
-                        marginTop: '0.375rem', 
-                        fontSize: '0.8125rem', 
-                        color: 'var(--danger)',
-                      }}>
-                        {commentDeadlineError}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
-                    style={{
-                      padding: '0.75rem 1.5rem',
-                      whiteSpace: 'nowrap',
-                      minWidth: '120px',
-                    }}
-                  >
-                    {addComment.isLoading ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
-                        <LoadingSpinner size={16} color="white" />
-                        <span>Mengirim...</span>
-                      </span>
-                    ) : 'Tambah'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
           {session && isOnlyRead && (
             <div className="card subscription-fade-in" style={{ 
               padding: '1rem', 
@@ -1417,6 +1337,87 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               })
             })()}
           </div>
+
+          {/* Add Comment Form - Moved to Bottom */}
+          {session && canActuallyPostEdit && !(isGroupTask && isThreadCompleted) && (
+            <div style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              marginTop: '2rem',
+              border: '1px solid var(--border)',
+            }}>
+              <form onSubmit={handleAddComment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <textarea
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                  rows={2}
+                  placeholder="Tulis sub tugas Anda di sini..."
+                  required
+                  disabled={addComment.isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontSize: '0.9375rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
+                />
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <DateTimePicker
+                      value={commentDeadline}
+                      onChange={(value) => {
+                        setCommentDeadline(value)
+                        setCommentDeadlineError('')
+                      }}
+                      placeholder="Deadline (opsional)"
+                      disabled={addComment.isLoading}
+                      min={new Date().toISOString().slice(0, 16)}
+                    />
+                    {commentDeadlineError && (
+                      <div style={{ 
+                        marginTop: '0.375rem', 
+                        fontSize: '0.8125rem', 
+                        color: 'var(--danger)',
+                      }}>
+                        {commentDeadlineError}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      whiteSpace: 'nowrap',
+                      minWidth: '120px',
+                    }}
+                  >
+                    {addComment.isLoading ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                        <LoadingSpinner size={16} color="white" />
+                        <span>Mengirim...</span>
+                      </span>
+                    ) : 'Tambah'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
         <QuickViewConfirmDialog
           isOpen={showDeleteThreadDialog}

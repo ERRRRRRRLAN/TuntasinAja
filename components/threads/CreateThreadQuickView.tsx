@@ -58,8 +58,23 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const utils = trpc.useUtils()
   const { canPostEdit, isOnlyRead } = useUserPermission()
@@ -349,63 +364,69 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
           }}
         >
-        <div className="quickview-header">
-          <div className="quickview-header-top">
-            <div className="quickview-header-left">
-              {/* Empty left section for CreateThreadQuickView */}
-            </div>
+        {/* Simplified Header */}
+        <div className="quickview-header" style={{
+          padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--card)',
+        }}>
+          {/* Top Row: Close Button */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            marginBottom: '1rem',
+            gap: '0.75rem'
+          }}>
             <button
               onClick={handleClose}
-              className="quickview-close-btn"
               style={{
-                background: 'var(--card)',
-                border: '2px solid var(--border)',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-light)',
                 cursor: 'pointer',
-                color: 'var(--text)',
-                padding: '0.625rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: '0.5rem',
-                minWidth: '44px',
-                minHeight: '44px',
                 transition: 'all 0.2s',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                minWidth: '36px',
+                minHeight: '36px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'var(--bg-secondary)'
-                e.currentTarget.style.borderColor = 'var(--primary)'
-                e.currentTarget.style.color = 'var(--primary)'
+                e.currentTarget.style.color = 'var(--text)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--card)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--text)'
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--text-light)'
               }}
               aria-label="Tutup"
             >
-              <XCloseIcon size={22} />
+              <XCloseIcon size={20} />
             </button>
           </div>
-          
-          <div className="quickview-title-section">
-            <h2 className="thread-detail-title" style={{ 
+
+          {/* Title Section */}
+          <div>
+            <h2 style={{
+              fontSize: isMobile ? '1.25rem' : '1.5rem',
+              fontWeight: 600,
+              color: 'var(--text)',
               margin: 0,
-              flex: 1,
-              lineHeight: 1.4
+              lineHeight: 1.4,
+              wordBreak: 'break-word',
             }}>
-              <span style={{
-                color: 'var(--text)',
-                wordBreak: 'break-word'
-              }}>
-                Buat PR Baru
-              </span>
+              Buat PR Baru
             </h2>
           </div>
         </div>
 
-        <div className="comments-section">
-          <form onSubmit={handleSubmit} style={{ padding: '0' }}>
+        <div className="comments-section" style={{
+          padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+        }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Pilihan Jenis Tugas */}
             <div className="form-group">
               <label>Jenis Tugas *</label>
@@ -551,21 +572,38 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               )}
             </div>
 
-            <div className="form-actions">
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={handleClose} 
+                className="btn"
+                disabled={createThread.isLoading || isSubmitting}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '0.5rem',
+                  cursor: createThread.isLoading || isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: createThread.isLoading || isSubmitting ? 0.6 : 1,
+                }}
+              >
+                Batal
+              </button>
               <button 
                 type="submit" 
                 className="btn btn-primary" 
                 disabled={createThread.isLoading || isSubmitting}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                }}
               >
-                {isGroupTask ? 'Buat Tugas Kelompok' : 'Buat PR'}
-              </button>
-              <button 
-                type="button" 
-                onClick={handleClose} 
-                className="btn btn-secondary"
-                disabled={createThread.isLoading || isSubmitting}
-              >
-                Batal
+                {createThread.isLoading || isSubmitting ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                    <LoadingSpinner size={16} color="white" />
+                    <span>Membuat...</span>
+                  </span>
+                ) : (isGroupTask ? 'Buat Tugas Kelompok' : 'Buat PR')}
               </button>
             </div>
           </form>
