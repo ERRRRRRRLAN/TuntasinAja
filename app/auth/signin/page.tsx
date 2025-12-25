@@ -12,7 +12,6 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -198,17 +197,8 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Remember Me and FAQ */}
+              {/* FAQ Link */}
               <div className="signin-form-options">
-                <label className="signin-remember-me">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    disabled={isLoading}
-                  />
-                  <span>Remember Me</span>
-                </label>
                 <a href="/faq" className="signin-faq-link">
                   FAQ untuk seputar login
                 </a>
