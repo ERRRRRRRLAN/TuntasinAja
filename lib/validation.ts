@@ -17,11 +17,11 @@ export const emailSchema = z
   .trim()
   .toLowerCase()
   .min(1, 'Email tidak boleh kosong')
+  .max(255, 'Email terlalu panjang (maksimal 255 karakter)')
   .email('Format email tidak valid')
   .refine((val) => emailRegex.test(val), {
     message: 'Format email tidak valid',
   })
-  .max(255, 'Email terlalu panjang (maksimal 255 karakter)')
 
 /**
  * Name validation schema
