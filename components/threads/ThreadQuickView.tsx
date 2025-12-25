@@ -27,6 +27,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const { data: session } = useSession()
   const [commentContent, setCommentContent] = useState('')
   const [commentDeadline, setCommentDeadline] = useState<string>('')
+  const [commentDeadlineError, setCommentDeadlineError] = useState<string>('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showUncheckDialog, setShowUncheckDialog] = useState(false)
@@ -348,6 +349,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     onSuccess: async () => {
       setCommentContent('')
       setCommentDeadline('')
+      setCommentDeadlineError('')
       setIsSubmittingComment(false)
       // Invalidate and refetch immediately
       await Promise.all([
@@ -364,7 +366,14 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       setIsSubmittingComment(false)
       const errorMessage = error.message || 'Gagal menambahkan sub tugas. Silakan coba lagi.'
       console.error('[ERROR]', errorMessage)
-      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
+      
+      // Check if error is related to deadline
+      if (errorMessage.includes('Deadline') || errorMessage.includes('deadline') || errorMessage.includes('masa lalu')) {
+        setCommentDeadlineError('Tidak boleh mencantumkan waktu deadline yang sudah terlewat')
+      } else {
+        setCommentDeadlineError('')
+        toast.error(errorMessage, 5000)
+      }
     },
   })
 
@@ -380,6 +389,19 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       return
     }
     
+    // Validate deadline - must be in the future
+    if (commentDeadline) {
+      const deadlineDate = new Date(commentDeadline)
+      const now = new Date()
+      if (deadlineDate <= now) {
+        setCommentDeadlineError('Tidak boleh mencantumkan waktu deadline yang sudah terlewat')
+        setIsSubmittingComment(false)
+        return
+      }
+    }
+    
+    // Clear any previous deadline error
+    setCommentDeadlineError('')
     setIsSubmittingComment(true)
     addComment.mutate({
       threadId,
@@ -966,14 +988,32 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 </label>
                 <DateTimePicker
                   value={commentDeadline}
-                  onChange={setCommentDeadline}
+                  onChange={(value) => {
+                    setCommentDeadline(value)
+                    setCommentDeadlineError('') // Clear error when user changes deadline
+                  }}
                   placeholder="Pilih deadline sub tugas"
                   disabled={addComment.isLoading}
                   min={new Date().toISOString().slice(0, 16)}
                 />
-                <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
-                  Tentukan kapan sub tugas harus selesai (opsional)
-                </small>
+                {commentDeadlineError && (
+                  <div style={{ 
+                    marginTop: '0.5rem', 
+                    fontSize: '0.875rem', 
+                    color: 'var(--danger)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}>
+                    <span>⚠️</span>
+                    <span>{commentDeadlineError}</span>
+                  </div>
+                )}
+                {!commentDeadlineError && (
+                  <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                    Tentukan kapan sub tugas harus selesai (opsional)
+                  </small>
+                )}
               </div>
               <button
                 type="submit"

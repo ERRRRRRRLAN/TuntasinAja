@@ -54,6 +54,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     return `${year}-${month}-${day}T${hours}:${minutes}`
   }
   const [deadline, setDeadline] = useState<string>(getDefaultDeadline())
+  const [deadlineError, setDeadlineError] = useState<string>('')
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
@@ -92,6 +93,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
         // Toast notification removed: User requested to remove UI notifications
       }
       
+      // Clear deadline error on success
+      setDeadlineError('')
+      
       // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
       await utils.thread.getAll.refetch()
@@ -105,7 +109,14 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       setIsSubmitting(false)
       const errorMessage = error.message || 'Gagal membuat tugas. Silakan coba lagi.'
       console.error('[ERROR]', errorMessage)
-      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
+      
+      // Check if error is related to deadline
+      if (errorMessage.includes('Deadline') || errorMessage.includes('deadline') || errorMessage.includes('masa lalu')) {
+        setDeadlineError('Tidak boleh mencantumkan waktu deadline yang sudah terlewat')
+      } else {
+        setDeadlineError('')
+        toast.error(errorMessage, 5000) // Show error toast for 5 seconds
+      }
     },
   })
 
@@ -218,6 +229,19 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
       }
     }
     
+    // Validate deadline - must be in the future
+    if (deadline) {
+      const deadlineDate = new Date(deadline)
+      const now = new Date()
+      if (deadlineDate <= now) {
+        setDeadlineError('Tidak boleh mencantumkan waktu deadline yang sudah terlewat')
+        setIsSubmitting(false)
+        return
+      }
+    }
+    
+    // Clear any previous deadline error
+    setDeadlineError('')
     setIsSubmitting(true)
     createThread.mutate({ 
       title, 
@@ -501,11 +525,29 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               <label htmlFor="threadDeadline">Deadline (Opsional)</label>
               <DateTimePicker
                 value={deadline}
-                onChange={setDeadline}
+                onChange={(value) => {
+                  setDeadline(value)
+                  setDeadlineError('') // Clear error when user changes deadline
+                }}
                 placeholder="Pilih deadline tugas"
                 min={new Date().toISOString().slice(0, 16)}
               />
-              <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
+              {deadlineError && (
+                <div style={{ 
+                  marginTop: '0.5rem', 
+                  fontSize: '0.875rem', 
+                  color: 'var(--danger)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  <span>⚠️</span>
+                  <span>{deadlineError}</span>
+                </div>
+              )}
+              {!deadlineError && (
+                <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
+              )}
             </div>
 
             <div className="form-actions">
