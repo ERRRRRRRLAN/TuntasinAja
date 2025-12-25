@@ -19,6 +19,8 @@ import { checkClassSubscription } from "./subscription";
 import { sendNotificationToClass } from "./notification";
 import { format, formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
+import logger, { createLogger } from "@/lib/logger";
+import { threadTitleSchema, commentContentSchema, groupTaskTitleSchema } from "@/lib/validation";
 
 export const threadRouter = createTRPCRouter({
   // Get all threads with pagination
@@ -168,17 +170,18 @@ export const threadRouter = createTRPCRouter({
         threadsResult.status === "fulfilled" ? threadsResult.value : [];
 
       // Log errors if any (for debugging)
+      const log = createLogger({ component: 'thread.getAll' })
       if (countResult.status === "rejected") {
-        console.error(
-          "[thread.getAll] Count query failed:",
-          countResult.reason,
-        );
+        log.error({ 
+          error: countResult.reason instanceof Error ? countResult.reason.message : String(countResult.reason),
+          stack: countResult.reason instanceof Error ? countResult.reason.stack : undefined,
+        }, 'Count query failed')
       }
       if (threadsResult.status === "rejected") {
-        console.error(
-          "[thread.getAll] Threads query failed:",
-          threadsResult.reason,
-        );
+        log.error({ 
+          error: threadsResult.reason instanceof Error ? threadsResult.reason.message : String(threadsResult.reason),
+          stack: threadsResult.reason instanceof Error ? threadsResult.reason.stack : undefined,
+        }, 'Threads query failed')
         // If threads query fails, return empty result
         return {
           threads: [],
@@ -332,12 +335,12 @@ export const threadRouter = createTRPCRouter({
   create: rateLimitedProtectedProcedure
     .input(
       z.object({
-        title: z.string().min(1),
-        comment: z.string().optional(),
+        title: threadTitleSchema,
+        comment: commentContentSchema.optional(),
         deadline: z.date().optional(),
         isGroupTask: z.boolean().optional().default(false),
-        groupTaskTitle: z.string().optional(),
-        memberIds: z.array(z.string()).optional(),
+        groupTaskTitle: groupTaskTitleSchema,
+        memberIds: z.array(z.string().uuid('ID anggota tidak valid')).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -391,7 +394,11 @@ export const threadRouter = createTRPCRouter({
               throw error;
             }
             // Otherwise, log and continue (assume active)
-            console.error("[thread.create] Subscription check error:", error);
+            logger.warn({ 
+              component: 'thread.create',
+              error: error instanceof Error ? error.message : String(error),
+              userId: ctx.session.user.id,
+            }, 'Subscription check error, assuming active')
           }
         }
 
@@ -484,10 +491,11 @@ export const threadRouter = createTRPCRouter({
                 },
                 "comment",
               ).catch((error) => {
-                console.error(
-                  "[thread.create] Error sending notification for new comment (non-blocking):",
-                  error,
-                );
+                logger.error({ 
+                  component: 'thread.create',
+                  error: error instanceof Error ? error.message : String(error),
+                  threadId: thread.id,
+                }, 'Error sending notification for new comment (non-blocking)')
                 // Don't throw - notification failure shouldn't break comment creation
               });
             }
@@ -618,10 +626,11 @@ export const threadRouter = createTRPCRouter({
             },
             "task",
           ).catch((error) => {
-            console.error(
-              "[ThreadRouter] Error sending notification for new thread (non-blocking):",
-              error,
-            );
+            logger.error({ 
+              component: 'thread.create',
+              error: error instanceof Error ? error.message : String(error),
+              threadId: thread.id,
+            }, 'Error sending notification for new thread (non-blocking)')
             // Don't throw - notification failure shouldn't break thread creation
           });
         }
@@ -632,14 +641,15 @@ export const threadRouter = createTRPCRouter({
         };
       } catch (error: any) {
         // Log detailed error for debugging
-        console.error("[thread.create] Error creating thread:", {
+        logger.error({ 
+          component: 'thread.create',
           error: error.message,
           code: error.code,
           meta: error.meta,
           cause: error.cause,
           userId: ctx.session.user.id,
           title: input.title,
-        });
+        }, 'Error creating thread')
 
         // If it's a unique constraint error, provide a more helpful message
         if (error.code === "P2002") {
@@ -659,8 +669,8 @@ export const threadRouter = createTRPCRouter({
   addComment: rateLimitedProtectedProcedure
     .input(
       z.object({
-        threadId: z.string(),
-        content: z.string().min(1),
+        threadId: z.string().uuid('ID thread tidak valid'),
+        content: commentContentSchema,
         deadline: z.date().optional(),
       }),
     )
@@ -709,7 +719,11 @@ export const threadRouter = createTRPCRouter({
           if (error.message?.includes("Subscription")) {
             throw error;
           }
-          console.error("[thread.addComment] Subscription check error:", error);
+          logger.warn({ 
+            component: 'thread.addComment',
+            error: error instanceof Error ? error.message : String(error),
+            userId: ctx.session.user.id,
+          }, 'Subscription check error, assuming active')
         }
       }
 
@@ -802,10 +816,11 @@ export const threadRouter = createTRPCRouter({
           },
           "comment",
         ).catch((error) => {
-          console.error(
-            "[ThreadRouter] Error sending notification for new comment (non-blocking):",
-            error,
-          );
+          logger.error({ 
+            component: 'thread.addComment',
+            error: error instanceof Error ? error.message : String(error),
+            threadId: input.threadId,
+          }, 'Error sending notification for new comment (non-blocking)')
           // Don't throw - notification failure shouldn't break comment creation
         });
       }
@@ -898,8 +913,8 @@ export const threadRouter = createTRPCRouter({
   editComment: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
-        content: z.string().min(1, "Konten komentar tidak boleh kosong"),
+        id: z.string().uuid('ID komentar tidak valid'),
+        content: commentContentSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -984,12 +999,13 @@ export const threadRouter = createTRPCRouter({
         return updatedComment;
       } catch (error: any) {
         // Log error for debugging
-        console.error("[thread.editComment] Error editing comment:", {
+        logger.error({ 
+          component: 'thread.editComment',
           error: error.message,
           code: error.code,
           commentId: input.id,
           userId: ctx.session.user.id,
-        });
+        }, 'Error editing comment')
 
         // Re-throw with user-friendly message
         throw new Error(

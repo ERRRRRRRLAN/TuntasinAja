@@ -1,5 +1,6 @@
 import { createTRPCRouter, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
+import logger from '@/lib/logger'
 
 export const databaseRouter = createTRPCRouter({
   // Get database statistics
@@ -114,7 +115,10 @@ export const databaseRouter = createTRPCRouter({
       orphanedUserStatusCount = Number(orphanedByThread[0]?.count || 0) + Number(orphanedByComment[0]?.count || 0)
     } catch (error) {
       // If raw query fails, skip orphaned count
-      console.error('Error counting orphaned user statuses:', error)
+      logger.error({ 
+        component: 'database.getStats',
+        error: error instanceof Error ? error.message : String(error),
+      }, 'Error counting orphaned user statuses')
       orphanedUserStatusCount = 0
     }
 
@@ -197,7 +201,10 @@ export const databaseRouter = createTRPCRouter({
       }))
     } catch (error) {
       // If query fails (e.g., not PostgreSQL or insufficient permissions), return empty
-      console.error('Error getting table sizes:', error)
+      logger.error({ 
+        component: 'database.getTableSizes',
+        error: error instanceof Error ? error.message : String(error),
+      }, 'Error getting table sizes')
       return []
     }
   }),
@@ -211,7 +218,10 @@ export const databaseRouter = createTRPCRouter({
 
       return result[0]?.size || 'Unknown'
     } catch (error) {
-      console.error('Error getting database size:', error)
+      logger.error({ 
+        component: 'database.getDatabaseSize',
+        error: error instanceof Error ? error.message : String(error),
+      }, 'Error getting database size')
       return 'Unknown'
     }
   }),

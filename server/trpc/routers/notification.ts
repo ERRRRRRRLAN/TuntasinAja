@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/firebase-admin'
 import { filterTokensBySettings, type NotificationType } from '@/server/utils/notificationSettings'
+import logger, { createLogger } from '@/lib/logger'
 
 export const notificationRouter = createTRPCRouter({
   // Register device token
@@ -16,53 +17,27 @@ export const notificationRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const startTime = Date.now()
       const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`
+      const log = createLogger({ component: 'NotificationRouter', requestId })
       
-      console.log('')
-      console.log('='.repeat(80))
-      console.log(`[NotificationRouter] [${requestId}] ========== REGISTER TOKEN START ==========`)
-      console.log('='.repeat(80))
-      console.log(`[NotificationRouter] [${requestId}] Timestamp: ${new Date().toISOString()}`)
-      console.log(`[NotificationRouter] [${requestId}] Request ID: ${requestId}`)
-      
-      // Log session details
-      console.log(`[NotificationRouter] [${requestId}] Session Info:`, {
-        userId: ctx.session?.user?.id || 'MISSING',
-        userName: ctx.session?.user?.name || 'MISSING',
-        userEmail: ctx.session?.user?.email || 'MISSING',
+      log.debug({ 
+        userId: ctx.session?.user?.id,
         sessionExists: !!ctx.session,
-        userExists: !!ctx.session?.user,
-      })
+      }, 'Register token request started')
       
       // Validate session
       if (!ctx.session || !ctx.session.user || !ctx.session.user.id) {
-        console.error(`[NotificationRouter] [${requestId}] ❌ INVALID SESSION!`)
-        console.error(`[NotificationRouter] [${requestId}] Session object:`, JSON.stringify(ctx.session, null, 2))
+        log.error({ session: ctx.session }, 'Invalid session')
         throw new Error('Invalid session: User not authenticated')
       }
       
-      // Log input details
-      console.log(`[NotificationRouter] [${requestId}] Input Token Info:`, {
-        tokenLength: input.token?.length || 0,
-        tokenIsString: typeof input.token === 'string',
-        tokenIsEmpty: !input.token || input.token.trim().length === 0,
-        tokenPrefix: input.token ? input.token.substring(0, 30) + '...' : 'NULL',
-        tokenSuffix: input.token && input.token.length > 10 ? '...' + input.token.substring(input.token.length - 10) : 'TOO_SHORT',
-        deviceInfo: input.deviceInfo || 'NOT_PROVIDED',
-      })
-      
       // Validate token
       if (!input.token || typeof input.token !== 'string' || input.token.trim().length === 0) {
-        console.error(`[NotificationRouter] [${requestId}] ❌ INVALID TOKEN INPUT!`)
-        console.error(`[NotificationRouter] [${requestId}] Token value:`, input.token)
+        log.error({ tokenLength: input.token?.length }, 'Invalid token input')
         throw new Error('Invalid token: Token is required and must be a non-empty string')
       }
 
       try {
-        console.log(`[NotificationRouter] [${requestId}] Step 1: Checking database connection...`)
-        const dbCheckStart = Date.now()
-        
         // Check if token already exists with different user
-        console.log(`[NotificationRouter] [${requestId}] Step 2: Querying existing token from database...`)
         const existingToken = await prisma.deviceToken.findUnique({
           where: {
             token: input.token,
@@ -79,35 +54,20 @@ export const notificationRouter = createTRPCRouter({
           },
         })
         
-        const dbCheckDuration = Date.now() - dbCheckStart
-        console.log(`[NotificationRouter] [${requestId}] Database query completed in ${dbCheckDuration}ms`)
-        
         if (existingToken) {
-          console.log(`[NotificationRouter] [${requestId}] Existing token found:`, {
+          const isSameUser = existingToken.userId === ctx.session.user.id
+          log.debug({ 
             tokenId: existingToken.id,
             existingUserId: existingToken.userId,
-            existingUserName: existingToken.user.name,
-            existingUserEmail: existingToken.user.email,
-            existingUserKelas: existingToken.user.kelas,
             currentUserId: ctx.session.user.id,
-            currentUserName: ctx.session.user.name,
-            isSameUser: existingToken.userId === ctx.session.user.id,
-            createdAt: existingToken.createdAt,
-            updatedAt: existingToken.updatedAt,
-          })
-          
-          if (existingToken.userId !== ctx.session.user.id) {
-            console.log(`[NotificationRouter] [${requestId}] 🔄 Token exists for DIFFERENT user, will update ownership`)
-          } else {
-            console.log(`[NotificationRouter] [${requestId}] ✅ Token exists for SAME user, will update metadata`)
-          }
+            isSameUser,
+          }, isSameUser ? 'Token exists for same user, will update' : 'Token exists for different user, will update ownership')
         } else {
-          console.log(`[NotificationRouter] [${requestId}] ✅ No existing token found, will create new record`)
+          log.debug({}, 'No existing token found, will create new record')
         }
 
         // Upsert device token (user can have multiple devices)
         // This will update userId if token exists for different user
-        console.log(`[NotificationRouter] [${requestId}] Step 3: Upserting device token to database...`)
         const upsertStart = Date.now()
         
         const result = await prisma.deviceToken.upsert({
@@ -139,82 +99,27 @@ export const notificationRouter = createTRPCRouter({
         const upsertDuration = Date.now() - upsertStart
         const totalDuration = Date.now() - startTime
         
-        console.log('')
-        console.log('='.repeat(80))
-        console.log(`[NotificationRouter] [${requestId}] ✅ DEVICE TOKEN REGISTERED/UPDATED SUCCESSFULLY`)
-        console.log('='.repeat(80))
-        console.log(`[NotificationRouter] [${requestId}] Result Details:`, {
+        log.info({ 
           tokenId: result.id,
           userId: result.userId,
-          userName: result.user.name,
           userEmail: result.user.email,
-          userKelas: result.user.kelas || 'NULL',
-          deviceInfo: result.deviceInfo || 'NULL',
           wasUpdated: !!existingToken,
           wasCreated: !existingToken,
-          previousUserId: existingToken?.userId || 'N/A',
-          previousUserName: existingToken?.user.name || 'N/A',
-          createdAt: result.createdAt,
-          updatedAt: result.updatedAt,
-          upsertDuration: `${upsertDuration}ms`,
-          totalDuration: `${totalDuration}ms`,
-        })
-        
-        // Verify the record was actually saved
-        console.log(`[NotificationRouter] [${requestId}] Step 4: Verifying saved record...`)
-        const verifyStart = Date.now()
-        const verifyRecord = await prisma.deviceToken.findUnique({
-          where: { token: input.token },
-          include: { user: { select: { id: true, name: true, email: true, kelas: true } } }
-        })
-        const verifyDuration = Date.now() - verifyStart
-        
-        if (verifyRecord) {
-          console.log(`[NotificationRouter] [${requestId}] ✅ Verification successful:`, {
-            verified: true,
-            verifiedUserId: verifyRecord.userId,
-            verifiedUserName: verifyRecord.user.name,
-            matchesRequest: verifyRecord.userId === ctx.session.user.id,
-            verifyDuration: `${verifyDuration}ms`,
-          })
-        } else {
-          console.error(`[NotificationRouter] [${requestId}] ❌ VERIFICATION FAILED: Record not found after upsert!`)
-        }
-        
-        console.log(`[NotificationRouter] [${requestId}] ========== REGISTER TOKEN SUCCESS ==========`)
-        console.log('='.repeat(80))
-        console.log('')
+          upsertDuration,
+          totalDuration,
+        }, 'Device token registered/updated successfully')
 
         return { success: true }
       } catch (error) {
         const duration = Date.now() - startTime
         
-        console.error('')
-        console.error('='.repeat(80))
-        console.error(`[NotificationRouter] [${requestId}] ❌ ========== REGISTER TOKEN ERROR ==========`)
-        console.error('='.repeat(80))
-        console.error(`[NotificationRouter] [${requestId}] Error Details:`, {
-          requestId,
-          errorType: typeof error,
-          errorName: error instanceof Error ? error.name : 'Unknown',
-          errorMessage: error instanceof Error ? error.message : String(error),
-          errorStack: error instanceof Error ? error.stack : undefined,
-          errorString: String(error),
-          errorJSON: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-        })
-        console.error(`[NotificationRouter] [${requestId}] Context:`, {
-          userId: ctx.session?.user?.id || 'MISSING',
-          userName: ctx.session?.user?.name || 'MISSING',
-          userEmail: ctx.session?.user?.email || 'MISSING',
-          tokenLength: input.token?.length || 0,
-          tokenPrefix: input.token ? input.token.substring(0, 30) + '...' : 'NULL',
-          deviceInfo: input.deviceInfo || 'NOT_PROVIDED',
-          duration: `${duration}ms`,
-          timestamp: new Date().toISOString(),
-        })
-        console.error(`[NotificationRouter] [${requestId}] ========== REGISTER TOKEN ERROR END ==========`)
-        console.error('='.repeat(80))
-        console.error('')
+        log.error({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          userId: ctx.session?.user?.id,
+          tokenLength: input.token?.length,
+          duration,
+        }, 'Error registering device token')
         
         throw error
       }
@@ -248,35 +153,21 @@ export async function sendNotificationToClass(
   data?: Record<string, string>,
   notificationType: NotificationType = 'task'
 ) {
-  // #region agent log
-  const notificationStart = Date.now();
-  fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:244',message:'sendNotificationToClass started',data:{kelas,notificationType},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-  // #endregion
+  const notificationStart = Date.now()
+  const log = createLogger({ component: 'sendNotificationToClass', kelas, notificationType })
+  
   try {
-    console.log('[sendNotificationToClass] Starting notification send:', {
-      kelas,
-      title,
-      body,
-    })
+    log.debug({ title, body }, 'Starting notification send')
 
     // Validate kelas parameter
     if (!kelas || typeof kelas !== 'string') {
-      console.error('[sendNotificationToClass] ❌ Invalid kelas parameter:', kelas)
+      log.error({ kelas }, 'Invalid kelas parameter')
       throw new Error('Invalid kelas parameter')
     }
 
     // Trim and normalize kelas to ensure exact match
     const normalizedKelas = kelas.trim()
 
-    console.log('[sendNotificationToClass] Querying device tokens for class:', {
-      originalKelas: kelas,
-      normalizedKelas: normalizedKelas,
-      kelasLength: normalizedKelas.length,
-    })
-
-    // #region agent log
-    const deviceTokensStart = Date.now();
-    // #endregion
     // OPTIMIZATION: Get only device tokens (minimal select for speed)
     // Get all device tokens for users in this class
     // Use exact match with trimmed kelas
@@ -298,59 +189,27 @@ export async function sendNotificationToClass(
         },
       },
     })
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:275',message:'deviceToken.findMany completed',data:{duration:Date.now()-deviceTokensStart,tokenCount:deviceTokens.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-    // #endregion
 
     // Additional validation: filter out any tokens that don't match exactly
     const filteredTokens = deviceTokens.filter(dt => {
       const userKelas = dt.user.kelas?.trim()
       const matches = userKelas === normalizedKelas
       if (!matches) {
-        console.warn('[sendNotificationToClass] ⚠️ Filtered out token with mismatched kelas:', {
-          tokenPrefix: dt.token.substring(0, 20) + '...',
+        log.warn({ 
           expectedKelas: normalizedKelas,
           actualKelas: userKelas,
-        })
+        }, 'Filtered out token with mismatched kelas')
       }
       return matches
     })
 
-    console.log('[sendNotificationToClass] Found device tokens:', {
+    log.debug({ 
       totalFound: deviceTokens.length,
       afterFilter: filteredTokens.length,
-      tokens: filteredTokens.map(dt => ({
-        tokenPrefix: dt.token.substring(0, 20) + '...',
-        userKelas: dt.user.kelas,
-        matches: dt.user.kelas?.trim() === normalizedKelas,
-      })),
-    })
+    }, 'Found device tokens')
 
     if (filteredTokens.length === 0) {
-      console.warn('[sendNotificationToClass] ⚠️ No device tokens found for class:', normalizedKelas)
-      // Also check if there are users in this class without tokens
-      const usersInClass = await prisma.user.findMany({
-        where: {
-          kelas: normalizedKelas,
-          isAdmin: false,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          kelas: true,
-        },
-      })
-      console.log('[sendNotificationToClass] Users in class (without tokens):', {
-        count: usersInClass.length,
-        users: usersInClass.map(u => ({ 
-          name: u.name, 
-          email: u.email,
-          kelas: u.kelas,
-          matches: u.kelas?.trim() === normalizedKelas,
-        })),
-      })
-      
+      log.warn({ normalizedKelas }, 'No device tokens found for class')
       return {
         successCount: 0,
         failureCount: 0,
@@ -358,17 +217,11 @@ export async function sendNotificationToClass(
       }
     }
 
-    // #region agent log
-    const filterSettingsStart = Date.now();
-    // #endregion
     // Filter tokens based on user notification settings
     const tokensToSend = await filterTokensBySettings(filteredTokens, notificationType)
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:355',message:'filterTokensBySettings completed',data:{duration:Date.now()-filterSettingsStart,tokensToSend:tokensToSend.length,filteredFrom:filteredTokens.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-    // #endregion
     
     if (tokensToSend.length === 0) {
-      console.log('[sendNotificationToClass] No tokens to send after filtering by user settings')
+      log.debug({}, 'No tokens to send after filtering by user settings')
       return {
         successCount: 0,
         failureCount: 0,
@@ -376,27 +229,28 @@ export async function sendNotificationToClass(
       }
     }
 
-    // #region agent log
-    const pushNotificationStart = Date.now();
-    // #endregion
-    console.log('[sendNotificationToClass] Sending to', tokensToSend.length, 'devices (filtered from', filteredTokens.length, 'total)')
-    const result = await sendPushNotification(tokensToSend, title, body, data)
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:367',message:'sendPushNotification completed',data:{duration:Date.now()-pushNotificationStart,successCount:result.successCount,failureCount:result.failureCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-    // #endregion
+    log.debug({ 
+      tokensToSend: tokensToSend.length,
+      filteredFrom: filteredTokens.length,
+    }, 'Sending notifications')
     
-    console.log('[sendNotificationToClass] ✅ Notification send result:', {
+    const result = await sendPushNotification(tokensToSend, title, body, data)
+    
+    const totalDuration = Date.now() - notificationStart
+    log.info({ 
       successCount: result.successCount,
       failureCount: result.failureCount,
-    })
+      totalDuration,
+    }, 'Notification send completed')
 
-    // #region agent log
-    const totalDuration = Date.now() - notificationStart;
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'notification.ts:374',message:'sendNotificationToClass completed',data:{totalDuration,successCount:result.successCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-    // #endregion
     return result
   } catch (error) {
-    console.error('[sendNotificationToClass] ❌ Error sending notification to class:', error)
+    const totalDuration = Date.now() - notificationStart
+    log.error({ 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      totalDuration,
+    }, 'Error sending notification to class')
     throw error
   }
 }

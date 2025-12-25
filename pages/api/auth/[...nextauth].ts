@@ -2,6 +2,7 @@ import NextAuth, { type NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import logger from '@/lib/logger'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,50 +21,43 @@ export const authOptions: NextAuthOptions = {
           // Normalize email: trim whitespace and convert to lowercase
           const normalizedEmail = credentials.email.trim().toLowerCase()
           
-          console.log('[Auth] Login attempt:', {
-            originalEmail: credentials.email,
-            normalizedEmail: normalizedEmail,
-            passwordLength: credentials.password?.length || 0
-          })
+          logger.debug({ 
+            component: 'Auth',
+            email: normalizedEmail,
+          }, 'Login attempt')
           
           const user = await prisma.user.findUnique({
             where: { email: normalizedEmail },
           })
 
           if (!user) {
-            console.error('[Auth] User not found:', normalizedEmail)
+            logger.warn({ 
+              component: 'Auth',
+              email: normalizedEmail,
+            }, 'User not found')
             throw new Error('Invalid email or password')
           }
-
-          console.log('[Auth] User found:', {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            isAdmin: user.isAdmin || false,
-            passwordHashLength: user.passwordHash?.length || 0,
-            passwordHashPrefix: user.passwordHash?.substring(0, 20) || 'N/A'
-          })
 
           const isValid = await bcrypt.compare(
             credentials.password,
             user.passwordHash
           )
 
-          console.log('[Auth] Password validation:', {
-            email: normalizedEmail,
-            isValid: isValid
-          })
-
           if (!isValid) {
-            console.error('[Auth] Invalid password for:', normalizedEmail)
+            logger.warn({ 
+              component: 'Auth',
+              email: normalizedEmail,
+              userId: user.id,
+            }, 'Invalid password')
             throw new Error('Invalid email or password')
           }
 
-          console.log('[Auth] Login successful:', {
-            id: user.id,
+          logger.info({ 
+            component: 'Auth',
+            userId: user.id,
             email: user.email,
-            name: user.name
-          })
+            name: user.name,
+          }, 'Login successful')
 
           return {
             id: user.id,
@@ -71,10 +65,11 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           }
         } catch (error) {
-          console.error('[Auth] Auth error:', {
-            message: error instanceof Error ? error.message : 'Unknown error',
-            stack: error instanceof Error ? error.stack : undefined
-          })
+          logger.error({ 
+            component: 'Auth',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+          }, 'Auth error')
           throw error
         }
       },

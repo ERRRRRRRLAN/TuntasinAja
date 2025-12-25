@@ -12,15 +12,16 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getUTCDate } from "@/lib/date-utils";
 import { getUserPermission } from "../trpc";
+import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 
 export const authRouter = createTRPCRouter({
   // Register
   register: rateLimitedProcedure
     .input(
       z.object({
-        name: z.string().min(3),
-        email: z.string().email(),
-        password: z.string().min(6),
+        name: nameSchema,
+        email: emailSchema,
+        password: passwordSchema,
       }),
     )
     .mutation(async ({ input }) => {
@@ -177,9 +178,9 @@ export const authRouter = createTRPCRouter({
   createUser: adminProcedure
     .input(
       z.object({
-        name: z.string().min(3),
-        email: z.string().email(),
-        password: z.string().min(6),
+        name: nameSchema,
+        email: emailSchema,
+        password: passwordSchema,
         isAdmin: z.boolean().optional().default(false),
         isDanton: z.boolean().optional().default(false),
         kelas: z.string().optional(),
@@ -278,9 +279,9 @@ export const authRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        name: z.string().min(3).optional(),
-        email: z.string().email().optional(),
-        password: z.string().min(6).optional(),
+        name: nameSchema.optional(),
+        email: emailSchema.optional(),
+        password: passwordSchema.optional(),
         isAdmin: z.boolean().optional(),
         isDanton: z.boolean().optional(),
         kelas: z.string().optional().nullable(),
@@ -454,7 +455,7 @@ export const authRouter = createTRPCRouter({
   bulkCreateUsers: rateLimitedAdminProcedure
     .input(
       z.object({
-        names: z.array(z.string().min(1)).min(1),
+        names: z.array(nameSchema).min(1, 'Minimal 1 nama harus diisi'),
         kelas: z.string().min(1),
       }),
     )

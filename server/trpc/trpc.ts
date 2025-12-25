@@ -4,6 +4,7 @@ import { ZodError } from 'zod'
 import { getToken } from 'next-auth/jwt'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { prisma } from '@/lib/prisma'
+import logger from '@/lib/logger'
 
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts
@@ -12,22 +13,12 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   let session = null
   try {
     if (!process.env.NEXTAUTH_SECRET) {
-      console.error('[tRPC Context] NEXTAUTH_SECRET not found!')
+      logger.error({ component: 'tRPC Context' }, 'NEXTAUTH_SECRET not found!')
       return { session: null, req, res }
     }
 
     const cookieHeader = req.headers.cookie || ''
     const hasCookie = cookieHeader.includes('next-auth.session-token') || cookieHeader.includes('__Secure-next-auth.session-token')
-    
-    // Log for debugging (only in production to avoid spam)
-    if (process.env.NODE_ENV === 'production') {
-      console.log('[tRPC Context] Cookie check:', {
-        hasCookie,
-        cookieLength: cookieHeader.length,
-        nodeEnv: process.env.NODE_ENV,
-        url: req.url,
-      })
-    }
     
     // Use getToken which works reliably in API routes
     // getToken will auto-detect cookie name (production vs development)
@@ -35,15 +26,6 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
       req: req as any,
       secret: process.env.NEXTAUTH_SECRET,
     })
-    
-    if (process.env.NODE_ENV === 'production') {
-      console.log('[tRPC Context] Token result:', {
-        hasToken: !!token,
-        hasId: !!token?.id,
-        hasName: !!token?.name,
-        hasEmail: !!token?.email,
-      })
-    }
     
     if (token && token.id) {
       session = {
@@ -55,20 +37,25 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
         expires: token.exp ? new Date((token.exp as number) * 1000).toISOString() : '',
       }
       
-      if (process.env.NODE_ENV === 'production') {
-        console.log('[tRPC Context] ✅ Session created for user:', token.id)
-      }
+      logger.debug({ 
+        component: 'tRPC Context',
+        userId: token.id,
+        hasCookie,
+      }, 'Session created successfully')
     } else {
-      if (process.env.NODE_ENV === 'production') {
-        console.log('[tRPC Context] ❌ No valid session - token missing or invalid', {
-          hasCookie,
-          hasToken: !!token,
-        })
-      }
+      logger.debug({ 
+        component: 'tRPC Context',
+        hasCookie,
+        hasToken: !!token,
+      }, 'No valid session - token missing or invalid')
     }
   } catch (error) {
     // Log error for debugging
-    console.error('[tRPC Context] ❌ Error getting session:', error)
+    logger.error({ 
+      component: 'tRPC Context',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    }, 'Error getting session')
     // If session cannot be retrieved, continue with null session
     // This is fine for public procedures like register
   }
