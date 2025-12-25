@@ -243,13 +243,48 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
     // Clear any previous deadline error
     setDeadlineError('')
     setIsSubmitting(true)
+    
+    // Validate and filter memberIds - only include valid UUIDs
+    let validMemberIds: string[] | undefined = undefined
+    if (isGroupTask && selectedMembers.length > 0) {
+      // UUID regex pattern
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      
+      // Log for debugging
+      console.log('[DEBUG] Selected members:', selectedMembers.map(m => ({ id: m.id, name: m.name })))
+      
+      validMemberIds = selectedMembers
+        .map(m => m.id?.trim())
+        .filter((id): id is string => {
+          if (!id || typeof id !== 'string') {
+            console.warn('[WARNING] Invalid member ID (empty or not string):', id)
+            return false
+          }
+          const isValid = uuidRegex.test(id)
+          if (!isValid) {
+            console.warn('[WARNING] Invalid UUID format:', id)
+          }
+          return isValid
+        })
+      
+      // If after filtering we have no valid IDs, show error
+      if (validMemberIds.length === 0) {
+        console.error('[ERROR] Tidak ada ID anggota yang valid. Silakan pilih anggota lagi.')
+        setIsSubmitting(false)
+        return
+      }
+      
+      // Log valid IDs
+      console.log('[DEBUG] Valid member IDs:', validMemberIds)
+    }
+    
     createThread.mutate({ 
       title, 
       comment: comment || undefined,
       deadline: deadline ? new Date(deadline) : undefined,
       isGroupTask,
       groupTaskTitle: isGroupTask ? groupTaskTitle : undefined,
-      memberIds: isGroupTask ? selectedMembers.map(m => m.id) : undefined,
+      memberIds: validMemberIds,
     })
   }
 

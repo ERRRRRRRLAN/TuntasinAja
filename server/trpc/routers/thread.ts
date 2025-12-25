@@ -344,7 +344,22 @@ export const threadRouter = createTRPCRouter({
         deadline: z.date().optional(),
         isGroupTask: z.boolean().optional().default(false),
         groupTaskTitle: groupTaskTitleSchema,
-        memberIds: z.array(z.string().uuid('ID anggota tidak valid')).optional(),
+        memberIds: z
+          .array(z.string().uuid('ID anggota tidak valid'))
+          .optional()
+          .refine(
+            (val) => {
+              // If memberIds is provided, it must be a non-empty array with valid UUIDs
+              if (val === undefined) return true
+              return Array.isArray(val) && val.length > 0 && val.every((id) => {
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+                return typeof id === 'string' && id.trim().length > 0 && uuidRegex.test(id.trim())
+              })
+            },
+            {
+              message: 'memberIds harus berupa array dengan minimal 1 UUID yang valid',
+            }
+          ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
