@@ -18,6 +18,7 @@ import {
   BellIcon,
   AlertTriangleIcon,
   MessageIcon,
+  QuestionMarkIcon,
 } from "@/components/ui/Icons";
 import ComboBox from "@/components/ui/ComboBox";
 import AdvancedFilter, {
@@ -1293,7 +1294,7 @@ export default function FeedPage() {
             }}
             aria-label="Saran dan Masukan - Berikan saran dan masukan Anda untuk membantu TuntasinAja semakin berkembang"
           >
-            <MessageIcon size={24} />
+            <QuestionMarkIcon size={28} style={{ fontWeight: 600 }} />
           </button>
         </div>
       )}
