@@ -46,8 +46,23 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   const [isVisible, setIsVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const utils = trpc.useUtils()
   const { canCreateAnnouncement } = useUserPermission()
@@ -235,8 +250,8 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
             className="quickview-close-btn"
             style={{
               position: 'absolute',
-              top: '1.5rem',
-              right: '2rem',
+              top: isMobile ? '1.25rem' : '1.5rem',
+              right: isMobile ? '1rem' : '2rem',
               background: 'var(--card)',
               border: '2px solid var(--border)',
               cursor: 'pointer',

@@ -27,10 +27,25 @@ export default function ScheduleEditQuickView({
   const [selectedSubject, setSelectedSubject] = useState(currentSubject)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [mounted, setMounted] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const utils = trpc.useUtils()
   const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery(undefined, {
@@ -282,8 +297,8 @@ export default function ScheduleEditQuickView({
             {/* Right: Actions & Close - Always on the right top corner */}
             <div style={{ 
               position: 'absolute',
-              top: '1.5rem',
-              right: '1.5rem',
+              top: isMobile ? '1.25rem' : '1.5rem',
+              right: isMobile ? '1rem' : '1.5rem',
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',

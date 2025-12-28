@@ -18,6 +18,7 @@ interface EditUserQuickViewProps {
 
 export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUserQuickViewProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,6 +27,20 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
@@ -250,8 +265,8 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
             {/* Right: Actions & Close - Always on the right top corner */}
             <div style={{ 
               position: 'absolute',
-              top: '1.5rem',
-              right: '1.5rem',
+              top: isMobile ? '1.25rem' : '1.5rem',
+              right: isMobile ? '1rem' : '1.5rem',
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',
