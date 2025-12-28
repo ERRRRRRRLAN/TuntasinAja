@@ -67,6 +67,18 @@ export default function RootLayout({
               
               // Save 'auto' to localStorage
               localStorage.setItem('tuntasin-theme', 'auto');
+              
+              // Fix safe-area padding for Android - remove if Android detected
+              var isAndroid = /Android/i.test(navigator.userAgent);
+              if (isAndroid) {
+                // Remove safe-area padding from html and body for Android
+                document.documentElement.style.paddingTop = '0';
+                document.documentElement.style.paddingBottom = '0';
+                document.documentElement.style.paddingLeft = '0';
+                document.documentElement.style.paddingRight = '0';
+                document.body.style.paddingTop = '0';
+                document.body.style.paddingBottom = '0';
+              }
             } catch (e) {
               // Fallback to light if localStorage fails
               console.error('Theme initialization error:', e);
