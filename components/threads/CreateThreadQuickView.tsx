@@ -11,6 +11,7 @@ import ComboBox from '@/components/ui/ComboBox'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import UserAutocomplete from '@/components/ui/UserAutocomplete'
+import RadioButton from '@/components/ui/RadioButton'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useBackHandler } from '@/hooks/useBackHandler'
 
@@ -430,52 +431,84 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             {/* Pilihan Jenis Tugas */}
             <div className="form-group">
               <label>Jenis Tugas *</label>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: isMobile ? '0.75rem' : '1rem', marginTop: '0.5rem' }}>
                 <label
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!isGroupTask) return
+                    setIsGroupTask(false)
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: isMobile ? '0.5rem' : '0.75rem',
                     cursor: 'pointer',
-                    padding: '0.75rem 1rem',
+                    padding: isMobile ? '0.625rem 0.875rem' : '0.75rem 1rem',
                     border: `2px solid ${!isGroupTask ? 'var(--primary)' : 'var(--border)'}`,
                     borderRadius: '0.5rem',
                     background: !isGroupTask ? 'var(--primary)10' : 'transparent',
                     flex: 1,
                     transition: 'all 0.2s',
                   }}
+                  onMouseEnter={(e) => {
+                    if (!isGroupTask) return
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                    e.currentTarget.style.background = 'var(--primary)05'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isGroupTask) return
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    e.currentTarget.style.background = 'transparent'
+                  }}
                 >
-                  <input
-                    type="radio"
-                    name="taskType"
+                  <RadioButton
                     checked={!isGroupTask}
                     onChange={() => setIsGroupTask(false)}
-                    style={{ cursor: 'pointer' }}
+                    size={isMobile ? 18 : 20}
                   />
-                  <span style={{ fontWeight: !isGroupTask ? 600 : 400 }}>Individual</span>
+                  <span style={{ 
+                    fontWeight: !isGroupTask ? 600 : 400,
+                    fontSize: isMobile ? '0.875rem' : '0.9375rem',
+                  }}>Individual</span>
                 </label>
                 <label
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (isGroupTask) return
+                    setIsGroupTask(true)
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: isMobile ? '0.5rem' : '0.75rem',
                     cursor: 'pointer',
-                    padding: '0.75rem 1rem',
+                    padding: isMobile ? '0.625rem 0.875rem' : '0.75rem 1rem',
                     border: `2px solid ${isGroupTask ? 'var(--primary)' : 'var(--border)'}`,
                     borderRadius: '0.5rem',
                     background: isGroupTask ? 'var(--primary)10' : 'transparent',
                     flex: 1,
                     transition: 'all 0.2s',
                   }}
+                  onMouseEnter={(e) => {
+                    if (isGroupTask) return
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                    e.currentTarget.style.background = 'var(--primary)05'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isGroupTask) return
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    e.currentTarget.style.background = 'transparent'
+                  }}
                 >
-                  <input
-                    type="radio"
-                    name="taskType"
+                  <RadioButton
                     checked={isGroupTask}
                     onChange={() => setIsGroupTask(true)}
-                    style={{ cursor: 'pointer' }}
+                    size={isMobile ? 18 : 20}
                   />
-                  <span style={{ fontWeight: isGroupTask ? 600 : 400 }}>Kelompok</span>
+                  <span style={{ 
+                    fontWeight: isGroupTask ? 600 : 400,
+                    fontSize: isMobile ? '0.875rem' : '0.9375rem',
+                  }}>Kelompok</span>
                 </label>
               </div>
               <small className="form-hint">
