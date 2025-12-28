@@ -772,11 +772,20 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               )}
             </div>
             
-            {/* Right: Actions & Close */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {/* Right: Actions & Close - Always on the right for mobile */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              flexShrink: 0,
+              marginLeft: 'auto'
+            }}>
               {canDeleteThread && (
                 <button
-                  onClick={() => setShowDeleteThreadDialog(true)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowDeleteThreadDialog(true)
+                  }}
                   disabled={deleteThread.isLoading}
                   style={{
                     padding: '0.5rem',
@@ -813,36 +822,39 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   )}
                 </button>
               )}
-            <button
-              onClick={handleCloseQuickView}
-              style={{
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCloseQuickView()
+                }}
+                style={{
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
                   border: 'none',
                   background: 'transparent',
                   color: 'var(--text-light)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
                   minWidth: '36px',
                   minHeight: '36px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
                   e.currentTarget.style.color = 'var(--text)'
-              }}
-              onMouseLeave={(e) => {
+                }}
+                onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent'
                   e.currentTarget.style.color = 'var(--text-light)'
-              }}
-              aria-label="Tutup"
-            >
+                }}
+                aria-label="Tutup"
+              >
                 <XCloseIcon size={20} />
-            </button>
+              </button>
+            </div>
           </div>
-              </div>
 
           {/* Title Section */}
           <div>

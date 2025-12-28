@@ -20,6 +20,8 @@ import {
   CalendarIcon,
   MessageIcon,
   ClockIcon,
+  TrashIcon,
+  XCloseIcon,
 } from "@/components/ui/Icons";
 import Checkbox from "@/components/ui/Checkbox";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
