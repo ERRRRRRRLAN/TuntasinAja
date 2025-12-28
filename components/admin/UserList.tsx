@@ -91,14 +91,18 @@ export default function UserList() {
   // Update password when query completes
   useEffect(() => {
     if (getUserPasswordHash.data && viewingPasswordUserId) {
-      // Only show decrypted password if available, don't show hash bcrypt
-      if (getUserPasswordHash.data.password !== null && getUserPasswordHash.data.password !== undefined) {
+      // Show decrypted password if available
+      if (getUserPasswordHash.data.password !== null && getUserPasswordHash.data.password !== undefined && getUserPasswordHash.data.password !== '') {
         setPasswordHashes(prev => ({
           ...prev,
           [viewingPasswordUserId]: getUserPasswordHash.data!.password!,
         }))
       } else {
-        // If password not available, set to empty so we can show warning message
+        // If password not available, check if there's an error
+        if (getUserPasswordHash.data.decryptError) {
+          console.error('[UserList] Decrypt error:', getUserPasswordHash.data.decryptError)
+        }
+        // Set to empty so we can show warning message
         setPasswordHashes(prev => ({
           ...prev,
           [viewingPasswordUserId]: '',
@@ -715,7 +719,7 @@ export default function UserList() {
                           ? passwordHashes[user.id] 
                           : '••••••••••••••••••••••••••••••••'}
                       </div>
-                      {getUserPasswordHash.data?.password !== null && getUserPasswordHash.data?.password !== undefined ? (
+                      {getUserPasswordHash.data?.password && getUserPasswordHash.data.password !== '' ? (
                         <div style={{
                           fontSize: '0.7rem',
                           color: 'var(--text-success)',
@@ -730,7 +734,13 @@ export default function UserList() {
                           marginTop: '0.5rem',
                           fontStyle: 'italic',
                         }}>
-                          ⚠️ Password tidak tersedia (belum di-encrypt atau tidak ditemukan)
+                          {getUserPasswordHash.data.decryptError ? (
+                            <>⚠️ Error decrypt password: {getUserPasswordHash.data.decryptError}</>
+                          ) : getUserPasswordHash.data.hasEncryptedPassword ? (
+                            <>⚠️ Password ter-encrypt tapi gagal di-decrypt</>
+                          ) : (
+                            <>⚠️ Password belum di-encrypt</>
+                          )}
                         </div>
                       ) : null}
                     </div>
@@ -1326,7 +1336,7 @@ export default function UserList() {
                               ? passwordHashes[user.id]
                               : '••••••••••••••••••••••••••••••••'}
                           </div>
-                          {getUserPasswordHash.data?.password !== null && getUserPasswordHash.data?.password !== undefined ? (
+                          {getUserPasswordHash.data?.password && getUserPasswordHash.data.password !== '' ? (
                             <div style={{
                               fontSize: '0.7rem',
                               color: 'var(--text-success)',
@@ -1341,7 +1351,13 @@ export default function UserList() {
                               marginTop: '0.5rem',
                               fontStyle: 'italic',
                             }}>
-                              ⚠️ Password tidak tersedia (belum di-encrypt atau tidak ditemukan)
+                              {getUserPasswordHash.data.decryptError ? (
+                                <>⚠️ Error decrypt password: {getUserPasswordHash.data.decryptError}</>
+                              ) : getUserPasswordHash.data.hasEncryptedPassword ? (
+                                <>⚠️ Password ter-encrypt tapi gagal di-decrypt</>
+                              ) : (
+                                <>⚠️ Password belum di-encrypt</>
+                              )}
                             </div>
                           ) : null}
                         </div>

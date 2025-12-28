@@ -271,19 +271,34 @@ export const authRouter = createTRPCRouter({
 
       // Try to decrypt password if encrypted password exists
       let decryptedPassword: string | null = null;
+      let decryptError: string | null = null;
+      
       if (user.passwordEncrypted) {
         try {
-          decryptedPassword = decryptPassword(user.passwordEncrypted);
+          // Validate encrypted password format
+          const parts = user.passwordEncrypted.split(':');
+          if (parts.length === 4) {
+            decryptedPassword = decryptPassword(user.passwordEncrypted);
+            console.log(`[getUserPasswordHash] Successfully decrypted password for user ${input.userId}`);
+          } else {
+            decryptError = 'Invalid encrypted password format';
+            console.error(`[getUserPasswordHash] Invalid format for user ${input.userId}: expected 4 parts, got ${parts.length}`);
+          }
         } catch (error) {
-          console.error('Failed to decrypt password:', error);
-          // If decryption fails, return null (password not available)
+          decryptError = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`[getUserPasswordHash] Failed to decrypt password for user ${input.userId}:`, decryptError);
+          console.error(`[getUserPasswordHash] Encrypted password (first 50 chars):`, user.passwordEncrypted?.substring(0, 50));
         }
+      } else {
+        console.log(`[getUserPasswordHash] No encrypted password found for user ${input.userId}`);
       }
 
       return {
         userId: user.id,
         passwordHash: user.passwordHash,
         password: decryptedPassword, // Decrypted password (null if not available)
+        hasEncryptedPassword: !!user.passwordEncrypted,
+        decryptError: decryptError || undefined,
       };
     }),
 
