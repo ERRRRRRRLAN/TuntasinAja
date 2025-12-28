@@ -1,87 +1,45 @@
-# Update TuntasinAja
+# 📱 CHANGELOG - TuntasinAja
 
-Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih nyaman dan mudah digunakan, terutama untuk pengguna mobile!
+## 🎉 UPDATE TERBARU - Notifikasi untuk iPhone & Perbaikan UI/UX
 
-## Fitur Baru
+### ✨ Fitur Baru
 
-*1. Notifikasi untuk iPhone (Web Push)*
-- Sekarang pengguna iPhone bisa mendapatkan notifikasi seperti Android!
-- Caranya mudah: Buka aplikasi di Safari iPhone, lalu klik tombol Share → "Add to Home Screen"
-- Setelah di-install sebagai PWA, buka aplikasi dari Home Screen dan aktifkan notifikasi
-- Sekarang kamu akan dapat notifikasi tugas baru, pengingat deadline, dan update penting lainnya
-- Tidak perlu bayar Apple Developer Program, gratis 100%!
+**🔔 Notifikasi untuk iPhone (PWA)**
+- iPhone sekarang bisa menerima notifikasi seperti Android!
+- **Cara menggunakan:**
+  1. Buka aplikasi TuntasinAja di Safari
+  2. Tap tombol "Share" (kotak dengan panah ke atas)
+  3. Pilih "Add to Home Screen"
+  4. Setelah di-install, buka aplikasi dari Home Screen
+  5. Buka halaman "Me" → "Notifikasi & Pengingat"
+  6. Tap tombol "Aktifkan Notifikasi" untuk mengaktifkan notifikasi
+  7. Izinkan notifikasi saat diminta
+  8. Selesai! Sekarang iPhone kamu bisa menerima notifikasi tugas dan pengumuman seperti Android
 
-*2. Dukungan untuk iPhone*
-- Sekarang TuntasinAja sudah dioptimasi khusus untuk pengguna iPhone
-- Tampilan lebih pas di layar iPhone dengan dukungan safe area untuk notch
-- Touch target lebih besar dan mudah diklik
-- Pengalaman browsing lebih smooth tanpa lag
-- Layout quickview dan modal sudah disesuaikan untuk iPhone
+**📱 Perbaikan UI/UX Mobile**
+- Safe-area untuk iPhone notch sudah diperbaiki di semua quickview
+- Layout FeedbackModal (Saran & Masukan) sudah diperbaiki untuk mobile
+- Tombol close dan delete di quickview sekarang mengikuti safe-area dengan benar
+- Padding dan spacing di mobile sudah dioptimalkan
 
-*3. Default Deadline untuk Sub-Tugas*
-- Saat buat sub-tugas baru, deadline otomatis mengikuti deadline tugas utama
-- Kalau belum ada deadline di tugas utama, akan mengikuti deadline sub-tugas pertama yang sudah ada
-- Lebih praktis, tidak perlu set deadline berulang-ulang
+### 🐛 Perbaikan Bug
 
-## Yang Diperbaiki
+- Fixed: Safe-area tidak bekerja di quickview header
+- Fixed: Tombol close/delete di quickview tidak mengikuti safe-area
+- Fixed: Layout FeedbackModal tidak rapi di mobile
+- Fixed: Safe-area terlalu besar di Android (sekarang menggunakan 1.5rem)
 
-*Perbaikan Layout Mobile (Android & iPhone)*
-- Safe area di bagian atas sekarang lebih pas dan tidak terlalu besar
-- Quickview header sekarang mengikuti safe area dengan benar di iPhone
-- Tombol close dan delete di quickview sekarang posisinya mengikuti safe area
-- Feedback modal layout lebih rapi di mobile dengan spacing yang pas
-- Semua elemen UI sekarang lebih konsisten di berbagai ukuran layar
+### 📝 Catatan Penting
 
-*Perbaikan Alur Hapus Tugas*
-- Saat hapus tugas, sekarang ada loading indicator yang jelas
-- Quickview langsung tertutup bersamaan dengan dialog konfirmasi setelah proses hapus selesai
-- Tidak perlu menunggu lama, proses lebih cepat dan responsif
+**Untuk iPhone Users:**
+- Pastikan kamu sudah "Add to Home Screen" untuk mendapatkan notifikasi
+- Notifikasi hanya bekerja jika aplikasi sudah di-install sebagai PWA
+- Jika notifikasi tidak muncul, pastikan kamu sudah mengaktifkan notifikasi di Settings → Notifikasi & Pengingat
 
-*Perbaikan UI Quickview Tugas*
-- Tampilan quickview sekarang lebih sederhana dan mudah dipahami
-- Header lebih rapi dengan informasi yang lebih jelas
-- Form tambah sub-tugas dipindah ke bawah daftar komentar agar lebih rapi
-- Layout lebih bersih dan tidak membingungkan
-- Tombol close dan delete selalu di pojok kanan atas untuk konsistensi
+**Untuk Android Users:**
+- Tidak ada perubahan, notifikasi tetap bekerja seperti biasa
+- Safe-area sudah dioptimalkan untuk tampilan yang lebih rapi
 
-*Perbaikan Form Login*
-- Fitur "Remember Me" dihapus untuk keamanan yang lebih baik
-- Form login lebih sederhana dan fokus
+---
 
-*Perbaikan Tampilan Umum*
-- Tambah empty state yang informatif saat tidak ada tugas atau hasil pencarian
-- Card tugas punya efek hover yang lebih halus
-- Progress bar lebih jelas dengan animasi yang smooth
-- Loading skeleton yang lebih baik saat menunggu data dimuat
-- Toast notification lebih rapi dengan sistem antrian yang lebih baik
-
-*Perbaikan Modal Saran dan Masukan*
-- Icon tombol feedback diganti jadi tanda tanya yang lebih jelas
-- Modal saran dan masukan sekarang lebih simple dan mudah digunakan
-- Layout mobile lebih rapi dengan spacing yang pas
-- Form lebih rapi dengan placeholder yang lebih jelas
-- Indikator karakter lebih informatif dengan warna yang menandakan status
-- Tombol kirim punya efek hover yang lebih menarik
-- Notifikasi sukses dan error sekarang muncul di layar, tidak hanya di console
-
-*Perbaikan Bug*
-- Perbaikan validasi saat buat tugas kelompok yang sebelumnya terlalu ketat
-- Sekarang proses buat tugas kelompok lebih lancar tanpa error yang mengganggu
-- Perbaikan safe area di Android yang sebelumnya terlalu besar
-
-## Tips
-
-- **Untuk pengguna iPhone**: Install aplikasi sebagai PWA dengan cara "Add to Home Screen" untuk mendapatkan notifikasi seperti Android!
-- Gunakan fitur default deadline untuk menghemat waktu saat buat banyak sub-tugas
-- Coba buka aplikasi di iPhone, pengalamannya sekarang lebih optimal
-- Kalau ada saran atau masukan, klik tombol tanda tanya di pojok kanan bawah untuk kirim feedback
-
-## Info Penting
-
-Update terbaru TuntasinAja bisa dilihat di channel ini. Pastikan aplikasi selalu ter-update ya.
-
-**Khusus untuk pengguna iPhone**: Untuk mendapatkan notifikasi, pastikan sudah install aplikasi sebagai PWA (Add to Home Screen) dan aktifkan notifikasi saat diminta. Setelah itu, kamu akan dapat notifikasi seperti pengguna Android!
-
-Kalau ada pertanyaan atau saran, bisa kirim lewat tombol Feedback di aplikasi.
-
-Terima kasih!
+**Terima kasih sudah menggunakan TuntasinAja! 🎉**
