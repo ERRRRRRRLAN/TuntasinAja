@@ -775,7 +775,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           {/* Right: Actions & Close - Always on the right top corner */}
           <div style={{ 
             position: 'absolute',
-            top: isMobile ? '1.25rem' : '1.5rem',
+            top: isMobile ? `calc(1rem + env(safe-area-inset-top, 0px))` : '1.5rem',
             right: isMobile ? '1rem' : '2rem',
             display: 'flex', 
             alignItems: 'center', 

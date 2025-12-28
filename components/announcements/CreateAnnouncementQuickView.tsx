@@ -250,7 +250,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
             className="quickview-close-btn"
             style={{
               position: 'absolute',
-              top: isMobile ? '1.25rem' : '1.5rem',
+              top: isMobile ? `calc(1rem + env(safe-area-inset-top, 0px))` : '1.5rem',
               right: isMobile ? '1rem' : '2rem',
               background: 'var(--card)',
               border: '2px solid var(--border)',
