@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app'
 import { getMessaging, Messaging } from 'firebase-admin/messaging'
+import webpush from 'web-push'
 
 let messaging: Messaging | null = null
 
@@ -145,6 +146,120 @@ export async function sendPushNotification(
   } catch (error) {
     console.error('[FirebaseAdmin] ❌ Error sending push notification:', error)
     throw error
+  }
+}
+
+// Initialize Web Push VAPID keys
+let vapidInitialized = false
+
+function initializeVAPID() {
+  if (vapidInitialized) {
+    return
+  }
+
+  const vapidPublicKey = process.env.VAPID_PUBLIC_KEY
+  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
+  const vapidEmail = process.env.VAPID_EMAIL || 'noreply@tuntasinaja.com'
+
+  if (!vapidPublicKey || !vapidPrivateKey) {
+    console.warn('[WebPush] VAPID keys not configured. Web Push notifications will be disabled.')
+    return
+  }
+
+  webpush.setVapidDetails(
+    `mailto:${vapidEmail}`,
+    vapidPublicKey,
+    vapidPrivateKey
+  )
+
+  vapidInitialized = true
+  console.log('[WebPush] ✅ VAPID keys initialized')
+}
+
+// Send Web Push notification
+export async function sendWebPushNotification(
+  subscription: {
+    endpoint: string
+    keys: {
+      p256dh: string
+      auth: string
+    }
+  },
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) {
+  try {
+    initializeVAPID()
+
+    if (!vapidInitialized) {
+      console.warn('[WebPush] VAPID not initialized, skipping Web Push')
+      return { success: false, error: 'VAPID not configured' }
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      icon: '/icon-192x192.png',
+      badge: '/icon-72x72.png',
+      data: data || {},
+      tag: data?.tag || 'default',
+      requireInteraction: false,
+      silent: false,
+    })
+
+    await webpush.sendNotification(subscription, payload)
+    
+    console.log('[WebPush] ✅ Web Push notification sent:', {
+      endpoint: subscription.endpoint.substring(0, 50) + '...',
+      title,
+    })
+
+    return { success: true }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[WebPush] ❌ Error sending Web Push notification:', errorMessage)
+    
+    // If subscription is invalid (410 Gone), we should delete it
+    if (errorMessage.includes('410') || errorMessage.includes('Gone')) {
+      return { success: false, error: 'Subscription expired', shouldDelete: true }
+    }
+    
+    return { success: false, error: errorMessage }
+  }
+}
+
+// Send Web Push notifications to multiple subscriptions
+export async function sendWebPushNotifications(
+  subscriptions: Array<{
+    endpoint: string
+    keys: {
+      p256dh: string
+      auth: string
+    }
+  }>,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) {
+  const results = await Promise.allSettled(
+    subscriptions.map(sub => sendWebPushNotification(sub, title, body, data))
+  )
+
+  const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length
+  const failureCount = results.length - successCount
+  const expiredSubscriptions: string[] = []
+
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled' && result.value.shouldDelete) {
+      expiredSubscriptions.push(subscriptions[index].endpoint)
+    }
+  })
+
+  return {
+    successCount,
+    failureCount,
+    expiredSubscriptions,
   }
 }
 

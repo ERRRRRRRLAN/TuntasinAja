@@ -130,7 +130,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
         setDeadlineError('Tidak boleh mencantumkan waktu deadline yang sudah terlewat')
       } else {
         setDeadlineError('')
-        toast.error(errorMessage, 5000) // Show error toast for 5 seconds
+      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
       }
     },
   })
@@ -407,7 +407,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               <XCloseIcon size={20} />
             </button>
           </div>
-
+          
           {/* Title Section */}
           <div>
             <h2 style={{
@@ -417,8 +417,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
               margin: 0,
               lineHeight: 1.4,
               wordBreak: 'break-word',
-            }}>
-              Buat PR Baru
+              }}>
+                Buat PR Baru
             </h2>
           </div>
         </div>
@@ -568,7 +568,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
                 </div>
               )}
               {!deadlineError && (
-                <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
+              <small className="form-hint">Tentukan kapan tugas harus selesai (opsional)</small>
               )}
             </div>
 

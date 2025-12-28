@@ -903,8 +903,8 @@ export default function FeedPage() {
             <EmptyState
               title={
                 searchQuery ||
-                selectedSubject !== "all" ||
-                (isAdmin && selectedKelas !== "all")
+              selectedSubject !== "all" ||
+              (isAdmin && selectedKelas !== "all")
                   ? "Tidak ada hasil"
                   : "Belum ada PR"
               }

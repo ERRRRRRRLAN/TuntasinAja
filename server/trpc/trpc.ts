@@ -46,8 +46,8 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
     } else {
       logger.debug({ 
         component: 'tRPC Context',
-        hasCookie,
-        hasToken: !!token,
+          hasCookie,
+          hasToken: !!token,
       }, 'No valid session - token missing or invalid')
     }
   } catch (error) {

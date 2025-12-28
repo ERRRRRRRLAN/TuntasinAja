@@ -173,36 +173,36 @@ export default function FeedbackModal({
             color: 'var(--text)',
           }}>
             Saran & Masukan
-          </h3>
-          <button
-            onClick={handleClose}
-            style={{
+              </h3>
+            <button
+              onClick={handleClose}
+              style={{
               padding: '0.5rem',
               borderRadius: '0.5rem',
               border: 'none',
               background: 'transparent',
               color: 'var(--text-light)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
               minWidth: '36px',
               minHeight: '36px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
               e.currentTarget.style.color = 'var(--text)'
-            }}
-            onMouseLeave={(e) => {
+              }}
+              onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent'
               e.currentTarget.style.color = 'var(--text-light)'
-            }}
-            aria-label="Tutup"
-            disabled={submitFeedback.isLoading}
-          >
-            <XIconSmall size={20} />
-          </button>
+              }}
+              aria-label="Tutup"
+              disabled={submitFeedback.isLoading}
+            >
+              <XIconSmall size={20} />
+            </button>
         </div>
 
         {/* Simplified Form */}
@@ -212,58 +212,58 @@ export default function FeedbackModal({
           display: 'flex',
           flexDirection: 'column',
           overflowY: 'auto',
-        }}>
+            }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1 }}>
             <div>
-              <textarea
-                id="feedback-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+            <textarea
+              id="feedback-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
                 rows={6}
                 placeholder="Tulis saran dan masukan Anda di sini..."
-                required
-                disabled={submitFeedback.isLoading}
-                style={{
-                  width: '100%',
+              required
+              disabled={submitFeedback.isLoading}
+              style={{
+                width: '100%',
                   padding: '1rem',
-                  border: '1px solid var(--border)',
+                border: '1px solid var(--border)',
                   borderRadius: '0.75rem',
                   background: 'var(--bg-secondary)',
-                  color: 'var(--text)',
+                color: 'var(--text)',
                   fontSize: '0.9375rem',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
+                fontFamily: 'inherit',
+                resize: 'vertical',
+                outline: 'none',
+                transition: 'border-color 0.2s',
                   minHeight: '180px',
                   lineHeight: '1.6',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
                   e.currentTarget.style.background = 'var(--card)'
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
                   e.currentTarget.style.background = 'var(--bg-secondary)'
-                }}
-              />
+              }}
+            />
               <div style={{ 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginTop: '0.5rem',
               }}>
-                <small style={{ 
+            <small style={{ 
                   fontSize: '0.8125rem',
                   color: content.trim().length < 10 ? 'var(--danger)' : 'var(--text-light)'
-                }}>
+            }}>
                   {content.trim().length < 10 
                     ? `Minimal 10 karakter (${content.length}/10)`
                     : `${content.length} karakter`
                   }
-                </small>
+            </small>
               </div>
-            </div>
+          </div>
 
             <div style={{ 
               display: 'flex', 
@@ -271,10 +271,10 @@ export default function FeedbackModal({
               marginTop: 'auto',
               paddingTop: '1rem',
             }}>
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={submitFeedback.isLoading}
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={submitFeedback.isLoading}
                 style={{
                   padding: '0.75rem 1.5rem',
                   background: 'var(--bg-secondary)',
@@ -297,12 +297,12 @@ export default function FeedbackModal({
                     e.currentTarget.style.background = 'var(--bg-secondary)'
                   }
                 }}
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
                 style={{
                   flex: 1,
                   padding: '0.75rem 1.5rem',
@@ -337,18 +337,18 @@ export default function FeedbackModal({
                     e.currentTarget.style.boxShadow = 'none'
                   }
                 }}
-              >
-                {submitFeedback.isLoading ? (
-                  <>
+            >
+              {submitFeedback.isLoading ? (
+                <>
                     <LoadingSpinner size={16} color="white" />
                     <span>Mengirim...</span>
-                  </>
-                ) : (
-                  'Kirim'
-                )}
-              </button>
-            </div>
-          </form>
+                </>
+              ) : (
+                'Kirim'
+              )}
+            </button>
+          </div>
+        </form>
         </div>
       </div>
     </div>

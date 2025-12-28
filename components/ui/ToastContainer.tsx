@@ -97,7 +97,7 @@ export const toast = {
           // Remove oldest notification from queue
           notificationQueue.shift()
         }
-        notificationQueue.push(notification)
+      notificationQueue.push(notification)
       }
     } else {
       currentNotification = notification
@@ -120,7 +120,7 @@ export const toast = {
         if (notificationQueue.length >= MAX_QUEUE_SIZE) {
           notificationQueue.shift()
         }
-        notificationQueue.push(notification)
+      notificationQueue.push(notification)
       }
     } else {
       currentNotification = notification
@@ -146,7 +146,7 @@ export const toast = {
         if (notificationQueue.length >= MAX_QUEUE_SIZE) {
           notificationQueue.shift()
         }
-        notificationQueue.push(notification)
+      notificationQueue.push(notification)
       }
     } else {
       currentNotification = notification
@@ -172,7 +172,7 @@ export const toast = {
         if (notificationQueue.length >= MAX_QUEUE_SIZE) {
           notificationQueue.shift()
         }
-        notificationQueue.push(notification)
+      notificationQueue.push(notification)
       }
     } else {
       currentNotification = notification

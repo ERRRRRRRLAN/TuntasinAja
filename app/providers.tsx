@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup-v2'
+import WebPushSetup from '@/components/notifications/WebPushSetup'
 import StatusBarHandler from '@/components/StatusBarHandler'
 import AppUpdateChecker from '@/components/AppUpdateChecker'
 import SessionRefresher from '@/components/SessionRefresher'
@@ -98,6 +99,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <NetworkErrorHandler />
               {children}
               <PushNotificationSetup />
+              <WebPushSetup />
               <AppUpdateChecker />
             </UnsavedChangesProvider>
           </ThemeProvider>

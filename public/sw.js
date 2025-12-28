@@ -184,3 +184,95 @@ self.addEventListener('message', (event) => {
   }
 })
 
+// Web Push Notification Handler
+self.addEventListener('push', function(event) {
+  console.log('[Service Worker] Push notification received:', event)
+  
+  let notificationData = {
+    title: 'TuntasinAja',
+    body: 'Anda memiliki notifikasi baru',
+    icon: '/icon-192x192.png',
+    badge: '/icon-72x72.png',
+    tag: 'default',
+    data: {},
+  }
+
+  // Parse push data if available
+  if (event.data) {
+    try {
+      const data = event.data.json()
+      notificationData = {
+        title: data.title || notificationData.title,
+        body: data.body || notificationData.body,
+        icon: data.icon || notificationData.icon,
+        badge: data.badge || notificationData.badge,
+        tag: data.tag || notificationData.tag,
+        data: data.data || notificationData.data,
+        requireInteraction: data.requireInteraction || false,
+        silent: data.silent || false,
+      }
+    } catch (e) {
+      console.error('[Service Worker] Error parsing push data:', e)
+      // Fallback: try to get text
+      const text = event.data.text()
+      if (text) {
+        notificationData.body = text
+      }
+    }
+  }
+
+  const notificationOptions = {
+    body: notificationData.body,
+    icon: notificationData.icon,
+    badge: notificationData.badge,
+    tag: notificationData.tag,
+    data: notificationData.data,
+    requireInteraction: notificationData.requireInteraction,
+    silent: notificationData.silent,
+    vibrate: [200, 100, 200],
+    timestamp: Date.now(),
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, notificationOptions)
+  )
+})
+
+// Handle notification click
+self.addEventListener('notificationclick', function(event) {
+  console.log('[Service Worker] Notification clicked:', event.notification)
+  
+  event.notification.close()
+
+  const urlToOpen = event.notification.data?.url || '/'
+  
+  event.waitUntil(
+    clients.matchAll({ 
+      type: 'window', 
+      includeUncontrolled: true 
+    })
+      .then(function(clientList) {
+        // Cek apakah sudah ada window yang terbuka dengan URL yang sama
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i]
+          const clientUrl = new URL(client.url)
+          const targetUrl = new URL(urlToOpen, self.location.origin)
+          
+          if (clientUrl.pathname === targetUrl.pathname && 'focus' in client) {
+            return client.focus()
+          }
+        }
+        
+        // Buka window baru jika belum ada
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen)
+        }
+      })
+  )
+})
+
+// Handle notification close
+self.addEventListener('notificationclose', function(event) {
+  console.log('[Service Worker] Notification closed:', event.notification)
+})
+

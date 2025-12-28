@@ -477,8 +477,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
       ]).then(() => {
         // Force immediate refetch after invalidation
         Promise.all([
-          utils.thread.getById.refetch(),
-          utils.thread.getAll.refetch(),
+        utils.thread.getById.refetch(),
+        utils.thread.getAll.refetch(),
         ]).catch((error) => {
           console.error('Error refetching after delete:', error)
         })
@@ -749,12 +749,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   onClick={() => setShowCompletionStatsModal(true)}
                   style={{
                     padding: '0.375rem 0.75rem',
-                    borderRadius: '0.375rem',
-                    border: '1px solid var(--primary)',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--primary)',
                     background: 'transparent',
-                    color: 'var(--primary)',
+                  color: 'var(--primary)',
                     fontSize: '0.875rem',
-                    fontWeight: 600,
+                  fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                   }}
@@ -813,49 +813,49 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   )}
                 </button>
               )}
-              <button
-                onClick={handleCloseQuickView}
-                style={{
+            <button
+              onClick={handleCloseQuickView}
+              style={{
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
                   border: 'none',
                   background: 'transparent',
                   color: 'var(--text-light)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
                   minWidth: '36px',
                   minHeight: '36px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-secondary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
                   e.currentTarget.style.color = 'var(--text)'
-                }}
-                onMouseLeave={(e) => {
+              }}
+              onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent'
                   e.currentTarget.style.color = 'var(--text-light)'
-                }}
-                aria-label="Tutup"
-              >
+              }}
+              aria-label="Tutup"
+            >
                 <XCloseIcon size={20} />
-              </button>
-            </div>
+            </button>
           </div>
+              </div>
 
           {/* Title Section */}
           <div>
             <h2 style={{
               fontSize: isMobile ? '1.25rem' : '1.5rem',
-              fontWeight: 600,
+                  fontWeight: 600,
               color: isThreadCompleted ? 'var(--text-light)' : 'var(--text)',
               margin: '0 0 0.75rem 0',
               lineHeight: 1.4,
-              textDecoration: isThreadCompleted ? 'line-through' : 'none',
-              wordBreak: 'break-word',
-            }}>
-              {thread.title}
+                textDecoration: isThreadCompleted ? 'line-through' : 'none',
+                wordBreak: 'break-word',
+              }}>
+                {thread.title}
             </h2>
             
             {/* Compact Meta Info */}
@@ -867,9 +867,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               color: 'var(--text-light)',
             }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <UserIcon size={14} />
+            <UserIcon size={14} />
                 {(thread as any).author?.name || 'Unknown'}
-              </span>
+          </span>
               {(thread as any).author?.kelas && (
                 <span style={{
                   padding: '0.125rem 0.5rem',
@@ -882,13 +882,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 </span>
               )}
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <CalendarIcon size={14} />
+            <CalendarIcon size={14} />
                 {format(new Date(thread.date), 'd MMM yyyy', { locale: id })}
-              </span>
+          </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <MessageIcon size={14} />
-                {(thread as any).comments?.length || 0} sub tugas
-              </span>
+            <MessageIcon size={14} />
+            {(thread as any).comments?.length || 0} sub tugas
+          </span>
             </div>
           </div>
         </div>
@@ -1181,16 +1181,16 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                       ) : (
                         <>
                           {/* Comment Text */}
-                          <div style={{
-                            textDecoration: isCommentCompleted ? 'line-through' : 'none',
-                            color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
-                            wordBreak: 'break-word',
+                            <div style={{
+                              textDecoration: isCommentCompleted ? 'line-through' : 'none',
+                              color: isCommentCompleted ? 'var(--text-light)' : 'var(--text)',
+                              wordBreak: 'break-word',
                             lineHeight: 1.6,
                             fontSize: '0.9375rem',
                             marginBottom: '0.5rem',
-                          }}>
-                            {comment.content}
-                          </div>
+                            }}>
+                              {comment.content}
+                            </div>
                           
                           {/* Comment Meta & Actions */}
                           <div style={{
@@ -1256,77 +1256,77 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             {/* Right: Actions */}
                             {(canEditComment || canDeleteComment) && (
                               <div style={{ display: 'flex', gap: '0.375rem' }}>
-                                {canEditComment && (
-                                  <button
-                                    onClick={() => handleStartEdit(comment)}
-                                    disabled={editComment.isLoading}
-                                    style={{
+                              {canEditComment && (
+                                <button
+                                  onClick={() => handleStartEdit(comment)}
+                                  disabled={editComment.isLoading}
+                                  style={{
                                       padding: '0.375rem 0.5rem',
-                                      borderRadius: '0.375rem',
+                                    borderRadius: '0.375rem',
                                       border: 'none',
                                       background: 'transparent',
                                       color: 'var(--text-light)',
-                                      cursor: editComment.isLoading ? 'not-allowed' : 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                    cursor: editComment.isLoading ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
                                       transition: 'all 0.2s',
                                       opacity: editComment.isLoading ? 0.5 : 1,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!editComment.isLoading) {
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!editComment.isLoading) {
                                         e.currentTarget.style.background = 'var(--bg-secondary)'
                                         e.currentTarget.style.color = 'var(--primary)'
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!editComment.isLoading) {
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!editComment.isLoading) {
                                         e.currentTarget.style.background = 'transparent'
                                         e.currentTarget.style.color = 'var(--text-light)'
-                                      }
-                                    }}
+                                    }
+                                  }}
                                     title="Edit"
-                                  >
+                                >
                                     <EditIcon size={16} />
-                                  </button>
-                                )}
-                                {canDeleteComment && (
-                                  <button
-                                    onClick={() => setShowDeleteCommentDialog(comment.id)}
-                                    disabled={deleteComment.isLoading}
-                                    style={{
+                                </button>
+                              )}
+                              {canDeleteComment && (
+                                <button
+                                  onClick={() => setShowDeleteCommentDialog(comment.id)}
+                                  disabled={deleteComment.isLoading}
+                                  style={{
                                       padding: '0.375rem 0.5rem',
-                                      borderRadius: '0.375rem',
+                                    borderRadius: '0.375rem',
                                       border: 'none',
                                       background: 'transparent',
                                       color: 'var(--text-light)',
-                                      cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                    cursor: deleteComment.isLoading ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
                                       transition: 'all 0.2s',
                                       opacity: deleteComment.isLoading ? 0.5 : 1,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!deleteComment.isLoading) {
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!deleteComment.isLoading) {
                                         e.currentTarget.style.background = '#fee2e2'
                                         e.currentTarget.style.color = '#ef4444'
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!deleteComment.isLoading) {
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!deleteComment.isLoading) {
                                         e.currentTarget.style.background = 'transparent'
                                         e.currentTarget.style.color = 'var(--text-light)'
-                                      }
-                                    }}
+                                    }
+                                  }}
                                     title="Hapus"
-                                  >
-                                    {deleteComment.isLoading ? (
+                                >
+                                  {deleteComment.isLoading ? (
                                       <LoadingSpinner size={14} color="#ef4444" />
-                                    ) : (
+                                  ) : (
                                       <TrashIcon size={16} />
-                                    )}
-                                  </button>
-                                )}
-                              </div>
+                                  )}
+                                </button>
+                              )}
+                            </div>
                             )}
                           </div>
                         </>
@@ -1355,7 +1355,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   placeholder="Tulis sub tugas Anda di sini..."
                   required
                   disabled={addComment.isLoading}
-                  style={{
+                              style={{
                     width: '100%',
                     padding: '0.75rem',
                     borderRadius: '0.5rem',
@@ -1367,7 +1367,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                     resize: 'vertical',
                     outline: 'none',
                     transition: 'border-color 0.2s',
-                  }}
+                              }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = 'var(--primary)'
                   }}
@@ -1394,11 +1394,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                       {commentDeadlineError}
                     </div>
                   )}
-                  <button
+                            <button
                     type="submit"
                     className="btn btn-primary"
                     disabled={addComment.isLoading || isSubmittingComment || !commentContent.trim()}
-                    style={{
+                              style={{
                       padding: '0.75rem 1.5rem',
                       width: '100%',
                       marginTop: '0.25rem',
@@ -1410,11 +1410,11 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         <span>Mengirim...</span>
                       </span>
                     ) : 'Tambah'}
-                  </button>
-                </div>
+                            </button>
+                        </div>
               </form>
-            </div>
-          )}
+                        </div>
+                      )}
         </div>
         <QuickViewConfirmDialog
           isOpen={showDeleteThreadDialog}
