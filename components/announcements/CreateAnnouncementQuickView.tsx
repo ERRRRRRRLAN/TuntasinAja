@@ -228,46 +228,46 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
           transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
         }}
       >
-        <div className="quickview-header">
-          <div className="quickview-header-top">
-            <div className="quickview-header-left">
-              {/* Empty left section */}
-            </div>
-            <button
-              onClick={handleClose}
-              className="quickview-close-btn"
-              style={{
-                background: 'var(--card)',
-                border: '2px solid var(--border)',
-                cursor: 'pointer',
-                color: 'var(--text)',
-                padding: '0.625rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '0.5rem',
-                minWidth: '44px',
-                minHeight: '44px',
-                transition: 'all 0.2s',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-                e.currentTarget.style.borderColor = 'var(--primary)'
-                e.currentTarget.style.color = 'var(--primary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--card)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--text)'
-              }}
-              aria-label="Tutup"
-            >
-              <XCloseIcon size={22} />
-            </button>
-          </div>
+        <div className="quickview-header" style={{ position: 'relative' }}>
+          {/* Close Button - Always on the right top corner */}
+          <button
+            onClick={handleClose}
+            className="quickview-close-btn"
+            style={{
+              position: 'absolute',
+              top: '1.5rem',
+              right: '2rem',
+              background: 'var(--card)',
+              border: '2px solid var(--border)',
+              cursor: 'pointer',
+              color: 'var(--text)',
+              padding: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '0.5rem',
+              minWidth: '36px',
+              minHeight: '36px',
+              transition: 'all 0.2s',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              zIndex: 10,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg-secondary)'
+              e.currentTarget.style.borderColor = 'var(--primary)'
+              e.currentTarget.style.color = 'var(--primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--card)'
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text)'
+            }}
+            aria-label="Tutup"
+          >
+            <XCloseIcon size={20} />
+          </button>
           
-          <div className="quickview-title-section">
+          <div className="quickview-title-section" style={{ paddingRight: '60px' }}>
             <h2 className="thread-detail-title" style={{ 
               margin: 0,
               flex: 1,

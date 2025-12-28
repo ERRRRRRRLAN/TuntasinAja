@@ -370,14 +370,14 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
           borderBottom: '1px solid var(--border)',
           background: 'var(--card)',
+          position: 'relative',
         }}>
-          {/* Top Row: Close Button */}
+          {/* Top Row: Close Button - Always on the right top corner */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            marginBottom: '1rem',
-            gap: '0.75rem'
+            position: 'absolute',
+            top: isMobile ? '1.25rem' : '1.5rem',
+            right: isMobile ? '1rem' : '2rem',
+            zIndex: 10,
           }}>
             <button
               onClick={handleClose}

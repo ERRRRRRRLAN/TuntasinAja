@@ -253,9 +253,9 @@ export default function ScheduleEditQuickView({
             </div>
           )}
 
-          <div className="quickview-header">
+          <div className="quickview-header" style={{ position: 'relative' }}>
             <div className="quickview-header-top">
-              <div className="quickview-header-left">
+              <div className="quickview-header-left" style={{ paddingRight: '88px' }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -277,32 +277,80 @@ export default function ScheduleEditQuickView({
                   </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Right: Actions & Close - Always on the right top corner */}
+            <div style={{ 
+              position: 'absolute',
+              top: '1.5rem',
+              right: '1.5rem',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              flexShrink: 0,
+              zIndex: 10,
+            }}>
+              <button
+                onClick={handleDelete}
+                disabled={deleteSchedule.isLoading || setSchedule.isLoading}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  background: deleteSchedule.isLoading ? '#fca5a5' : 'transparent',
+                  color: deleteSchedule.isLoading ? 'white' : 'var(--text-light)',
+                  cursor: (deleteSchedule.isLoading || setSchedule.isLoading) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  minWidth: '36px',
+                  minHeight: '36px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!deleteSchedule.isLoading && !setSchedule.isLoading) {
+                    e.currentTarget.style.background = '#fee2e2'
+                    e.currentTarget.style.color = '#ef4444'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!deleteSchedule.isLoading && !setSchedule.isLoading) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-light)'
+                  }
+                }}
+                title="Hapus Jadwal"
+              >
+                {deleteSchedule.isLoading ? (
+                  <LoadingSpinner size={18} color="#ef4444" />
+                ) : (
+                  <TrashIcon size={18} />
+                )}
+              </button>
               <button
                 onClick={handleCloseQuickView}
                 className="quickview-close-btn"
                 style={{
-                  background: 'var(--card)',
-                  border: '2px solid var(--border)',
+                  background: 'transparent',
+                  border: 'none',
                   cursor: 'pointer',
-                  color: 'var(--text)',
-                  padding: '0.625rem',
+                  color: 'var(--text-light)',
+                  padding: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '0.5rem',
-                  minWidth: '44px',
-                  minHeight: '44px',
+                  minWidth: '36px',
+                  minHeight: '36px',
                   transition: 'all 0.2s',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                  flexShrink: 0
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--bg-secondary)'
-                  e.currentTarget.style.borderColor = 'var(--primary)'
+                  e.currentTarget.style.color = 'var(--text)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--card)'
-                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-light)'
                 }}
                 aria-label="Tutup"
               >

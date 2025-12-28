@@ -724,116 +724,78 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
           borderBottom: '1px solid var(--border)',
           background: 'var(--card)',
+          position: 'relative',
         }}>
-          {/* Top Row: Close Button & Actions */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+          {/* Top Row: Checkbox for completion */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem', 
             marginBottom: '1rem',
-            gap: '0.75rem'
+            paddingRight: canDeleteThread ? '88px' : '44px', // Space for buttons
           }}>
-            {/* Left: Checkbox for completion */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-              {session && !isAdmin && (
-                <Checkbox
-                  checked={isThreadCompleted}
-                  onClick={handleThreadCheckboxClick}
-                  isLoading={toggleThread.isLoading}
-                  disabled={toggleThread.isLoading}
-                  size={24}
-                />
-              )}
-              {session && isAdmin && completionStats && (
-                <button
-                  onClick={() => setShowCompletionStatsModal(true)}
-                  style={{
-                    padding: '0.375rem 0.75rem',
+            {session && !isAdmin && (
+              <Checkbox
+                checked={isThreadCompleted}
+                onClick={handleThreadCheckboxClick}
+                isLoading={toggleThread.isLoading}
+                disabled={toggleThread.isLoading}
+                size={24}
+              />
+            )}
+            {session && isAdmin && completionStats && (
+              <button
+                onClick={() => setShowCompletionStatsModal(true)}
+                style={{
+                  padding: '0.375rem 0.75rem',
                   borderRadius: '0.375rem',
                   border: '1px solid var(--primary)',
-                    background: 'transparent',
+                  background: 'transparent',
                   color: 'var(--primary)',
-                    fontSize: '0.875rem',
+                  fontSize: '0.875rem',
                   fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--primary)'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'var(--primary)'
-                  }}
-                >
-                  {completionStats.completedCount}/{completionStats.totalCount} selesai
-                </button>
-              )}
-            </div>
-            
-            {/* Right: Actions & Close - Always on the right for mobile */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              flexShrink: 0,
-              marginLeft: 'auto'
-            }}>
-              {canDeleteThread && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowDeleteThreadDialog(true)
-                  }}
-                  disabled={deleteThread.isLoading}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    background: deleteThread.isLoading ? '#fca5a5' : 'transparent',
-                    color: deleteThread.isLoading ? 'white' : 'var(--text-light)',
-                    cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s',
-                    minWidth: '36px',
-                    minHeight: '36px',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!deleteThread.isLoading) {
-                      e.currentTarget.style.background = '#fee2e2'
-                      e.currentTarget.style.color = '#ef4444'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!deleteThread.isLoading) {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = 'var(--text-light)'
-                    }
-                  }}
-                  title="Hapus PR"
-                >
-                  {deleteThread.isLoading ? (
-                    <LoadingSpinner size={18} color="#ef4444" />
-                  ) : (
-                    <TrashIcon size={18} />
-                  )}
-                </button>
-              )}
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--primary)'
+                  e.currentTarget.style.color = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--primary)'
+                }}
+              >
+                {completionStats.completedCount}/{completionStats.totalCount} selesai
+              </button>
+            )}
+          </div>
+          
+          {/* Right: Actions & Close - Always on the right top corner */}
+          <div style={{ 
+            position: 'absolute',
+            top: isMobile ? '1.25rem' : '1.5rem',
+            right: isMobile ? '1rem' : '2rem',
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            flexShrink: 0,
+            zIndex: 10,
+          }}>
+            {canDeleteThread && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleCloseQuickView()
+                  setShowDeleteThreadDialog(true)
                 }}
+                disabled={deleteThread.isLoading}
                 style={{
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
                   border: 'none',
-                  background: 'transparent',
-                  color: 'var(--text-light)',
-                  cursor: 'pointer',
+                  background: deleteThread.isLoading ? '#fca5a5' : 'transparent',
+                  color: deleteThread.isLoading ? 'white' : 'var(--text-light)',
+                  cursor: deleteThread.isLoading ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -842,18 +804,57 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                   minHeight: '36px',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-secondary)'
-                  e.currentTarget.style.color = 'var(--text)'
+                  if (!deleteThread.isLoading) {
+                    e.currentTarget.style.background = '#fee2e2'
+                    e.currentTarget.style.color = '#ef4444'
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-light)'
+                  if (!deleteThread.isLoading) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-light)'
+                  }
                 }}
-                aria-label="Tutup"
+                title="Hapus PR"
               >
-                <XCloseIcon size={20} />
+                {deleteThread.isLoading ? (
+                  <LoadingSpinner size={18} color="#ef4444" />
+                ) : (
+                  <TrashIcon size={18} />
+                )}
               </button>
-            </div>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCloseQuickView()
+              }}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-light)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                minWidth: '36px',
+                minHeight: '36px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.color = 'var(--text)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--text-light)'
+              }}
+              aria-label="Tutup"
+            >
+              <XCloseIcon size={20} />
+            </button>
           </div>
 
           {/* Title Section */}
