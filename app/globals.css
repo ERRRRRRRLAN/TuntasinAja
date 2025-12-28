@@ -60,7 +60,7 @@ html.android-device {
   --safe-area-bottom: 0px !important;
 }
 
-/* Remove safe-area padding from main-content on Android */
+/* Remove safe-area padding from main-content on Android - override all calc() */
 html.android-device .main-content {
   padding-top: 1rem !important;
 }
@@ -91,6 +91,21 @@ html.android-device .quickview-header {
 /* Remove safe-area padding from signin page header on Android */
 html.android-device .signin-page-header {
   padding-top: 1.25rem !important;
+}
+
+/* Override all calc() expressions that use safe-area-inset-top for Android */
+html.android-device * {
+  /* This will be overridden by more specific rules below */
+}
+
+html.android-device .main-content[style*="padding-top"] {
+  padding-top: 1rem !important;
+}
+
+@media (max-width: 640px) {
+  html.android-device .main-content[style*="padding-top"] {
+    padding-top: 1rem !important;
+  }
 }
 
 :root {
