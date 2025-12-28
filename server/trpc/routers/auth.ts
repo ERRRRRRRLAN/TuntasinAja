@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs";
 import { getUTCDate } from "@/lib/date-utils";
 import { getUserPermission } from "../trpc";
 import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
+import { encryptPassword, decryptPassword } from "@/lib/password-encryption";
 
 export const authRouter = createTRPCRouter({
   // Register
@@ -36,6 +37,9 @@ export const authRouter = createTRPCRouter({
 
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10);
+      
+      // Encrypt password for admin view
+      const passwordEncrypted = encryptPassword(input.password);
 
       // Use Jakarta time for user creation
       const now = getUTCDate();
@@ -46,6 +50,7 @@ export const authRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           passwordHash,
+          passwordEncrypted,
           createdAt: now,
         },
         select: {
@@ -213,6 +218,9 @@ export const authRouter = createTRPCRouter({
 
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10);
+      
+      // Encrypt password for admin view
+      const passwordEncrypted = encryptPassword(input.password);
 
       // Use Jakarta time for user creation
       const now = getUTCDate();
@@ -223,6 +231,7 @@ export const authRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           passwordHash,
+          passwordEncrypted,
           isAdmin: input.isAdmin || false,
           isDanton: input.isAdmin ? false : input.isDanton || false, // Cannot be danton if admin
           kelas: input.isAdmin ? null : input.kelas || null,
@@ -243,7 +252,7 @@ export const authRouter = createTRPCRouter({
     }),
 
   // Get all users (Admin only)
-  // Get user password hash (Admin only)
+  // Get user password (decrypted) - Admin only
   getUserPasswordHash: adminProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
@@ -252,6 +261,7 @@ export const authRouter = createTRPCRouter({
         select: {
           id: true,
           passwordHash: true,
+          passwordEncrypted: true,
         },
       });
 
@@ -259,9 +269,21 @@ export const authRouter = createTRPCRouter({
         throw new Error('User not found');
       }
 
+      // Try to decrypt password if encrypted password exists
+      let decryptedPassword: string | null = null;
+      if (user.passwordEncrypted) {
+        try {
+          decryptedPassword = decryptPassword(user.passwordEncrypted);
+        } catch (error) {
+          console.error('Failed to decrypt password:', error);
+          // If decryption fails, return null (password not available)
+        }
+      }
+
       return {
         userId: user.id,
         passwordHash: user.passwordHash,
+        password: decryptedPassword, // Decrypted password (null if not available)
       };
     }),
 
@@ -401,6 +423,8 @@ export const authRouter = createTRPCRouter({
       // Hash password if provided
       if (password) {
         dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
+        // Also encrypt password for admin view
+        dataToUpdate.passwordEncrypted = encryptPassword(password);
       }
 
       // Update user

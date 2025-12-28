@@ -24,7 +24,8 @@
     "migrate:kelas": "node scripts/add-kelas-column.js",
     "fix:timezone": "node scripts/fix-timestamp-timezone.js",
     "migrate:remove-thread-constraint": "node scripts/remove-thread-unique-constraint.js",
-    "generate:vapid-keys": "node scripts/generate-vapid-keys.js"
+    "generate:vapid-keys": "node scripts/generate-vapid-keys.js",
+    "migrate:password-encryption": "node scripts/migrate-password-encryption.js"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
@@ -42,6 +43,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
     "dompurify": "^3.3.1",
+    "dotenv": "^17.2.3",
     "firebase-admin": "^13.6.0",
     "isomorphic-dompurify": "^2.34.0",
     "next": "14.0.4",

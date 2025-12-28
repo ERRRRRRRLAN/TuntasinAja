@@ -78,12 +78,14 @@ export default function UserList() {
     }
   }
 
-  // Update password hash when query completes
+  // Update password when query completes
   useEffect(() => {
     if (getUserPasswordHash.data && viewingPasswordUserId) {
+      // Use decrypted password if available, otherwise fallback to hash
+      const passwordToShow = getUserPasswordHash.data.password || getUserPasswordHash.data.passwordHash || '••••••••••••••••••••••••••••••••'
       setPasswordHashes({
         ...passwordHashes,
-        [viewingPasswordUserId]: getUserPasswordHash.data.passwordHash,
+        [viewingPasswordUserId]: passwordToShow,
       })
     }
   }, [getUserPasswordHash.data, viewingPasswordUserId])
@@ -647,7 +649,7 @@ export default function UserList() {
                           color: 'var(--text-light)',
                           fontWeight: 500,
                         }}>
-                          Password Hash (bcrypt)
+                          Password
                         </div>
                         <button
                           onClick={() => {
@@ -694,14 +696,24 @@ export default function UserList() {
                       }}>
                         {showPasswordHash[user.id] ? passwordHashes[user.id] : '••••••••••••••••••••••••••••••••'}
                       </div>
-                      <div style={{
-                        fontSize: '0.7rem',
-                        color: 'var(--text-light)',
-                        marginTop: '0.5rem',
-                        fontStyle: 'italic',
-                      }}>
-                        ⚠️ Ini adalah hash bcrypt, bukan password asli. Password asli tidak dapat dilihat.
-                      </div>
+                      {getUserPasswordHash.data?.password ? (
+                        <div style={{
+                          fontSize: '0.7rem',
+                          color: 'var(--text-success)',
+                          marginTop: '0.5rem',
+                        }}>
+                          ✅ Password asli (decrypted)
+                        </div>
+                      ) : (
+                        <div style={{
+                          fontSize: '0.7rem',
+                          color: 'var(--text-warning)',
+                          marginTop: '0.5rem',
+                          fontStyle: 'italic',
+                        }}>
+                          ⚠️ Password tidak tersedia (hanya hash bcrypt)
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -719,7 +731,7 @@ export default function UserList() {
                     }}>
                       <LoadingSpinner size={16} />
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        Memuat password hash...
+                        Memuat password...
                       </span>
                     </div>
                   )}
@@ -1246,7 +1258,7 @@ export default function UserList() {
                               color: 'var(--text-light)',
                               fontWeight: 500,
                             }}>
-                              Password Hash (bcrypt)
+                              Password
                             </div>
                             <button
                               onClick={() => {
@@ -1317,7 +1329,7 @@ export default function UserList() {
                         }}>
                           <LoadingSpinner size={16} />
                           <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                            Memuat password hash...
+                            Memuat password...
                           </span>
                         </div>
                       )}

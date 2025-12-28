@@ -11,15 +11,16 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  isAdmin      Boolean  @default(false) @map("is_admin")
-  isDanton     Boolean  @default(false) @map("is_danton")
-  kelas        String?  @map("kelas")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  name             String
+  email            String   @unique
+  passwordHash     String   @map("password_hash")
+  passwordEncrypted String?  @map("password_encrypted")
+  isAdmin          Boolean  @default(false) @map("is_admin")
+  isDanton         Boolean  @default(false) @map("is_danton")
+  kelas            String?  @map("kelas")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   threads           Thread[]
   comments          Comment[]
