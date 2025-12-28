@@ -2,6 +2,55 @@
 
 Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih nyaman dan mudah digunakan.
 
+---
+
+## 🎉 Update Terbaru - Notifikasi untuk iPhone & Perbaikan Layout Mobile
+
+Halo semua! Ada update besar nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih sempurna, terutama untuk pengguna iPhone! 🍎
+
+### 📱 **FITUR BARU: Notifikasi untuk iPhone (Web Push API)**
+
+*PENTING BANGET UNTUK USER IPHONE!* 📢
+
+Sekarang pengguna iPhone bisa dapat notifikasi push seperti Android! Caranya gampang banget:
+
+1. **Buka TuntasinAja di Safari iPhone**
+2. **Tap tombol Share (kotak dengan panah ke atas)**
+3. **Pilih "Add to Home Screen"**
+4. **Buka aplikasi dari Home Screen**
+5. **Aktifkan notifikasi** lewat Settings → Notifikasi & Pengingat di aplikasi
+
+Setelah itu, iPhone kalian bakal dapat notifikasi push setiap ada tugas baru, pengumuman, atau reminder deadline! 🎉
+
+**Catatan Penting:**
+- Fitur ini hanya bekerja jika aplikasi di-Add to Home Screen (PWA mode)
+- Harus menggunakan Safari (bukan Chrome atau browser lain)
+- iPhone harus iOS 16.4 atau lebih baru
+- Setelah Add to Home Screen, buka aplikasi dari Home Screen, bukan dari Safari biasa
+
+### 🎨 **Perbaikan Layout Mobile (Android & iOS)**
+
+*Perbaikan Safe Area & Button Positioning*
+
+- **Safe Area untuk Quickview**: Sekarang semua quickview (detail tugas, buat tugas, dll) punya safe area yang tepat untuk iPhone notch dan Android
+- **Button Positioning**: Tombol silang (X) dan hapus sekarang selalu di pojok kanan atas dengan posisi yang konsisten di semua quickview
+- **Feedback Modal**: Layout modal saran dan masukan sekarang lebih rapi dan mudah digunakan di mobile
+- **Android Safe Area**: Padding atas di Android sekarang lebih pas (1.5rem) dan tidak terlalu besar
+- **iOS Safe Area**: Quickview dan button mengikuti safe area dengan benar untuk iPhone notch
+
+### 🔧 **Perbaikan Teknis**
+
+- Perbaikan positioning button close dan delete di semua quickview
+- Perbaikan safe-area handling untuk Android dan iOS
+- Perbaikan layout FeedbackModal untuk mobile dengan touch target yang lebih besar (44px)
+- Perbaikan responsive padding dan spacing di semua modal
+
+---
+
+# Update TuntasinAja (Sebelumnya)
+
+Halo semua! Ada update baru nih yang bakal bikin pengalaman pakai TuntasinAja jadi lebih nyaman dan mudah digunakan.
+
 ## Fitur Baru
 
 *1. Dukungan untuk iPhone*
