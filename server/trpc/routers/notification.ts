@@ -153,6 +153,7 @@ export const notificationRouter = createTRPCRouter({
           p256dh: z.string().min(1),
           auth: z.string().min(1),
         }),
+        userAgent: z.string().optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -211,6 +212,7 @@ export const notificationRouter = createTRPCRouter({
             userId: ctx.session.user.id, // Always update to current user
             p256dh: input.keys.p256dh,
             auth: input.keys.auth,
+            userAgent: input.userAgent || undefined, // Update userAgent if provided
             updatedAt: new Date(),
           },
           create: {
@@ -218,7 +220,7 @@ export const notificationRouter = createTRPCRouter({
             endpoint: input.endpoint,
             p256dh: input.keys.p256dh,
             auth: input.keys.auth,
-            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+            userAgent: input.userAgent || null,
           },
           include: {
             user: {
