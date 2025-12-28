@@ -252,7 +252,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
           {/* Header */}
           <div className="quickview-header" style={{ position: 'relative' }}>
             <div className="quickview-header-top">
-              <div className="quickview-header-left" style={{ paddingRight: '88px' }}>
+              <div className="quickview-header-left" style={{ paddingRight: isMobile ? '88px' : '88px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <UserIcon size={20} style={{ color: 'var(--text-light)' }} />
                   <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>

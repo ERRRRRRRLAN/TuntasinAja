@@ -282,7 +282,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
             <XCloseIcon size={20} />
           </button>
           
-          <div className="quickview-title-section" style={{ paddingRight: '60px' }}>
+          <div className="quickview-title-section" style={{ paddingRight: isMobile ? '50px' : '60px' }}>
             <h2 className="thread-detail-title" style={{ 
               margin: 0,
               flex: 1,

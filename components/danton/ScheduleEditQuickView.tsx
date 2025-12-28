@@ -270,7 +270,7 @@ export default function ScheduleEditQuickView({
 
           <div className="quickview-header" style={{ position: 'relative' }}>
             <div className="quickview-header-top">
-              <div className="quickview-header-left" style={{ paddingRight: '88px' }}>
+              <div className="quickview-header-left" style={{ paddingRight: isMobile ? '88px' : '88px' }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
