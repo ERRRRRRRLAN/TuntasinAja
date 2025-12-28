@@ -51,6 +51,23 @@ export default function WebPushSetup() {
           return
         }
 
+        // Check if running on iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+        
+        // Check if running as PWA (standalone mode)
+        const isPWA = 
+          (window.navigator as any).standalone === true ||
+          window.matchMedia('(display-mode: standalone)').matches ||
+          (document as any).referrer.includes('android-app://')
+
+        // For iOS, don't auto-request permission - user must click button
+        // iOS requires user interaction to request notification permission
+        if (isIOS && Notification.permission === 'default') {
+          console.log('[WebPushSetup] iOS detected with default permission - skipping auto-request (user must click button)')
+          return
+        }
+
         // Wait for service worker to be ready
         let registration: ServiceWorkerRegistration | null = null
         

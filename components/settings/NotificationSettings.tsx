@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import WebPushPermissionButton from '@/components/notifications/WebPushPermissionButton'
 
 export default function NotificationSettings() {
   const [isSaving, setIsSaving] = useState(false)
@@ -84,6 +85,9 @@ export default function NotificationSettings() {
       </h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Web Push Permission Button (for iOS PWA) */}
+        <WebPushPermissionButton />
+
         {/* Push Notifications */}
         <div style={{
           padding: '1rem',
