@@ -3437,8 +3437,9 @@ textarea::placeholder {
   /* Header - Sticky di atas */
   .quickview-header {
     padding: 1rem !important;
-    /* Fixed 1.5rem for Android mobile, iOS will add safe-area on top */
-    padding-top: 1.5rem !important;
+    /* Add safe-area for iOS notch, Android will be 0 so it becomes 1rem + 0 = 1rem */
+    /* iOS will get proper safe-area for notch */
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px)) !important;
     border-bottom: 1px solid var(--border);
     background: var(--card);
     flex-shrink: 0;

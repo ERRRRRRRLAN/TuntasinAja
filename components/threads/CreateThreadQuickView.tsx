@@ -368,6 +368,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
         {/* Simplified Header */}
         <div className="quickview-header" style={{
           padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+          paddingTop: isMobile ? `calc(1rem + env(safe-area-inset-top, 0px))` : '1.5rem',
           borderBottom: '1px solid var(--border)',
           background: 'var(--card)',
           position: 'relative',
