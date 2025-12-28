@@ -46,6 +46,53 @@ body {
   }
 }
 
+/* Android-specific overrides - remove all safe-area padding */
+html.android-device,
+html.android-device body {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+html.android-device {
+  --safe-area-top: 0px !important;
+  --safe-area-bottom: 0px !important;
+}
+
+/* Remove safe-area padding from main-content on Android */
+html.android-device .main-content {
+  padding-top: 1rem !important;
+}
+
+@media (max-width: 640px) {
+  html.android-device .main-content {
+    padding-top: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html.android-device .main-content {
+    padding-top: 1.5rem !important;
+  }
+}
+
+/* Remove safe-area padding from quickview headers on Android */
+html.android-device .quickview-header {
+  padding-top: 1rem !important;
+}
+
+@media (max-width: 640px) {
+  html.android-device .quickview-header {
+    padding-top: 1rem !important;
+  }
+}
+
+/* Remove safe-area padding from signin page header on Android */
+html.android-device .signin-page-header {
+  padding-top: 1.25rem !important;
+}
+
 :root {
   --primary: #6366f1;
   --primary-dark: #4f46e5;

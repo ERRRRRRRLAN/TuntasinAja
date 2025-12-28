@@ -71,6 +71,9 @@ export default function RootLayout({
               // Fix safe-area padding for Android - remove if Android detected
               var isAndroid = /Android/i.test(navigator.userAgent);
               if (isAndroid) {
+                // Add Android class to html for CSS targeting
+                document.documentElement.classList.add('android-device');
+                
                 // Remove safe-area padding from html and body for Android
                 document.documentElement.style.paddingTop = '0';
                 document.documentElement.style.paddingBottom = '0';
@@ -78,6 +81,10 @@ export default function RootLayout({
                 document.documentElement.style.paddingRight = '0';
                 document.body.style.paddingTop = '0';
                 document.body.style.paddingBottom = '0';
+                
+                // Force remove safe-area from CSS variables
+                document.documentElement.style.setProperty('--safe-area-top', '0px');
+                document.documentElement.style.setProperty('--safe-area-bottom', '0px');
               }
             } catch (e) {
               // Fallback to light if localStorage fails
