@@ -64,7 +64,11 @@ export default function UserList() {
   const kelasOptions = generateKelasOptions()
   const getUserPasswordHash = trpc.auth.getUserPasswordHash.useQuery(
     { userId: viewingPasswordUserId! },
-    { enabled: !!viewingPasswordUserId }
+    { 
+      enabled: !!viewingPasswordUserId,
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+    }
   )
 
   // Handle view password
@@ -72,6 +76,12 @@ export default function UserList() {
     if (viewingPasswordUserId === userId) {
       setViewingPasswordUserId(null)
       setShowPasswordHash({ ...showPasswordHash, [userId]: false })
+      // Clear password hash when closing
+      setPasswordHashes(prev => {
+        const newHashes = { ...prev }
+        delete newHashes[userId]
+        return newHashes
+      })
     } else {
       setViewingPasswordUserId(userId)
       setShowPasswordHash({ ...showPasswordHash, [userId]: false })
@@ -81,12 +91,19 @@ export default function UserList() {
   // Update password when query completes
   useEffect(() => {
     if (getUserPasswordHash.data && viewingPasswordUserId) {
-      // Use decrypted password if available, otherwise fallback to hash
-      const passwordToShow = getUserPasswordHash.data.password || getUserPasswordHash.data.passwordHash || '••••••••••••••••••••••••••••••••'
-      setPasswordHashes({
-        ...passwordHashes,
-        [viewingPasswordUserId]: passwordToShow,
-      })
+      // Only show decrypted password if available, don't show hash bcrypt
+      if (getUserPasswordHash.data.password !== null && getUserPasswordHash.data.password !== undefined) {
+        setPasswordHashes(prev => ({
+          ...prev,
+          [viewingPasswordUserId]: getUserPasswordHash.data!.password!,
+        }))
+      } else {
+        // If password not available, set to empty so we can show warning message
+        setPasswordHashes(prev => ({
+          ...prev,
+          [viewingPasswordUserId]: '',
+        }))
+      }
     }
   }, [getUserPasswordHash.data, viewingPasswordUserId])
 
@@ -629,8 +646,8 @@ export default function UserList() {
                     </div>
                   </div>
 
-                  {/* Password Hash Section */}
-                  {viewingPasswordUserId === user.id && passwordHashes[user.id] && (
+                  {/* Password Section */}
+                  {viewingPasswordUserId === user.id && (
                     <div style={{
                       marginTop: '0.75rem',
                       padding: '0.75rem',
@@ -694,9 +711,11 @@ export default function UserList() {
                         borderRadius: '0.25rem',
                         border: '1px solid var(--border)',
                       }}>
-                        {showPasswordHash[user.id] ? passwordHashes[user.id] : '••••••••••••••••••••••••••••••••'}
+                        {showPasswordHash[user.id] && passwordHashes[user.id] 
+                          ? passwordHashes[user.id] 
+                          : '••••••••••••••••••••••••••••••••'}
                       </div>
-                      {getUserPasswordHash.data?.password ? (
+                      {getUserPasswordHash.data?.password !== null && getUserPasswordHash.data?.password !== undefined ? (
                         <div style={{
                           fontSize: '0.7rem',
                           color: 'var(--text-success)',
@@ -704,16 +723,16 @@ export default function UserList() {
                         }}>
                           ✅ Password asli (decrypted)
                         </div>
-                      ) : (
+                      ) : getUserPasswordHash.data && !getUserPasswordHash.isLoading ? (
                         <div style={{
                           fontSize: '0.7rem',
                           color: 'var(--text-warning)',
                           marginTop: '0.5rem',
                           fontStyle: 'italic',
                         }}>
-                          ⚠️ Password tidak tersedia (hanya hash bcrypt)
+                          ⚠️ Password tidak tersedia (belum di-encrypt atau tidak ditemukan)
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   )}
 
@@ -1238,7 +1257,7 @@ export default function UserList() {
                           </button>
                         </div>
                       )}
-                      {viewingPasswordUserId === user.id && passwordHashes[user.id] && (
+                      {viewingPasswordUserId === user.id && (
                         <div style={{
                           marginTop: '0.75rem',
                           padding: '0.75rem',
@@ -1303,16 +1322,28 @@ export default function UserList() {
                             borderRadius: '0.25rem',
                             border: '1px solid var(--border)',
                           }}>
-                            {showPasswordHash[user.id] ? passwordHashes[user.id] : '••••••••••••••••••••••••••••••••'}
+                            {showPasswordHash[user.id] && passwordHashes[user.id]
+                              ? passwordHashes[user.id]
+                              : '••••••••••••••••••••••••••••••••'}
                           </div>
-                          <div style={{
-                            fontSize: '0.7rem',
-                            color: 'var(--text-light)',
-                            marginTop: '0.5rem',
-                            fontStyle: 'italic',
-                          }}>
-                            ⚠️ Ini adalah hash bcrypt, bukan password asli. Password asli tidak dapat dilihat.
-                          </div>
+                          {getUserPasswordHash.data?.password !== null && getUserPasswordHash.data?.password !== undefined ? (
+                            <div style={{
+                              fontSize: '0.7rem',
+                              color: 'var(--text-success)',
+                              marginTop: '0.5rem',
+                            }}>
+                              ✅ Password asli (decrypted)
+                            </div>
+                          ) : getUserPasswordHash.data && !getUserPasswordHash.isLoading ? (
+                            <div style={{
+                              fontSize: '0.7rem',
+                              color: 'var(--text-warning)',
+                              marginTop: '0.5rem',
+                              fontStyle: 'italic',
+                            }}>
+                              ⚠️ Password tidak tersedia (belum di-encrypt atau tidak ditemukan)
+                            </div>
+                          ) : null}
                         </div>
                       )}
                       {viewingPasswordUserId === user.id && getUserPasswordHash.isLoading && (
