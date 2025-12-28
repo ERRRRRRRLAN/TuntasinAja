@@ -125,8 +125,9 @@ html.android-device .main-content[style*="padding-top"] {
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   /* Safe area insets for mobile devices - only apply if > 0 (iOS notch) */
-  --safe-area-top: max(0px, env(safe-area-inset-top, 0px));
-  --safe-area-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  /* Safe area insets - default to 0px, will be overridden by actual values on iOS devices with notch */
+  --safe-area-top: 0px;
+  --safe-area-bottom: 0px;
   /* Bottom Navigation Height - increased for better touch targets */
   --bottom-nav-height: calc(70px + var(--safe-area-bottom));
   --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 16px); /* Space for FAB above navbar */
