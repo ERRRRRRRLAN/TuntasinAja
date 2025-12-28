@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall } from '@/components/ui/Icons'
+import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall, EyeIcon, EyeOffIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
 import ComboBox from '@/components/ui/ComboBox'
@@ -41,6 +41,9 @@ export default function UserList() {
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewingPasswordUserId, setViewingPasswordUserId] = useState<string | null>(null)
+  const [showPasswordHash, setShowPasswordHash] = useState<Record<string, boolean>>({})
+  const [passwordHashes, setPasswordHashes] = useState<Record<string, string>>({})
 
   // Detect mobile viewport
   useEffect(() => {
@@ -59,6 +62,31 @@ export default function UserList() {
   const { data: users, isLoading, refetch } = trpc.auth.getAllUsers.useQuery()
   const utils = trpc.useUtils()
   const kelasOptions = generateKelasOptions()
+  const getUserPasswordHash = trpc.auth.getUserPasswordHash.useQuery(
+    { userId: viewingPasswordUserId! },
+    { enabled: !!viewingPasswordUserId }
+  )
+
+  // Handle view password
+  const handleViewPassword = (userId: string) => {
+    if (viewingPasswordUserId === userId) {
+      setViewingPasswordUserId(null)
+      setShowPasswordHash({ ...showPasswordHash, [userId]: false })
+    } else {
+      setViewingPasswordUserId(userId)
+      setShowPasswordHash({ ...showPasswordHash, [userId]: false })
+    }
+  }
+
+  // Update password hash when query completes
+  useEffect(() => {
+    if (getUserPasswordHash.data && viewingPasswordUserId) {
+      setPasswordHashes({
+        ...passwordHashes,
+        [viewingPasswordUserId]: getUserPasswordHash.data.passwordHash,
+      })
+    }
+  }, [getUserPasswordHash.data, viewingPasswordUserId])
 
   // Filter users based on search query and kelas
   const filteredUsers = useMemo(() => {
@@ -599,6 +627,103 @@ export default function UserList() {
                     </div>
                   </div>
 
+                  {/* Password Hash Section */}
+                  {viewingPasswordUserId === user.id && passwordHashes[user.id] && (
+                    <div style={{
+                      marginTop: '0.75rem',
+                      padding: '0.75rem',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--border)',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-light)',
+                          fontWeight: 500,
+                        }}>
+                          Password Hash (bcrypt)
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowPasswordHash({
+                              ...showPasswordHash,
+                              [user.id]: !showPasswordHash[user.id],
+                            })
+                          }}
+                          type="button"
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '0.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: 'var(--text-light)',
+                            transition: 'color 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = 'var(--text)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = 'var(--text-light)'
+                          }}
+                          title={showPasswordHash[user.id] ? 'Sembunyikan' : 'Tampilkan'}
+                        >
+                          {showPasswordHash[user.id] ? (
+                            <EyeOffIcon size={16} />
+                          ) : (
+                            <EyeIcon size={16} />
+                          )}
+                        </button>
+                      </div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontFamily: 'monospace',
+                        color: 'var(--text)',
+                        wordBreak: 'break-all',
+                        background: 'var(--card)',
+                        padding: '0.5rem',
+                        borderRadius: '0.25rem',
+                        border: '1px solid var(--border)',
+                      }}>
+                        {showPasswordHash[user.id] ? passwordHashes[user.id] : '••••••••••••••••••••••••••••••••'}
+                      </div>
+                      <div style={{
+                        fontSize: '0.7rem',
+                        color: 'var(--text-light)',
+                        marginTop: '0.5rem',
+                        fontStyle: 'italic',
+                      }}>
+                        ⚠️ Ini adalah hash bcrypt, bukan password asli. Password asli tidak dapat dilihat.
+                      </div>
+                    </div>
+                  )}
+
+                  {viewingPasswordUserId === user.id && getUserPasswordHash.isLoading && (
+                    <div style={{
+                      marginTop: '0.75rem',
+                      padding: '0.75rem',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                    }}>
+                      <LoadingSpinner size={16} />
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                        Memuat password hash...
+                      </span>
+                    </div>
+                  )}
+
                   {/* Actions */}
                   {!isCurrentUser && (
                     <div style={{ 
@@ -607,7 +732,56 @@ export default function UserList() {
                       marginTop: '0.5rem',
                       paddingTop: '0.75rem',
                       borderTop: '1px solid var(--border)',
+                      flexWrap: 'wrap',
                     }}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleViewPassword(user.id)
+                        }}
+                        type="button"
+                        style={{
+                          background: viewingPasswordUserId === user.id ? 'var(--bg-secondary)' : 'transparent',
+                          color: viewingPasswordUserId === user.id ? 'var(--text)' : 'var(--text-light)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          flex: viewingPasswordUserId === user.id ? '1 1 100%' : '0 1 auto',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (viewingPasswordUserId !== user.id) {
+                            e.currentTarget.style.background = 'var(--bg-secondary)'
+                            e.currentTarget.style.color = 'var(--text)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (viewingPasswordUserId !== user.id) {
+                            e.currentTarget.style.background = 'transparent'
+                            e.currentTarget.style.color = 'var(--text-light)'
+                          }
+                        }}
+                      >
+                        {viewingPasswordUserId === user.id ? (
+                          <>
+                            <XIconSmall size={14} />
+                            <span>Tutup Password</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeIcon size={14} />
+                            <span>Lihat Password</span>
+                          </>
+                        )}
+                      </button>
                       <button
                         onClick={(e) => {
                           e.preventDefault()
@@ -920,7 +1094,54 @@ export default function UserList() {
                     </td>
                     <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                       {!isCurrentUser && (
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleViewPassword(user.id)
+                            }}
+                            title={viewingPasswordUserId === user.id ? 'Tutup Password' : 'Lihat Password'}
+                            type="button"
+                            style={{
+                              background: viewingPasswordUserId === user.id ? 'var(--bg-secondary)' : 'transparent',
+                              color: viewingPasswordUserId === user.id ? 'var(--text)' : 'var(--text-light)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '0.375rem',
+                              padding: '0.5rem 0.75rem',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              transition: 'all 0.2s',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.375rem'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (viewingPasswordUserId !== user.id) {
+                                e.currentTarget.style.background = 'var(--bg-secondary)'
+                                e.currentTarget.style.color = 'var(--text)'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (viewingPasswordUserId !== user.id) {
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.color = 'var(--text-light)'
+                              }
+                            }}
+                          >
+                            {viewingPasswordUserId === user.id ? (
+                              <>
+                                <XIconSmall size={14} />
+                                <span>Tutup</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeIcon size={14} />
+                                <span>Password</span>
+                              </>
+                            )}
+                          </button>
                           <button
                             onClick={(e) => {
                               e.preventDefault()
@@ -1003,6 +1224,101 @@ export default function UserList() {
                               </>
                             )}
                           </button>
+                        </div>
+                      )}
+                      {viewingPasswordUserId === user.id && passwordHashes[user.id] && (
+                        <div style={{
+                          marginTop: '0.75rem',
+                          padding: '0.75rem',
+                          background: 'var(--bg-secondary)',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--border)',
+                          textAlign: 'left',
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '0.5rem',
+                          }}>
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--text-light)',
+                              fontWeight: 500,
+                            }}>
+                              Password Hash (bcrypt)
+                            </div>
+                            <button
+                              onClick={() => {
+                                setShowPasswordHash({
+                                  ...showPasswordHash,
+                                  [user.id]: !showPasswordHash[user.id],
+                                })
+                              }}
+                              type="button"
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0.25rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                color: 'var(--text-light)',
+                                transition: 'color 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.color = 'var(--text)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.color = 'var(--text-light)'
+                              }}
+                              title={showPasswordHash[user.id] ? 'Sembunyikan' : 'Tampilkan'}
+                            >
+                              {showPasswordHash[user.id] ? (
+                                <EyeOffIcon size={16} />
+                              ) : (
+                                <EyeIcon size={16} />
+                              )}
+                            </button>
+                          </div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            fontFamily: 'monospace',
+                            color: 'var(--text)',
+                            wordBreak: 'break-all',
+                            background: 'var(--card)',
+                            padding: '0.5rem',
+                            borderRadius: '0.25rem',
+                            border: '1px solid var(--border)',
+                          }}>
+                            {showPasswordHash[user.id] ? passwordHashes[user.id] : '••••••••••••••••••••••••••••••••'}
+                          </div>
+                          <div style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--text-light)',
+                            marginTop: '0.5rem',
+                            fontStyle: 'italic',
+                          }}>
+                            ⚠️ Ini adalah hash bcrypt, bukan password asli. Password asli tidak dapat dilihat.
+                          </div>
+                        </div>
+                      )}
+                      {viewingPasswordUserId === user.id && getUserPasswordHash.isLoading && (
+                        <div style={{
+                          marginTop: '0.75rem',
+                          padding: '0.75rem',
+                          background: 'var(--bg-secondary)',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--border)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                        }}>
+                          <LoadingSpinner size={16} />
+                          <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                            Memuat password hash...
+                          </span>
                         </div>
                       )}
                       {isCurrentUser && (

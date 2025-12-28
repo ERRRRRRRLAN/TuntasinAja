@@ -243,6 +243,28 @@ export const authRouter = createTRPCRouter({
     }),
 
   // Get all users (Admin only)
+  // Get user password hash (Admin only)
+  getUserPasswordHash: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: {
+          id: true,
+          passwordHash: true,
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return {
+        userId: user.id,
+        passwordHash: user.passwordHash,
+      };
+    }),
+
   getAllUsers: adminProcedure.query(async () => {
     const users = (await prisma.user.findMany({
       select: {
