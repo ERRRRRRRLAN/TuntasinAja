@@ -14,6 +14,7 @@ import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/comp
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 import { toast } from '@/components/ui/ToastContainer'
+import WebPushPermissionButton from '@/components/notifications/WebPushPermissionButton'
 
 export default function MePage() {
   const { data: session, status } = useSession()
@@ -598,6 +599,9 @@ export default function MePage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Web Push Permission Button (for iOS PWA) */}
+            <WebPushPermissionButton />
+
             <ToggleSwitch
               checked={displaySettings.pushNotificationsEnabled ?? true}
               onChange={(checked) => handleToggle('pushNotificationsEnabled', checked)}
