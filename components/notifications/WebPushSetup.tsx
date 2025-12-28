@@ -8,6 +8,9 @@ export default function WebPushSetup() {
   const { data: session, status } = useSession()
   const setupAttempted = useRef(false)
   const [isSupported, setIsSupported] = useState(false)
+  
+  // Move useMutation to top level - hooks must be called at top level
+  const registerWebPush = trpc.notification.registerWebPushToken.useMutation()
 
   useEffect(() => {
     // Only run on authenticated sessions
@@ -78,7 +81,6 @@ export default function WebPushSetup() {
           
           // Check if subscription is still valid by trying to register it
           try {
-            const registerWebPush = trpc.notification.registerWebPushToken.useMutation()
             const subscriptionJSON = subscription.toJSON()
             
             if (subscriptionJSON.keys?.p256dh && subscriptionJSON.keys?.auth) {
@@ -154,8 +156,6 @@ export default function WebPushSetup() {
             throw new Error('Invalid subscription keys')
           }
 
-          const registerWebPush = trpc.notification.registerWebPushToken.useMutation()
-          
           await registerWebPush.mutateAsync({
             endpoint: subscription.endpoint,
             keys: {
@@ -186,7 +186,7 @@ export default function WebPushSetup() {
       isMounted = false
       clearTimeout(timer)
     }
-  }, [session, status])
+  }, [session, status, registerWebPush])
 
   return null // Component tidak render apa-apa
 }
