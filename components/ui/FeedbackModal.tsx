@@ -8,6 +8,26 @@ import { trpc } from '@/lib/trpc'
 import { toast } from './ToastContainer'
 import LoadingSpinner from './LoadingSpinner'
 
+// Detect mobile viewport
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640) // 640px breakpoint for mobile
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
+
+  return isMobile
+}
+
 interface FeedbackModalProps {
   isOpen: boolean
   onClose: () => void
@@ -23,6 +43,7 @@ export default function FeedbackModal({
   const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleClose = useCallback(() => {
     setIsVisible(false)
@@ -156,136 +177,121 @@ export default function FeedbackModal({
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        {/* Simplified Header */}
-        <div style={{
-          padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--card)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexShrink: 0,
+        {/* Header */}
+        <div className="feedback-modal-header" style={{
+          paddingTop: isMobile ? `calc(1rem + env(safe-area-inset-top, 0px))` : '1.25rem',
         }}>
-          <h3 style={{
-            margin: 0,
-            fontSize: '1.25rem',
-            fontWeight: 600,
-            color: 'var(--text)',
-          }}>
-            Saran & Masukan
-              </h3>
+          <div className="feedback-modal-header-top">
+            <div className="feedback-modal-header-left">
+              <h3>Saran & Masukan</h3>
+            </div>
             <button
               onClick={handleClose}
+              className="feedback-modal-close-btn"
               style={{
-              padding: '0.5rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              background: 'transparent',
-              color: 'var(--text-light)',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-light)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s',
-              minWidth: '36px',
-              minHeight: '36px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'var(--bg-secondary)'
-              e.currentTarget.style.color = 'var(--text)'
+                e.currentTarget.style.color = 'var(--text)'
               }}
               onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = 'var(--text-light)'
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--text-light)'
               }}
               aria-label="Tutup"
               disabled={submitFeedback.isLoading}
             >
               <XIconSmall size={20} />
             </button>
+          </div>
         </div>
 
-        {/* Simplified Form */}
-        <div style={{
-          padding: '1.5rem',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflowY: 'auto',
-            }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1 }}>
-            <div>
-            <textarea
-              id="feedback-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-                rows={6}
+        {/* Form */}
+        <div className="feedback-modal-form">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, height: '100%' }}>
+            <div className="form-group">
+              <textarea
+                id="feedback-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={isMobile ? 8 : 6}
                 placeholder="Tulis saran dan masukan Anda di sini..."
-              required
-              disabled={submitFeedback.isLoading}
-              style={{
-                width: '100%',
-                  padding: '1rem',
-                border: '1px solid var(--border)',
+                required
+                disabled={submitFeedback.isLoading}
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.875rem' : '1rem',
+                  border: '1px solid var(--border)',
                   borderRadius: '0.75rem',
                   background: 'var(--bg-secondary)',
-                color: 'var(--text)',
-                  fontSize: '0.9375rem',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-                  minHeight: '180px',
+                  color: 'var(--text)',
+                  fontSize: isMobile ? '0.875rem' : '0.9375rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  outline: 'none',
+                  transition: 'border-color 0.2s, background 0.2s',
+                  minHeight: isMobile ? '180px' : '180px',
                   lineHeight: '1.6',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary)'
                   e.currentTarget.style.background = 'var(--card)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
                   e.currentTarget.style.background = 'var(--bg-secondary)'
-              }}
-            />
+                }}
+              />
               <div style={{ 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginTop: '0.5rem',
               }}>
-            <small style={{ 
-                  fontSize: '0.8125rem',
+                <small style={{ 
+                  fontSize: isMobile ? '0.75rem' : '0.8125rem',
                   color: content.trim().length < 10 ? 'var(--danger)' : 'var(--text-light)'
-            }}>
+                }}>
                   {content.trim().length < 10 
                     ? `Minimal 10 karakter (${content.length}/10)`
                     : `${content.length} karakter`
                   }
-            </small>
+                </small>
               </div>
-          </div>
+            </div>
 
-            <div style={{ 
+            <div className="feedback-modal-actions" style={{ 
               display: 'flex', 
               gap: '0.75rem', 
               marginTop: 'auto',
-              paddingTop: '1rem',
+              flexDirection: isMobile ? 'column' : 'row',
             }}>
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={submitFeedback.isLoading}
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={submitFeedback.isLoading}
+                className="btn"
                 style={{
-                  padding: '0.75rem 1.5rem',
+                  padding: isMobile ? '0.75rem 1rem' : '0.75rem 1.5rem',
                   background: 'var(--bg-secondary)',
                   color: 'var(--text)',
                   border: '1px solid var(--border)',
                   borderRadius: '0.5rem',
                   cursor: submitFeedback.isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9375rem',
+                  fontSize: isMobile ? '0.875rem' : '0.9375rem',
                   fontWeight: 500,
                   transition: 'all 0.2s',
                   opacity: submitFeedback.isLoading ? 0.6 : 1,
+                  width: isMobile ? '100%' : 'auto',
+                  minHeight: isMobile ? '44px' : 'auto',
                 }}
                 onMouseEnter={(e) => {
                   if (!submitFeedback.isLoading) {
@@ -297,15 +303,17 @@ export default function FeedbackModal({
                     e.currentTarget.style.background = 'var(--bg-secondary)'
                   }
                 }}
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={submitFeedback.isLoading || !content.trim() || content.trim().length < 10}
+                className="btn"
                 style={{
-                  flex: 1,
-                  padding: '0.75rem 1.5rem',
+                  flex: isMobile ? 'none' : 1,
+                  width: isMobile ? '100%' : 'auto',
+                  padding: isMobile ? '0.75rem 1rem' : '0.75rem 1.5rem',
                   background: (submitFeedback.isLoading || !content.trim() || content.trim().length < 10) 
                     ? 'var(--border)' 
                     : 'var(--primary)',
@@ -315,13 +323,14 @@ export default function FeedbackModal({
                   cursor: (submitFeedback.isLoading || !content.trim() || content.trim().length < 10) 
                     ? 'not-allowed' 
                     : 'pointer',
-                  fontSize: '0.9375rem',
+                  fontSize: isMobile ? '0.875rem' : '0.9375rem',
                   fontWeight: 600,
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.5rem',
+                  minHeight: isMobile ? '44px' : 'auto',
                 }}
                 onMouseEnter={(e) => {
                   if (!submitFeedback.isLoading && content.trim().length >= 10) {
@@ -337,16 +346,16 @@ export default function FeedbackModal({
                     e.currentTarget.style.boxShadow = 'none'
                   }
                 }}
-            >
-              {submitFeedback.isLoading ? (
-                <>
+              >
+                {submitFeedback.isLoading ? (
+                  <>
                     <LoadingSpinner size={16} color="white" />
                     <span>Mengirim...</span>
-                </>
-              ) : (
-                'Kirim'
-              )}
-            </button>
+                  </>
+                ) : (
+                  'Kirim'
+                )}
+              </button>
           </div>
         </form>
         </div>
