@@ -73,17 +73,15 @@ export const groupTaskTitleSchema = z
 
 /**
  * Password validation schema
- * - Min 8 characters
- * - Must contain at least one uppercase letter
- * - Must contain at least one lowercase letter
- * - Must contain at least one number
+ * - Min 1 character (flexible, no strict requirements)
+ * - Max 128 characters
+ * - No regex validation - user can use any password format they want
+ * - Trims whitespace
  */
 export const passwordSchema = z
   .string()
-  .min(8, 'Password harus minimal 8 karakter')
-  .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf besar')
-  .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
-  .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka')
+  .trim()
+  .min(1, 'Password tidak boleh kosong')
   .max(128, 'Password terlalu panjang (maksimal 128 karakter)')
 
 /**
