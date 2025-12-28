@@ -58,6 +58,20 @@ body {
   --bottom-nav-fab-spacing: calc(var(--bottom-nav-height) + 16px); /* Space for FAB above navbar */
 }
 
+/* Android-specific overrides - ensure no safe-area padding */
+html.android-device,
+html.android-device body {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+html.android-device {
+  --safe-area-top: 0px !important;
+  --safe-area-bottom: 0px !important;
+}
+
 /* Dark mode */
 .dark {
   --primary: #818cf8;
