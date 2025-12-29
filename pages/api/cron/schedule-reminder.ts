@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
-import { sendPushNotification } from '@/lib/firebase-admin'
+import { sendPushNotification, sendWebPushNotifications } from '@/lib/firebase-admin'
 import { addDays, getDay, format, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { getUTCDate, toJakartaDate } from '@/lib/date-utils'
+import { shouldSendNotification } from '@/server/utils/notificationSettings'
 
 // Helper function to get tomorrow's day name
 const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
@@ -280,29 +281,82 @@ export default async function handler(
             const filterSubjects = subjectsWithPR.join(',')
             const deepLink = `/?filter=${encodeURIComponent(filterSubjects)}`
 
-            // Send notification to this user (all their devices)
-            const result = await sendPushNotification(
+            // Check if user should receive schedule reminder notification
+            const shouldSend = await shouldSendNotification(user.id, 'schedule')
+            
+            if (!shouldSend) {
+              console.log(`[ScheduleReminder] Skipping user ${user.name} (${kelas}) - schedule reminders disabled`)
+              continue
+            }
+
+            const notificationData = {
+              type: 'schedule_reminder',
+              filter: filterSubjects,
+              deepLink: deepLink,
+              tomorrow: tomorrowFormatted,
+              subjects: subjectsList,
+              hasIncompleteTasks: 'true',
+              incompletePRsCount: String(totalPRs),
+            }
+
+            // Send native push notifications (FCM) to this user (all their devices)
+            const nativeResult = await sendPushNotification(
               tokens,
               title,
               body,
-              {
-                type: 'schedule_reminder',
-                filter: filterSubjects,
-                deepLink: deepLink,
-                tomorrow: tomorrowFormatted,
-                subjects: subjectsList,
-                hasIncompleteTasks: 'true',
-                incompletePRsCount: String(totalPRs),
-              }
+              notificationData
             )
 
-            totalSent += result.successCount
-            totalFailed += result.failureCount
+            // Also send Web Push notifications to this user
+            let webPushResult = { successCount: 0, failureCount: 0, expiredSubscriptions: [] as string[] }
+            
+            const webPushSubscriptions = await prisma.webPushSubscription.findMany({
+              where: {
+                userId: user.id,
+              },
+              select: {
+                endpoint: true,
+                p256dh: true,
+                auth: true,
+              },
+            })
+
+            if (webPushSubscriptions.length > 0) {
+              const subscriptionsToSend = webPushSubscriptions.map(sub => ({
+                endpoint: sub.endpoint,
+                keys: {
+                  p256dh: sub.p256dh,
+                  auth: sub.auth,
+                },
+              }))
+
+              webPushResult = await sendWebPushNotifications(subscriptionsToSend, title, body, notificationData)
+
+              // Delete expired subscriptions
+              if (webPushResult.expiredSubscriptions.length > 0) {
+                await prisma.webPushSubscription.deleteMany({
+                  where: {
+                    endpoint: {
+                      in: webPushResult.expiredSubscriptions,
+                    },
+                  },
+                })
+                console.log(`[ScheduleReminder] Deleted ${webPushResult.expiredSubscriptions.length} expired Web Push subscriptions for user ${user.name}`)
+              }
+            }
+
+            const totalSuccess = nativeResult.successCount + webPushResult.successCount
+            const totalFailure = nativeResult.failureCount + webPushResult.failureCount
+
+            totalSent += totalSuccess
+            totalFailed += totalFailure
 
             console.log(`[ScheduleReminder] Sent to user ${user.name} (${kelas}):`, {
               subjects: subjectsList,
               incompletePRsCount: totalPRs,
-              success: result.successCount > 0,
+              nativeSuccess: nativeResult.successCount,
+              webPushSuccess: webPushResult.successCount,
+              totalSuccess,
             })
           } catch (error) {
             console.error(`[ScheduleReminder] Error processing user ${user.id}:`, error)
