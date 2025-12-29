@@ -924,17 +924,34 @@ export default function UserList() {
           </div>
         ) : (
           // Desktop Table View
-          <div className="user-table" style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="user-table" style={{ 
+            overflowX: 'auto',
+            borderRadius: '0.5rem',
+            border: '1px solid var(--border)',
+            background: 'var(--card)'
+          }}>
+          <table style={{ 
+            width: '100%', 
+            borderCollapse: 'separate',
+            borderSpacing: 0,
+            minWidth: '1000px'
+          }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--border)' }}>
+              <tr style={{ 
+                background: 'var(--bg-secondary)',
+                borderBottom: '2px solid var(--border)'
+              }}>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
                   fontSize: '0.875rem',
-                  width: '40px'
+                  width: '50px',
+                  position: 'sticky',
+                  left: 0,
+                  background: 'var(--bg-secondary)',
+                  zIndex: 10
                 }}>
                   <input
                     type="checkbox"
@@ -952,74 +969,87 @@ export default function UserList() {
                   />
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '150px'
                 }}>
                   Nama
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '200px'
                 }}>
                   Email
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '120px'
                 }}>
                   Role
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '120px',
+                  whiteSpace: 'nowrap'
                 }}>
                   Kelas
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
-                  textAlign: 'left', 
+                  padding: '1rem 0.75rem', 
+                  textAlign: 'center', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  width: '80px'
                 }}>
                   PR
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
-                  textAlign: 'left', 
+                  padding: '1rem 0.75rem', 
+                  textAlign: 'center', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  width: '100px'
                 }}>
                   Sub Tugas
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'left', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '130px'
                 }}>
                   Terdaftar
                 </th>
                 <th style={{ 
-                  padding: '0.75rem', 
+                  padding: '1rem 0.75rem', 
                   textAlign: 'center', 
                   fontWeight: 600,
                   color: 'var(--text-light)',
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  minWidth: '200px',
+                  position: 'sticky',
+                  right: 0,
+                  background: 'var(--bg-secondary)',
+                  zIndex: 10
                 }}>
                   Aksi
                 </th>
@@ -1037,11 +1067,32 @@ export default function UserList() {
                       backgroundColor: isCurrentUser 
                         ? 'var(--bg-secondary)' 
                         : isSelected 
-                        ? 'rgba(var(--primary-rgb), 0.1)' 
-                        : 'transparent'
+                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        : 'transparent',
+                      transition: 'background-color 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isCurrentUser && !isSelected) {
+                        e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isCurrentUser && !isSelected) {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }
                     }}
                   >
-                    <td style={{ padding: '0.75rem' }}>
+                    <td style={{ 
+                      padding: '1rem 0.75rem',
+                      position: 'sticky',
+                      left: 0,
+                      background: isCurrentUser 
+                        ? 'var(--bg-secondary)' 
+                        : isSelected 
+                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        : 'var(--card)',
+                      zIndex: 5
+                    }}>
                       {!isCurrentUser && (
                         <input
                           type="checkbox"
@@ -1056,46 +1107,54 @@ export default function UserList() {
                         />
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem' }}>
+                    <td style={{ padding: '1rem 0.75rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span>{user.name}</span>
+                        <span style={{ fontWeight: 500, color: 'var(--text)' }}>{user.name}</span>
                         {isCurrentUser && (
                           <span style={{ 
                             fontSize: '0.75rem', 
                             color: 'var(--primary)',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            padding: '0.125rem 0.375rem',
+                            borderRadius: '0.25rem',
+                            background: 'rgba(var(--primary-rgb), 0.1)'
                           }}>
-                            (Anda)
+                            Anda
                           </span>
                         )}
                       </div>
                     </td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-light)' }}>
-                      {user.email}
+                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                      <span style={{ wordBreak: 'break-word' }}>{user.email}</span>
                     </td>
-                    <td style={{ padding: '0.75rem' }}>
+                    <td style={{ padding: '1rem 0.75rem' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                         {user.isAdmin ? (
                           <span style={{
-                            display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.375rem 0.625rem',
+                            borderRadius: '0.375rem',
                             background: 'var(--primary)',
                             color: 'white',
                             fontSize: '0.75rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap'
                           }}>
-                            <CrownIcon size={12} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
-                            Admin
+                            <CrownIcon size={12} />
+                            <span>Admin</span>
                           </span>
                         ) : (
                           <span style={{
                             display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
+                            padding: '0.375rem 0.625rem',
+                            borderRadius: '0.375rem',
                             background: 'var(--bg-secondary)',
                             color: 'var(--text-light)',
-                            fontSize: '0.75rem'
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            whiteSpace: 'nowrap'
                           }}>
                             User
                           </span>
@@ -1103,28 +1162,30 @@ export default function UserList() {
                         {(user as any).isDanton && !user.isAdmin && (
                           <span style={{
                             display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
+                            padding: '0.375rem 0.625rem',
+                            borderRadius: '0.375rem',
                             background: '#fbbf24',
                             color: '#78350f',
                             fontSize: '0.75rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap'
                           }}>
                             Danton
                           </span>
                         )}
                       </div>
                     </td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-light)' }}>
+                    <td style={{ padding: '1rem 0.75rem' }}>
                       {user.kelas ? (
                         <span style={{
                           display: 'inline-block',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
+                          padding: '0.375rem 0.625rem',
+                          borderRadius: '0.375rem',
                           background: 'var(--primary)',
                           color: 'white',
                           fontSize: '0.75rem',
-                          fontWeight: 600
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap'
                         }}>
                           {user.kelas}
                         </span>
@@ -1134,18 +1195,35 @@ export default function UserList() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-light)', textAlign: 'center' }}>
+                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text)', textAlign: 'center', fontWeight: 500 }}>
                       {user._count.threads}
                     </td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-light)', textAlign: 'center' }}>
+                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text)', textAlign: 'center', fontWeight: 500 }}>
                       {user._count.comments}
                     </td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
                       {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: id })}
                     </td>
-                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                    <td style={{ 
+                      padding: '1rem 0.75rem', 
+                      textAlign: 'center',
+                      position: 'sticky',
+                      right: 0,
+                      background: isCurrentUser 
+                        ? 'var(--bg-secondary)' 
+                        : isSelected 
+                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        : 'var(--card)',
+                      zIndex: 5
+                    }}>
                       {!isCurrentUser && (
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          gap: '0.5rem', 
+                          justifyContent: 'center', 
+                          alignItems: 'center',
+                          flexWrap: 'nowrap'
+                        }}>
                           <button
                             onClick={(e) => {
                               e.preventDefault()
@@ -1155,29 +1233,33 @@ export default function UserList() {
                             title={viewingPasswordUserId === user.id ? 'Tutup Password' : 'Lihat Password'}
                             type="button"
                             style={{
-                              background: viewingPasswordUserId === user.id ? 'var(--bg-secondary)' : 'transparent',
-                              color: viewingPasswordUserId === user.id ? 'var(--text)' : 'var(--text-light)',
+                              background: viewingPasswordUserId === user.id ? 'var(--primary)' : 'transparent',
+                              color: viewingPasswordUserId === user.id ? 'white' : 'var(--text-light)',
                               border: '1px solid var(--border)',
                               borderRadius: '0.375rem',
                               padding: '0.5rem 0.75rem',
                               cursor: 'pointer',
-                              fontSize: '0.875rem',
+                              fontSize: '0.8125rem',
                               fontWeight: 500,
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.375rem'
+                              gap: '0.375rem',
+                              whiteSpace: 'nowrap',
+                              minWidth: 'fit-content'
                             }}
                             onMouseEnter={(e) => {
                               if (viewingPasswordUserId !== user.id) {
                                 e.currentTarget.style.background = 'var(--bg-secondary)'
                                 e.currentTarget.style.color = 'var(--text)'
+                                e.currentTarget.style.borderColor = 'var(--primary)'
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (viewingPasswordUserId !== user.id) {
                                 e.currentTarget.style.background = 'transparent'
                                 e.currentTarget.style.color = 'var(--text-light)'
+                                e.currentTarget.style.borderColor = 'var(--border)'
                               }
                             }}
                           >
@@ -1197,9 +1279,7 @@ export default function UserList() {
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()
-                              console.log('Edit button clicked for user:', user.id)
                               setEditingUserId(user.id)
-                              // Scroll to form after a short delay
                               setTimeout(() => {
                                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
                               }, 100)
@@ -1213,21 +1293,26 @@ export default function UserList() {
                               borderRadius: '0.375rem',
                               padding: '0.5rem 0.75rem',
                               cursor: 'pointer',
-                              fontSize: '0.875rem',
+                              fontSize: '0.8125rem',
                               fontWeight: 500,
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.375rem'
+                              gap: '0.375rem',
+                              whiteSpace: 'nowrap'
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.background = 'var(--primary-hover)'
+                              e.currentTarget.style.transform = 'translateY(-1px)'
+                              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = 'var(--primary)'
+                              e.currentTarget.style.transform = 'translateY(0)'
+                              e.currentTarget.style.boxShadow = 'none'
                             }}
                           >
-                            <EditIcon size={14} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                            <EditIcon size={14} />
                             <span>Edit</span>
                           </button>
                           <button
@@ -1244,33 +1329,38 @@ export default function UserList() {
                               borderRadius: '0.375rem',
                               padding: '0.5rem 0.75rem',
                               cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
-                              fontSize: '0.875rem',
+                              fontSize: '0.8125rem',
                               fontWeight: 500,
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '0.375rem',
-                              opacity: deleteUser.isLoading ? 0.6 : 1
+                              opacity: deleteUser.isLoading ? 0.6 : 1,
+                              whiteSpace: 'nowrap'
                             }}
                             onMouseEnter={(e) => {
                               if (!deleteUser.isLoading) {
                                 e.currentTarget.style.background = '#b91c1c'
+                                e.currentTarget.style.transform = 'translateY(-1px)'
+                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(220,38,38,0.3)'
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!deleteUser.isLoading) {
                                 e.currentTarget.style.background = '#dc2626'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = 'none'
                               }
                             }}
                           >
                             {deleteUser.isLoading ? (
                               <>
-                                <LoadingSpinner size={14} color="white" style={{ marginRight: '0.25rem', display: 'inline-block' }} />
+                                <LoadingSpinner size={14} color="white" />
                                 <span>Menghapus...</span>
                               </>
                             ) : (
                               <>
-                                <TrashIcon size={14} style={{ marginRight: '0.25rem', display: 'inline-block', verticalAlign: 'middle' }} />
+                                <TrashIcon size={14} />
                                 <span>Hapus</span>
                               </>
                             )}
