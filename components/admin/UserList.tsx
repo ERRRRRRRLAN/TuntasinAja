@@ -525,6 +525,7 @@ export default function UserList() {
                     gridTemplateColumns: '1fr 1fr',
                     gap: '0.75rem',
                     fontSize: '0.875rem',
+                    gridColumn: '1 / -1'
                   }}>
                     {/* Role */}
                     <div>
@@ -535,45 +536,39 @@ export default function UserList() {
                       }}>
                         Role
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {user.isAdmin ? (
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {user.isAdmin && (
                           <span style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
-                            background: 'var(--primary)',
-                            color: 'white',
-                            fontSize: '0.75rem',
-                            fontWeight: 600
+                            gap: '0.375rem',
+                            fontSize: '0.875rem',
+                            color: 'var(--text)',
+                            fontWeight: 500
                           }}>
-                            <CrownIcon size={12} />
-                            Admin
-                          </span>
-                        ) : (
-                          <span style={{
-                            display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-light)',
-                            fontSize: '0.75rem'
-                          }}>
-                            User
+                            <CrownIcon size={16} style={{ color: 'var(--primary)' }} />
+                            <span>Admin</span>
                           </span>
                         )}
                         {(user as any).isDanton && !user.isAdmin && (
                           <span style={{
-                            display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
-                            background: '#fbbf24',
-                            color: '#78350f',
-                            fontSize: '0.75rem',
-                            fontWeight: 600
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            fontSize: '0.875rem',
+                            color: 'var(--text)',
+                            fontWeight: 500
                           }}>
-                            Danton
+                            <span style={{ color: '#f59e0b' }}>•</span>
+                            <span>Danton</span>
+                          </span>
+                        )}
+                        {!user.isAdmin && !(user as any).isDanton && (
+                          <span style={{
+                            fontSize: '0.875rem',
+                            color: 'var(--text-light)'
+                          }}>
+                            User
                           </span>
                         )}
                       </div>
@@ -590,13 +585,9 @@ export default function UserList() {
                       </div>
                       {user.kelas ? (
                         <span style={{
-                          display: 'inline-block',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
-                          background: 'var(--primary)',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
+                          fontSize: '0.875rem',
+                          color: 'var(--text)',
+                          fontWeight: 500
                         }}>
                           {user.kelas}
                         </span>
@@ -605,34 +596,6 @@ export default function UserList() {
                           -
                         </span>
                       )}
-                    </div>
-
-                    {/* PR Count */}
-                    <div>
-                      <div style={{ 
-                        color: 'var(--text-light)', 
-                        fontSize: '0.75rem',
-                        marginBottom: '0.25rem',
-                      }}>
-                        PR
-                      </div>
-                      <div style={{ color: 'var(--text)', fontWeight: 600 }}>
-                        {user._count.threads}
-                      </div>
-                    </div>
-
-                    {/* Sub Tugas Count */}
-                    <div>
-                      <div style={{ 
-                        color: 'var(--text-light)', 
-                        fontSize: '0.75rem',
-                        marginBottom: '0.25rem',
-                      }}>
-                        Sub Tugas
-                      </div>
-                      <div style={{ color: 'var(--text)', fontWeight: 600 }}>
-                        {user._count.comments}
-                      </div>
                     </div>
 
                     {/* Terdaftar */}
