@@ -465,7 +465,7 @@ export default function DatabaseHealth() {
             color: 'var(--text-light)',
             marginBottom: '1.5rem',
           }}>
-            <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <strong style={{ display: 'flex', marginBottom: '0.25rem', color: 'var(--text)', alignItems: 'center', gap: '0.5rem' }}>
               <InfoIcon size={16} />
               <span>Catatan:</span>
             </strong>
