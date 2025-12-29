@@ -74,6 +74,8 @@ export default function EmptyState({
         padding: '3rem 1.5rem',
         textAlign: 'center',
         animation: 'fadeInUp 0.5s ease-out',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       {/* Icon Container */}
@@ -89,6 +91,9 @@ export default function EmptyState({
           marginBottom: '1.5rem',
           position: 'relative',
           animation: 'scaleIn 0.6s ease-out 0.2s backwards',
+          flexShrink: 0,
+          marginLeft: 'auto',
+          marginRight: 'auto',
         }}
       >
         <div
@@ -97,6 +102,8 @@ export default function EmptyState({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: '100%',
+            height: '100%',
             transition: 'transform 0.3s ease',
           }}
           onMouseEnter={(e) => {
