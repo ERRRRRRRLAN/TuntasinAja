@@ -506,12 +506,6 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                       onChange={() => handleCanCreateAnnouncementChange(!canCreateAnnouncement)}
                       disabled={updatePermission.isLoading}
                       size={18}
-                    /> 
-                        cursor: 'pointer', 
-                        width: '18px', 
-                        height: '18px',
-                        flexShrink: 0
-                      }}
                     />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 500, marginBottom: '0.25rem' }}>Bisa Membuat Pengumuman</div>
