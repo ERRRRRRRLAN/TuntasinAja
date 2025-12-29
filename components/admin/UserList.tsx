@@ -755,45 +755,35 @@ export default function UserList() {
                           handleViewPassword(user.id)
                         }}
                         type="button"
+                        title={viewingPasswordUserId === user.id ? 'Tutup Password' : 'Lihat Password'}
                         style={{
-                          background: viewingPasswordUserId === user.id ? 'var(--bg-secondary)' : 'transparent',
-                          color: viewingPasswordUserId === user.id ? 'var(--text)' : 'var(--text-light)',
-                          border: '1px solid var(--border)',
+                          background: 'transparent',
+                          color: viewingPasswordUserId === user.id ? 'var(--primary)' : 'var(--text-light)',
+                          border: 'none',
                           borderRadius: '0.5rem',
-                          padding: '0.5rem 0.75rem',
+                          padding: '0.75rem',
                           cursor: 'pointer',
                           fontSize: '0.875rem',
-                          fontWeight: 500,
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '0.5rem',
-                          flex: viewingPasswordUserId === user.id ? '1 1 100%' : '0 1 auto',
+                          minWidth: '44px',
+                          minHeight: '44px'
                         }}
                         onMouseEnter={(e) => {
-                          if (viewingPasswordUserId !== user.id) {
-                            e.currentTarget.style.background = 'var(--bg-secondary)'
-                            e.currentTarget.style.color = 'var(--text)'
-                          }
+                          e.currentTarget.style.background = 'var(--bg-secondary)'
+                          e.currentTarget.style.color = 'var(--primary)'
                         }}
                         onMouseLeave={(e) => {
-                          if (viewingPasswordUserId !== user.id) {
-                            e.currentTarget.style.background = 'transparent'
-                            e.currentTarget.style.color = 'var(--text-light)'
-                          }
+                          e.currentTarget.style.background = 'transparent'
+                          e.currentTarget.style.color = viewingPasswordUserId === user.id ? 'var(--primary)' : 'var(--text-light)'
                         }}
                       >
                         {viewingPasswordUserId === user.id ? (
-                          <>
-                            <XIconSmall size={14} />
-                            <span>Tutup Password</span>
-                          </>
+                          <XIconSmall size={20} />
                         ) : (
-                          <>
-                            <EyeIcon size={14} />
-                            <span>Lihat Password</span>
-                          </>
+                          <EyeIcon size={20} />
                         )}
                       </button>
                       <button
@@ -803,10 +793,11 @@ export default function UserList() {
                           setEditingUserId(user.id)
                         }}
                         type="button"
+                        title="Edit User"
                         style={{
                           flex: 1,
-                          background: 'var(--primary)',
-                          color: 'white',
+                          background: 'transparent',
+                          color: 'var(--text-light)',
                           border: 'none',
                           borderRadius: '0.5rem',
                           padding: '0.75rem',
@@ -817,18 +808,19 @@ export default function UserList() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '0.5rem'
+                          gap: '0.5rem',
+                          minHeight: '44px'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--primary-hover)'
-                          e.currentTarget.style.transform = 'scale(1.02)'
+                          e.currentTarget.style.background = 'var(--bg-secondary)'
+                          e.currentTarget.style.color = 'var(--primary)'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'var(--primary)'
-                          e.currentTarget.style.transform = 'scale(1)'
+                          e.currentTarget.style.background = 'transparent'
+                          e.currentTarget.style.color = 'var(--text-light)'
                         }}
                       >
-                        <EditIcon size={16} />
+                        <EditIcon size={18} />
                         <span>Edit</span>
                       </button>
                       <button
@@ -837,10 +829,11 @@ export default function UserList() {
                           handleDeleteClick(user.id, user.name, user.email)
                         }}
                         disabled={deleteUser.isLoading}
+                        title="Hapus User"
                         style={{
                           flex: 1,
-                          background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
-                          color: 'white',
+                          background: 'transparent',
+                          color: 'var(--text-light)',
                           border: 'none',
                           borderRadius: '0.5rem',
                           padding: '0.75rem',
@@ -852,29 +845,30 @@ export default function UserList() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '0.5rem',
-                          opacity: deleteUser.isLoading ? 0.6 : 1
+                          opacity: deleteUser.isLoading ? 0.5 : 1,
+                          minHeight: '44px'
                         }}
                         onMouseEnter={(e) => {
                           if (!deleteUser.isLoading) {
-                            e.currentTarget.style.background = '#b91c1c'
-                            e.currentTarget.style.transform = 'scale(1.02)'
+                            e.currentTarget.style.background = 'var(--bg-secondary)'
+                            e.currentTarget.style.color = '#dc2626'
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!deleteUser.isLoading) {
-                            e.currentTarget.style.background = '#dc2626'
-                            e.currentTarget.style.transform = 'scale(1)'
+                            e.currentTarget.style.background = 'transparent'
+                            e.currentTarget.style.color = 'var(--text-light)'
                           }
                         }}
                       >
                         {deleteUser.isLoading ? (
                           <>
-                            <LoadingSpinner size={16} color="white" />
+                            <LoadingSpinner size={18} color="var(--text-light)" />
                             <span>Menghapus...</span>
                           </>
                         ) : (
                           <>
-                            <TrashIcon size={16} />
+                            <TrashIcon size={18} />
                             <span>Hapus</span>
                           </>
                         )}
