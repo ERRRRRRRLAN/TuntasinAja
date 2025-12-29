@@ -6,7 +6,6 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { DatabaseIcon, BarChartIcon, RotateCcwIcon, AlertTriangleIcon, InfoIcon, CalendarIcon, FileTextIcon, LinkIcon } from '@/components/ui/Icons'
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function DatabaseHealth() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tables' | 'cleanup'>('overview')
