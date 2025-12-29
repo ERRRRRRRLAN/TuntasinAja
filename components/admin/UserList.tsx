@@ -1007,8 +1007,7 @@ export default function UserList() {
                         : isSelected 
                         ? 'rgba(var(--primary-rgb), 0.03)' 
                         : 'transparent',
-                      transition: 'background-color 0.15s ease',
-                      borderBottom: '1px solid var(--border)'
+                      transition: 'background-color 0.15s ease'
                     }}
                     onMouseEnter={(e) => {
                       if (!isCurrentUser && !isSelected) {
