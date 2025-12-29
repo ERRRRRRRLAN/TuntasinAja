@@ -260,8 +260,8 @@ export default function UserList() {
               onClick={() => setShowBulkDeleteConfirm(true)}
               disabled={bulkDeleteUsers.isLoading}
               style={{
-                background: '#dc2626',
-                color: 'white',
+                background: 'transparent',
+                color: 'var(--text-light)',
                 border: 'none',
                 borderRadius: '0.375rem',
                 padding: '0.5rem 1rem',
@@ -272,16 +272,18 @@ export default function UserList() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                opacity: bulkDeleteUsers.isLoading ? 0.6 : 1
+                opacity: bulkDeleteUsers.isLoading ? 0.5 : 1
               }}
               onMouseEnter={(e) => {
                 if (!bulkDeleteUsers.isLoading) {
-                  e.currentTarget.style.background = '#b91c1c'
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.color = '#dc2626'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!bulkDeleteUsers.isLoading) {
-                  e.currentTarget.style.background = '#dc2626'
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-light)'
                 }
               }}
             >
