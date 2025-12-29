@@ -8,6 +8,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ComboBox from '@/components/ui/ComboBox'
 import { format } from 'date-fns'
 import { SettingsIcon, UserIcon, BellIcon, FileTextIcon, RotateCcwIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -415,18 +416,21 @@ export default function BulkOperations() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem',
+                      gap: '0.75rem',
                       padding: '0.5rem',
                       cursor: 'pointer',
                       borderRadius: '4px',
                       backgroundColor: selectedUserIds.has(user.id) ? 'var(--bg-secondary)' : 'transparent',
                     }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      toggleUserSelection(user.id)
+                    }}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedUserIds.has(user.id)}
                       onChange={() => toggleUserSelection(user.id)}
-                      style={{ cursor: 'pointer' }}
+                      size={18}
                     />
                     <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
                       {user.name} ({user.email}) {user.kelas ? `- ${user.kelas}` : ''}
@@ -550,18 +554,21 @@ export default function BulkOperations() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: '0.75rem',
                     padding: '0.5rem',
                     cursor: 'pointer',
                     borderRadius: '4px',
                     backgroundColor: selectedKelasList.has(kelas) ? 'var(--bg-secondary)' : 'transparent',
                   }}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    toggleKelasSelection(kelas)
+                  }}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedKelasList.has(kelas)}
                     onChange={() => toggleKelasSelection(kelas)}
-                    style={{ cursor: 'pointer' }}
+                    size={18}
                   />
                   <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
                     {kelas}
@@ -871,18 +878,21 @@ export default function BulkOperations() {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.5rem',
+                        gap: '0.75rem',
                         padding: '0.5rem',
                         cursor: 'pointer',
                         borderRadius: '4px',
                         backgroundColor: migrationUserIds.has(user.id) ? 'var(--bg-secondary)' : 'transparent',
                       }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        toggleMigrationUser(user.id)
+                      }}
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={migrationUserIds.has(user.id)}
                         onChange={() => toggleMigrationUser(user.id)}
-                        style={{ cursor: 'pointer' }}
+                        size={18}
                       />
                       <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
                         {user.name} ({user.email}) {user.kelas ? `- ${user.kelas}` : ''}

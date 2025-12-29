@@ -11,6 +11,7 @@ import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall, EyeIcon, EyeOff
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
 import ComboBox from '@/components/ui/ComboBox'
+import Checkbox from '@/components/ui/Checkbox'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -471,17 +472,10 @@ export default function UserList() {
                   {/* Header: Checkbox + Name */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     {!isCurrentUser && (
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isSelected}
                         onChange={() => handleToggleUser(user.id)}
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          cursor: 'pointer',
-                          accentColor: 'var(--primary)',
-                          flexShrink: 0,
-                        }}
+                        size={18}
                       />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -912,19 +906,13 @@ export default function UserList() {
                   background: 'var(--card)',
                   zIndex: 10
                 }}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={
                       filteredUsers.filter(u => u.id !== session?.user?.id).length > 0 &&
                       filteredUsers.filter(u => u.id !== session?.user?.id).every(u => selectedUserIds.has(u.id))
                     }
                     onChange={handleSelectAll}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer',
-                      accentColor: 'var(--primary)'
-                    }}
+                    size={18}
                   />
                 </th>
                 <th style={{ 
@@ -1032,16 +1020,10 @@ export default function UserList() {
                       zIndex: 5
                     }}>
                       {!isCurrentUser && (
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isSelected}
                           onChange={() => handleToggleUser(user.id)}
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            cursor: 'pointer',
-                            accentColor: 'var(--primary)'
-                          }}
+                          size={18}
                         />
                       )}
                     </td>

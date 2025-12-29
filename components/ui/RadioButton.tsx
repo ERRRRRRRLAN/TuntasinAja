@@ -18,7 +18,7 @@ export default function RadioButton({
   onClick,
   disabled = false,
   isLoading = false,
-  size = 20,
+  size = 18,
   className = '',
 }: RadioButtonProps) {
   const [isHovered, setIsHovered] = useState(false)

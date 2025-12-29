@@ -410,13 +410,11 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
             </div>
 
             <div className="form-group">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  id="isPinned"
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                <Checkbox
                   checked={isPinned}
-                  onChange={(e) => setIsPinned(e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  onChange={() => setIsPinned(!isPinned)}
+                  size={18}
                 />
                 <span>Pin pengumuman (tampilkan di atas)</span>
               </label>

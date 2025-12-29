@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/ToastContainer'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { TrashIcon, EditIcon, PlusIcon, PinIcon, AlertTriangleIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
 import ComboBox from '@/components/ui/ComboBox'
 
 // Generate list of kelas options
@@ -387,12 +388,11 @@ function CreateAnnouncementForm({
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="checkbox"
-            id="isPinned"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Checkbox
             checked={isPinned}
-            onChange={(e) => setIsPinned(e.target.checked)}
+            onChange={() => setIsPinned(!isPinned)}
+            size={18}
           />
           <label htmlFor="isPinned" style={{ fontSize: '0.875rem', cursor: 'pointer' }}>
             Pin pengumuman (tampilkan di atas)
@@ -547,12 +547,11 @@ function EditAnnouncementForm({
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="checkbox"
-            id="isPinnedEdit"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Checkbox
             checked={isPinned}
-            onChange={(e) => setIsPinned(e.target.checked)}
+            onChange={() => setIsPinned(!isPinned)}
+            size={18}
           />
           <label htmlFor="isPinnedEdit" style={{ fontSize: '0.875rem', cursor: 'pointer' }}>
             Pin pengumuman

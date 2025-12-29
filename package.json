@@ -27,7 +27,8 @@
     "generate:vapid-keys": "node scripts/generate-vapid-keys.js",
     "migrate:password-encryption": "node scripts/migrate-password-encryption.js",
     "extract:salt": "node scripts/extract-bcrypt-salt.js",
-    "extract:salt:db": "node scripts/extract-salt-from-db.js"
+    "extract:salt:db": "node scripts/extract-salt-from-db.js",
+    "verify:password": "node scripts/verify-password.js"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",

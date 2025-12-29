@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import RadioButton from '@/components/ui/RadioButton'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface PermissionManagerProps {
   userId: string
@@ -95,14 +97,11 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
               Permission
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="permission"
-                  value="read_and_post_edit"
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                <RadioButton
                   checked={permission === 'read_and_post_edit'}
-                  onChange={(e) => setPermission(e.target.value as 'read_and_post_edit')}
-                  style={{ cursor: 'pointer' }}
+                  onChange={() => setPermission('read_and_post_edit')}
+                  size={18}
                 />
                 <div>
                   <div style={{ fontWeight: 500 }}>Read & Post/Edit</div>
@@ -111,14 +110,11 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
                   </div>
                 </div>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="permission"
-                  value="only_read"
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                <RadioButton
                   checked={permission === 'only_read'}
-                  onChange={(e) => setPermission(e.target.value as 'only_read')}
-                  style={{ cursor: 'pointer' }}
+                  onChange={() => setPermission('only_read')}
+                  size={18}
                 />
                 <div>
                   <div style={{ fontWeight: 500 }}>Only Read</div>
@@ -131,12 +127,11 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
           </div>
 
           <div className="form-group" style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
-              <input
-                type="checkbox"
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
+              <Checkbox
                 checked={canCreateAnnouncement}
-                onChange={(e) => setCanCreateAnnouncement(e.target.checked)}
-                style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                onChange={() => setCanCreateAnnouncement(!canCreateAnnouncement)}
+                size={18}
               />
               <div>
                 <div style={{ fontWeight: 500 }}>Bisa Membuat Pengumuman</div>

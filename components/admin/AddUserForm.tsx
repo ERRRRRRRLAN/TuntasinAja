@@ -5,6 +5,7 @@ import { trpc } from '@/lib/trpc'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComboBox from '@/components/ui/ComboBox'
 import { BookIcon } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface AddUserFormProps {
   onSuccess?: () => void
@@ -196,24 +197,18 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
         </div>
 
         <div className="form-group">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <Checkbox
               checked={isAdmin}
-              onChange={(e) => {
-                setIsAdmin(e.target.checked)
-                if (e.target.checked) {
+              onChange={() => {
+                setIsAdmin(!isAdmin)
+                if (!isAdmin) {
                   setKelas('')
                   setIsDanton(false) // Cannot be danton if admin
                 }
               }}
               disabled={createUser.isLoading}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: 'var(--primary)'
-              }}
+              size={18}
             />
             <span>Buat sebagai Admin</span>
           </label>
@@ -245,33 +240,14 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
 
             {kelas && (
               <div className="form-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                  <Checkbox
                     checked={isDanton}
-                    onChange={(e) => setIsDanton(e.target.checked)}
+                    onChange={() => setIsDanton(!isDanton)}
                     disabled={createUser.isLoading || !kelas}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer',
-                      accentColor: '#fbbf24'
-                    }}
+                    size={18}
                   />
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>Buat sebagai Danton (Ketua Kelas)</span>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '0.125rem 0.375rem',
-                      borderRadius: '0.25rem',
-                      background: '#fbbf24',
-                      color: '#78350f',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                    }}>
-                      Danton
-                    </span>
-                  </span>
+                  <span>Buat sebagai Danton (Ketua Kelas)</span>
                 </label>
                 <p style={{ 
                   margin: '0.5rem 0 0 0', 

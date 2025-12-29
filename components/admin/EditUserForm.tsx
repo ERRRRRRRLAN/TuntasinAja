@@ -5,6 +5,8 @@ import { trpc } from '@/lib/trpc'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComboBox from '@/components/ui/ComboBox'
 import { BookIcon, XIconSmall } from '@/components/ui/Icons'
+import Checkbox from '@/components/ui/Checkbox'
+import RadioButton from '@/components/ui/RadioButton'
 
 interface EditUserFormProps {
   user: {
@@ -269,24 +271,18 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
         </div>
 
         <div className="form-group">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <Checkbox
               checked={isAdmin}
-              onChange={(e) => {
-                setIsAdmin(e.target.checked)
-                if (e.target.checked) {
+              onChange={() => {
+                setIsAdmin(!isAdmin)
+                if (!isAdmin) {
                   setKelas('')
                   setIsDanton(false) // Cannot be danton if admin
                 }
               }}
               disabled={updateUser.isLoading}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: 'var(--primary)'
-              }}
+              size={18}
             />
             <span>Jadikan sebagai Admin</span>
           </label>
@@ -318,33 +314,14 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
 
             {kelas && (
               <div className="form-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                  <Checkbox
                     checked={isDanton}
-                    onChange={(e) => setIsDanton(e.target.checked)}
+                    onChange={() => setIsDanton(!isDanton)}
                     disabled={updateUser.isLoading || !kelas}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer',
-                      accentColor: '#fbbf24'
-                    }}
+                    size={18}
                   />
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>Jadikan sebagai Danton (Ketua Kelas)</span>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '0.125rem 0.375rem',
-                      borderRadius: '0.25rem',
-                      background: '#fbbf24',
-                      color: '#78350f',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                    }}>
-                      Danton
-                    </span>
-                  </span>
+                  <span>Jadikan sebagai Danton (Ketua Kelas)</span>
                 </label>
                 <p style={{ 
                   margin: '0.5rem 0 0 0', 
@@ -362,15 +339,12 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                 Permission
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="read_and_post_edit"
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                  <RadioButton
                     checked={permission === 'read_and_post_edit'}
-                    onChange={(e) => setPermission(e.target.value as 'read_and_post_edit')}
+                    onChange={() => setPermission('read_and_post_edit')}
                     disabled={updateUser.isLoading}
-                    style={{ cursor: 'pointer' }}
+                    size={18}
                   />
                   <div>
                     <div style={{ fontWeight: 500 }}>Read & Post/Edit</div>
@@ -379,15 +353,12 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                     </div>
                   </div>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="only_read"
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                  <RadioButton
                     checked={permission === 'only_read'}
-                    onChange={(e) => setPermission(e.target.value as 'only_read')}
+                    onChange={() => setPermission('only_read')}
                     disabled={updateUser.isLoading}
-                    style={{ cursor: 'pointer' }}
+                    size={18}
                   />
                   <div>
                     <div style={{ fontWeight: 500 }}>Only Read</div>
@@ -398,13 +369,12 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                 </label>
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                <Checkbox
                   checked={canCreateAnnouncement}
-                  onChange={(e) => setCanCreateAnnouncement(e.target.checked)}
+                  onChange={() => setCanCreateAnnouncement(!canCreateAnnouncement)}
                   disabled={updateUser.isLoading}
-                  style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                  size={18}
                 />
                 <div>
                   <div style={{ fontWeight: 500 }}>Bisa Membuat Pengumuman</div>

@@ -5,6 +5,7 @@ import { trpc } from '@/lib/trpc'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { XIconSmall } from '@/components/ui/Icons'
 import { toast } from '@/components/ui/ToastContainer'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface ClassSubscriptionManagerProps {
   kelas: string
@@ -242,18 +243,12 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
 
         {action === 'set' && (
           <div className="form-group">
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+              <Checkbox
                 checked={forceFromNow}
-                onChange={(e) => setForceFromNow(e.target.checked)}
+                onChange={() => setForceFromNow(!forceFromNow)}
                 disabled={isLoading}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  cursor: 'pointer',
-                  accentColor: 'var(--primary)'
-                }}
+                size={18}
               />
               <span>Paksa dari Sekarang (abaikan endDate yang ada)</span>
             </label>

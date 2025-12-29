@@ -443,15 +443,14 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                   background: permission === 'read_and_post_edit' ? 'var(--bg-primary)' : 'transparent',
                   transition: 'all 0.2s'
                 }}>
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="read_and_post_edit"
-                    checked={permission === 'read_and_post_edit'}
-                    onChange={() => handlePermissionChange('read_and_post_edit')}
-                    disabled={updatePermission.isLoading}
-                    style={{ marginTop: '0.125rem', flexShrink: 0 }}
-                  />
+                  <div style={{ marginTop: '0.125rem', flexShrink: 0 }}>
+                    <RadioButton
+                      checked={permission === 'read_and_post_edit'}
+                      onChange={() => handlePermissionChange('read_and_post_edit')}
+                      disabled={updatePermission.isLoading}
+                      size={18}
+                    />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500, marginBottom: '0.25rem' }}>Read & Post/Edit</div>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
@@ -470,15 +469,14 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                   background: permission === 'only_read' ? 'var(--bg-primary)' : 'transparent',
                   transition: 'all 0.2s'
                 }}>
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="only_read"
-                    checked={permission === 'only_read'}
-                    onChange={() => handlePermissionChange('only_read')}
-                    disabled={updatePermission.isLoading}
-                    style={{ marginTop: '0.125rem', flexShrink: 0 }}
-                  />
+                  <div style={{ marginTop: '0.125rem', flexShrink: 0 }}>
+                    <RadioButton
+                      checked={permission === 'only_read'}
+                      onChange={() => handlePermissionChange('only_read')}
+                      disabled={updatePermission.isLoading}
+                      size={18}
+                    />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500, marginBottom: '0.25rem' }}>Only Read</div>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
@@ -501,12 +499,12 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                     gap: '0.75rem', 
                     cursor: 'pointer'
                   }}>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={canCreateAnnouncement}
-                      onChange={(e) => handleCanCreateAnnouncementChange(e.target.checked)}
+                      onChange={() => handleCanCreateAnnouncementChange(!canCreateAnnouncement)}
                       disabled={updatePermission.isLoading}
-                      style={{ 
+                      size={18}
+                    /> 
                         cursor: 'pointer', 
                         width: '18px', 
                         height: '18px',
