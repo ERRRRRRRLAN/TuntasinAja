@@ -934,12 +934,12 @@ export default function UserList() {
             width: '100%', 
             borderCollapse: 'separate',
             borderSpacing: 0,
-            minWidth: '1000px'
+            minWidth: '900px'
           }}>
             <thead>
               <tr style={{ 
-                background: 'var(--bg-secondary)',
-                borderBottom: '2px solid var(--border)'
+                background: 'transparent',
+                borderBottom: '1px solid var(--border)'
               }}>
                 <th style={{ 
                   padding: '1rem 0.75rem', 
@@ -950,7 +950,7 @@ export default function UserList() {
                   width: '50px',
                   position: 'sticky',
                   left: 0,
-                  background: 'var(--bg-secondary)',
+                  background: 'var(--card)',
                   zIndex: 10
                 }}>
                   <input
@@ -1004,30 +1004,9 @@ export default function UserList() {
                   fontWeight: 600,
                   color: 'var(--text-light)',
                   fontSize: '0.875rem',
-                  minWidth: '120px',
-                  whiteSpace: 'nowrap'
+                  minWidth: '120px'
                 }}>
                   Kelas
-                </th>
-                <th style={{ 
-                  padding: '1rem 0.75rem', 
-                  textAlign: 'center', 
-                  fontWeight: 600,
-                  color: 'var(--text-light)',
-                  fontSize: '0.875rem',
-                  width: '80px'
-                }}>
-                  PR
-                </th>
-                <th style={{ 
-                  padding: '1rem 0.75rem', 
-                  textAlign: 'center', 
-                  fontWeight: 600,
-                  color: 'var(--text-light)',
-                  fontSize: '0.875rem',
-                  width: '100px'
-                }}>
-                  Sub Tugas
                 </th>
                 <th style={{ 
                   padding: '1rem 0.75rem', 
@@ -1045,10 +1024,10 @@ export default function UserList() {
                   fontWeight: 600,
                   color: 'var(--text-light)',
                   fontSize: '0.875rem',
-                  minWidth: '200px',
+                  minWidth: '150px',
                   position: 'sticky',
                   right: 0,
-                  background: 'var(--bg-secondary)',
+                  background: 'var(--card)',
                   zIndex: 10
                 }}>
                   Aksi
@@ -1067,9 +1046,10 @@ export default function UserList() {
                       backgroundColor: isCurrentUser 
                         ? 'var(--bg-secondary)' 
                         : isSelected 
-                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        ? 'rgba(var(--primary-rgb), 0.03)' 
                         : 'transparent',
-                      transition: 'background-color 0.15s ease'
+                      transition: 'background-color 0.15s ease',
+                      borderBottom: '1px solid var(--border)'
                     }}
                     onMouseEnter={(e) => {
                       if (!isCurrentUser && !isSelected) {
@@ -1089,7 +1069,7 @@ export default function UserList() {
                       background: isCurrentUser 
                         ? 'var(--bg-secondary)' 
                         : isSelected 
-                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        ? 'rgba(var(--primary-rgb), 0.03)' 
                         : 'var(--card)',
                       zIndex: 5
                     }}>
@@ -1128,49 +1108,39 @@ export default function UserList() {
                       <span style={{ wordBreak: 'break-word' }}>{user.email}</span>
                     </td>
                     <td style={{ padding: '1rem 0.75rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                        {user.isAdmin ? (
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {user.isAdmin && (
                           <span style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.375rem 0.625rem',
-                            borderRadius: '0.375rem',
-                            background: 'var(--primary)',
-                            color: 'white',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            whiteSpace: 'nowrap'
+                            gap: '0.375rem',
+                            fontSize: '0.875rem',
+                            color: 'var(--text)',
+                            fontWeight: 500
                           }}>
-                            <CrownIcon size={12} />
+                            <CrownIcon size={16} style={{ color: 'var(--primary)' }} />
                             <span>Admin</span>
-                          </span>
-                        ) : (
-                          <span style={{
-                            display: 'inline-block',
-                            padding: '0.375rem 0.625rem',
-                            borderRadius: '0.375rem',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-light)',
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                            whiteSpace: 'nowrap'
-                          }}>
-                            User
                           </span>
                         )}
                         {(user as any).isDanton && !user.isAdmin && (
                           <span style={{
-                            display: 'inline-block',
-                            padding: '0.375rem 0.625rem',
-                            borderRadius: '0.375rem',
-                            background: '#fbbf24',
-                            color: '#78350f',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            whiteSpace: 'nowrap'
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            fontSize: '0.875rem',
+                            color: 'var(--text)',
+                            fontWeight: 500
                           }}>
-                            Danton
+                            <span style={{ color: '#f59e0b' }}>•</span>
+                            <span>Danton</span>
+                          </span>
+                        )}
+                        {!user.isAdmin && !(user as any).isDanton && (
+                          <span style={{
+                            fontSize: '0.875rem',
+                            color: 'var(--text-light)'
+                          }}>
+                            User
                           </span>
                         )}
                       </div>
@@ -1178,14 +1148,9 @@ export default function UserList() {
                     <td style={{ padding: '1rem 0.75rem' }}>
                       {user.kelas ? (
                         <span style={{
-                          display: 'inline-block',
-                          padding: '0.375rem 0.625rem',
-                          borderRadius: '0.375rem',
-                          background: 'var(--primary)',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          whiteSpace: 'nowrap'
+                          fontSize: '0.875rem',
+                          color: 'var(--text)',
+                          fontWeight: 500
                         }}>
                           {user.kelas}
                         </span>
@@ -1194,12 +1159,6 @@ export default function UserList() {
                           -
                         </span>
                       )}
-                    </td>
-                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text)', textAlign: 'center', fontWeight: 500 }}>
-                      {user._count.threads}
-                    </td>
-                    <td style={{ padding: '1rem 0.75rem', color: 'var(--text)', textAlign: 'center', fontWeight: 500 }}>
-                      {user._count.comments}
                     </td>
                     <td style={{ padding: '1rem 0.75rem', color: 'var(--text-light)', fontSize: '0.875rem' }}>
                       {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: id })}
@@ -1212,7 +1171,7 @@ export default function UserList() {
                       background: isCurrentUser 
                         ? 'var(--bg-secondary)' 
                         : isSelected 
-                        ? 'rgba(var(--primary-rgb), 0.05)' 
+                        ? 'rgba(var(--primary-rgb), 0.03)' 
                         : 'var(--card)',
                       zIndex: 5
                     }}>
@@ -1233,46 +1192,33 @@ export default function UserList() {
                             title={viewingPasswordUserId === user.id ? 'Tutup Password' : 'Lihat Password'}
                             type="button"
                             style={{
-                              background: viewingPasswordUserId === user.id ? 'var(--primary)' : 'transparent',
-                              color: viewingPasswordUserId === user.id ? 'white' : 'var(--text-light)',
-                              border: '1px solid var(--border)',
-                              borderRadius: '0.375rem',
-                              padding: '0.5rem 0.75rem',
+                              background: 'transparent',
+                              color: viewingPasswordUserId === user.id ? 'var(--primary)' : 'var(--text-light)',
+                              border: 'none',
+                              padding: '0.5rem',
                               cursor: 'pointer',
-                              fontSize: '0.8125rem',
-                              fontWeight: 500,
+                              fontSize: '0.875rem',
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.375rem',
-                              whiteSpace: 'nowrap',
-                              minWidth: 'fit-content'
+                              justifyContent: 'center',
+                              borderRadius: '0.375rem',
+                              minWidth: '36px',
+                              minHeight: '36px'
                             }}
                             onMouseEnter={(e) => {
-                              if (viewingPasswordUserId !== user.id) {
-                                e.currentTarget.style.background = 'var(--bg-secondary)'
-                                e.currentTarget.style.color = 'var(--text)'
-                                e.currentTarget.style.borderColor = 'var(--primary)'
-                              }
+                              e.currentTarget.style.background = 'var(--bg-secondary)'
+                              e.currentTarget.style.color = 'var(--primary)'
                             }}
                             onMouseLeave={(e) => {
-                              if (viewingPasswordUserId !== user.id) {
-                                e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.color = 'var(--text-light)'
-                                e.currentTarget.style.borderColor = 'var(--border)'
-                              }
+                              e.currentTarget.style.background = 'transparent'
+                              e.currentTarget.style.color = viewingPasswordUserId === user.id ? 'var(--primary)' : 'var(--text-light)'
                             }}
                           >
                             {viewingPasswordUserId === user.id ? (
-                              <>
-                                <XIconSmall size={14} />
-                                <span>Tutup</span>
-                              </>
+                              <XIconSmall size={18} />
                             ) : (
-                              <>
-                                <EyeIcon size={14} />
-                                <span>Password</span>
-                              </>
+                              <EyeIcon size={18} />
                             )}
                           </button>
                           <button
@@ -1287,33 +1233,30 @@ export default function UserList() {
                             title="Edit User"
                             type="button"
                             style={{
-                              background: 'var(--primary)',
-                              color: 'white',
+                              background: 'transparent',
+                              color: 'var(--text-light)',
                               border: 'none',
-                              borderRadius: '0.375rem',
-                              padding: '0.5rem 0.75rem',
+                              padding: '0.5rem',
                               cursor: 'pointer',
-                              fontSize: '0.8125rem',
-                              fontWeight: 500,
+                              fontSize: '0.875rem',
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.375rem',
-                              whiteSpace: 'nowrap'
+                              justifyContent: 'center',
+                              borderRadius: '0.375rem',
+                              minWidth: '36px',
+                              minHeight: '36px'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'var(--primary-hover)'
-                              e.currentTarget.style.transform = 'translateY(-1px)'
-                              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
+                              e.currentTarget.style.background = 'var(--bg-secondary)'
+                              e.currentTarget.style.color = 'var(--primary)'
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'var(--primary)'
-                              e.currentTarget.style.transform = 'translateY(0)'
-                              e.currentTarget.style.boxShadow = 'none'
+                              e.currentTarget.style.background = 'transparent'
+                              e.currentTarget.style.color = 'var(--text-light)'
                             }}
                           >
-                            <EditIcon size={14} />
-                            <span>Edit</span>
+                            <EditIcon size={18} />
                           </button>
                           <button
                             onClick={(e) => {
@@ -1323,46 +1266,38 @@ export default function UserList() {
                             title="Hapus User"
                             disabled={deleteUser.isLoading}
                             style={{
-                              background: deleteUser.isLoading ? '#9ca3af' : '#dc2626',
-                              color: 'white',
+                              background: 'transparent',
+                              color: 'var(--text-light)',
                               border: 'none',
-                              borderRadius: '0.375rem',
-                              padding: '0.5rem 0.75rem',
+                              padding: '0.5rem',
                               cursor: deleteUser.isLoading ? 'not-allowed' : 'pointer',
-                              fontSize: '0.8125rem',
-                              fontWeight: 500,
+                              fontSize: '0.875rem',
                               transition: 'all 0.2s',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.375rem',
-                              opacity: deleteUser.isLoading ? 0.6 : 1,
-                              whiteSpace: 'nowrap'
+                              justifyContent: 'center',
+                              borderRadius: '0.375rem',
+                              opacity: deleteUser.isLoading ? 0.5 : 1,
+                              minWidth: '36px',
+                              minHeight: '36px'
                             }}
                             onMouseEnter={(e) => {
                               if (!deleteUser.isLoading) {
-                                e.currentTarget.style.background = '#b91c1c'
-                                e.currentTarget.style.transform = 'translateY(-1px)'
-                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(220,38,38,0.3)'
+                                e.currentTarget.style.background = 'var(--bg-secondary)'
+                                e.currentTarget.style.color = '#dc2626'
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!deleteUser.isLoading) {
-                                e.currentTarget.style.background = '#dc2626'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                                e.currentTarget.style.boxShadow = 'none'
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.color = 'var(--text-light)'
                               }
                             }}
                           >
                             {deleteUser.isLoading ? (
-                              <>
-                                <LoadingSpinner size={14} color="white" />
-                                <span>Menghapus...</span>
-                              </>
+                              <LoadingSpinner size={18} color="var(--text-light)" />
                             ) : (
-                              <>
-                                <TrashIcon size={14} />
-                                <span>Hapus</span>
-                              </>
+                              <TrashIcon size={18} />
                             )}
                           </button>
                         </div>
