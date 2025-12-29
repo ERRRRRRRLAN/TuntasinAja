@@ -71,24 +71,25 @@ export default function EmptyState({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '3rem 1.5rem',
+        padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 1.5rem)',
         textAlign: 'center',
         animation: 'fadeInUp 0.5s ease-out',
         width: '100%',
         boxSizing: 'border-box',
+        margin: '0 auto',
       }}
     >
       {/* Icon Container */}
       <div
         style={{
-          width: '120px',
-          height: '120px',
+          width: 'clamp(80px, 20vw, 120px)',
+          height: 'clamp(80px, 20vw, 120px)',
           borderRadius: '50%',
           background: colors.bg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '1.5rem',
+          marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
           position: 'relative',
           animation: 'scaleIn 0.6s ease-out 0.2s backwards',
           flexShrink: 0,
@@ -119,10 +120,10 @@ export default function EmptyState({
         <div
           style={{
             position: 'absolute',
-            top: '-8px',
-            right: '-8px',
-            width: '24px',
-            height: '24px',
+            top: 'clamp(-6px, -1vw, -8px)',
+            right: 'clamp(-6px, -1vw, -8px)',
+            width: 'clamp(18px, 4vw, 24px)',
+            height: 'clamp(18px, 4vw, 24px)',
             borderRadius: '50%',
             background: colors.icon,
             opacity: 0.2,
@@ -134,11 +135,13 @@ export default function EmptyState({
       {/* Title */}
       <h3
         style={{
-          fontSize: '1.5rem',
+          fontSize: 'clamp(1.25rem, 4vw, 1.5rem)',
           fontWeight: 600,
           color: colors.title,
-          margin: '0 0 0.75rem 0',
+          margin: '0 auto 0.75rem auto',
           lineHeight: 1.3,
+          width: '100%',
+          maxWidth: '100%',
         }}
       >
         {title}
@@ -147,11 +150,14 @@ export default function EmptyState({
       {/* Description */}
       <p
         style={{
-          fontSize: '1rem',
+          fontSize: 'clamp(0.875rem, 3vw, 1rem)',
           color: colors.description,
-          margin: '0 0 1.5rem 0',
-          maxWidth: '400px',
+          margin: '0 auto 1.5rem auto',
+          maxWidth: 'min(400px, 100%)',
           lineHeight: 1.6,
+          width: '100%',
+          padding: '0 clamp(0.5rem, 2vw, 1rem)',
+          boxSizing: 'border-box',
         }}
       >
         {description}
@@ -163,7 +169,9 @@ export default function EmptyState({
           onClick={onAction}
           className="btn btn-primary"
           style={{
-            minWidth: '160px',
+            minWidth: 'clamp(140px, 40vw, 160px)',
+            width: 'auto',
+            margin: '0 auto',
             animation: 'fadeInUp 0.5s ease-out 0.3s backwards',
           }}
         >
