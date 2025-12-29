@@ -131,7 +131,7 @@ export default function AppSettingsControl() {
         fontSize: '0.875rem',
         color: 'var(--text-light)',
       }}>
-        <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <strong style={{ display: 'flex', marginBottom: '0.25rem', color: 'var(--text)', alignItems: 'center', gap: '0.5rem' }}>
           <InfoIcon size={16} />
           <span>Catatan:</span>
         </strong>
