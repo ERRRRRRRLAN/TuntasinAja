@@ -25,7 +25,9 @@
     "fix:timezone": "node scripts/fix-timestamp-timezone.js",
     "migrate:remove-thread-constraint": "node scripts/remove-thread-unique-constraint.js",
     "generate:vapid-keys": "node scripts/generate-vapid-keys.js",
-    "migrate:password-encryption": "node scripts/migrate-password-encryption.js"
+    "migrate:password-encryption": "node scripts/migrate-password-encryption.js",
+    "extract:salt": "node scripts/extract-bcrypt-salt.js",
+    "extract:salt:db": "node scripts/extract-salt-from-db.js"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
