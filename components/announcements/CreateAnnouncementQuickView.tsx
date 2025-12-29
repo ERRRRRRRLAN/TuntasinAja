@@ -10,6 +10,7 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useBackHandler } from '@/hooks/useBackHandler'
+import Checkbox from '@/components/ui/Checkbox'
 
 interface CreateAnnouncementQuickViewProps {
   onClose: () => void
