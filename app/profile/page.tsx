@@ -18,6 +18,7 @@ import BulkOperations from '@/components/admin/BulkOperations'
 import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
 import AutoDeleteExpiredButton from '@/components/admin/AutoDeleteExpiredButton'
 import TestDeadlineReminderButton from '@/components/admin/TestDeadlineReminderButton'
+import { UserIcon, BookIcon, MessageIcon, SettingsIcon, BellIcon, PlusIcon, PackageIcon, XIconSmall } from '@/components/ui/Icons'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -93,9 +94,12 @@ export default function ProfilePage() {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
-                marginBottom: '1.5rem'
+                marginBottom: '1.5rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
               }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <SettingsIcon size={24} />
                   Panel Admin
                 </h2>
                 {activeTab === 'users' && (
@@ -106,8 +110,19 @@ export default function ProfilePage() {
                         if (showAddUser) setShowBulkAddUser(false)
                       }}
                       className="btn btn-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
-                      {showAddUser ? '✕ Tutup' : '+ Tambah User Baru'}
+                      {showAddUser ? (
+                        <>
+                          <XIconSmall size={16} />
+                          Tutup
+                        </>
+                      ) : (
+                        <>
+                          <PlusIcon size={16} />
+                          Tambah User Baru
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={() => {
@@ -115,9 +130,19 @@ export default function ProfilePage() {
                         if (showBulkAddUser) setShowAddUser(false)
                       }}
                       className="btn btn-primary"
-                      style={{ background: 'var(--primary)', border: '1px solid var(--primary)' }}
+                      style={{ background: 'var(--primary)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
-                      {showBulkAddUser ? '✕ Tutup' : '📦 Tambah User Bulk'}
+                      {showBulkAddUser ? (
+                        <>
+                          <XIconSmall size={16} />
+                          Tutup
+                        </>
+                      ) : (
+                        <>
+                          <PackageIcon size={16} />
+                          Tambah User Bulk
+                        </>
+                      )}
                     </button>
                   </div>
                 )}
@@ -169,10 +194,14 @@ export default function ProfilePage() {
                     transition: 'all 0.2s',
                     marginBottom: '-2px',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}
                 >
-                  Manajemen User
+                  <UserIcon size={16} />
+                  <span>Manajemen User</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('subscriptions')}
@@ -188,10 +217,14 @@ export default function ProfilePage() {
                     transition: 'all 0.2s',
                     marginBottom: '-2px',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}
                 >
-                  Manajemen Subscription
+                  <BellIcon size={16} />
+                  <span>Manajemen Subscription</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('subjects')}
@@ -207,10 +240,14 @@ export default function ProfilePage() {
                     transition: 'all 0.2s',
                     marginBottom: '-2px',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}
                 >
-                  Mata Pelajaran per Kelas
+                  <BookIcon size={16} />
+                  <span>Mata Pelajaran per Kelas</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('feedback')}
@@ -233,6 +270,7 @@ export default function ProfilePage() {
                     flexShrink: 0
                   }}
                 >
+                  <MessageIcon size={16} />
                   <span>Saran & Masukan</span>
                   {unreadCount && unreadCount.count > 0 && (
                     <span style={{
@@ -253,6 +291,29 @@ export default function ProfilePage() {
                   )}
                 </button>
                 <button
+                  onClick={() => setActiveTab('announcements')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: activeTab === 'announcements' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'announcements' ? 'white' : 'var(--text-light)',
+                    border: 'none',
+                    borderBottom: activeTab === 'announcements' ? '2px solid var(--primary)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'announcements' ? 600 : 400,
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    marginBottom: '-2px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <BellIcon size={16} />
+                  <span>Pengumuman</span>
+                </button>
+                <button
                   onClick={() => setActiveTab('settings')}
                   style={{
                     padding: '0.75rem 1.5rem',
@@ -266,10 +327,14 @@ export default function ProfilePage() {
                     transition: 'all 0.2s',
                     marginBottom: '-2px',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}
                 >
-                  ⚙️ Pengaturan
+                  <SettingsIcon size={16} />
+                  <span>Pengaturan</span>
                 </button>
               </div>
 

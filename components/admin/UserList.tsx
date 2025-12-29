@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
-import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall, EyeIcon, EyeOffIcon } from '@/components/ui/Icons'
+import { CrownIcon, TrashIcon, EditIcon, SearchIcon, XIconSmall, EyeIcon, EyeOffIcon, CheckCircleIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditUserForm from '@/components/admin/EditUserForm'
 import ComboBox from '@/components/ui/ComboBox'
@@ -724,8 +724,12 @@ export default function UserList() {
                           fontSize: '0.7rem',
                           color: 'var(--text-success)',
                           marginTop: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
                         }}>
-                          ✅ Password asli (decrypted)
+                          <CheckCircleIcon size={12} />
+                          <span>Password asli (decrypted)</span>
                         </div>
                       ) : getUserPasswordHash.data && !getUserPasswordHash.isLoading ? (
                         <div style={{
@@ -733,14 +737,20 @@ export default function UserList() {
                           color: 'var(--text-warning)',
                           marginTop: '0.5rem',
                           fontStyle: 'italic',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
                         }}>
-                          {getUserPasswordHash.data.decryptError ? (
-                            <>⚠️ Error decrypt password: {getUserPasswordHash.data.decryptError}</>
-                          ) : getUserPasswordHash.data.hasEncryptedPassword ? (
-                            <>⚠️ Password ter-encrypt tapi gagal di-decrypt</>
-                          ) : (
-                            <>⚠️ Password belum di-encrypt</>
-                          )}
+                          <AlertTriangleIcon size={12} />
+                          <span>
+                            {getUserPasswordHash.data.decryptError ? (
+                              <>Error decrypt password: {getUserPasswordHash.data.decryptError}</>
+                            ) : getUserPasswordHash.data.hasEncryptedPassword ? (
+                              <>Password ter-encrypt tapi gagal di-decrypt</>
+                            ) : (
+                              <>Password belum di-encrypt</>
+                            )}
+                          </span>
                         </div>
                       ) : null}
                     </div>
@@ -1341,8 +1351,12 @@ export default function UserList() {
                               fontSize: '0.7rem',
                               color: 'var(--text-success)',
                               marginTop: '0.5rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem'
                             }}>
-                              ✅ Password asli (decrypted)
+                              <CheckCircleIcon size={12} />
+                              <span>Password asli (decrypted)</span>
                             </div>
                           ) : getUserPasswordHash.data && !getUserPasswordHash.isLoading ? (
                             <div style={{
@@ -1350,14 +1364,20 @@ export default function UserList() {
                               color: 'var(--text-warning)',
                               marginTop: '0.5rem',
                               fontStyle: 'italic',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem'
                             }}>
-                              {getUserPasswordHash.data.decryptError ? (
-                                <>⚠️ Error decrypt password: {getUserPasswordHash.data.decryptError}</>
-                              ) : getUserPasswordHash.data.hasEncryptedPassword ? (
-                                <>⚠️ Password ter-encrypt tapi gagal di-decrypt</>
-                              ) : (
-                                <>⚠️ Password belum di-encrypt</>
-                              )}
+                              <AlertTriangleIcon size={12} />
+                              <span>
+                                {getUserPasswordHash.data.decryptError ? (
+                                  <>Error decrypt password: {getUserPasswordHash.data.decryptError}</>
+                                ) : getUserPasswordHash.data.hasEncryptedPassword ? (
+                                  <>Password ter-encrypt tapi gagal di-decrypt</>
+                                ) : (
+                                  <>Password belum di-encrypt</>
+                                )}
+                              </span>
                             </div>
                           ) : null}
                         </div>

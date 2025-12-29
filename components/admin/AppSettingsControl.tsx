@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { toast } from '../ui/ToastContainer'
+import { SettingsIcon, InfoIcon } from '../ui/Icons'
 
 export default function AppSettingsControl() {
   const [isUpdating, setIsUpdating] = useState(false)
@@ -56,8 +57,12 @@ export default function AppSettingsControl() {
         marginBottom: '1rem', 
         fontSize: '1.25rem',
         fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
       }}>
-        ⚙️ Pengaturan Aplikasi
+        <SettingsIcon size={20} />
+        Pengaturan Aplikasi
       </h3>
 
       <div style={{
@@ -126,8 +131,9 @@ export default function AppSettingsControl() {
         fontSize: '0.875rem',
         color: 'var(--text-light)',
       }}>
-        <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)' }}>
-          ℹ️ Catatan:
+        <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <InfoIcon size={16} />
+          <span>Catatan:</span>
         </strong>
         <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
           <li>Pengaturan ini mengontrol apakah user dapat melihat notifikasi update</li>

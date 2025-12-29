@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { BellIcon, InfoIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 
 export default function TestDeadlineReminderButton() {
   const [isTesting, setIsTesting] = useState(false)
@@ -54,7 +55,8 @@ export default function TestDeadlineReminderButton() {
         alignItems: 'center',
         gap: '0.5rem',
       }}>
-        🔔 Test Deadline Reminder
+        <BellIcon size={20} />
+        Test Deadline Reminder
       </h3>
       <p style={{
         color: 'var(--text-light)',
@@ -70,7 +72,10 @@ export default function TestDeadlineReminderButton() {
         borderRadius: '0.375rem',
         fontSize: '0.8125rem',
       }}>
-        <strong>ℹ️ Kriteria:</strong>
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <InfoIcon size={14} />
+          <span>Kriteria:</span>
+        </strong>
         <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
           <li>User memiliki deadline reminder enabled</li>
           <li>Reminder time dalam 30 menit dari waktu sekarang</li>
@@ -113,7 +118,7 @@ export default function TestDeadlineReminderButton() {
           </>
         ) : (
           <>
-            <span>🔔</span>
+            <BellIcon size={16} />
             <span>Test Deadline Reminder</span>
           </>
         )}
@@ -127,8 +132,14 @@ export default function TestDeadlineReminderButton() {
         fontSize: '0.8125rem',
         color: 'var(--text-light)',
       }}>
-        <strong>⚠️ Catatan:</strong> Notifikasi akan dikirim ke semua user yang memenuhi kriteria di atas. 
-        Pastikan Anda benar-benar ingin mengirim notifikasi test sebelum klik tombol.
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <AlertTriangleIcon size={14} />
+          <span>Catatan:</span>
+        </strong>
+        <span style={{ marginLeft: '1.5rem', display: 'block', marginTop: '0.25rem' }}>
+          Notifikasi akan dikirim ke semua user yang memenuhi kriteria di atas. 
+          Pastikan Anda benar-benar ingin mengirim notifikasi test sebelum klik tombol.
+        </span>
       </div>
     </div>
   )

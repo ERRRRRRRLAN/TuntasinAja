@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ComboBox from '@/components/ui/ComboBox'
 import { format } from 'date-fns'
+import { SettingsIcon, UserIcon, BellIcon, FileTextIcon, RotateCcwIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 
 // Generate list of kelas options
 const generateKelasOptions = () => {
@@ -265,8 +266,12 @@ export default function BulkOperations() {
         marginBottom: '1.5rem',
         fontSize: '1.25rem',
         fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
       }}>
-        🔧 Bulk Operations & Tools
+        <SettingsIcon size={20} />
+        Bulk Operations & Tools
       </h3>
 
       {/* Warning */}
@@ -279,8 +284,9 @@ export default function BulkOperations() {
         color: 'var(--text-light)',
         marginBottom: '1.5rem',
       }}>
-        <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)' }}>
-          ⚠️ Peringatan:
+        <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <AlertTriangleIcon size={16} />
+          <span>Peringatan:</span>
         </strong>
         <p style={{ margin: 0 }}>
           Operasi bulk akan mempengaruhi banyak data sekaligus. Pastikan untuk memilih data dengan benar dan backup data penting sebelum melakukan operasi bulk.
@@ -309,9 +315,13 @@ export default function BulkOperations() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          👥 User Management
+          <UserIcon size={14} />
+          <span>User Management</span>
         </button>
         <button
           onClick={() => setActiveTab('subscriptions')}
@@ -327,9 +337,13 @@ export default function BulkOperations() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          🎫 Subscription Management
+          <BellIcon size={14} />
+          <span>Subscription Management</span>
         </button>
         <button
           onClick={() => setActiveTab('content')}
@@ -345,9 +359,13 @@ export default function BulkOperations() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          📝 Content Management
+          <FileTextIcon size={14} />
+          <span>Content Management</span>
         </button>
         <button
           onClick={() => setActiveTab('migration')}
@@ -363,9 +381,13 @@ export default function BulkOperations() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          🔄 Data Migration
+          <RotateCcwIcon size={14} />
+          <span>Data Migration</span>
         </button>
       </div>
 

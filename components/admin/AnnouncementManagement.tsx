@@ -70,11 +70,23 @@ export default function AnnouncementManagement() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <div>
-        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>Manajemen Pengumuman</h2>
-        <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem' }}>
-          {isAdmin ? 'Kelola semua pengumuman' : 'Kelola pengumuman untuk kelas Anda'}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>Manajemen Pengumuman</h2>
+          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem' }}>
+            {isAdmin ? 'Kelola semua pengumuman' : 'Kelola pengumuman untuk kelas Anda'}
+          </p>
+        </div>
+        {!showCreateForm && (
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="btn btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <PlusIcon size={16} />
+            <span>Buat Pengumuman Baru</span>
+          </button>
+        )}
       </div>
 
       {showCreateForm && (

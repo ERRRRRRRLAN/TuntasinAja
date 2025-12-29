@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import { TrashIcon } from '@/components/ui/Icons'
+import { TrashIcon, InfoIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '../ui/ToastContainer'
 
@@ -72,7 +72,10 @@ export default function AutoDeleteExpiredButton() {
         borderRadius: '0.375rem',
         fontSize: '0.8125rem',
       }}>
-        <strong>ℹ️ Informasi:</strong>
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <InfoIcon size={14} />
+          <span>Informasi:</span>
+        </strong>
         <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
           <li>Thread dengan deadline expired akan dihapus</li>
           <li>Comment (sub-task) dengan deadline expired akan dihapus</li>
@@ -131,7 +134,13 @@ export default function AutoDeleteExpiredButton() {
         fontSize: '0.8125rem',
         color: 'var(--text-light)',
       }}>
-        <strong>⚠️ Peringatan:</strong> Aksi ini tidak dapat dibatalkan. Pastikan Anda benar-benar ingin menghapus expired items sebelum klik tombol.
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <AlertTriangleIcon size={14} />
+          <span>Peringatan:</span>
+        </strong>
+        <span style={{ marginLeft: '1.5rem', display: 'block', marginTop: '0.25rem' }}>
+          Aksi ini tidak dapat dibatalkan. Pastikan Anda benar-benar ingin menghapus expired items sebelum klik tombol.
+        </span>
       </div>
     </div>
   )

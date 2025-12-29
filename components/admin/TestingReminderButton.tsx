@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import { BellIcon, RotateCcwIcon } from '@/components/ui/Icons'
+import { BellIcon, RotateCcwIcon, InfoIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '../ui/ToastContainer'
 
@@ -88,8 +88,14 @@ export default function TestingReminderButton() {
         borderRadius: '0.375rem',
         fontSize: '0.8125rem',
       }}>
-        <strong>💡 Tips:</strong> Jika notifikasi tidak muncul, pastikan tabel <code>class_schedules</code> sudah terisi. 
-        Klik tombol "Sync Jadwal" di bawah untuk mengisi tabel dari jadwal yang sudah ada di aplikasi.
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <InfoIcon size={14} />
+          <span>Tips:</span>
+        </strong>
+        <span style={{ marginLeft: '1.5rem', display: 'block', marginTop: '0.25rem' }}>
+          Jika notifikasi tidak muncul, pastikan tabel <code>class_schedules</code> sudah terisi. 
+          Klik tombol "Sync Jadwal" di bawah untuk mengisi tabel dari jadwal yang sudah ada di aplikasi.
+        </span>
       </div>
       <div style={{
         display: 'flex',
@@ -187,8 +193,14 @@ export default function TestingReminderButton() {
         fontSize: '0.8125rem',
         color: 'var(--text-light)',
       }}>
-        <strong>⚠️ Catatan:</strong> Notifikasi akan dikirim ke semua device yang terdaftar di kelas yang memiliki jadwal untuk besok. 
-        Pastikan Anda benar-benar ingin mengirim notifikasi test sebelum klik tombol.
+        <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <AlertTriangleIcon size={14} />
+          <span>Catatan:</span>
+        </strong>
+        <span style={{ marginLeft: '1.5rem', display: 'block', marginTop: '0.25rem' }}>
+          Notifikasi akan dikirim ke semua device yang terdaftar di kelas yang memiliki jadwal untuk besok. 
+          Pastikan Anda benar-benar ingin mengirim notifikasi test sebelum klik tombol.
+        </span>
       </div>
     </div>
   )

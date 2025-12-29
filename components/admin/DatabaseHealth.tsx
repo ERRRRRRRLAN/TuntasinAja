@@ -5,6 +5,8 @@ import { trpc } from '@/lib/trpc'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { DatabaseIcon, BarChartIcon, RotateCcwIcon, AlertTriangleIcon, InfoIcon, CalendarIcon, FileTextIcon, LinkIcon } from '@/components/ui/Icons'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function DatabaseHealth() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tables' | 'cleanup'>('overview')
@@ -79,8 +81,12 @@ export default function DatabaseHealth() {
           marginBottom: 0,
           fontSize: '1.25rem',
           fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
         }}>
-          💾 Database Health & Monitoring
+          <DatabaseIcon size={20} />
+          Database Health & Monitoring
         </h3>
         <button
           onClick={handleRefresh}
@@ -96,9 +102,22 @@ export default function DatabaseHealth() {
             fontWeight: 500,
             opacity: refreshing ? 0.6 : 1,
             transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          {refreshing ? 'Memuat...' : '🔄 Refresh'}
+          {refreshing ? (
+            <>
+              <LoadingSpinner size={14} color="white" />
+              <span>Memuat...</span>
+            </>
+          ) : (
+            <>
+              <RotateCcwIcon size={14} />
+              <span>Refresh</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -130,8 +149,23 @@ export default function DatabaseHealth() {
             gap: '0.5rem',
           }}>
             <div>
-              <strong style={{ color: 'var(--text)' }}>
-                {isDanger ? '⚠️ Database Size Warning!' : isWarning ? '⚠️ Database Size Alert' : '📊 Database Size'}
+              <strong style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {isDanger ? (
+                  <>
+                    <AlertTriangleIcon size={16} />
+                    <span>Database Size Warning!</span>
+                  </>
+                ) : isWarning ? (
+                  <>
+                    <AlertTriangleIcon size={16} />
+                    <span>Database Size Alert</span>
+                  </>
+                ) : (
+                  <>
+                    <BarChartIcon size={16} />
+                    <span>Database Size</span>
+                  </>
+                )}
               </strong>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
                 Total Size: <strong>{dbSize}</strong> / 500 MB (Supabase Free Tier Limit)
@@ -157,10 +191,13 @@ export default function DatabaseHealth() {
             }} />
           </div>
           {isWarning && (
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-light)', marginTop: '0.5rem' }}>
-              {isDanger
-                ? '🚨 Database hampir penuh! Segera lakukan cleanup atau upgrade plan.'
-                : '⚠️ Database sudah mencapai 80% kapasitas. Pertimbangkan untuk melakukan cleanup.'}
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-light)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertTriangleIcon size={14} />
+              <span>
+                {isDanger
+                  ? 'Database hampir penuh! Segera lakukan cleanup atau upgrade plan.'
+                  : 'Database sudah mencapai 80% kapasitas. Pertimbangkan untuk melakukan cleanup.'}
+              </span>
             </div>
           )}
         </div>
@@ -188,9 +225,13 @@ export default function DatabaseHealth() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          📊 Overview
+          <BarChartIcon size={14} />
+          <span>Overview</span>
         </button>
         <button
           onClick={() => setActiveTab('tables')}
@@ -206,9 +247,13 @@ export default function DatabaseHealth() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          📋 Table Statistics
+          <FileTextIcon size={14} />
+          <span>Table Statistics</span>
         </button>
         <button
           onClick={() => setActiveTab('cleanup')}
@@ -224,9 +269,13 @@ export default function DatabaseHealth() {
             transition: 'all 0.2s',
             marginBottom: '-2px',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}
         >
-          🧹 Cleanup Recommendations
+          <RotateCcwIcon size={14} />
+          <span>Cleanup Recommendations</span>
         </button>
       </div>
 
@@ -285,8 +334,9 @@ export default function DatabaseHealth() {
             borderRadius: '8px',
             marginBottom: '1rem',
           }}>
-            <h4 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>
-              📅 Oldest Records
+            <h4 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <CalendarIcon size={16} />
+              <span>Oldest Records</span>
             </h4>
             <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem' }}>
               {stats.oldestRecords.user && (
@@ -323,8 +373,9 @@ export default function DatabaseHealth() {
           {/* Table Sizes (if available) */}
           {tableSizes && tableSizes.length > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
-              <h4 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem', fontWeight: 600 }}>
-                📏 Table Sizes (PostgreSQL)
+              <h4 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <BarChartIcon size={16} />
+                <span>Table Sizes (PostgreSQL)</span>
               </h4>
               <div style={{
                 overflowX: 'auto',
@@ -373,8 +424,9 @@ export default function DatabaseHealth() {
 
           {/* Row Counts */}
           <div>
-            <h4 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem', fontWeight: 600 }}>
-              📊 Row Counts per Table
+            <h4 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <BarChartIcon size={16} />
+              <span>Row Counts per Table</span>
             </h4>
             <div style={{
               display: 'grid',
@@ -414,8 +466,9 @@ export default function DatabaseHealth() {
             color: 'var(--text-light)',
             marginBottom: '1.5rem',
           }}>
-            <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)' }}>
-              ℹ️ Catatan:
+            <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <InfoIcon size={16} />
+              <span>Catatan:</span>
             </strong>
             <p style={{ margin: 0 }}>
               Rekomendasi cleanup ini membantu menghemat space database. Pastikan untuk backup data sebelum melakukan cleanup.
@@ -431,8 +484,9 @@ export default function DatabaseHealth() {
               border: stats.cleanupRecommendations.oldHistory > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>
-                  📜 History &gt; 30 Hari
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FileTextIcon size={16} />
+                  <span>History &gt; 30 Hari</span>
                 </h4>
                 <span style={{
                   fontSize: '1.25rem',
@@ -455,8 +509,9 @@ export default function DatabaseHealth() {
               border: stats.cleanupRecommendations.inactiveThreads > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>
-                  📝 Thread Tidak Aktif &gt; 90 Hari
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FileTextIcon size={16} />
+                  <span>Thread Tidak Aktif &gt; 90 Hari</span>
                 </h4>
                 <span style={{
                   fontSize: '1.25rem',
@@ -479,8 +534,9 @@ export default function DatabaseHealth() {
               border: stats.cleanupRecommendations.orphanedUserStatuses > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>
-                  🔗 Orphaned User Statuses
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <LinkIcon size={16} />
+                  <span>Orphaned User Statuses</span>
                 </h4>
                 <span style={{
                   fontSize: '1.25rem',
