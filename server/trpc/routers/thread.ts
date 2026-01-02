@@ -688,162 +688,373 @@ export const threadRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // OPTIMIZATION: Run permission check, user lookup, and subscription check in parallel
-      const [permissionResult, userResult] = await Promise.allSettled([
-        getUserPermission(ctx.session.user.id),
-        prisma.user.findUnique({
+      const loggerContext = {
+        component: 'thread.addComment',
+        userId: ctx.session.user.id,
+        threadId: input.threadId,
+        deadline: input.deadline,
+      };
+
+      try {
+        // OPTIMIZATION: Run permission check, user lookup, and subscription check in parallel
+        const [permissionResult, userResult] = await Promise.allSettled([
+          getUserPermission(ctx.session.user.id),
+          prisma.user.findUnique({
+            where: { id: ctx.session.user.id },
+            select: {
+              kelas: true,
+              isAdmin: true,
+            },
+          }),
+        ]);
+
+        // Handle permission check result
+        const permission =
+          permissionResult.status === "fulfilled" ? permissionResult.value : null;
+        if (permission === "only_read") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.",
+          });
+        }
+
+        // Handle user lookup result
+        const currentUser =
+          userResult.status === "fulfilled" ? userResult.value : null;
+        if (!currentUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User tidak ditemukan",
+          });
+        }
+
+        const userKelas = (currentUser as any)?.kelas;
+        const isAdmin = (currentUser as any)?.isAdmin || false;
+
+        logger.info({ ...loggerContext, userKelas, isAdmin }, 'Starting addComment process');
+
+        // Check subscription status (skip for admin)
+        if (!isAdmin && userKelas) {
+          try {
+            const subscriptionStatus = await checkClassSubscription(userKelas);
+            if (!subscriptionStatus.isActive) {
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`,
+              });
+            }
+          } catch (error: any) {
+            if (error.message?.includes("Subscription")) {
+              throw error;
+            }
+            logger.warn({
+              ...loggerContext,
+              error: error instanceof Error ? error.message : String(error),
+            }, 'Subscription check error, assuming active')
+          }
+        }
+
+        // Get thread info first
+        const thread = await prisma.thread.findUnique({
+          where: { id: input.threadId },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                kelas: true,
+              },
+            },
+            comments: {
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                deadline: true,
+              },
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+          },
+        });
+
+        if (!thread) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Thread tidak ditemukan",
+          });
+        }
+
+        logger.info({
+          ...loggerContext,
+          threadId: thread.id,
+          threadTitle: thread.title,
+          threadIsGroupTask: thread.isGroupTask,
+          threadDeadline: thread.deadline,
+          existingCommentsCount: thread.comments.length,
+          threadAuthorKelas: thread.author.kelas,
+          threadAuthorId: thread.author.id,
+        }, 'Thread found with details');
+
+        // Get comment author info
+        const commentAuthor = await prisma.user.findUnique({
           where: { id: ctx.session.user.id },
           select: {
             kelas: true,
-            isAdmin: true,
+            name: true,
           },
-        }),
-      ]);
-
-      // Handle permission check result
-      const permission =
-        permissionResult.status === "fulfilled" ? permissionResult.value : null;
-      if (permission === "only_read") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Anda hanya memiliki izin membaca. Tidak dapat menambahkan komentar.",
         });
-      }
 
-      // Handle user lookup result
-      const currentUser =
-        userResult.status === "fulfilled" ? userResult.value : null;
-      if (!currentUser) {
-        throw new Error("User tidak ditemukan");
-      }
-
-      const userKelas = (currentUser as any)?.kelas;
-      const isAdmin = (currentUser as any)?.isAdmin || false;
-
-      // Check subscription status (skip for admin)
-      if (!isAdmin && userKelas) {
-        try {
-          const subscriptionStatus = await checkClassSubscription(userKelas);
-          if (!subscriptionStatus.isActive) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: `Subscription untuk kelas ${userKelas} sudah habis. Tidak dapat menambahkan komentar.`,
-            });
-          }
-        } catch (error: any) {
-          if (error.message?.includes("Subscription")) {
-            throw error;
-          }
-          logger.warn({ 
-            component: 'thread.addComment',
-            error: error instanceof Error ? error.message : String(error),
-            userId: ctx.session.user.id,
-          }, 'Subscription check error, assuming active')
-        }
-      }
-
-      // Get thread info first
-      const thread = await prisma.thread.findUnique({
-        where: { id: input.threadId },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              kelas: true,
-            },
-          },
-        },
-      });
-
-      if (!thread) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Thread tidak ditemukan",
-        });
-      }
-
-      // Get comment author info
-      const commentAuthor = await prisma.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: {
-          kelas: true,
-          name: true,
-        },
-      });
-
-      // Use Jakarta time for comment creation
-      const now = getUTCDate();
-      // Validate deadline if provided - must be in the future
-      if (input.deadline) {
-        const deadlineDate = new Date(input.deadline);
-        if (deadlineDate <= now) {
+        if (!commentAuthor) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: createDeadlineError({ userId: ctx.session.user.id, threadId: input.threadId, deadline: input.deadline }).userMessage,
+            code: "NOT_FOUND",
+            message: "Data penulis komentar tidak ditemukan",
           });
         }
-      }
 
-      const comment = await prisma.comment.create({
-        data: {
-          threadId: input.threadId,
-          authorId: ctx.session.user.id,
-          content: input.content,
-          deadline: input.deadline || null,
-          createdAt: now,
-        },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
+        // Use Jakarta time for comment creation
+        const now = getUTCDate();
+        
+        // Validate deadline if provided - must be in the future
+        if (input.deadline) {
+          // Additional validation for deadline format
+          if (!(input.deadline instanceof Date) && isNaN(Date.parse(input.deadline as any))) {
+            logger.error({
+              ...loggerContext,
+              deadlineRaw: input.deadline,
+              deadlineType: typeof input.deadline,
+            }, 'Invalid deadline format');
+            
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Format deadline tidak valid. Harus berupa tanggal yang valid.",
+            });
+          }
+          
+          const deadlineDate = new Date(input.deadline);
+          logger.info({
+            ...loggerContext,
+            now: now.toISOString(),
+            nowTimestamp: now.getTime(),
+            deadlineDate: deadlineDate.toISOString(),
+            deadlineTimestamp: deadlineDate.getTime(),
+            deadlineIsValid: deadlineDate > now,
+            timeDiffMs: deadlineDate.getTime() - now.getTime(),
+          }, 'Validating deadline');
+          
+          // Allow deadline to be equal to or after current time
+          if (deadlineDate < now) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: createDeadlineError({
+                userId: ctx.session.user.id,
+                threadId: input.threadId,
+                deadline: input.deadline
+              }).userMessage,
+            });
+          }
+        }
+
+        // Additional validation: Check if user has already added a comment to this thread today
+        // This prevents duplicate comments for the same task on the same day
+        const today = getJakartaTodayAsUTC();
+        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        
+        const existingCommentToday = await prisma.comment.findFirst({
+          where: {
+            threadId: input.threadId,
+            authorId: ctx.session.user.id,
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
             },
           },
-        },
-      });
-
-      // OPTIMIZATION: Send notification in background (fire-and-forget)
-      // Only send if comment author is from the same class as thread author
-      const threadAuthorKelas = thread.author.kelas?.trim();
-      const normalizedUserKelas = userKelas?.trim();
-
-      // Use exact match with trimmed values
-      if (
-        threadAuthorKelas &&
-        normalizedUserKelas === threadAuthorKelas &&
-        !isAdmin
-      ) {
-        // Fire notification in background without blocking
-        const commentPreview =
-          comment.content.substring(0, 80) +
-          (comment.content.length > 80 ? "..." : "");
-        const notificationBody = `${commentAuthor?.name || "Seseorang"} - ${thread.title}. ${commentPreview}`;
-
-        sendNotificationToClass(
-          threadAuthorKelas,
-          "📝 Sub Tugas Baru",
-          notificationBody,
-          {
-            type: "new_comment",
-            threadId: thread.id,
-            threadTitle: thread.title,
-            commentId: comment.id,
-            commentContent: comment.content,
-            threadDate: thread.date.toISOString(),
-          },
-          "comment",
-        ).catch((error) => {
-          logger.error({ 
-            component: 'thread.addComment',
-            error: error instanceof Error ? error.message : String(error),
-            threadId: input.threadId,
-          }, 'Error sending notification for new comment (non-blocking)')
-          // Don't throw - notification failure shouldn't break comment creation
         });
-      }
 
-      return comment;
+        if (existingCommentToday) {
+          logger.warn({
+            ...loggerContext,
+            existingCommentId: existingCommentToday.id,
+          }, 'User already added a comment to this thread today');
+          
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Anda sudah menambahkan komentar untuk tugas ini hari ini",
+          });
+        }
+
+        // Additional validation: Check if content is empty after trimming
+        const trimmedContent = input.content.trim();
+        if (!trimmedContent) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Komentar tidak boleh kosong",
+          });
+        }
+
+        // Additional validation: Check if thread exists and user has permission
+        // This is a double-check to ensure thread still exists and user can comment
+        const threadCheck = await prisma.thread.findUnique({
+          where: { id: input.threadId },
+          select: { id: true, authorId: true },
+        });
+
+        if (!threadCheck) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Thread tidak ditemukan atau sudah dihapus",
+          });
+        }
+
+        // Check if user is trying to add comment to their own thread
+        const isOwnThread = thread.authorId === ctx.session.user.id;
+        if (isOwnThread) {
+          logger.info({
+            ...loggerContext,
+          }, 'User is adding comment to their own thread');
+        }
+
+        // Additional validation: Check if thread has deadline and if it's expired
+        if (thread.deadline && new Date(thread.deadline) <= now) {
+          logger.warn({
+            ...loggerContext,
+            threadDeadline: thread.deadline,
+            now: now.toISOString(),
+          }, 'Thread deadline has expired');
+          
+          // Don't throw error, but log warning
+          // Users can still add comments to expired threads
+        }
+
+        // Create the comment
+        const comment = await prisma.comment.create({
+          data: {
+            threadId: input.threadId,
+            authorId: ctx.session.user.id,
+            content: trimmedContent,
+            deadline: input.deadline || null,
+            createdAt: now,
+          },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        }).catch((error: any) => {
+          // Handle database constraint errors
+          if (error.code === 'P2002') {
+            logger.error({
+              ...loggerContext,
+              error: error.message,
+              code: error.code,
+            }, 'Database constraint violation');
+            
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Terjadi konflik data. Mungkin komentar sudah ada atau data tidak valid.",
+            });
+          }
+          
+          // Handle foreign key constraint errors
+          if (error.code === 'P2003') {
+            logger.error({
+              ...loggerContext,
+              error: error.message,
+              code: error.code,
+            }, 'Foreign key constraint violation');
+            
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Thread atau penulis tidak valid.",
+            });
+          }
+          
+          // Re-throw other errors
+          throw error;
+        });
+
+        logger.info({
+          ...loggerContext,
+          commentId: comment.id,
+          commentContentLength: comment.content.length,
+        }, 'Comment created successfully');
+
+        // OPTIMIZATION: Send notification in background (fire-and-forget)
+        // Only send if comment author is from the same class as thread author
+        const threadAuthorKelas = thread.author.kelas?.trim();
+        const normalizedUserKelas = userKelas?.trim();
+
+        // Use exact match with trimmed values
+        if (
+          threadAuthorKelas &&
+          normalizedUserKelas === threadAuthorKelas &&
+          !isAdmin
+        ) {
+          // Fire notification in background without blocking
+          const commentPreview =
+            comment.content.substring(0, 80) +
+            (comment.content.length > 80 ? "..." : "");
+          const notificationBody = `${commentAuthor?.name || "Seseorang"} - ${thread.title}. ${commentPreview}`;
+
+          sendNotificationToClass(
+            threadAuthorKelas,
+            "📝 Sub Tugas Baru",
+            notificationBody,
+            {
+              type: "new_comment",
+              threadId: thread.id,
+              threadTitle: thread.title,
+              commentId: comment.id,
+              commentContent: comment.content,
+              threadDate: thread.date.toISOString(),
+            },
+            "comment",
+          ).catch((error) => {
+            logger.error({
+              ...loggerContext,
+              commentId: comment.id,
+              error: error instanceof Error ? error.message : String(error),
+            }, 'Error sending notification for new comment (non-blocking)')
+            // Don't throw - notification failure shouldn't break comment creation
+          });
+        } else {
+          logger.info({
+            ...loggerContext,
+            threadAuthorKelas,
+            normalizedUserKelas,
+            isAdmin,
+            reason: !threadAuthorKelas ? 'No thread author kelas' :
+                    normalizedUserKelas !== threadAuthorKelas ? 'Class mismatch' :
+                    isAdmin ? 'User is admin' : 'Unknown',
+          }, 'Skipping notification due to conditions');
+        }
+
+        logger.info({
+          ...loggerContext,
+          commentId: comment.id,
+          success: true,
+        }, 'addComment completed successfully');
+
+        return {
+          ...comment,
+          author: comment.author,
+        };
+      } catch (error: any) {
+        // Log detailed error for debugging
+        logger.error({
+          ...loggerContext,
+          error: error.message,
+          code: error.code,
+          stack: error.stack,
+        }, 'Error in addComment mutation');
+
+        // Re-throw the error
+        throw error;
+      }
     }),
 
   // Delete thread (Author only or Admin)
@@ -1115,14 +1326,15 @@ export const threadRouter = createTRPCRouter({
 
   // Auto-delete threads older than 1 day (for cron job)
   autoDeleteOldThreads: publicProcedure.mutation(async () => {
-    const oneDayAgo = getUTCDate();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const { getUTCDate } = await import("@/lib/date-utils");
+    const now = getUTCDate();
+    now.setDate(now.getDate() - 1);
 
     // Find threads older than 1 day
     const oldThreads = await prisma.thread.findMany({
       where: {
         createdAt: {
-          lt: oneDayAgo,
+          lt: now,
         },
       },
       include: {
