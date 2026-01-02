@@ -856,33 +856,8 @@ export const threadRouter = createTRPCRouter({
           }
         }
 
-        // Additional validation: Check if user has already added a comment to this thread today
-        // This prevents duplicate comments for the same task on the same day
-        const today = getJakartaTodayAsUTC();
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-        
-        const existingCommentToday = await prisma.comment.findFirst({
-          where: {
-            threadId: input.threadId,
-            authorId: ctx.session.user.id,
-            createdAt: {
-              gte: today,
-              lt: tomorrow,
-            },
-          },
-        });
-
-        if (existingCommentToday) {
-          logger.warn({
-            ...loggerContext,
-            existingCommentId: existingCommentToday.id,
-          }, 'User already added a comment to this thread today');
-          
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Anda sudah menambahkan komentar untuk tugas ini hari ini",
-          });
-        }
+        // Note: Removed duplicate comment validation to allow multiple comments per day
+        // Users can add multiple sub-tasks/comments to the same thread
 
         // Additional validation: Check if content is empty after trimming
         const trimmedContent = input.content.trim();
