@@ -682,7 +682,7 @@ export const threadRouter = createTRPCRouter({
   addComment: rateLimitedProtectedProcedure
     .input(
       z.object({
-        threadId: z.string().uuid('ID thread tidak valid'),
+        threadId: z.string(),
         content: commentContentSchema,
         deadline: z.date().optional(),
       }),
