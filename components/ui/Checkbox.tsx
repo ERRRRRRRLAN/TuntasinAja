@@ -67,20 +67,32 @@ export default function Checkbox({
           position: 'relative',
         }}
       >
-        {isLoading ? (
+        {checked && (
+          <CheckIcon
+            size={size * 0.7}
+            style={{
+              color: 'white',
+              strokeWidth: 3,
+              position: 'absolute',
+              zIndex: 1,
+              opacity: isLoading ? 0.5 : 1 // Slight fade if loading to focus on spinner
+            }}
+          />
+        )}
+        {isLoading && (
           <div
             style={{
               width: `${size * 0.5}px`,
               height: `${size * 0.5}px`,
-              border: '2px solid var(--primary)',
+              border: `2px solid ${checked ? 'white' : 'var(--primary)'}`,
               borderTopColor: 'transparent',
-              borderRadius: '0.125rem',
+              borderRadius: '50%', // Circular spinner is better
               animation: 'spin 0.6s linear infinite',
+              position: 'relative',
+              zIndex: 2,
             }}
           />
-        ) : checked ? (
-          <CheckIcon size={size * 0.7} style={{ color: 'white', strokeWidth: 3 }} />
-        ) : null}
+        )}
       </div>
     </div>
   )
