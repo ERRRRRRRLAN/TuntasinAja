@@ -71,6 +71,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const [showCompletionStatsModal, setShowCompletionStatsModal] =
     useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [isFakeLoading, setIsFakeLoading] = useState(false);
 
   // Get thread status (for current user)
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -270,6 +271,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const handleConfirmUncheck = () => {
     setShowUncheckDialog(false);
+    setIsFakeLoading(true);
+    setTimeout(() => setIsFakeLoading(false), 500);
     toggleThread.mutate({
       threadId: thread.id,
       isCompleted: false,
@@ -279,6 +282,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const handleConfirmThread = () => {
     // Close dialog immediately for better UX
     setShowConfirmDialog(false);
+    setIsFakeLoading(true);
+    setTimeout(() => setIsFakeLoading(false), 500);
     // Then execute the mutation
     toggleThread.mutate({
       threadId: thread.id,
@@ -470,8 +475,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <Checkbox
               checked={isCompleted}
               onClick={handleCheckboxClick}
-              isLoading={toggleThread.isLoading}
-              disabled={toggleThread.isLoading}
+              isLoading={isFakeLoading}
+              disabled={isFakeLoading || toggleThread.isLoading}
               size={28}
             />
           )}
@@ -865,6 +870,7 @@ function CommentItem({
   const { data: session } = useSession();
   const commentStatus = statuses.find((s) => s.commentId === comment.id);
   const isCompleted = commentStatus?.isCompleted || false;
+  const [isFakeLoading, setIsFakeLoading] = useState(false);
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -885,17 +891,18 @@ function CommentItem({
       });
 
       // Optimistically update to the new value
-      utils.userStatus.getThreadStatuses.setData(
-        { threadId },
-        (old = []) => {
-          return old.map((s) => {
-            if (s.commentId === variables.commentId) {
-              return { ...s, isCompleted: variables.isCompleted };
-            }
-            return s;
-          });
-        },
-      );
+      utils.userStatus.getThreadStatuses.setData({ threadId }, (old = []) => {
+        return old.map((s) => {
+          if (s.commentId === variables.commentId) {
+            return { ...s, isCompleted: variables.isCompleted };
+          }
+          return s;
+        });
+      });
+
+      // Start fake loading
+      setIsFakeLoading(true);
+      setTimeout(() => setIsFakeLoading(false), 500);
 
       return { previousStatuses };
     },
@@ -928,7 +935,7 @@ function CommentItem({
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (session) {
+    if (session && !toggleComment.isLoading && !isFakeLoading) {
       toggleComment.mutate({
         threadId,
         commentId: comment.id,
@@ -1026,8 +1033,8 @@ function CommentItem({
           <Checkbox
             checked={isCompleted}
             onClick={handleCheckboxClick}
-            isLoading={toggleComment.isLoading}
-            disabled={toggleComment.isLoading}
+            isLoading={isFakeLoading}
+            disabled={isFakeLoading || toggleComment.isLoading}
             size={24}
           />
         </div>

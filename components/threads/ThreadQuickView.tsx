@@ -44,6 +44,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [isMobile, setIsMobile] = useState(false)
   const [showGroupMembers, setShowGroupMembers] = useState(false)
+  const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
+  const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -387,6 +389,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const handleConfirmUncheck = () => {
     setShowUncheckDialog(false)
+    setIsFakeLoadingThread(true)
+    setTimeout(() => setIsFakeLoadingThread(false), 500)
     toggleThread.mutate({
       threadId,
       isCompleted: false,
@@ -404,6 +408,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleConfirmThread = () => {
     // Close dialog immediately for better UX
     setShowConfirmDialog(false)
+    setIsFakeLoadingThread(true)
+    setTimeout(() => setIsFakeLoadingThread(false), 500)
     // Then execute the mutation
     toggleThread.mutate({
       threadId,
@@ -430,6 +436,22 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           return s;
         });
       });
+
+      // Add to fake loading
+      setFakeLoadingComments((prev) => {
+        const next = new Set(prev);
+        next.add(variables.commentId);
+        return next;
+      });
+
+      // Remove from fake loading after 500ms
+      setTimeout(() => {
+        setFakeLoadingComments((prev) => {
+          const next = new Set(prev);
+          next.delete(variables.commentId);
+          return next;
+        });
+      }, 500);
 
       return { previousStatuses };
     },
@@ -808,8 +830,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               <Checkbox
                 checked={isThreadCompleted}
                 onClick={handleThreadCheckboxClick}
-                isLoading={toggleThread.isLoading}
-                disabled={toggleThread.isLoading}
+                isLoading={isFakeLoadingThread}
+                disabled={isFakeLoadingThread || toggleThread.isLoading}
                 size={24}
               />
             )}
@@ -1192,7 +1214,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         <Checkbox
                           checked={isCommentCompleted}
                           onClick={() => {
-                            if (session && !toggleComment.isLoading) {
+                            if (session && !toggleComment.isLoading && !fakeLoadingComments.has(comment.id)) {
                               toggleComment.mutate({
                                 threadId,
                                 commentId: comment.id,
@@ -1200,8 +1222,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               })
                             }
                           }}
-                          isLoading={toggleComment.isLoading}
-                          disabled={toggleComment.isLoading}
+                          isLoading={fakeLoadingComments.has(comment.id)}
+                          disabled={fakeLoadingComments.has(comment.id) || toggleComment.isLoading}
                           size={20}
                         />
                       </div>
