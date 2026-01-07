@@ -8,6 +8,7 @@ import {
   addDays,
   differenceInDays,
 } from "date-fns";
+
 import { id } from "date-fns/locale";
 import { useSession } from "next-auth/react";
 import { toJakartaDate, getUTCDate } from "@/lib/date-utils";
@@ -78,6 +79,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     total: number;
     percentage: number;
   } | null>(null);
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
+  const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Get thread status (for current user)
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -272,58 +275,82 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (session) {
-      // If unchecking, show confirmation dialog about timer reset
-      if (isCompleted) {
-        setShowUncheckDialog(true);
-      } else {
-        // If checking, show confirmation dialog
-        setShowConfirmDialog(true);
-      }
-    }
-  };
+    if (!session) return;
 
-  const handleConfirmUncheck = () => {
-    setShowUncheckDialog(false);
+    const now = Date.now();
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
+      return;
+    }
+    setLastClickTime(now);
+
+    const nextState = !isCompleted;
+    setVisualCompleted(nextState);
+
+    // Start/restart fake loading spinner
     setIsFakeLoading(true);
-    setTimeout(() => {
-      setIsFakeLoading(false);
-      setVisualCompleted(false);
-      if (thread.isGroupTask && thread.comments && thread.comments.length > 0) {
+    if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
+
+    // Update group progress visually if needed
+    if (thread.isGroupTask && thread.comments && thread.comments.length > 0) {
+      if (nextState) {
+        setVisualGroupProgress({
+          completed: thread.comments.length,
+          total: thread.comments.length,
+          percentage: 100,
+        });
+      } else {
         setVisualGroupProgress({
           completed: 0,
           total: thread.comments.length,
           percentage: 0,
         });
       }
-    }, 500);
-    toggleThread.mutate({
-      threadId: thread.id,
-      isCompleted: false,
-    });
+    }
+
+    debounceTimerRef.timer = setTimeout(() => {
+      setIsFakeLoading(false);
+      // Only mutate if the state is different from what we think the DB has
+      if (nextState !== (threadStatus?.isCompleted || false)) {
+        toggleThread.mutate({
+          threadId: thread.id,
+          isCompleted: nextState,
+        });
+      }
+    }, 800);
+  };
+
+  const handleConfirmUncheck = () => {
+    setShowUncheckDialog(false);
+    // Explicit uncheck from dialog (if needed)
+    setVisualCompleted(false);
+    setIsFakeLoading(true);
+    if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
+
+    debounceTimerRef.timer = setTimeout(() => {
+      setIsFakeLoading(false);
+      toggleThread.mutate({
+        threadId: thread.id,
+        isCompleted: false,
+      });
+    }, 800);
   };
 
   const handleConfirmThread = () => {
-    // Close dialog immediately for better UX
     setShowConfirmDialog(false);
+    setVisualCompleted(true);
     setIsFakeLoading(true);
-    setTimeout(() => {
+    if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
+
+    debounceTimerRef.timer = setTimeout(() => {
       setIsFakeLoading(false);
-      setVisualCompleted(true);
-      if (thread.isGroupTask && thread.comments && thread.comments.length > 0) {
-        setVisualGroupProgress({
-          completed: thread.comments.length,
-          total: thread.comments.length,
-          percentage: 100,
-        });
-      }
-    }, 500);
-    // Then execute the mutation
-    toggleThread.mutate({
-      threadId: thread.id,
-      isCompleted: true,
-    });
+      toggleThread.mutate({
+        threadId: thread.id,
+        isCompleted: true,
+      });
+    }, 800);
   };
+
 
   const handleCardClick = () => {
     // Don't open quickview if any dialog is open
@@ -918,6 +945,8 @@ function CommentItem({
   const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
   const isCompleted = visualCompleted ?? (commentStatus?.isCompleted || false);
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
+  const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -959,9 +988,11 @@ function CommentItem({
       });
 
 
-      // Start fake loading
+      // Start/restart fake loading spinner
       setIsFakeLoading(true);
-      setTimeout(() => {
+      if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
+
+      debounceTimerRef.timer = setTimeout(() => {
         setIsFakeLoading(false);
         const nextIsCompleted = variables.isCompleted;
         setVisualCompleted(nextIsCompleted);
@@ -978,7 +1009,12 @@ function CommentItem({
             percentage: nextPercentage,
           });
         }
-      }, 500);
+
+        // Only mutate if the state is different
+        if (nextIsCompleted !== (commentStatus?.isCompleted || false)) {
+          toggleComment.mutate(variables);
+        }
+      }, 800);
 
       return { previousStatuses };
     },
@@ -1011,13 +1047,46 @@ function CommentItem({
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (session && !toggleComment.isLoading && !isFakeLoading) {
-      toggleComment.mutate({
-        threadId,
-        commentId: comment.id,
-        isCompleted: !isCompleted,
+    if (!session) return;
+
+    const now = Date.now();
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
+      return;
+    }
+    setLastClickTime(now);
+
+    const nextState = !isCompleted;
+    setVisualCompleted(nextState);
+
+    // Start/restart fake loading spinner
+    setIsFakeLoading(true);
+    if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
+
+    // Update parent's visual progress immediately
+    if (isGroupTask && totalComments > 0) {
+      const nextCompleted = nextState
+        ? Math.min(totalComments, currentCompleted + 1)
+        : Math.max(0, currentCompleted - 1);
+      const nextPercentage = Math.round((nextCompleted / totalComments) * 100);
+      onProgressChange({
+        completed: nextCompleted,
+        total: totalComments,
+        percentage: nextPercentage,
       });
     }
+
+    debounceTimerRef.timer = setTimeout(() => {
+      setIsFakeLoading(false);
+      // Only mutate if state truly changed from DB
+      if (nextState !== (commentStatus?.isCompleted || false)) {
+        toggleComment.mutate({
+          threadId,
+          commentId: comment.id,
+          isCompleted: nextState,
+        });
+      }
+    }, 800);
   };
 
   // Calculate deadline badge for comment

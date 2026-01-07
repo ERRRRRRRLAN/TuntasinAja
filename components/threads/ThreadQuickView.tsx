@@ -47,6 +47,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
   const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
   const [visualStatuses, setVisualStatuses] = useState<Record<string, boolean>>({})
+  const [lastClickTime, setLastClickTime] = useState<number>(0)
+  const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({})
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -386,15 +388,31 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const handleThreadCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (session && isQuickViewOpen) {
-      // If unchecking, show confirmation dialog about timer reset
-      if (isThreadCompleted) {
-        setShowUncheckDialog(true)
-      } else {
-        // If checking, show confirmation dialog (only if quickview is open)
-        setShowConfirmDialog(true)
-      }
+    if (!session || !isQuickViewOpen) return
+
+    const now = Date.now()
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
+      return
     }
+    setLastClickTime(now)
+
+    const nextState = !isThreadCompleted
+    setVisualStatuses(prev => ({ ...prev, [threadId]: nextState }))
+    setIsFakeLoadingThread(true)
+
+    if (debounceTimers.current[threadId]) clearTimeout(debounceTimers.current[threadId])
+
+    debounceTimers.current[threadId] = setTimeout(() => {
+      setIsFakeLoadingThread(false)
+      // Only mutate if state truly changed from DB
+      if (nextState !== (threadStatus?.isCompleted || false)) {
+        toggleThread.mutate({
+          threadId,
+          isCompleted: nextState,
+        })
+      }
+    }, 800)
   }
 
   const handleConfirmUncheck = () => {
@@ -1242,13 +1260,41 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                         <Checkbox
                           checked={isCommentCompleted}
                           onClick={() => {
-                            if (session && !toggleComment.isLoading && !fakeLoadingComments.has(comment.id)) {
-                              toggleComment.mutate({
-                                threadId,
-                                commentId: comment.id,
-                                isCompleted: !isCommentCompleted,
-                              })
+                            if (!session) return
+                            const now = Date.now()
+                            if (now - lastClickTime < 200) {
+                              toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
+                              return
                             }
+                            setLastClickTime(now)
+
+                            const nextState = !isCommentCompleted
+                            setVisualStatuses(prev => ({ ...prev, [comment.id]: nextState }))
+
+                            // Start/restart fake loading for this comment
+                            setFakeLoadingComments(prev => {
+                              const next = new Set(prev)
+                              next.add(comment.id)
+                              return next
+                            })
+
+                            if (debounceTimers.current[comment.id]) clearTimeout(debounceTimers.current[comment.id])
+
+                            debounceTimers.current[comment.id] = setTimeout(() => {
+                              setFakeLoadingComments(prev => {
+                                const next = new Set(prev)
+                                next.delete(comment.id)
+                                return next
+                              })
+
+                              if (nextState !== (commentStatus?.isCompleted || false)) {
+                                toggleComment.mutate({
+                                  threadId,
+                                  commentId: comment.id,
+                                  isCompleted: nextState,
+                                })
+                              }
+                            }, 800)
                           }}
                           isLoading={fakeLoadingComments.has(comment.id)}
                           disabled={fakeLoadingComments.has(comment.id)}

@@ -25,7 +25,7 @@ export default function Checkbox({
   const [isHovered, setIsHovered] = useState(false)
 
   const handleClick = (e: React.MouseEvent) => {
-    if (disabled || isLoading) {
+    if (disabled) {
       e.preventDefault()
       e.stopPropagation()
       return
@@ -36,6 +36,7 @@ export default function Checkbox({
       onChange()
     }
   }
+
 
   return (
     <div
