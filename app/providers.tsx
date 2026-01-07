@@ -1,0 +1,111 @@
+'use client'
+
+import { SessionProvider } from 'next-auth/react'
+import { trpc, trpcClient } from '@/lib/trpc'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { Capacitor } from '@capacitor/core'
+import PushNotificationSetup from '@/components/notifications/PushNotificationSetup-v2'
+import WebPushSetup from '@/components/notifications/WebPushSetup'
+import StatusBarHandler from '@/components/StatusBarHandler'
+import AppUpdateChecker from '@/components/AppUpdateChecker'
+import SessionRefresher from '@/components/SessionRefresher'
+import NetworkStatus from '@/components/NetworkStatus'
+import NetworkErrorHandler from '@/components/NetworkErrorHandler'
+import { useNavigationHistory } from '@/hooks/useNavigationHistory'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { UnsavedChangesProvider } from '@/components/providers/UnsavedChangesProvider'
+
+// Setup global back button handler for Android
+if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+  import('@/hooks/useBackButton').then((module) => {
+    // This will trigger the setup in useBackButton.ts
+    console.log('[Providers] Back button handler module loaded')
+  }).catch((e) => {
+    console.error('[Providers] Error loading back button handler:', e)
+  })
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        // CACHING OPTIMIZATION: Reduce unnecessary refetches
+        staleTime: 30 * 1000, // Data considered fresh for 30 seconds (was: 0)
+        cacheTime: 5 * 60 * 1000, // Cache data for 5 minutes (React Query v4 uses cacheTime, v5 uses gcTime)
+        
+        // REFETCH OPTIMIZATION: Reduce network requests
+        refetchOnWindowFocus: false, // Don't refetch on window focus (already set)
+        refetchOnMount: true, // Refetch on mount if data is stale
+        refetchOnReconnect: true, // Refetch when network reconnects
+        
+        // RETRY CONFIGURATION: Keep existing retry logic
+        retry: (failureCount, error: any) => {
+          // Retry network errors up to 3 times
+          const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                               error?.message?.includes('Failed to fetch') ||
+                               error?.message?.includes('NetworkError') ||
+                               error?.message?.includes('Network request failed') ||
+                               error?.name === 'NetworkError' ||
+                               error?.name === 'TypeError'
+          
+          if (isNetworkError) {
+            return failureCount < 3
+          }
+          // For other errors, retry once
+          return failureCount < 1
+        },
+        retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 30000), // Exponential backoff, max 30s
+      },
+      mutations: {
+        // MUTATION OPTIMIZATION: Keep existing retry logic
+        retry: (failureCount, error: any) => {
+          // Retry network errors once
+          const isNetworkError = error?.message?.includes('ERR_NAME_NOT_RESOLVED') ||
+                               error?.message?.includes('Failed to fetch') ||
+                               error?.message?.includes('NetworkError') ||
+                               error?.message?.includes('Network request failed') ||
+                               error?.name === 'NetworkError' ||
+                               error?.name === 'TypeError'
+          
+          if (isNetworkError) {
+            return failureCount < 1
+          }
+          return false
+        },
+        retryDelay: 1000,
+      },
+    },
+  }))
+
+  // Track navigation history for back button
+  useNavigationHistory()
+
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider 
+          refetchInterval={5 * 60}
+          refetchOnWindowFocus={true}
+          refetchWhenOffline={false}
+        >
+          <SessionRefresher />
+          <ThemeProvider>
+            <UnsavedChangesProvider>
+              <ServiceWorkerRegistration />
+              <StatusBarHandler />
+              <NetworkStatus />
+              <NetworkErrorHandler />
+              {children}
+              <PushNotificationSetup />
+              <WebPushSetup />
+              <AppUpdateChecker />
+            </UnsavedChangesProvider>
+          </ThemeProvider>
+        </SessionProvider>
+      </QueryClientProvider>
+    </trpc.Provider>
+  )
+}
+

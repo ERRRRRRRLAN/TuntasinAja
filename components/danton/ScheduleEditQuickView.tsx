@@ -1,0 +1,472 @@
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
+import { trpc } from '@/lib/trpc'
+import ComboBox from '@/components/ui/ComboBox'
+import { XCloseIcon, TrashIcon, CalendarIcon } from '@/components/ui/Icons'
+import { useBackHandler } from '@/hooks/useBackHandler'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import QuickViewConfirmDialog from '@/components/ui/QuickViewConfirmDialog'
+
+interface ScheduleEditQuickViewProps {
+  day: string
+  period: number
+  dayName: string
+  currentSubject: string
+  onClose: () => void
+}
+
+export default function ScheduleEditQuickView({
+  day,
+  period,
+  dayName,
+  currentSubject,
+  onClose,
+}: ScheduleEditQuickViewProps) {
+  const [selectedSubject, setSelectedSubject] = useState(currentSubject)
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
+
+  const utils = trpc.useUtils()
+  const { data: subjects } = trpc.weeklySchedule.getSubjects.useQuery(undefined, {
+    refetchOnWindowFocus: false, // Disable to prevent flickering
+    staleTime: 60000, // Cache for 1 minute
+  })
+
+  const setSchedule = trpc.weeklySchedule.setSchedule.useMutation({
+    onSuccess: () => {
+      utils.weeklySchedule.getSchedule.invalidate()
+      utils.weeklySchedule.getUserSchedule.invalidate()
+      // Close quickview after successful save
+      handleCloseQuickView()
+    },
+    onError: (error) => {
+      // Silent error - user can see the issue and retry
+      console.error('Failed to save schedule:', error)
+    },
+  })
+
+  const deleteSchedule = trpc.weeklySchedule.deleteSchedule.useMutation({
+    onSuccess: () => {
+      utils.weeklySchedule.getSchedule.invalidate()
+      utils.weeklySchedule.getUserSchedule.invalidate()
+      handleCloseQuickView()
+    },
+    onError: (error) => {
+      // Silent error - user can retry
+      console.error('Failed to delete schedule:', error)
+    },
+  })
+
+  const handleCloseQuickView = useCallback(() => {
+    setIsQuickViewOpen(false)
+    setIsVisible(false)
+    setShowDeleteDialog(false)
+    
+    // Wait for transition to complete before closing
+    setTimeout(() => {
+      onClose()
+    }, 300) // Match transition duration
+  }, [onClose])
+
+  // Mount effect for Portal
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  // Reset state when props change and handle scroll lock
+  useEffect(() => {
+    setSelectedSubject(currentSubject)
+    setIsQuickViewOpen(true)
+    setShowDeleteDialog(false)
+    
+    // Lock body scroll when quickview is open (mobile)
+    const scrollY = window.scrollY
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    
+    // Prevent scroll on touch devices
+    const preventScroll = (e: TouchEvent) => {
+      const target = e.target as HTMLElement
+      if (!contentRef.current?.contains(target)) {
+        e.preventDefault()
+      }
+    }
+    
+    // Prevent scroll on wheel (for desktop)
+    const preventWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement
+      if (!contentRef.current?.contains(target)) {
+        e.preventDefault()
+      }
+    }
+    
+    document.addEventListener('touchmove', preventScroll, { passive: false })
+    document.addEventListener('wheel', preventWheel, { passive: false })
+    
+    // Push state untuk back handler
+    window.history.pushState({ quickview: true }, '')
+    
+    // Small delay to ensure DOM is ready before showing
+    requestAnimationFrame(() => {
+      setIsVisible(true)
+    })
+    
+    return () => {
+      setIsQuickViewOpen(false)
+      setShowDeleteDialog(false)
+      setIsVisible(false)
+      
+      // Unlock body scroll when quickview is closed
+      document.removeEventListener('touchmove', preventScroll)
+      document.removeEventListener('wheel', preventWheel)
+      document.body.style.overflow = 'unset'
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      
+      // Note: Scroll position restoration is handled by parent component (WeeklyScheduleManager)
+    }
+  }, [day, period, currentSubject])
+
+  // Handle browser back button
+  const [shouldHandleBack, setShouldHandleBack] = useState(false)
+  
+  useEffect(() => {
+    if (isQuickViewOpen && isVisible) {
+      const timer = setTimeout(() => {
+        setShouldHandleBack(true)
+      }, 100)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldHandleBack(false)
+    }
+  }, [isQuickViewOpen, isVisible])
+
+  useBackHandler(shouldHandleBack, handleCloseQuickView)
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (e.target === overlayRef.current) {
+      handleCloseQuickView()
+    }
+  }
+
+  const handleSubjectChange = (subject: string) => {
+    // Don't update local state if already saving
+    if (setSchedule.isLoading) return
+    
+    setSelectedSubject(subject)
+    
+    // Auto-save on selection
+    if (subject && subject.trim() !== '') {
+      setSchedule.mutate({
+        dayOfWeek: day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
+        period,
+        subject,
+      })
+    }
+  }
+
+  const handleDelete = () => {
+    if (currentSubject) {
+      setShowDeleteDialog(true)
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    deleteSchedule.mutate({
+      dayOfWeek: day as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday',
+      period,
+    })
+  }
+
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    if (e.target === overlayRef.current && !isQuickViewOpen) {
+      setIsVisible(false)
+    }
+  }
+
+  // Don't render until mounted (for Portal)
+  if (!mounted) return null
+
+  const quickViewContent = (
+    <>
+      <div 
+        ref={overlayRef}
+        className="quickview-overlay" 
+        onClick={handleOverlayClick}
+        onTransitionEnd={handleTransitionEnd}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
+          pointerEvents: isVisible ? 'auto' : 'none'
+        }}
+      >
+        <div 
+          ref={contentRef}
+          className="quickview-content" 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+            position: 'relative'
+          }}
+        >
+          {/* Loading Overlay - covers entire quickview */}
+          {setSchedule.isLoading && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'var(--card)',
+              opacity: 0.95,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              zIndex: 100,
+              borderRadius: '1rem'
+            }}>
+              <LoadingSpinner size={32} />
+              <p style={{ 
+                color: 'var(--text)', 
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                margin: 0
+              }}>
+                Menyimpan jadwal...
+              </p>
+            </div>
+          )}
+
+          <div className="quickview-header" style={{ position: 'relative' }}>
+            <div className="quickview-header-top">
+              <div className="quickview-header-left" style={{ paddingRight: isMobile ? '88px' : '88px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.75rem',
+                  flex: 1
+                }}>
+                  <CalendarIcon size={24} style={{ color: 'var(--primary)' }} />
+                  <div>
+                    <h2 className="thread-detail-title" style={{ margin: 0 }}>
+                      Edit Jadwal
+                    </h2>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      fontSize: '0.875rem', 
+                      color: 'var(--text-light)' 
+                    }}>
+                      {dayName} - Jam ke-{period}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right: Actions & Close - Always on the right top corner */}
+            <div style={{ 
+              position: 'absolute',
+              top: isMobile ? `calc(1rem + env(safe-area-inset-top, 0px))` : '1.5rem',
+              right: isMobile ? '1rem' : '1.5rem',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              flexShrink: 0,
+              zIndex: 10,
+            }}>
+              <button
+                onClick={handleDelete}
+                disabled={deleteSchedule.isLoading || setSchedule.isLoading}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  background: deleteSchedule.isLoading ? '#fca5a5' : 'transparent',
+                  color: deleteSchedule.isLoading ? 'white' : 'var(--text-light)',
+                  cursor: (deleteSchedule.isLoading || setSchedule.isLoading) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  minWidth: '36px',
+                  minHeight: '36px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!deleteSchedule.isLoading && !setSchedule.isLoading) {
+                    e.currentTarget.style.background = '#fee2e2'
+                    e.currentTarget.style.color = '#ef4444'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!deleteSchedule.isLoading && !setSchedule.isLoading) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-light)'
+                  }
+                }}
+                title="Hapus Jadwal"
+              >
+                {deleteSchedule.isLoading ? (
+                  <LoadingSpinner size={18} color="#ef4444" />
+                ) : (
+                  <TrashIcon size={18} />
+                )}
+              </button>
+              <button
+                onClick={handleCloseQuickView}
+                className="quickview-close-btn"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-light)',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '0.5rem',
+                  minWidth: '36px',
+                  minHeight: '36px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)'
+                  e.currentTarget.style.color = 'var(--text)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-light)'
+                }}
+                aria-label="Tutup"
+              >
+                <XCloseIcon size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="quickview-body" style={{ 
+            padding: '1.5rem',
+            paddingBottom: '2rem'
+          }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.75rem', 
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: 'var(--text)'
+              }}>
+                Mata Pelajaran
+              </label>
+              {subjects ? (
+                <ComboBox
+                  value={selectedSubject}
+                  onChange={handleSubjectChange}
+                  placeholder="Pilih Mata Pelajaran"
+                  options={subjects}
+                  showAllOption={false}
+                  searchPlaceholder="Cari mata pelajaran..."
+                  emptyMessage="Tidak ada mata pelajaran yang ditemukan"
+                  disabled={setSchedule.isLoading || deleteSchedule.isLoading}
+                />
+              ) : (
+                <div style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center',
+                  color: 'var(--text-light)'
+                }}>
+                  <LoadingSpinner size={24} />
+                </div>
+              )}
+            </div>
+
+            {currentSubject && (
+              <div style={{ 
+                marginTop: '1.5rem',
+                paddingTop: '1.5rem',
+                borderTop: '1px solid var(--border)'
+              }}>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleteSchedule.isLoading || setSchedule.isLoading}
+                  className="btn btn-danger"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.875rem',
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <TrashIcon size={18} />
+                  {deleteSchedule.isLoading ? 'Menghapus...' : 'Hapus Jadwal'}
+                </button>
+              </div>
+            )}
+
+            {!setSchedule.isLoading && (
+              <div style={{ 
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: 'var(--bg-secondary)',
+                borderRadius: '0.5rem',
+                fontSize: '0.8125rem',
+                color: 'var(--text-light)',
+                lineHeight: '1.5'
+              }}>
+                <strong>Tips:</strong> Pilih mata pelajaran dari dropdown di atas. Jadwal akan tersimpan otomatis saat dipilih.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <QuickViewConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Hapus Jadwal"
+        message={`Yakin ingin menghapus jadwal ${dayName} - Jam ke-${period}?`}
+        confirmText="Hapus"
+        cancelText="Batal"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+        disabled={deleteSchedule.isLoading}
+      />
+    </>
+  )
+
+  return createPortal(quickViewContent, document.body)
+}

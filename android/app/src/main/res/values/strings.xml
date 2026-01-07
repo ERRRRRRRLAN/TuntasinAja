@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TuntasinAja</string>
+    <string name="title_activity_main">TuntasinAja</string>
+    <string name="package_name">com.tuntasinaja.app</string>
+    <string name="custom_url_scheme">com.tuntasinaja.app</string>
+</resources>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#6366f1">
+  <title>Offline - TuntasinAja</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .offline-container {
+      background: var(--card);
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .offline-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    p {
+      color: var(--text-light);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .retry-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
+    .retry-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .retry-button:active {
+      transform: translateY(0);
+    }
+
+    .retry-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-light);
+      margin-top: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.online {
+      background: var(--success);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .offline-container {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">
+      📡
+    </div>
+    <h1>Anda Sedang Offline</h1>
+    <p>
+      Tidak ada koneksi internet. Silakan periksa koneksi Anda dan coba lagi.
+    </p>
+    <button class="retry-button" id="retryButton" onclick="retryConnection()">
+      Coba Lagi
+    </button>
+    <div class="status-indicator" id="statusIndicator">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Memeriksa koneksi...</span>
+    </div>
+  </div>
+
+  <script>
+    const retryButton = document.getElementById('retryButton')
+    const statusIndicator = document.getElementById('statusIndicator')
+    const statusDot = document.getElementById('statusDot')
+    const statusText = document.getElementById('statusText')
+
+    function checkConnection() {
+      if (navigator.onLine) {
+        statusDot.classList.add('online')
+        statusText.textContent = 'Koneksi tersedia'
+        retryButton.disabled = false
+        retryButton.textContent = 'Muat Ulang Halaman'
+        
+        // Auto reload after 1 second if online
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        statusDot.classList.remove('online')
+        statusText.textContent = 'Tidak ada koneksi'
+        retryButton.disabled = false
+        retryButton.textContent = 'Coba Lagi'
+      }
+    }
+
+    function retryConnection() {
+      retryButton.disabled = true
+      retryButton.textContent = 'Memeriksa...'
+      
+      // Check connection
+      if (navigator.onLine) {
+        window.location.reload()
+      } else {
+        // Try to fetch a small resource to verify connection
+        fetch('/logo.svg', { cache: 'no-cache' })
+          .then(() => {
+            window.location.reload()
+          })
+          .catch(() => {
+            retryButton.disabled = false
+            retryButton.textContent = 'Coba Lagi'
+            statusText.textContent = 'Masih offline'
+          })
+      }
+    }
+
+    // Check connection on load
+    checkConnection()
+
+    // Listen for online/offline events
+    window.addEventListener('online', () => {
+      checkConnection()
+    })
+
+    window.addEventListener('offline', () => {
+      statusDot.classList.remove('online')
+      statusText.textContent = 'Tidak ada koneksi'
+      retryButton.disabled = false
+      retryButton.textContent = 'Coba Lagi'
+    })
+
+    // Periodic check every 5 seconds
+    setInterval(checkConnection, 5000)
+  </script>
+</body>
+</html>
+
