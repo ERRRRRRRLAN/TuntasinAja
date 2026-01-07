@@ -193,32 +193,39 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       utils.userStatus.getThreadStatuses.setData(
         { threadId: thread.id },
         (old = []) => {
-          // If previous data doesn't exist, we can't really do an optimistic update easily
-          // but let's try to construct a basic state
-          const updatedStatuses =
-            old.length > 0
-              ? old.map((s) => {
-                // Update the main thread status
-                if (!s.commentId) {
-                  return { ...s, isCompleted: variables.isCompleted };
-                }
-                // If thread is completed, all subtasks are also completed
-                if (variables.isCompleted) {
-                  return { ...s, isCompleted: true };
-                }
-                return s;
-              })
-              : [
-                {
-                  id: "temp-id",
-                  threadId: thread.id,
-                  commentId: null,
-                  isCompleted: variables.isCompleted,
-                  updatedAt: new Date(),
-                  createdAt: new Date(),
-                  userId: session?.user?.id || "temp-user-id",
-                },
-              ];
+          const threadStatusIndex = old.findIndex(s => !s.commentId);
+          let updatedStatuses = [...old];
+
+          if (threadStatusIndex > -1) {
+            // Update existing thread status
+            updatedStatuses = updatedStatuses.map((s, i) => {
+              if (i === threadStatusIndex) {
+                return { ...s, isCompleted: variables.isCompleted };
+              }
+              // If thread is completed, all subtasks are also completed
+              if (variables.isCompleted && s.commentId) {
+                return { ...s, isCompleted: true };
+              }
+              return s;
+            });
+          } else {
+            // Add new thread status
+            updatedStatuses.push({
+              id: "temp-thread-id",
+              threadId: thread.id,
+              commentId: null,
+              isCompleted: variables.isCompleted,
+              updatedAt: new Date(),
+              createdAt: new Date(),
+              userId: session?.user?.id || "temp-user-id",
+            });
+            // If thread is completed, ensure all subtasks in cache are also completed
+            if (variables.isCompleted) {
+              updatedStatuses = updatedStatuses.map((s) =>
+                s.commentId ? { ...s, isCompleted: true } : s
+              );
+            }
+          }
           return updatedStatuses;
         },
       );
@@ -476,7 +483,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               checked={isCompleted}
               onClick={handleCheckboxClick}
               isLoading={isFakeLoading}
-              disabled={isFakeLoading || toggleThread.isLoading}
+              disabled={isFakeLoading}
               size={28}
             />
           )}
@@ -892,13 +899,25 @@ function CommentItem({
 
       // Optimistically update to the new value
       utils.userStatus.getThreadStatuses.setData({ threadId }, (old = []) => {
-        return old.map((s) => {
-          if (s.commentId === variables.commentId) {
-            return { ...s, isCompleted: variables.isCompleted };
-          }
-          return s;
-        });
+        const statusIndex = old.findIndex(s => s.commentId === variables.commentId);
+        if (statusIndex > -1) {
+          return old.map((s, i) => i === statusIndex ? { ...s, isCompleted: variables.isCompleted } : s);
+        } else {
+          return [
+            ...old,
+            {
+              id: "temp-comment-" + variables.commentId,
+              threadId,
+              commentId: variables.commentId,
+              isCompleted: variables.isCompleted,
+              updatedAt: new Date(),
+              createdAt: new Date(),
+              userId: session?.user?.id || "temp-user-id",
+            }
+          ];
+        }
       });
+
 
       // Start fake loading
       setIsFakeLoading(true);
@@ -1034,7 +1053,7 @@ function CommentItem({
             checked={isCompleted}
             onClick={handleCheckboxClick}
             isLoading={isFakeLoading}
-            disabled={isFakeLoading || toggleComment.isLoading}
+            disabled={isFakeLoading}
             size={24}
           />
         </div>

@@ -317,28 +317,37 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
       // Optimistically update to the new value
       utils.userStatus.getThreadStatuses.setData({ threadId }, (old = []) => {
-        const updatedStatuses =
-          old.length > 0
-            ? old.map((s) => {
-              if (!s.commentId) {
-                return { ...s, isCompleted: variables.isCompleted };
-              }
-              if (variables.isCompleted) {
-                return { ...s, isCompleted: true };
-              }
-              return s;
-            })
-            : [
-              {
-                id: "temp-id",
-                threadId: threadId,
-                commentId: null,
-                isCompleted: variables.isCompleted,
-                updatedAt: new Date(),
-                createdAt: new Date(),
-                userId: session?.user?.id || "temp-user-id",
-              },
-            ];
+        const threadStatusIndex = old.findIndex(s => !s.commentId);
+        let updatedStatuses = [...old];
+
+        if (threadStatusIndex > -1) {
+          // Update existing thread status
+          updatedStatuses = updatedStatuses.map((s, i) => {
+            if (i === threadStatusIndex) {
+              return { ...s, isCompleted: variables.isCompleted };
+            }
+            // If thread is completed, all subtasks are also completed
+            if (variables.isCompleted && s.commentId) {
+              return { ...s, isCompleted: true };
+            }
+            return s;
+          });
+        } else {
+          // Add new thread status
+          updatedStatuses.push({
+            id: "temp-thread-id",
+            threadId: threadId,
+            commentId: null,
+            isCompleted: variables.isCompleted,
+            updatedAt: new Date(),
+            createdAt: new Date(),
+            userId: session?.user?.id || "temp-user-id",
+          });
+          // If thread is completed, ensure all subtasks in cache are also completed
+          if (variables.isCompleted) {
+            updatedStatuses = updatedStatuses.map(s => s.commentId ? { ...s, isCompleted: true } : s);
+          }
+        }
         return updatedStatuses;
       });
 
@@ -429,12 +438,23 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
       // Optimistically update to the new value
       utils.userStatus.getThreadStatuses.setData({ threadId }, (old = []) => {
-        return old.map((s) => {
-          if (s.commentId === variables.commentId) {
-            return { ...s, isCompleted: variables.isCompleted };
-          }
-          return s;
-        });
+        const statusIndex = old.findIndex(s => s.commentId === variables.commentId);
+        if (statusIndex > -1) {
+          return old.map((s, i) => i === statusIndex ? { ...s, isCompleted: variables.isCompleted } : s);
+        } else {
+          return [
+            ...old,
+            {
+              id: "temp-comment-" + variables.commentId,
+              threadId,
+              commentId: variables.commentId,
+              isCompleted: variables.isCompleted,
+              updatedAt: new Date(),
+              createdAt: new Date(),
+              userId: session?.user?.id || "temp-user-id",
+            }
+          ];
+        }
       });
 
       // Add to fake loading
@@ -831,7 +851,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 checked={isThreadCompleted}
                 onClick={handleThreadCheckboxClick}
                 isLoading={isFakeLoadingThread}
-                disabled={isFakeLoadingThread || toggleThread.isLoading}
+                disabled={isFakeLoadingThread}
                 size={24}
               />
             )}
@@ -1223,7 +1243,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             }
                           }}
                           isLoading={fakeLoadingComments.has(comment.id)}
-                          disabled={fakeLoadingComments.has(comment.id) || toggleComment.isLoading}
+                          disabled={fakeLoadingComments.has(comment.id)}
                           size={20}
                         />
                       </div>
