@@ -69,7 +69,7 @@ export default function Checkbox({
       >
         {checked && (
           <CheckIcon
-            size={size * 0.7}
+            size={size * 0.75}
             style={{
               color: 'white',
               strokeWidth: 3,
@@ -82,18 +82,26 @@ export default function Checkbox({
           <div
             style={{
               position: 'absolute',
-              top: '-2px',
-              left: '-2px',
-              right: '-2px',
-              bottom: '-2px',
-              border: `2px solid transparent`,
-              borderTopColor: checked ? 'white' : 'var(--primary)',
-              borderRadius: '0.35rem',
-              animation: 'spin 0.8s linear infinite',
-              zIndex: 5,
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               pointerEvents: 'none',
+              zIndex: 5,
             }}
-          />
+          >
+            <div
+              style={{
+                width: `${size * 0.85}px`,
+                height: `${size * 0.85}px`,
+                border: `2px solid ${checked ? 'rgba(255, 255, 255, 0.3)' : 'rgba(99, 102, 241, 0.2)'}`,
+                borderTopColor: checked ? 'white' : 'var(--primary)',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+          </div>
         )}
       </div>
     </div>
