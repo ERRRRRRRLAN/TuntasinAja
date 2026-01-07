@@ -44,8 +44,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [isMobile, setIsMobile] = useState(false)
   const [showGroupMembers, setShowGroupMembers] = useState(false)
-  const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
-  const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
   const [visualStatuses, setVisualStatuses] = useState<Record<string, boolean>>({})
   const [lastClickTime, setLastClickTime] = useState<number>(0)
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({})
@@ -398,12 +396,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
     const nextState = !isThreadCompleted
     setVisualStatuses(prev => ({ ...prev, [threadId]: nextState }))
-    setIsFakeLoadingThread(true)
 
     if (debounceTimers.current[threadId]) clearTimeout(debounceTimers.current[threadId])
 
     debounceTimers.current[threadId] = setTimeout(() => {
-      setIsFakeLoadingThread(false)
       // Only mutate if state truly changed from current DB state
       if (nextState !== (threadStatus?.isCompleted || false)) {
         toggleThread.mutate({
@@ -416,9 +412,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
   const handleConfirmUncheck = () => {
     setShowUncheckDialog(false)
-    setIsFakeLoadingThread(true)
     setTimeout(() => {
-      setIsFakeLoadingThread(false)
       setVisualStatuses(prev => ({ ...prev, [threadId]: false }))
     }, 500)
     toggleThread.mutate({
@@ -438,9 +432,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleConfirmThread = () => {
     // Close dialog immediately for better UX
     setShowConfirmDialog(false)
-    setIsFakeLoadingThread(true)
     setTimeout(() => {
-      setIsFakeLoadingThread(false)
       setVisualStatuses(prev => ({ ...prev, [threadId]: true }))
     }, 500)
     // Then execute the mutation
@@ -480,22 +472,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
           ];
         }
       });
-
-      // Start fake loading
-      setFakeLoadingComments((prev) => {
-        const next = new Set(prev);
-        next.add(variables.commentId);
-        return next;
-      });
-
-      // Remove from fake loading after 500ms
-      setTimeout(() => {
-        setFakeLoadingComments((prev) => {
-          const next = new Set(prev);
-          next.delete(variables.commentId);
-          return next;
-        });
-      }, 500);
 
       return { previousStatuses };
     },
@@ -874,7 +850,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
               <Checkbox
                 checked={isThreadCompleted}
                 onClick={handleThreadCheckboxClick}
-                isLoading={isFakeLoadingThread}
                 size={24}
               />
             )}
@@ -1268,22 +1243,9 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             const nextState = !isCommentCompleted
                             setVisualStatuses(prev => ({ ...prev, [comment.id]: nextState }))
 
-                            // Start/restart fake loading for this comment
-                            setFakeLoadingComments(prev => {
-                              const next = new Set(prev)
-                              next.add(comment.id)
-                              return next
-                            })
-
                             if (debounceTimers.current[comment.id]) clearTimeout(debounceTimers.current[comment.id])
 
                             debounceTimers.current[comment.id] = setTimeout(() => {
-                              setFakeLoadingComments(prev => {
-                                const next = new Set(prev)
-                                next.delete(comment.id)
-                                return next
-                              })
-
                               if (nextState !== (commentStatus?.isCompleted || false)) {
                                 toggleComment.mutate({
                                   threadId,
@@ -1293,7 +1255,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                               }
                             }, 800)
                           }}
-                          isLoading={fakeLoadingComments.has(comment.id)}
                           size={20}
                         />
                       </div>

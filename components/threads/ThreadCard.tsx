@@ -72,7 +72,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const [showCompletionStatsModal, setShowCompletionStatsModal] =
     useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
-  const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
   const [visualGroupProgress, setVisualGroupProgress] = useState<{
     completed: number;
@@ -287,8 +286,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     const nextState = !isCompleted;
     setVisualCompleted(nextState);
 
-    // Start/restart fake loading spinner
-    setIsFakeLoading(true);
     if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
 
     // Update group progress visually if needed
@@ -309,7 +306,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     }
 
     debounceTimerRef.timer = setTimeout(() => {
-      setIsFakeLoading(false);
       // Only mutate if the state is different from what we think the DB has
       if (nextState !== (threadStatus?.isCompleted || false)) {
         toggleThread.mutate({
@@ -324,11 +320,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     setShowUncheckDialog(false);
     // Explicit uncheck from dialog (if needed)
     setVisualCompleted(false);
-    setIsFakeLoading(true);
     if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
 
     debounceTimerRef.timer = setTimeout(() => {
-      setIsFakeLoading(false);
       toggleThread.mutate({
         threadId: thread.id,
         isCompleted: false,
@@ -339,11 +333,9 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const handleConfirmThread = () => {
     setShowConfirmDialog(false);
     setVisualCompleted(true);
-    setIsFakeLoading(true);
     if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
 
     debounceTimerRef.timer = setTimeout(() => {
-      setIsFakeLoading(false);
       toggleThread.mutate({
         threadId: thread.id,
         isCompleted: true,
@@ -536,7 +528,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             <Checkbox
               checked={isCompleted}
               onClick={handleCheckboxClick}
-              isLoading={isFakeLoading}
               size={28}
             />
           )}
@@ -941,7 +932,6 @@ function CommentItem({
 }) {
   const { data: session } = useSession();
   const commentStatus = statuses.find((s) => s.commentId === comment.id);
-  const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
   const isCompleted = visualCompleted ?? (commentStatus?.isCompleted || false);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
@@ -987,14 +977,6 @@ function CommentItem({
       });
 
 
-      // Start fake loading
-      setIsFakeLoading(true);
-
-      // Remove from fake loading after 500ms
-      setTimeout(() => {
-        setIsFakeLoading(false);
-      }, 500);
-
       return { previousStatuses };
     },
     onSuccess: async () => {
@@ -1037,8 +1019,6 @@ function CommentItem({
     const nextState = !isCompleted;
     setVisualCompleted(nextState);
 
-    // Start/restart fake loading spinner
-    setIsFakeLoading(true);
     if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
 
     // Update parent's visual progress immediately
@@ -1055,7 +1035,6 @@ function CommentItem({
     }
 
     debounceTimerRef.timer = setTimeout(() => {
-      setIsFakeLoading(false);
       // Only mutate if state truly changed from DB
       if (nextState !== (commentStatus?.isCompleted || false)) {
         toggleComment.mutate({
@@ -1156,7 +1135,6 @@ function CommentItem({
           <Checkbox
             checked={isCompleted}
             onClick={handleCheckboxClick}
-            isLoading={isFakeLoading}
             size={24}
           />
         </div>
