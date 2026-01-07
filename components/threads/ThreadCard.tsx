@@ -79,6 +79,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     total: number;
     percentage: number;
   } | null>(null);
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
   const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Get thread status (for current user)
@@ -276,6 +277,12 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     e.stopPropagation();
     if (!session) return;
 
+
+    const now = Date.now();
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
+    }
+    setLastClickTime(now);
 
     const nextState = !isCompleted;
     setVisualCompleted(nextState);
@@ -937,6 +944,7 @@ function CommentItem({
   const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
   const isCompleted = visualCompleted ?? (commentStatus?.isCompleted || false);
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
   const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Check if user is admin
@@ -1020,6 +1028,11 @@ function CommentItem({
     e.stopPropagation();
     if (!session) return;
 
+    const now = Date.now();
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
+    }
+    setLastClickTime(now);
 
     const nextState = !isCompleted;
     setVisualCompleted(nextState);

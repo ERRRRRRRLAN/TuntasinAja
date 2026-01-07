@@ -47,6 +47,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
   const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
   const [visualStatuses, setVisualStatuses] = useState<Record<string, boolean>>({})
+  const [lastClickTime, setLastClickTime] = useState<number>(0)
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({})
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -388,6 +389,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleThreadCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!session || !isQuickViewOpen) return
+
+    const now = Date.now()
+    if (now - lastClickTime < 300) {
+      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
+    }
+    setLastClickTime(now)
 
     const nextState = !isThreadCompleted
     setVisualStatuses(prev => ({ ...prev, [threadId]: nextState }))
@@ -1251,6 +1258,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           checked={isCommentCompleted}
                           onClick={() => {
                             if (!session) return
+
+                            const now = Date.now()
+                            if (now - lastClickTime < 200) {
+                              toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
+                            }
+                            setLastClickTime(now)
+
                             const nextState = !isCommentCompleted
                             setVisualStatuses(prev => ({ ...prev, [comment.id]: nextState }))
 
