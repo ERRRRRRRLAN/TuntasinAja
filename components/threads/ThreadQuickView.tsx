@@ -47,7 +47,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
   const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
   const [visualStatuses, setVisualStatuses] = useState<Record<string, boolean>>({})
-  const [lastClickTime, setLastClickTime] = useState<number>(0)
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({})
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -390,13 +389,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     e.stopPropagation()
     if (!session || !isQuickViewOpen) return
 
-    const now = Date.now()
-    if (now - lastClickTime < 300) {
-      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
-      return
-    }
-    setLastClickTime(now)
-
     const nextState = !isThreadCompleted
     setVisualStatuses(prev => ({ ...prev, [threadId]: nextState }))
     setIsFakeLoadingThread(true)
@@ -405,7 +397,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
     debounceTimers.current[threadId] = setTimeout(() => {
       setIsFakeLoadingThread(false)
-      // Only mutate if state truly changed from DB
+      // Only mutate if state truly changed from current DB state
       if (nextState !== (threadStatus?.isCompleted || false)) {
         toggleThread.mutate({
           threadId,
@@ -489,14 +481,13 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         return next;
       });
 
-      // Remove from fake loading after 500ms and set visual status
+      // Remove from fake loading after 500ms
       setTimeout(() => {
         setFakeLoadingComments((prev) => {
           const next = new Set(prev);
           next.delete(variables.commentId);
           return next;
         });
-        setVisualStatuses(prev => ({ ...prev, [variables.commentId]: variables.isCompleted }));
       }, 500);
 
       return { previousStatuses };
@@ -1261,13 +1252,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                           checked={isCommentCompleted}
                           onClick={() => {
                             if (!session) return
-                            const now = Date.now()
-                            if (now - lastClickTime < 200) {
-                              toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.")
-                              return
-                            }
-                            setLastClickTime(now)
-
                             const nextState = !isCommentCompleted
                             setVisualStatuses(prev => ({ ...prev, [comment.id]: nextState }))
 

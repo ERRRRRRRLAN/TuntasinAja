@@ -79,7 +79,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     total: number;
     percentage: number;
   } | null>(null);
-  const [lastClickTime, setLastClickTime] = useState<number>(0);
   const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Get thread status (for current user)
@@ -277,12 +276,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     e.stopPropagation();
     if (!session) return;
 
-    const now = Date.now();
-    if (now - lastClickTime < 300) {
-      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
-      return;
-    }
-    setLastClickTime(now);
 
     const nextState = !isCompleted;
     setVisualCompleted(nextState);
@@ -945,7 +938,6 @@ function CommentItem({
   const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
   const isCompleted = visualCompleted ?? (commentStatus?.isCompleted || false);
-  const [lastClickTime, setLastClickTime] = useState<number>(0);
   const debounceTimerRef = useState<{ timer: NodeJS.Timeout | null }>({ timer: null })[0];
 
   // Check if user is admin
@@ -988,33 +980,13 @@ function CommentItem({
       });
 
 
-      // Start/restart fake loading spinner
+      // Start fake loading
       setIsFakeLoading(true);
-      if (debounceTimerRef.timer) clearTimeout(debounceTimerRef.timer);
 
-      debounceTimerRef.timer = setTimeout(() => {
+      // Remove from fake loading after 500ms
+      setTimeout(() => {
         setIsFakeLoading(false);
-        const nextIsCompleted = variables.isCompleted;
-        setVisualCompleted(nextIsCompleted);
-
-        // If parent thread is group task, update visual progress of parent
-        if (isGroupTask && totalComments > 0) {
-          const nextCompleted = nextIsCompleted
-            ? Math.min(totalComments, currentCompleted + 1)
-            : Math.max(0, currentCompleted - 1);
-          const nextPercentage = Math.round((nextCompleted / totalComments) * 100);
-          onProgressChange({
-            completed: nextCompleted,
-            total: totalComments,
-            percentage: nextPercentage,
-          });
-        }
-
-        // Only mutate if the state is different
-        if (nextIsCompleted !== (commentStatus?.isCompleted || false)) {
-          toggleComment.mutate(variables);
-        }
-      }, 800);
+      }, 500);
 
       return { previousStatuses };
     },
@@ -1049,12 +1021,6 @@ function CommentItem({
     e.stopPropagation();
     if (!session) return;
 
-    const now = Date.now();
-    if (now - lastClickTime < 300) {
-      toast.error("Waduh, pelan-pelan! Gerakan kamu terlalu cepat.");
-      return;
-    }
-    setLastClickTime(now);
 
     const nextState = !isCompleted;
     setVisualCompleted(nextState);
