@@ -73,23 +73,25 @@ export default function Checkbox({
             style={{
               color: 'white',
               strokeWidth: 3,
-              position: 'absolute',
+              position: 'relative',
               zIndex: 1,
-              opacity: isLoading ? 0.5 : 1 // Slight fade if loading to focus on spinner
             }}
           />
         )}
         {isLoading && (
           <div
             style={{
-              width: `${size * 0.5}px`,
-              height: `${size * 0.5}px`,
-              border: `2px solid ${checked ? 'white' : 'var(--primary)'}`,
-              borderTopColor: 'transparent',
-              borderRadius: '50%', // Circular spinner is better
-              animation: 'spin 0.6s linear infinite',
-              position: 'relative',
-              zIndex: 2,
+              position: 'absolute',
+              top: '-2px',
+              left: '-2px',
+              right: '-2px',
+              bottom: '-2px',
+              border: `2px solid transparent`,
+              borderTopColor: checked ? 'white' : 'var(--primary)',
+              borderRadius: '0.35rem',
+              animation: 'spin 0.8s linear infinite',
+              zIndex: 5,
+              pointerEvents: 'none',
             }}
           />
         )}
