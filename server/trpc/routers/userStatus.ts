@@ -3,6 +3,115 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { getUTCDate } from "@/lib/date-utils";
 
+// Helper function to check if all users in a class have completed a thread
+// and delete it if oldest completion is > 24 hours ago
+async function checkAndAutoDelete(threadId: string) {
+  const threadWithAuthor = await prisma.thread.findUnique({
+    where: { id: threadId },
+    include: {
+      author: {
+        select: {
+          kelas: true,
+        },
+      },
+      histories: {
+        select: {
+          userId: true,
+          completedDate: true,
+        },
+      },
+    },
+  });
+
+  if (!threadWithAuthor || !(threadWithAuthor.author as any)?.kelas) return;
+
+  const authorKelas = (threadWithAuthor.author as any).kelas;
+
+  // Get all users in the same kelas
+  const usersInSameKelas = await prisma.user.findMany({
+    where: {
+      kelas: authorKelas,
+      isAdmin: false,
+    } as any,
+    select: {
+      id: true,
+    },
+  });
+
+  const userIdsInKelas = new Set(usersInSameKelas.map((u) => u.id));
+  const completedUserIds = new Set(
+    threadWithAuthor.histories.map((h: { userId: string }) => h.userId),
+  );
+
+  // Check if ALL users in the same kelas have completed the thread
+  const allUsersCompleted = Array.from(userIdsInKelas).every((userId) =>
+    completedUserIds.has(userId),
+  );
+
+  if (allUsersCompleted) {
+    // Get oldest completion date
+    const completionDates = threadWithAuthor.histories.map(
+      (h: { completedDate: Date }) => new Date(h.completedDate),
+    );
+    const oldestCompletion =
+      completionDates.length > 0
+        ? new Date(Math.min(...completionDates.map((d) => d.getTime())))
+        : null;
+
+    // Calculate 24 hours ago
+    const now = getUTCDate();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // If oldest completion is older than 24 hours, delete thread immediately
+    if (oldestCompletion && oldestCompletion < twentyFourHoursAgo) {
+      // Update all histories to set threadId to null
+      await prisma.history.updateMany({
+        where: {
+          threadId,
+        },
+        data: {
+          threadId: null as any,
+        },
+      });
+
+      // Get comment IDs
+      const threadWithComments = await prisma.thread.findUnique({
+        where: { id: threadId },
+        select: {
+          comments: {
+            select: { id: true },
+          },
+        },
+      });
+
+      const commentIds = threadWithComments?.comments.map((c) => c.id) || [];
+
+      // Delete UserStatus related to this thread
+      await prisma.userStatus.deleteMany({
+        where: {
+          threadId,
+        },
+      });
+
+      // Delete UserStatus related to comments
+      if (commentIds.length > 0) {
+        await prisma.userStatus.deleteMany({
+          where: {
+            commentId: {
+              in: commentIds,
+            },
+          },
+        });
+      }
+
+      // Delete the thread (histories remain with threadId = null)
+      await prisma.thread.delete({
+        where: { id: threadId },
+      });
+    }
+  }
+}
+
 export const userStatusRouter = createTRPCRouter({
   // Toggle thread completion
   toggleThread: protectedProcedure
@@ -138,118 +247,7 @@ export const userStatusRouter = createTRPCRouter({
 
           // Check if this user is the last one to complete the thread
           // If yes and oldest completion > 24 hours, delete thread immediately
-          // This check applies to both new and existing history
-          const threadWithAuthor = await prisma.thread.findUnique({
-            where: { id: input.threadId },
-            include: {
-              author: {
-                select: {
-                  kelas: true,
-                },
-              },
-              histories: {
-                select: {
-                  userId: true,
-                  completedDate: true,
-                },
-              },
-            },
-          });
-
-          if (threadWithAuthor && (threadWithAuthor.author as any)?.kelas) {
-            const authorKelas = (threadWithAuthor.author as any).kelas;
-
-            // Get all users in the same kelas
-            const usersInSameKelas = await prisma.user.findMany({
-              where: {
-                kelas: authorKelas,
-                isAdmin: false,
-              } as any,
-              select: {
-                id: true,
-              },
-            });
-
-            const userIdsInKelas = new Set(usersInSameKelas.map((u) => u.id));
-            const completedUserIds = new Set(
-              threadWithAuthor.histories.map(
-                (h: { userId: string }) => h.userId,
-              ),
-            );
-
-            // Check if ALL users in the same kelas have completed the thread
-            const allUsersCompleted = Array.from(userIdsInKelas).every(
-              (userId) => completedUserIds.has(userId),
-            );
-
-            if (allUsersCompleted) {
-              // Get oldest completion date
-              const completionDates = threadWithAuthor.histories.map(
-                (h: { completedDate: Date }) => new Date(h.completedDate),
-              );
-              const oldestCompletion =
-                completionDates.length > 0
-                  ? new Date(
-                      Math.min(...completionDates.map((d) => d.getTime())),
-                    )
-                  : null;
-
-              // Calculate 24 hours ago
-              const now = getUTCDate();
-              const twentyFourHoursAgo = new Date(
-                now.getTime() - 24 * 60 * 60 * 1000,
-              );
-
-              // If oldest completion is older than 24 hours, delete thread immediately
-              if (oldestCompletion && oldestCompletion < twentyFourHoursAgo) {
-                // Update all histories to set threadId to null
-                await prisma.history.updateMany({
-                  where: {
-                    threadId: input.threadId,
-                  },
-                  data: {
-                    threadId: null as any,
-                  },
-                });
-
-                // Get comment IDs
-                const threadWithComments = await prisma.thread.findUnique({
-                  where: { id: input.threadId },
-                  select: {
-                    comments: {
-                      select: { id: true },
-                    },
-                  },
-                });
-
-                const commentIds =
-                  threadWithComments?.comments.map((c) => c.id) || [];
-
-                // Delete UserStatus related to this thread
-                await prisma.userStatus.deleteMany({
-                  where: {
-                    threadId: input.threadId,
-                  },
-                });
-
-                // Delete UserStatus related to comments
-                if (commentIds.length > 0) {
-                  await prisma.userStatus.deleteMany({
-                    where: {
-                      commentId: {
-                        in: commentIds,
-                      },
-                    },
-                  });
-                }
-
-                // Delete the thread (histories remain with threadId = null)
-                await prisma.thread.delete({
-                  where: { id: input.threadId },
-                });
-              }
-            }
-          }
+          await checkAndAutoDelete(input.threadId);
 
           if (!existingHistory) {
             // Create new history - always create when thread is checked for the first time
@@ -505,13 +503,21 @@ export const userStatusRouter = createTRPCRouter({
               });
             }
           } else {
-            // Remove from history if thread or comments are unchecked
-            await prisma.history.deleteMany({
-              where: {
-                userId: userId,
-                threadId: input.threadId,
-              },
-            });
+            // Remove from history and completion status if thread or comments are unchecked
+            await Promise.all([
+              prisma.history.deleteMany({
+                where: {
+                  userId: userId,
+                  threadId: input.threadId,
+                },
+              }),
+              prisma.userStatus.deleteMany({
+                where: {
+                  userId: userId,
+                  threadId: input.threadId,
+                },
+              }),
+            ]);
           }
         }
       }
@@ -548,13 +554,13 @@ export const userStatusRouter = createTRPCRouter({
       const commentStatuses =
         thread && thread.comments.length > 0
           ? await prisma.userStatus.findMany({
-              where: {
-                userId: ctx.session.user.id,
-                commentId: {
-                  in: thread.comments.map((c) => c.id),
-                },
+            where: {
+              userId: ctx.session.user.id,
+              commentId: {
+                in: thread.comments.map((c) => c.id),
               },
-            })
+            },
+          })
           : [];
 
       // Combine thread status and comment statuses
@@ -588,32 +594,32 @@ export const userStatusRouter = createTRPCRouter({
       ? undefined // Admin sees all
       : userId && userKelas
         ? {
-            OR: [
-              // Individual tasks from same kelas
-              {
-                isGroupTask: false,
-                author: {
-                  kelas: userKelas,
-                },
-              },
-              // Group tasks where user is a member
-              {
-                isGroupTask: true,
-                groupMembers: {
-                  some: {
-                    userId: userId,
-                  },
-                },
-              },
-            ],
-          }
-        : userKelas
-          ? {
-              // Fallback: only show tasks from same kelas (if not logged in)
+          OR: [
+            // Individual tasks from same kelas
+            {
+              isGroupTask: false,
               author: {
                 kelas: userKelas,
               },
-            }
+            },
+            // Group tasks where user is a member
+            {
+              isGroupTask: true,
+              groupMembers: {
+                some: {
+                  userId: userId,
+                },
+              },
+            },
+          ],
+        }
+        : userKelas
+          ? {
+            // Fallback: only show tasks from same kelas (if not logged in)
+            author: {
+              kelas: userKelas,
+            },
+          }
           : undefined; // Public sees all
 
     const now = new Date();
@@ -834,7 +840,7 @@ export const userStatusRouter = createTRPCRouter({
         if (!threadStatus || !threadStatus.isCompleted) {
           const daysOverdue = Math.floor(
             (getUTCDate().getTime() - threadDate.getTime()) /
-              (1000 * 60 * 60 * 24),
+            (1000 * 60 * 60 * 24),
           );
           overdueTasks.push({
             threadId: thread.id,

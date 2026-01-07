@@ -524,13 +524,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
       />
       <div className="thread-card-content">
         <div className="thread-card-header">
-          {session && !isAdmin && (
-            <Checkbox
-              checked={isCompleted}
-              onClick={handleCheckboxClick}
-              size={28}
-            />
-          )}
+          {/* Thread Checkbox removed - workflow is now subtask-driven */}
           {session && isAdmin && (
             <div
               style={{

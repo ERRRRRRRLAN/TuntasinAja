@@ -846,13 +846,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
             marginBottom: '1rem',
             paddingRight: canDeleteThread ? '88px' : '44px', // Space for buttons
           }}>
-            {session && !isAdmin && (
-              <Checkbox
-                checked={isThreadCompleted}
-                onClick={handleThreadCheckboxClick}
-                size={24}
-              />
-            )}
+            {/* Thread Checkbox removed - workflow is now subtask-driven */}
             {session && isAdmin && completionStats && (
               <button
                 onClick={() => setShowCompletionStatsModal(true)}
