@@ -266,6 +266,9 @@ export const userStatusRouter = createTRPCRouter({
         }
       }
 
+      // Final check for auto-deletion if thread was completed
+      await checkAndAutoDelete(input.threadId);
+
       return { success: true };
     }),
 
@@ -521,6 +524,9 @@ export const userStatusRouter = createTRPCRouter({
           }
         }
       }
+
+      // Final check for auto-deletion if thread was completed
+      await checkAndAutoDelete(input.threadId);
 
       return { success: true };
     }),
