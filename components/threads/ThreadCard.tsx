@@ -530,7 +530,6 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
               checked={isCompleted}
               onClick={handleCheckboxClick}
               isLoading={isFakeLoading}
-              disabled={isFakeLoading}
               size={28}
             />
           )}
@@ -1145,7 +1144,6 @@ function CommentItem({
             checked={isCompleted}
             onClick={handleCheckboxClick}
             isLoading={isFakeLoading}
-            disabled={isFakeLoading}
             size={24}
           />
         </div>

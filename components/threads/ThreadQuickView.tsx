@@ -868,7 +868,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 checked={isThreadCompleted}
                 onClick={handleThreadCheckboxClick}
                 isLoading={isFakeLoadingThread}
-                disabled={isFakeLoadingThread}
                 size={24}
               />
             )}
@@ -1281,7 +1280,6 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                             }, 800)
                           }}
                           isLoading={fakeLoadingComments.has(comment.id)}
-                          disabled={fakeLoadingComments.has(comment.id)}
                           size={20}
                         />
                       </div>

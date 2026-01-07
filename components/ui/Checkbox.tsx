@@ -46,8 +46,8 @@ export default function Checkbox({
         width: `${size}px`,
         height: `${size}px`,
         flexShrink: 0,
-        cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
-        opacity: disabled || isLoading ? 0.6 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
       }}
       onClick={handleClick}
       onMouseEnter={() => !disabled && !isLoading && setIsHovered(true)}
