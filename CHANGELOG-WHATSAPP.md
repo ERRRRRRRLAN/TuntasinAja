@@ -1,6 +1,30 @@
 # 📱 CHANGELOG - TuntasinAja
 
-## 🎉 UPDATE TERBARU - Notifikasi untuk iPhone & Perbaikan UI/UX
+## 🎉 UPDATE TERBARU - Sistem Pengerjaan Tugas Lebih Cerdas (Subtask-Driven)
+
+### ✨ Fitur Baru
+
+**✅ Tugas Utama Otomatis Selesai**
+- Tidak perlu lagi mencentang tugas utama secara manual!
+- Cukup selesaikan sub-tugasnya, dan tugas utama otomatis akan masuk ke Histori.
+- Lebih praktis dan fokus ke apa yang harus dikerjakan.
+
+**🔄 Pembatalan Cerdas (Auto-Uncheck)**
+- Salah centang sub-tugas? Tenang saja.
+- Begitu kamu membatalkan centang pada satu sub-tugas, tugas utama otomatis akan keluar dari Histori dan kembali ke halaman utama.
+
+### 📱 Perbaikan UI/UX
+- Tampilan lebih bersih dengan penghapusan checkbox yang tidak diperlukan pada halaman utama dan Quick View.
+- Interaksi checkbox sekarang terasa lebih cepat dan responsif (Optimistic UI).
+- Notifikasi "Waduh, pelan-pelan!" ditambahkan untuk membantu jika menekan tombol terlalu cepat secara tidak sengaja.
+
+### 🐛 Perbaikan Bug
+- Fixed: Tugas utama dan sub-tugas bentrok saat loading icon muncul (Icon loading sekarang dihapus untuk pengalaman yang lebih mulus).
+- Fixed: Masalah centang yang tidak tersimpan jika dilakukan sangat cepat.
+
+---
+
+## 📅 UPDATE SEBELUMNYA - Notifikasi untuk iPhone & Perbaikan UI/UX
 
 ### ✨ Fitur Baru
 
