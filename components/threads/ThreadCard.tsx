@@ -73,6 +73,11 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [isFakeLoading, setIsFakeLoading] = useState(false);
   const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
+  const [visualGroupProgress, setVisualGroupProgress] = useState<{
+    completed: number;
+    total: number;
+    percentage: number;
+  } | null>(null);
 
   // Get thread status (for current user)
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -108,7 +113,8 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   // Use server-calculated progress for group tasks (works for all users)
   // Fallback to client-side calculation if server data not available
   const groupProgress =
-    thread.isGroupTask && groupTaskProgress
+    visualGroupProgress ??
+    (thread.isGroupTask && groupTaskProgress
       ? groupTaskProgress
       : thread.isGroupTask &&
         thread.comments &&
@@ -140,7 +146,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
             total: thread.comments.length,
             percentage: 0,
           }
-          : null;
+          : null);
 
   // Calculate time remaining until auto-delete (1 day from when thread was checked)
   // Timer only shows when thread is completed
@@ -283,6 +289,13 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     setTimeout(() => {
       setIsFakeLoading(false);
       setVisualCompleted(false);
+      if (thread.isGroupTask && thread.comments && thread.comments.length > 0) {
+        setVisualGroupProgress({
+          completed: 0,
+          total: thread.comments.length,
+          percentage: 0,
+        });
+      }
     }, 500);
     toggleThread.mutate({
       threadId: thread.id,
@@ -297,6 +310,13 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     setTimeout(() => {
       setIsFakeLoading(false);
       setVisualCompleted(true);
+      if (thread.isGroupTask && thread.comments && thread.comments.length > 0) {
+        setVisualGroupProgress({
+          completed: thread.comments.length,
+          total: thread.comments.length,
+          percentage: 100,
+        });
+      }
     }, 500);
     // Then execute the mutation
     toggleThread.mutate({
@@ -815,6 +835,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                 threadId={thread.id}
                 statuses={statuses || []}
                 threadAuthorId={thread.author.id}
+                isGroupTask={thread.isGroupTask || false}
+                totalComments={thread.comments?.length || 0}
+                currentCompleted={groupProgress?.completed || 0}
+                onProgressChange={(newProgress) => setVisualGroupProgress(newProgress)}
               />
             ))}
             {visibleComments.length > 2 && (
@@ -870,6 +894,10 @@ function CommentItem({
   threadId,
   statuses,
   threadAuthorId,
+  isGroupTask,
+  totalComments,
+  currentCompleted,
+  onProgressChange,
 }: {
   comment: {
     id: string;
@@ -880,6 +908,10 @@ function CommentItem({
   threadId: string;
   statuses: Array<{ commentId?: string | null; isCompleted: boolean }>;
   threadAuthorId: string;
+  isGroupTask: boolean;
+  totalComments: number;
+  currentCompleted: number;
+  onProgressChange: (progress: { completed: number; total: number; percentage: number }) => void;
 }) {
   const { data: session } = useSession();
   const commentStatus = statuses.find((s) => s.commentId === comment.id);
@@ -931,7 +963,21 @@ function CommentItem({
       setIsFakeLoading(true);
       setTimeout(() => {
         setIsFakeLoading(false);
-        setVisualCompleted(variables.isCompleted);
+        const nextIsCompleted = variables.isCompleted;
+        setVisualCompleted(nextIsCompleted);
+
+        // If parent thread is group task, update visual progress of parent
+        if (isGroupTask && totalComments > 0) {
+          const nextCompleted = nextIsCompleted
+            ? Math.min(totalComments, currentCompleted + 1)
+            : Math.max(0, currentCompleted - 1);
+          const nextPercentage = Math.round((nextCompleted / totalComments) * 100);
+          onProgressChange({
+            completed: nextCompleted,
+            total: totalComments,
+            percentage: nextPercentage,
+          });
+        }
       }, 500);
 
       return { previousStatuses };
