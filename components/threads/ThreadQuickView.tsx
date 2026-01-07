@@ -46,6 +46,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const [showGroupMembers, setShowGroupMembers] = useState(false)
   const [isFakeLoadingThread, setIsFakeLoadingThread] = useState(false)
   const [fakeLoadingComments, setFakeLoadingComments] = useState<Set<string>>(new Set())
+  const [visualStatuses, setVisualStatuses] = useState<Record<string, boolean>>({})
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -203,7 +204,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const utils = trpc.useUtils()
 
   const threadStatus = statuses?.find((s) => s.threadId === threadId && !s.commentId)
-  const isThreadCompleted = threadStatus?.isCompleted || false
+  const isThreadCompleted = visualStatuses[threadId] ?? (threadStatus?.isCompleted || false)
   const isGroupTask = (thread as any)?.isGroupTask || false
   const groupMembers = (thread as any)?.groupMembers || []
   const hasGroupMembers = Array.isArray(groupMembers) && groupMembers.length > 0
@@ -399,7 +400,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   const handleConfirmUncheck = () => {
     setShowUncheckDialog(false)
     setIsFakeLoadingThread(true)
-    setTimeout(() => setIsFakeLoadingThread(false), 500)
+    setTimeout(() => {
+      setIsFakeLoadingThread(false)
+      setVisualStatuses(prev => ({ ...prev, [threadId]: false }))
+    }, 500)
     toggleThread.mutate({
       threadId,
       isCompleted: false,
@@ -418,7 +422,10 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     // Close dialog immediately for better UX
     setShowConfirmDialog(false)
     setIsFakeLoadingThread(true)
-    setTimeout(() => setIsFakeLoadingThread(false), 500)
+    setTimeout(() => {
+      setIsFakeLoadingThread(false)
+      setVisualStatuses(prev => ({ ...prev, [threadId]: true }))
+    }, 500)
     // Then execute the mutation
     toggleThread.mutate({
       threadId,
@@ -457,20 +464,21 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
         }
       });
 
-      // Add to fake loading
+      // Start fake loading
       setFakeLoadingComments((prev) => {
         const next = new Set(prev);
         next.add(variables.commentId);
         return next;
       });
 
-      // Remove from fake loading after 500ms
+      // Remove from fake loading after 500ms and set visual status
       setTimeout(() => {
         setFakeLoadingComments((prev) => {
           const next = new Set(prev);
           next.delete(variables.commentId);
           return next;
         });
+        setVisualStatuses(prev => ({ ...prev, [variables.commentId]: variables.isCompleted }));
       }, 500);
 
       return { previousStatuses };
@@ -1194,7 +1202,7 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
 
               return visibleComments.map((comment: any) => {
                 const commentStatus = statuses?.find((s) => s.commentId === comment.id)
-                const isCommentCompleted = commentStatus?.isCompleted || false
+                const isCommentCompleted = visualStatuses[comment.id] ?? (commentStatus?.isCompleted || false)
 
                 // Check if user can edit/delete this comment
                 const isCommentAuthor = session?.user?.id === comment?.author?.id

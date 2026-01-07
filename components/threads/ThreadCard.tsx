@@ -72,6 +72,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [isFakeLoading, setIsFakeLoading] = useState(false);
+  const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
 
   // Get thread status (for current user)
   const { data: statuses } = trpc.userStatus.getThreadStatuses.useQuery(
@@ -102,7 +103,7 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const threadStatus = statuses?.find(
     (s) => s.threadId === thread.id && !s.commentId,
   );
-  const isCompleted = threadStatus?.isCompleted || false;
+  const isCompleted = visualCompleted ?? (threadStatus?.isCompleted || false);
 
   // Use server-calculated progress for group tasks (works for all users)
   // Fallback to client-side calculation if server data not available
@@ -279,7 +280,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
   const handleConfirmUncheck = () => {
     setShowUncheckDialog(false);
     setIsFakeLoading(true);
-    setTimeout(() => setIsFakeLoading(false), 500);
+    setTimeout(() => {
+      setIsFakeLoading(false);
+      setVisualCompleted(false);
+    }, 500);
     toggleThread.mutate({
       threadId: thread.id,
       isCompleted: false,
@@ -290,7 +294,10 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
     // Close dialog immediately for better UX
     setShowConfirmDialog(false);
     setIsFakeLoading(true);
-    setTimeout(() => setIsFakeLoading(false), 500);
+    setTimeout(() => {
+      setIsFakeLoading(false);
+      setVisualCompleted(true);
+    }, 500);
     // Then execute the mutation
     toggleThread.mutate({
       threadId: thread.id,
@@ -876,8 +883,9 @@ function CommentItem({
 }) {
   const { data: session } = useSession();
   const commentStatus = statuses.find((s) => s.commentId === comment.id);
-  const isCompleted = commentStatus?.isCompleted || false;
   const [isFakeLoading, setIsFakeLoading] = useState(false);
+  const [visualCompleted, setVisualCompleted] = useState<boolean | null>(null);
+  const isCompleted = visualCompleted ?? (commentStatus?.isCompleted || false);
 
   // Check if user is admin
   const { data: adminCheck } = trpc.auth.isAdmin.useQuery(undefined, {
@@ -921,7 +929,10 @@ function CommentItem({
 
       // Start fake loading
       setIsFakeLoading(true);
-      setTimeout(() => setIsFakeLoading(false), 500);
+      setTimeout(() => {
+        setIsFakeLoading(false);
+        setVisualCompleted(variables.isCompleted);
+      }, 500);
 
       return { previousStatuses };
     },
