@@ -1721,7 +1721,8 @@ textarea::placeholder {
   padding: 0;
   max-width: 800px;
   width: 90%;
-  max-height: 85vh;
+  max-height: 85vh; /* Fallback */
+  max-height: 85dvh; /* For mobile browsers with dynamic toolbars */
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
@@ -1732,6 +1733,13 @@ textarea::placeholder {
   /* Enable smooth scrolling on mobile */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+@media (max-width: 640px) {
+  .quickview-content {
+    max-height: 80dvh; /* Slightly smaller on mobile to ensure visible clearance */
+    width: 95%;
+  }
 }
 
 .quickview-content.closing {
