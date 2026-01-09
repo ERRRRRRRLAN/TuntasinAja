@@ -14,6 +14,7 @@ interface ConfirmDialogProps {
   onCancel: () => void
   danger?: boolean // If true, use btn-danger instead of btn-primary
   disabled?: boolean // If true, disable buttons and prevent closing
+  isLoading?: boolean // If true, show loading state and disable actions
 }
 
 // ConfirmDialog untuk digunakan di luar quickview (full screen overlay)
@@ -27,6 +28,7 @@ export default function ConfirmDialog({
   onCancel,
   danger = false,
   disabled = false,
+  isLoading = false,
 }: ConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -70,9 +72,9 @@ export default function ConfirmDialog({
   // Handle browser back button - hanya aktif ketika dialog benar-benar visible
   // Tambahkan delay kecil untuk memastikan dialog sudah fully rendered
   const [shouldHandleBack, setShouldHandleBack] = useState(false)
-  
+
   useEffect(() => {
-    if (isOpen && isVisible && !disabled) {
+    if (isOpen && isVisible && !disabled && !isLoading) {
       // Delay kecil untuk memastikan dialog sudah fully rendered
       const timer = setTimeout(() => {
         setShouldHandleBack(true)
@@ -103,7 +105,7 @@ export default function ConfirmDialog({
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Only cancel if clicking directly on the overlay, not on the content
     // Don't allow closing if disabled (e.g., during loading)
-    if (e.target === overlayRef.current && !disabled) {
+    if (e.target === overlayRef.current && !disabled && !isLoading) {
       e.preventDefault()
       e.stopPropagation()
       onCancel()
@@ -128,7 +130,7 @@ export default function ConfirmDialog({
   }
 
   const dialogContent = (
-    <div 
+    <div
       ref={overlayRef}
       className="confirm-dialog-overlay"
       onClick={handleOverlayClick}
@@ -143,21 +145,21 @@ export default function ConfirmDialog({
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
-      <div 
+      <div
         ref={contentRef}
         className="confirm-dialog-content"
         onClick={handleContentClick}
         style={{
           opacity: contentVisible ? 1 : 0,
-          transform: contentVisible 
-            ? 'translateY(0) scale(1)' 
+          transform: contentVisible
+            ? 'translateY(0) scale(1)'
             : 'translateY(20px) scale(0.95)',
           transition: isOpen
             ? 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.03s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.03s'
             : 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s'
         }}
       >
-        <h3 
+        <h3
           className="confirm-dialog-title"
           style={{
             opacity: contentVisible ? 1 : 0,
@@ -169,7 +171,7 @@ export default function ConfirmDialog({
         >
           {title}
         </h3>
-        <p 
+        <p
           className="confirm-dialog-message"
           style={{
             opacity: contentVisible ? 1 : 0,
@@ -181,7 +183,7 @@ export default function ConfirmDialog({
         >
           {message}
         </p>
-        <div 
+        <div
           className="confirm-dialog-actions"
           style={{
             opacity: contentVisible ? 1 : 0,
@@ -195,7 +197,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={handleCancelClick}
             className="btn btn-secondary"
-            disabled={disabled}
+            disabled={disabled || isLoading}
           >
             {cancelText}
           </button>
@@ -203,9 +205,9 @@ export default function ConfirmDialog({
             type="button"
             onClick={handleConfirmClick}
             className={danger ? 'btn btn-danger' : 'btn btn-primary'}
-            disabled={disabled}
+            disabled={disabled || isLoading}
           >
-            {confirmText}
+            {isLoading ? 'Loading...' : confirmText}
           </button>
         </div>
       </div>
