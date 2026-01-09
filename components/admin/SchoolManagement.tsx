@@ -392,7 +392,7 @@ export default function SchoolManagement() {
                 message="Apakah Anda yakin ingin menghapus sekolah ini? Semua kelas dan data terkait akan ikut terhapus. Tindakan ini tidak dapat dibatalkan."
                 confirmText="Hapus"
                 cancelText="Batal"
-                isDanger
+                danger
                 isLoading={deleteSchool.isLoading}
                 onConfirm={() => deleteSchoolId && deleteSchool.mutate({ id: deleteSchoolId })}
                 onCancel={() => setDeleteSchoolId(null)}
@@ -405,7 +405,7 @@ export default function SchoolManagement() {
                 message="Apakah Anda yakin ingin menghapus kelas ini?"
                 confirmText="Hapus"
                 cancelText="Batal"
-                isDanger
+                danger
                 isLoading={removeClass.isLoading}
                 onConfirm={() => deleteClassId && removeClass.mutate({ classId: deleteClassId })}
                 onCancel={() => setDeleteClassId(null)}

@@ -4,7 +4,7 @@
 - *Manajemen Sekolah*: Sekarang TuntasinAja mendukung multi-sekolah!
 - *Admin Sekolah*: Admin bisa menambah dan mengelola daftar sekolah dan kelas dari Panel Admin.
 - *Pilih Sekolah*: User bisa memilih asal sekolah dan kelas di halaman Pengaturan (Me Page).
-- *Validasi*: Pendaftaran dan pemilihan kelas divalidasi agar sesuai dengan sekolah yang dipilih.
+- *Validasi*: Pendaftaran dan pemilihan kelas divalidasi agar  sesuai dengan sekolah yang dipilih.
 
 *Perbaikan UI/UX*
 - Penambahan Tab "Manajemen Sekolah" di Panel Admin.
