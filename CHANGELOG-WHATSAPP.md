@@ -1,3 +1,18 @@
+*UPDATE TERBARU - Fitur Sekolah & Kelas*
+
+*Fitur Baru*
+- *Manajemen Sekolah*: Sekarang TuntasinAja mendukung multi-sekolah!
+- *Admin Sekolah*: Admin bisa menambah dan mengelola daftar sekolah dan kelas dari Panel Admin.
+- *Pilih Sekolah*: User bisa memilih asal sekolah dan kelas di halaman Pengaturan (Me Page).
+- *Validasi*: Pendaftaran dan pemilihan kelas divalidasi agar sesuai dengan sekolah yang dipilih.
+
+*Perbaikan UI/UX*
+- Penambahan Tab "Manajemen Sekolah" di Panel Admin.
+- Penambahan bagian "Sekolah & Kelas" di halaman Pengaturan User.
+- Icon baru untuk Sekolah.
+
+---
+
 *CHANGELOG - TuntasinAja*
 
 *UPDATE TERBARU - Sistem Pengerjaan Tugas Lebih Gacor*

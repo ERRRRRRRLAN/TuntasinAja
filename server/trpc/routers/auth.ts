@@ -23,6 +23,8 @@ export const authRouter = createTRPCRouter({
         name: nameSchema,
         email: emailSchema,
         password: passwordSchema,
+        schoolId: z.string().optional(),
+        kelas: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -35,9 +37,27 @@ export const authRouter = createTRPCRouter({
         throw new Error("Email already registered");
       }
 
+      // If school and class provided, validate class belongs to school
+      if (input.schoolId && input.kelas) {
+        const classExists = await prisma.class.findUnique({
+          where: {
+            schoolId_name: {
+              schoolId: input.schoolId,
+              name: input.kelas
+            }
+          }
+        });
+        if (!classExists) {
+          // Alternatively, allow creating it? No, strict validation.
+          // But for now, let's just proceed or throw?
+          // "Validate that the selected kelas belongs to that school"
+          throw new Error("Kelas tidak valid untuk sekolah yang dipilih");
+        }
+      }
+
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10);
-      
+
       // Encrypt password for admin view
       const passwordEncrypted = encryptPassword(input.password);
 
@@ -51,6 +71,8 @@ export const authRouter = createTRPCRouter({
           email: input.email,
           passwordHash,
           passwordEncrypted,
+          schoolId: input.schoolId,
+          kelas: input.kelas, // Allow setting class during reg if provided
           createdAt: now,
         },
         select: {
@@ -107,7 +129,7 @@ export const authRouter = createTRPCRouter({
   // Get current user data (kelas, isAdmin, isDanton)
   getUserData: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return { kelas: null, isAdmin: false, isDanton: false };
+      return { kelas: null, isAdmin: false, isDanton: false, schoolId: null };
     }
 
     const user = await prisma.user.findUnique({
@@ -116,6 +138,7 @@ export const authRouter = createTRPCRouter({
         kelas: true,
         isAdmin: true,
         isDanton: true,
+        schoolId: true,
       },
     });
 
@@ -123,6 +146,7 @@ export const authRouter = createTRPCRouter({
       kelas: user?.kelas || null,
       isAdmin: user?.isAdmin || false,
       isDanton: user?.isDanton || false,
+      schoolId: user?.schoolId || null,
     };
   }),
 
@@ -189,6 +213,7 @@ export const authRouter = createTRPCRouter({
         isAdmin: z.boolean().optional().default(false),
         isDanton: z.boolean().optional().default(false),
         kelas: z.string().optional(),
+        schoolId: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -216,9 +241,24 @@ export const authRouter = createTRPCRouter({
         throw new Error("User harus memiliki kelas untuk dijadikan danton");
       }
 
+      // Validate class/school if provided
+      if (input.schoolId && input.kelas) {
+        const classExists = await prisma.class.findUnique({
+          where: {
+            schoolId_name: {
+              schoolId: input.schoolId,
+              name: input.kelas
+            }
+          }
+        });
+        if (!classExists) {
+          throw new Error("Kelas tidak ditemukan di sekolah tersebut");
+        }
+      }
+
       // Hash password
       const passwordHash = await bcrypt.hash(input.password, 10);
-      
+
       // Encrypt password for admin view
       const passwordEncrypted = encryptPassword(input.password);
 
@@ -233,8 +273,10 @@ export const authRouter = createTRPCRouter({
           passwordHash,
           passwordEncrypted,
           isAdmin: input.isAdmin || false,
+
           isDanton: input.isAdmin ? false : input.isDanton || false, // Cannot be danton if admin
           kelas: input.isAdmin ? null : input.kelas || null,
+          schoolId: input.schoolId,
           createdAt: now,
         },
         select: {
@@ -272,7 +314,7 @@ export const authRouter = createTRPCRouter({
       // Try to decrypt password if encrypted password exists
       let decryptedPassword: string | null = null;
       let decryptError: string | null = null;
-      
+
       if (user.passwordEncrypted) {
         try {
           // Validate encrypted password format
@@ -344,6 +386,7 @@ export const authRouter = createTRPCRouter({
         isAdmin: z.boolean().optional(),
         isDanton: z.boolean().optional(),
         kelas: z.string().optional().nullable(),
+        schoolId: z.string().optional().nullable(),
         permission: z.enum(["only_read", "read_and_post_edit"]).optional(),
         canCreateAnnouncement: z.boolean().optional(),
       }),
@@ -518,10 +561,11 @@ export const authRouter = createTRPCRouter({
       z.object({
         names: z.array(nameSchema).min(1, 'Minimal 1 nama harus diisi'),
         kelas: z.string().min(1),
+        schoolId: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { names, kelas } = input;
+      const { names, kelas, schoolId } = input;
 
       // Helper function to capitalize name properly (Title Case)
       const capitalizeName = (name: string): string => {
@@ -593,6 +637,7 @@ export const authRouter = createTRPCRouter({
               email,
               passwordHash,
               kelas,
+              schoolId: input.schoolId,
               isAdmin: false,
               isDanton: false,
               createdAt: now,

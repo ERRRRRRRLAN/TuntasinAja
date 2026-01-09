@@ -15,6 +15,7 @@ import { appSettingsRouter } from './routers/appSettings'
 import { databaseRouter } from './routers/database'
 import { bulkOperationsRouter } from './routers/bulkOperations'
 import { announcementRouter } from './routers/announcement'
+import { schoolRouter } from './routers/school'
 
 export const appRouter = createTRPCRouter({
   thread: threadRouter,
@@ -33,6 +34,7 @@ export const appRouter = createTRPCRouter({
   bulkOperations: bulkOperationsRouter,
   announcement: announcementRouter,
   userSettings: userSettingsRouter,
+  school: schoolRouter,
 })
 
 export type AppRouter = typeof appRouter

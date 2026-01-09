@@ -10,7 +10,7 @@ import { trpc } from '@/lib/trpc'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ComboBox from '@/components/ui/ComboBox'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon } from '@/components/ui/Icons'
+import { UserIcon, DownloadIcon, TrashIcon, LogOutIcon, CrownIcon, SchoolIcon } from '@/components/ui/Icons'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useUnsavedChanges } from '@/components/providers/UnsavedChangesProvider'
 import { toast } from '@/components/ui/ToastContainer'
@@ -27,18 +27,18 @@ export default function MePage() {
   const [localSettings, setLocalSettings] = useState<any>(null)
   const [showNavigationDialog, setShowNavigationDialog] = useState(false)
   const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
-  const [appVersion, setAppVersion] = useState<{versionName: string, versionCode: number} | null>(null)
+  const [appVersion, setAppVersion] = useState<{ versionName: string, versionCode: number } | null>(null)
   const prevHasUnsavedChangesRef = useRef(false)
   const justSavedRef = useRef(false) // Flag to skip comparison after save
   const utils = trpc.useUtils()
-  
+
   // Check if running on mobile web (not native app)
-  const isMobileWeb = typeof window !== 'undefined' && 
-    window.innerWidth <= 768 && 
+  const isMobileWeb = typeof window !== 'undefined' &&
+    window.innerWidth <= 768 &&
     !Capacitor.isNativePlatform()
-  
+
   // Get unsaved changes context for global navigation blocking
-  const { 
+  const {
     setHasUnsavedChanges: setGlobalHasUnsavedChanges,
     pendingNavigation,
     setPendingNavigation,
@@ -62,7 +62,7 @@ export default function MePage() {
         console.error('Failed to fetch app version:', error)
       }
     }
-    
+
     fetchVersion()
   }, [])
 
@@ -73,15 +73,15 @@ export default function MePage() {
         const cookies = document.cookie.split(';')
         const hasCookie = cookies.some(cookie => {
           const trimmed = cookie.trim()
-          return trimmed.startsWith('next-auth.session-token=') || 
-                 trimmed.startsWith('__Secure-next-auth.session-token=')
+          return trimmed.startsWith('next-auth.session-token=') ||
+            trimmed.startsWith('__Secure-next-auth.session-token=')
         })
         setHasSessionCookie(hasCookie)
       }
     }
 
     checkSessionCookie()
-    
+
     // Check periodically in case cookie changes
     const interval = setInterval(checkSessionCookie, 1000)
     return () => clearInterval(interval)
@@ -101,6 +101,52 @@ export default function MePage() {
   })
   const isDanton = userData?.isDanton || false
   const isAdmin = userData?.isAdmin || false
+  const userSchoolId = userData?.schoolId || null
+  const userKelas = userData?.kelas || null
+
+  // Get schools for selection
+  const { data: schools } = trpc.school.getSchoolsForSelection.useQuery()
+
+  // Local state for school selection (handled separately from other settings)
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null)
+  const [selectedClass, setSelectedClass] = useState<string | null>(null)
+  const [isUpdatingSchool, setIsUpdatingSchool] = useState(false)
+
+  // Get classes for selected school
+  const { data: classes } = trpc.school.getClasses.useQuery(
+    { schoolId: selectedSchoolId! },
+    { enabled: !!selectedSchoolId }
+  )
+
+  // Sync state with user data
+  useEffect(() => {
+    if (userData) {
+      setSelectedSchoolId(userData.schoolId || null)
+      setSelectedClass(userData.kelas || null)
+    }
+  }, [userData])
+
+  const updateUser = trpc.auth.updateUser.useMutation({
+    onSuccess: () => {
+      setIsUpdatingSchool(false)
+      utils.auth.getUserData.invalidate()
+      toast.success('Informasi sekolah berhasil diperbarui')
+    },
+    onError: (err) => {
+      setIsUpdatingSchool(false)
+      toast.error(err.message)
+    }
+  })
+
+  const handleSchoolUpdate = () => {
+    if (!selectedSchoolId || !selectedClass) return
+    setIsUpdatingSchool(true)
+    updateUser.mutate({
+      userId: session!.user.id,
+      schoolId: selectedSchoolId,
+      kelas: selectedClass
+    })
+  }
 
   // Get settings
   const { data: settings, isLoading: isLoadingSettings } = trpc.userSettings.get.useQuery(undefined, {
@@ -124,7 +170,7 @@ export default function MePage() {
       justSavedRef.current = false
       return
     }
-    
+
     if (!localSettings || !settings) {
       setHasUnsavedChanges(false)
       setGlobalHasUnsavedChanges(false)
@@ -187,11 +233,11 @@ export default function MePage() {
       // Check if it's a real network error
       const errorMessage = error.message || ''
       const isNetworkError = errorMessage.includes('ERR_NAME_NOT_RESOLVED') ||
-                           errorMessage.includes('Failed to fetch') ||
-                           errorMessage.includes('NetworkError') ||
-                           errorMessage.includes('Network request failed') ||
-                           errorMessage.includes('TypeError')
-      
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('NetworkError') ||
+        errorMessage.includes('Network request failed') ||
+        errorMessage.includes('TypeError')
+
       if (isNetworkError) {
         console.error('[ERROR] Gagal menyimpan: Koneksi ke server terputus. Pastikan koneksi internet Anda aktif.')
       } else {
@@ -231,7 +277,7 @@ export default function MePage() {
   const handleTimeChange = (key: string, value: string) => {
     if (!localSettings) return
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MePage.tsx:handleTimeChange',message:'User changed reminder time',data:{key,value,oldValue:localSettings[key as keyof typeof localSettings]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'MePage.tsx:handleTimeChange', message: 'User changed reminder time', data: { key, value, oldValue: localSettings[key as keyof typeof localSettings] }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A' }) }).catch(() => { });
     // #endregion
     setLocalSettings({ ...localSettings, [key]: value || null })
     // hasUnsavedChanges will be updated by useEffect
@@ -251,11 +297,11 @@ export default function MePage() {
 
   const handleSave = () => {
     if (!localSettings || !settings) return
-    
+
     setIsSaving(true)
     // Prepare update data - only include changed fields
     const updateData: any = {}
-    
+
     // Compare with original settings and only include changed fields
     Object.keys(localSettings).forEach((key) => {
       if (key !== 'id' && key !== 'userId' && key !== 'createdAt' && key !== 'updatedAt') {
@@ -274,7 +320,7 @@ export default function MePage() {
     }
 
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MePage.tsx:handleSave',message:'Saving settings to database',data:{updateData,hasReminderTime:!!updateData.reminderTime,reminderTimeValue:updateData.reminderTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/50ac13b1-8f34-4b5c-bd10-7aa13e02ac71', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'MePage.tsx:handleSave', message: 'Saving settings to database', data: { updateData, hasReminderTime: !!updateData.reminderTime, reminderTimeValue: updateData.reminderTime }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A' }) }).catch(() => { });
     // #endregion
     updateSettings.mutate(updateData)
   }
@@ -315,9 +361,9 @@ export default function MePage() {
       // Always use the production URL to ensure we get the latest version
       const baseUrl = 'https://tuntasinaja-livid.vercel.app'
       const apkUrl = `${baseUrl}/TuntasinAja.apk?v=${Date.now()}&nocache=1`
-      
+
       console.log('[MePage] Starting APK download from:', apkUrl)
-      
+
       // Use fetch to download the file and create blob
       // This ensures we get the latest version and can verify it
       const response = await fetch(apkUrl, {
@@ -328,35 +374,35 @@ export default function MePage() {
           'Pragma': 'no-cache',
         },
       })
-      
+
       if (!response.ok) {
         throw new Error(`Failed to download APK: ${response.status} ${response.statusText}`)
       }
-      
+
       // Get file size for verification
       const contentLength = response.headers.get('content-length')
       const fileSize = contentLength ? parseInt(contentLength, 10) : 0
-      
+
       console.log('[MePage] APK file size:', fileSize, 'bytes')
-      
+
       // Create blob from response
       const blob = await response.blob()
-      
+
       // Verify blob size matches
       if (fileSize > 0 && blob.size !== fileSize) {
         console.warn('[MePage] File size mismatch:', blob.size, 'vs', fileSize)
       }
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
       link.download = 'TuntasinAja.apk'
       link.style.display = 'none'
-      
+
       document.body.appendChild(link)
       link.click()
-      
+
       // Clean up
       setTimeout(() => {
         window.URL.revokeObjectURL(url)
@@ -365,12 +411,12 @@ export default function MePage() {
         }
         console.log('[MePage] APK download completed')
       }, 100)
-      
+
       console.log('[SUCCESS] 📥 Download APK dimulai...')
     } catch (error) {
       console.error('[MePage] Error downloading APK:', error)
       console.error('[ERROR] ❌ Gagal mengunduh APK. Silakan coba lagi.')
-      
+
       // Fallback: try direct link
       const fallbackUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
       window.open(fallbackUrl, '_blank')
@@ -447,7 +493,7 @@ export default function MePage() {
               )}
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {isAdmin && (
@@ -480,7 +526,7 @@ export default function MePage() {
                 Admin Panel
               </button>
             )}
-            
+
             {isDanton && (
               <button
                 onClick={() => router.push('/danton')}
@@ -511,7 +557,7 @@ export default function MePage() {
                 Danton Dashboard
               </button>
             )}
-            
+
             {isMobileWeb && (
               <button
                 onClick={handleDownloadAPK}
@@ -542,7 +588,7 @@ export default function MePage() {
                 Download APK
               </button>
             )}
-            
+
             <button
               onClick={() => setShowLogoutDialog(true)}
               style={{
@@ -576,21 +622,89 @@ export default function MePage() {
           </div>
         </div>
 
+        {/* School & Class Information */}
+        <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: 'var(--text)' }}>
+              Sekolah & Kelas
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-light)', lineHeight: '1.5' }}>
+              Atur asal sekolah dan kelas Anda
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
+                Sekolah
+              </label>
+              <ComboBox
+                options={schools?.map(s => ({ value: s.id, label: s.name })) || []}
+                value={selectedSchoolId || ''}
+                onChange={(value) => {
+                  setSelectedSchoolId(value)
+                  setSelectedClass(null) // Reset class when school changes
+                }}
+                placeholder="Pilih Sekolah"
+                searchPlaceholder="Cari sekolah..."
+                emptyMessage="Sekolah tidak ditemukan"
+              />
+            </div>
+
+            {selectedSchoolId && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
+                  Kelas
+                </label>
+                <ComboBox
+                  options={classes?.map(c => ({ value: c.name, label: c.name })) || []}
+                  value={selectedClass || ''}
+                  onChange={(value) => setSelectedClass(value)}
+                  placeholder="Pilih Kelas"
+                  searchPlaceholder="Cari kelas..."
+                  emptyMessage="Kelas tidak ditemukan"
+                  disabled={!classes}
+                />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button
+                onClick={handleSchoolUpdate}
+                disabled={isUpdatingSchool || (selectedSchoolId === userSchoolId && selectedClass === userKelas) || !selectedSchoolId || !selectedClass}
+                className="btn btn-primary"
+                style={{
+                  opacity: (selectedSchoolId === userSchoolId && selectedClass === userKelas) ? 0.5 : 1,
+                  cursor: (selectedSchoolId === userSchoolId && selectedClass === userKelas) ? 'default' : 'pointer',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  fontWeight: 500
+                }}
+              >
+                {isUpdatingSchool ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Notifikasi & Pengingat */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ 
-              marginTop: 0, 
-              marginBottom: '0.5rem', 
+            <h3 style={{
+              marginTop: 0,
+              marginBottom: '0.5rem',
               fontSize: '1.125rem',
               fontWeight: 600,
               color: 'var(--text)',
             }}>
               Notifikasi & Pengingat
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
-              fontSize: '0.875rem', 
+              fontSize: '0.875rem',
               color: 'var(--text-light)',
               lineHeight: '1.5',
             }}>
@@ -636,9 +750,9 @@ export default function MePage() {
 
             {displaySettings.deadlineReminderEnabled && (
               <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '0.25rem', 
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
                   fontSize: '0.875rem',
                   fontWeight: 500,
                   color: 'var(--text)',
@@ -677,9 +791,9 @@ export default function MePage() {
             {displaySettings.dndEnabled && (
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: '0.5rem', 
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
                     fontSize: '0.875rem',
                     fontWeight: 500,
                     color: 'var(--text)',
@@ -699,9 +813,9 @@ export default function MePage() {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: '0.5rem', 
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
                     fontSize: '0.875rem',
                     fontWeight: 500,
                     color: 'var(--text)',
@@ -728,18 +842,18 @@ export default function MePage() {
         {/* Tampilan */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ 
-              marginTop: 0, 
-              marginBottom: '0.5rem', 
+            <h3 style={{
+              marginTop: 0,
+              marginBottom: '0.5rem',
               fontSize: '1.125rem',
               fontWeight: 600,
               color: 'var(--text)',
             }}>
               Tampilan
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
-              fontSize: '0.875rem', 
+              fontSize: '0.875rem',
               color: 'var(--text-light)',
               lineHeight: '1.5',
             }}>
@@ -749,9 +863,9 @@ export default function MePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'var(--text)',
@@ -777,9 +891,9 @@ export default function MePage() {
             </div>
 
             <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'var(--text)',
@@ -820,18 +934,18 @@ export default function MePage() {
         {/* Suara & Getar */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ 
-              marginTop: 0, 
-              marginBottom: '0.5rem', 
+            <h3 style={{
+              marginTop: 0,
+              marginBottom: '0.5rem',
               fontSize: '1.125rem',
               fontWeight: 600,
               color: 'var(--text)',
             }}>
               Suara & Getar
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
-              fontSize: '0.875rem', 
+              fontSize: '0.875rem',
               color: 'var(--text-light)',
               lineHeight: '1.5',
             }}>
@@ -861,18 +975,18 @@ export default function MePage() {
         {/* Data & Penyimpanan */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ 
-              marginTop: 0, 
-              marginBottom: '0.5rem', 
+            <h3 style={{
+              marginTop: 0,
+              marginBottom: '0.5rem',
               fontSize: '1.125rem',
               fontWeight: 600,
               color: 'var(--text)',
             }}>
               Data & Penyimpanan
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
-              fontSize: '0.875rem', 
+              fontSize: '0.875rem',
               color: 'var(--text-light)',
               lineHeight: '1.5',
             }}>
@@ -882,9 +996,9 @@ export default function MePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'var(--text)',
@@ -907,9 +1021,9 @@ export default function MePage() {
                   color: 'var(--text)',
                 }}
               />
-              <p style={{ 
+              <p style={{
                 margin: '0.5rem 0 0 0',
-                fontSize: '0.75rem', 
+                fontSize: '0.75rem',
                 color: 'var(--text-light)',
               }}>
                 Set 0 untuk menonaktifkan auto-hapus
@@ -981,18 +1095,18 @@ export default function MePage() {
         {/* Tentang & Bantuan */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ 
-              marginTop: 0, 
-              marginBottom: '0.5rem', 
+            <h3 style={{
+              marginTop: 0,
+              marginBottom: '0.5rem',
               fontSize: '1.125rem',
               fontWeight: 600,
               color: 'var(--text)',
             }}>
               Tentang & Bantuan
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
-              fontSize: '0.875rem', 
+              fontSize: '0.875rem',
               color: 'var(--text-light)',
               lineHeight: '1.5',
             }}>
@@ -1091,7 +1205,7 @@ export default function MePage() {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '1rem',
-              animation: isNotificationClosing 
+              animation: isNotificationClosing
                 ? 'slideDownToBottom 0.3s ease-out forwards'
                 : 'slideUpFromBottom 0.3s ease-out',
               maxWidth: 'calc(100vw - 2rem)',
@@ -1099,9 +1213,9 @@ export default function MePage() {
             }}
           >
             <div style={{ flex: 1, minWidth: '200px' }}>
-              <p style={{ 
-                margin: 0, 
-                fontSize: '0.875rem', 
+              <p style={{
+                margin: 0,
+                fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'var(--text)',
                 wordWrap: 'break-word',
@@ -1109,9 +1223,9 @@ export default function MePage() {
               }}>
                 Pengaturan telah diubah
               </p>
-              <p style={{ 
-                margin: '0.25rem 0 0 0', 
-                fontSize: '0.75rem', 
+              <p style={{
+                margin: '0.25rem 0 0 0',
+                fontSize: '0.75rem',
                 color: 'var(--text-light)',
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',

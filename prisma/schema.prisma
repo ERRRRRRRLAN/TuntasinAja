@@ -36,6 +36,9 @@ model User {
   groupMembers      GroupMember[]
   addedGroupMembers GroupMember[]     @relation("AddedBy")
 
+  schoolId  String?  @map("school_id")
+  school    School?  @relation(fields: [schoolId], references: [id])
+
   @@map("users")
 }
 
@@ -372,3 +375,31 @@ model GroupMember {
   @@map("group_members")
 }
 
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  logoUrl   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users     User[]
+  classes   Class[]
+
+  @@map("schools")
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String   @map("name") // e.g., "XI PPLG 1"
+  schoolId  String   @map("school_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([schoolId, name]) // Class names shouldn't duplicate within a school
+  @@index([schoolId])
+  @@map("classes")
+}
