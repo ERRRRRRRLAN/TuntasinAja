@@ -352,7 +352,14 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
         style={{
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
-          pointerEvents: isVisible ? 'auto' : 'none'
+          pointerEvents: isVisible ? 'auto' : 'none',
+          // Force mobile overlay style - prevent desktop layout shift
+          ...(isMobile ? {
+            padding: 0,
+            background: 'var(--card)',
+            alignItems: 'flex-start',
+            overflow: 'hidden',
+          } : {})
         }}
       >
         <div
@@ -362,7 +369,22 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+            // Force mobile view - prevent desktop layout shift after update
+            ...(isMobile ? {
+              width: '100%',
+              maxWidth: '100%',
+              height: '100vh',
+              maxHeight: '100vh',
+              margin: 0,
+              borderRadius: 0,
+              padding: 0,
+              boxShadow: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+            } : {})
           }}
         >
           {/* Simplified Header */}
@@ -426,7 +448,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           </div>
 
           <div className="comments-section" style={{
-            padding: isMobile ? '1.25rem 1rem 6rem 1rem' : '1.5rem 2rem', // Extra bottom padding for mobile scroll clearance
+            padding: isMobile ? '1.25rem 1rem 10rem 1rem' : '1.5rem 2rem', // Increased bottom padding for mobile scroll clearance
           }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Pilihan Jenis Tugas */}

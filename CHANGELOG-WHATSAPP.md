@@ -14,6 +14,7 @@
 *Perbaikan Bug*
 - Perbaikan konflik icon loading pada checkbox.
 - Perbaikan sinkronisasi status jika klik dilakukan beruntun.
+- *Fix Scroll iPhone*: Memperbaiki bug scroll mentok di Create Thread pada iPhone.
 
 ---
 
