@@ -86,12 +86,12 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
   })
   const userKelas = userData?.kelas || null
 
-  // Get subjects for user's class
-  const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
-    { kelas: userKelas || undefined },
-    { enabled: !!session && !!userKelas }
+  // Get subjects for user's school
+  const { data: subjects } = trpc.subject.getSubjects.useQuery(
+    { schoolId: userData?.schoolId || '' },
+    { enabled: !!session && !!userData?.schoolId }
   )
-  const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
+  const subjectOptions = subjects?.map((s: any) => s.name) || []
 
   // Close if user doesn't have permission
   useEffect(() => {
