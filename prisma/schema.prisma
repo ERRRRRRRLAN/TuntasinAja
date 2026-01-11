@@ -386,6 +386,7 @@ model School {
 
   users     User[]
   classes   Class[]
+  subjects  Subject[]
 
   @@map("schools")
 }
@@ -402,4 +403,18 @@ model Class {
   @@unique([schoolId, name]) // Class names shouldn't duplicate within a school
   @@index([schoolId])
   @@map("classes")
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @map("name")
+  schoolId  String   @map("school_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([schoolId, name]) // Subject names shouldn't duplicate within a school
+  @@index([schoolId])
+  @@map("subjects")
 }

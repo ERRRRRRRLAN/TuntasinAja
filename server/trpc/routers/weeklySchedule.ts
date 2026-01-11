@@ -247,18 +247,28 @@ export const weeklyScheduleRouter = createTRPCRouter({
 
   // Get available subjects for ketua's class
   getSubjects: ketuaProcedure.query(async ({ ctx }) => {
-    const ketuaKelas = ctx.ketuaKelas
+    const userId = ctx.session.user.id
 
-    const subjects = await (prisma as any).classSubject.findMany({
-      where: { kelas: ketuaKelas },
-      orderBy: { subject: 'asc' },
+    // Get ketua's schoolId
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { schoolId: true },
+    })
+
+    if (!user?.schoolId) {
+      return []
+    }
+
+    const subjects = await prisma.subject.findMany({
+      where: { schoolId: user.schoolId },
+      orderBy: { name: 'asc' },
       select: {
-        subject: true,
+        name: true,
       },
     })
 
     // Return array of subject names
-    return subjects.map((s: any) => s.subject)
+    return subjects.map((s) => s.name)
   }),
 
   // Get schedule for regular user (read-only, based on their kelas)

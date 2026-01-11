@@ -195,6 +195,9 @@ export const schoolRouter = createTRPCRouter({
                 classes: {
                     orderBy: { name: "asc" },
                 },
+                subjects: {
+                    orderBy: { name: "asc" },
+                },
             },
         });
 
@@ -254,6 +257,7 @@ export const schoolRouter = createTRPCRouter({
                 createdAt: school.createdAt,
                 updatedAt: school.updatedAt,
                 classes: [...processedClasses, ...legacyClasses],
+                subjects: school.subjects,
                 totalStudents,
                 totalClasses: processedClasses.length + legacyClasses.length,
             };

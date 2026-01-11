@@ -34,7 +34,7 @@ export default function AdminUnified() {
 
     // UI State
     const [expandedSchoolId, setExpandedSchoolId] = useState<string | null>(null)
-    const [subTab, setSubTab] = useState<'classes' | 'students'>('classes')
+    const [subTab, setSubTab] = useState<'classes' | 'students' | 'subjects'>('classes')
     const [searchQuery, setSearchQuery] = useState('')
 
     // CRUD State
@@ -51,6 +51,11 @@ export default function AdminUnified() {
     const [isAddingUser, setIsAddingUser] = useState(false)
     const [contextSchoolId, setContextSchoolId] = useState<string | undefined>(undefined)
     const [editingSubscription, setEditingSubscription] = useState<string | null>(null)
+
+    const [isAddingSubjectToId, setIsAddingSubjectToId] = useState<string | null>(null)
+    const [newSubjectName, setNewSubjectName] = useState('')
+    const [editingSubject, setEditingSubject] = useState<any>(null)
+    const [deleteSubjectId, setDeleteSubjectId] = useState<string | null>(null)
 
     // Mutations
     const createSchool = trpc.school.create.useMutation({
@@ -97,6 +102,34 @@ export default function AdminUnified() {
             utils.school.getUnifiedManagementData.invalidate()
             setDeleteClassId(null)
             toast.success('Kelas berhasil dihapus')
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const createSubject = trpc.subject.create.useMutation({
+        onSuccess: () => {
+            utils.school.getUnifiedManagementData.invalidate()
+            setNewSubjectName('')
+            setIsAddingSubjectToId(null)
+            toast.success('Mata pelajaran berhasil ditambahkan')
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const updateSubject = trpc.subject.update.useMutation({
+        onSuccess: () => {
+            utils.school.getUnifiedManagementData.invalidate()
+            setEditingSubject(null)
+            toast.success('Mata pelajaran berhasil diperbarui')
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const deleteSubject = trpc.subject.delete.useMutation({
+        onSuccess: () => {
+            utils.school.getUnifiedManagementData.invalidate()
+            setDeleteSubjectId(null)
+            toast.success('Mata pelajaran berhasil dihapus')
         },
         onError: (err) => toast.error(err.message)
     })
@@ -275,6 +308,18 @@ export default function AdminUnified() {
                 onCancel={() => setDeleteClassId(null)}
             />
 
+            <ConfirmDialog
+                isOpen={!!deleteSubjectId}
+                title="Hapus Mata Pelajaran"
+                message="Yakin ingin menghapus mata pelajaran ini?"
+                confirmText="Hapus"
+                cancelText="Batal"
+                danger
+                isLoading={deleteSubject.isLoading}
+                onConfirm={() => deleteSubjectId && deleteSubject.mutate({ id: deleteSubjectId })}
+                onCancel={() => setDeleteSubjectId(null)}
+            />
+
             <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 <div style={{
                     display: 'flex',
@@ -422,6 +467,7 @@ export default function AdminUnified() {
                                                     <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', borderBottom: '1.5px solid var(--border)' }}>
                                                         <button onClick={() => setSubTab('classes')} className={`sub-tab-btn ${subTab === 'classes' ? 'active' : ''}`}>Kelas & Subscription</button>
                                                         <button onClick={() => setSubTab('students')} className={`sub-tab-btn ${subTab === 'students' ? 'active' : ''}`}>Daftar Siswa</button>
+                                                        <button onClick={() => setSubTab('subjects')} className={`sub-tab-btn ${subTab === 'subjects' ? 'active' : ''}`}>Mata Pelajaran</button>
                                                     </div>
 
                                                     {subTab === 'classes' ? (
@@ -475,15 +521,57 @@ export default function AdminUnified() {
                                                                 </button>
                                                             )}
                                                         </div>
-                                                    ) : (
+                                                    ) : subTab === 'students' ? (
                                                         <SchoolStudentList
-                                                            schoolId={expandedSchoolId}
+                                                            schoolId={expandedSchoolId!}
                                                             onEditUser={(user) => setEditingUser(user)}
                                                             onAddUser={() => {
-                                                                setContextSchoolId(expandedSchoolId)
+                                                                setContextSchoolId(expandedSchoolId!)
                                                                 setIsAddingUser(true)
                                                             }}
                                                         />
+                                                    ) : (
+                                                        <div className="sub-section">
+                                                            <div style={{ overflowX: 'auto' }}>
+                                                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                                    <thead>
+                                                                        <tr style={{ color: 'var(--text-light)', fontSize: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
+                                                                            <th style={{ padding: '0.75rem 0.5rem' }}>Nama Mata Pelajaran</th>
+                                                                            <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Aksi</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {(school as any).subjects?.map((sub: any) => (
+                                                                            <tr key={sub.id} className="row-hover">
+                                                                                <td style={{ padding: '0.75rem 0.5rem' }}>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                                        <BookIcon size={14} style={{ color: 'var(--text-light)' }} />
+                                                                                        <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{sub.name}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                                                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                                                        <button className="btn-icon-small" onClick={() => setEditingSubject(sub)}><EditIcon size={14} /></button>
+                                                                                        <button className="btn-icon-small" onClick={() => setDeleteSubjectId(sub.id)} style={{ color: '#ef4444' }}><TrashIcon size={14} /></button>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            {isAddingSubjectToId === school.id ? (
+                                                                <form onSubmit={(e) => { e.preventDefault(); if (newSubjectName.trim()) createSubject.mutate({ schoolId: school.id, name: newSubjectName }); }} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                                                                    <input autoFocus type="text" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} placeholder="Nama Mata Pelajaran (cth: Matematika)" className="form-input" style={{ flex: 1, height: '38px', fontSize: '0.875rem' }} />
+                                                                    <button type="submit" className="btn btn-primary btn-sm" disabled={createSubject.isLoading}>{createSubject.isLoading ? '...' : 'Simpan'}</button>
+                                                                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setIsAddingSubjectToId(null)}>Batal</button>
+                                                                </form>
+                                                            ) : (
+                                                                <button className="btn-add-dashed" style={{ marginTop: '1rem' }} onClick={() => setIsAddingSubjectToId(school.id)}>
+                                                                    <PlusIcon size={14} /> Tambah Mata Pelajaran
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </td>
