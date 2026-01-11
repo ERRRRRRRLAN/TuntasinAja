@@ -283,7 +283,48 @@ export default function AdminUnified() {
                 )}
             </Modal>
 
-            {/* Confirmations remain using ConfirmDialog for now as it's already robust */}
+            <Modal
+                isOpen={!!editingSubject}
+                onClose={() => setEditingSubject(null)}
+                title="Edit Mata Pelajaran"
+                maxWidth="450px"
+            >
+                {editingSubject && (
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const name = formData.get('name') as string;
+                            if (name.trim()) {
+                                updateSubject.mutate({ id: editingSubject.id, name: name.trim() });
+                            }
+                        }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                    >
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Mata Pelajaran</label>
+                            <input
+                                required
+                                type="text"
+                                name="name"
+                                defaultValue={editingSubject.name}
+                                className="form-input"
+                                placeholder="Contoh: Matematika..."
+                                autoFocus
+                            />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+                            <button type="button" className="btn btn-secondary" onClick={() => setEditingSubject(null)}>
+                                Batal
+                            </button>
+                            <button type="submit" className="btn btn-primary" disabled={updateSubject.isLoading}>
+                                {updateSubject.isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </Modal>
+
             <ConfirmDialog
                 isOpen={!!deleteSchoolId}
                 title="Hapus Sekolah"
@@ -368,7 +409,7 @@ export default function AdminUnified() {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '1.25rem', border: '1px solid var(--border)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
