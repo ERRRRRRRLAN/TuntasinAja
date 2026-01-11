@@ -36,6 +36,7 @@ export const threadRouter = createTRPCRouter({
             .default("newest")
             .optional(),
           showCompleted: z.boolean().default(true).optional(),
+          schoolId: z.string().optional(),
         })
         .optional(),
     )
@@ -53,12 +54,12 @@ export const threadRouter = createTRPCRouter({
       // OPTIMIZATION: Get user info in parallel with initial queries
       const userQuery = ctx.session?.user
         ? prisma.user.findUnique({
-            where: { id: ctx.session.user.id },
-            select: {
-              kelas: true,
-              isAdmin: true,
-            },
-          })
+          where: { id: ctx.session.user.id },
+          select: {
+            kelas: true,
+            isAdmin: true,
+          },
+        })
         : Promise.resolve(null);
 
       // Wait for user query to complete first (needed for whereClause)
@@ -68,37 +69,46 @@ export const threadRouter = createTRPCRouter({
       userId = ctx.session?.user?.id || null;
 
       // Build where clause for filtering
-      const whereClause = isAdmin
-        ? undefined // Admin sees all
-        : userId && userKelas
-          ? {
-              OR: [
-                // Individual tasks from same kelas
-                {
-                  isGroupTask: false,
-                  author: {
-                    kelas: userKelas,
-                  },
-                },
-                // Group tasks where user is a member
-                {
-                  isGroupTask: true,
-                  groupMembers: {
-                    some: {
-                      userId: userId,
-                    },
-                  },
-                },
-              ],
+      let whereClause: any = undefined;
+
+      if (isAdmin) {
+        // Admin sees all, but can filter by school
+        if (input?.schoolId && input.schoolId !== 'all') {
+          whereClause = {
+            author: {
+              schoolId: input.schoolId
             }
-          : userKelas
-            ? {
-                // Fallback: only show tasks from same kelas (if not logged in)
-                author: {
-                  kelas: userKelas,
+          };
+        }
+      } else if (userId && userKelas) {
+        whereClause = {
+          OR: [
+            // Individual tasks from same kelas
+            {
+              isGroupTask: false,
+              author: {
+                kelas: userKelas,
+              },
+            },
+            // Group tasks where user is a member
+            {
+              isGroupTask: true,
+              groupMembers: {
+                some: {
+                  userId: userId,
                 },
-              }
-            : undefined; // Public sees all
+              },
+            },
+          ],
+        };
+      } else if (userKelas) {
+        // Fallback: only show tasks from same kelas (if not logged in)
+        whereClause = {
+          author: {
+            kelas: userKelas,
+          },
+        };
+      }
 
       // OPTIMIZATION: Run count and threads queries in parallel
       const [countResult, threadsResult] = await Promise.allSettled([
@@ -114,6 +124,11 @@ export const threadRouter = createTRPCRouter({
                 name: true,
                 email: true,
                 kelas: true,
+                school: {
+                  select: {
+                    name: true
+                  }
+                }
               },
             },
             comments: {
@@ -173,13 +188,13 @@ export const threadRouter = createTRPCRouter({
       // Log errors if any (for debugging)
       const log = createLogger({ component: 'thread.getAll' })
       if (countResult.status === "rejected") {
-        log.error({ 
+        log.error({
           error: countResult.reason instanceof Error ? countResult.reason.message : String(countResult.reason),
           stack: countResult.reason instanceof Error ? countResult.reason.stack : undefined,
         }, 'Count query failed')
       }
       if (threadsResult.status === "rejected") {
-        log.error({ 
+        log.error({
           error: threadsResult.reason instanceof Error ? threadsResult.reason.message : String(threadsResult.reason),
           stack: threadsResult.reason instanceof Error ? threadsResult.reason.stack : undefined,
         }, 'Threads query failed')
@@ -290,6 +305,11 @@ export const threadRouter = createTRPCRouter({
               name: true,
               email: true,
               kelas: true,
+              school: {
+                select: {
+                  name: true
+                }
+              }
             },
           },
           comments: {
@@ -402,7 +422,7 @@ export const threadRouter = createTRPCRouter({
               throw error;
             }
             // Otherwise, log and continue (assume active)
-            logger.warn({ 
+            logger.warn({
               component: 'thread.create',
               error: error instanceof Error ? error.message : String(error),
               userId: ctx.session.user.id,
@@ -444,11 +464,11 @@ export const threadRouter = createTRPCRouter({
               // If userKelas is null, we still filter but it will only match threads from users with null kelas
               author: userKelas
                 ? {
-                    kelas: userKelas,
-                  }
+                  kelas: userKelas,
+                }
                 : {
-                    kelas: null,
-                  },
+                  kelas: null,
+                },
             },
             include: {
               author: {
@@ -511,7 +531,7 @@ export const threadRouter = createTRPCRouter({
                 },
                 "comment",
               ).catch((error) => {
-                logger.error({ 
+                logger.error({
                   component: 'thread.create',
                   error: error instanceof Error ? error.message : String(error),
                   threadId: thread.id,
@@ -548,13 +568,13 @@ export const threadRouter = createTRPCRouter({
             groupTaskTitle: input.groupTaskTitle || null,
             comments: input.comment
               ? {
-                  create: {
-                    authorId: ctx.session.user.id,
-                    content: input.comment,
-                    createdAt: now,
-                    deadline: input.deadline || null, // Apply deadline to first comment
-                  },
-                }
+                create: {
+                  authorId: ctx.session.user.id,
+                  content: input.comment,
+                  createdAt: now,
+                  deadline: input.deadline || null, // Apply deadline to first comment
+                },
+              }
               : undefined,
           } as any,
           include: {
@@ -620,7 +640,7 @@ export const threadRouter = createTRPCRouter({
             (thread as any).comments && (thread as any).comments.length > 0;
           const firstCommentPreview = hasFirstComment
             ? (thread as any).comments[0].content.substring(0, 80) +
-              ((thread as any).comments[0].content.length > 80 ? "..." : "")
+            ((thread as any).comments[0].content.length > 80 ? "..." : "")
             : null;
 
           const notificationBody = firstCommentPreview
@@ -639,7 +659,7 @@ export const threadRouter = createTRPCRouter({
             },
             "task",
           ).catch((error) => {
-            logger.error({ 
+            logger.error({
               component: 'thread.create',
               error: error instanceof Error ? error.message : String(error),
               threadId: thread.id,
@@ -654,7 +674,7 @@ export const threadRouter = createTRPCRouter({
         };
       } catch (error: any) {
         // Log detailed error for debugging
-        logger.error({ 
+        logger.error({
           component: 'thread.create',
           error: error.message,
           code: error.code,
@@ -815,7 +835,7 @@ export const threadRouter = createTRPCRouter({
 
         // Use Jakarta time for comment creation
         const now = getUTCDate();
-        
+
         // Validate deadline if provided - must be in the future
         if (input.deadline) {
           // Additional validation for deadline format
@@ -825,13 +845,13 @@ export const threadRouter = createTRPCRouter({
               deadlineRaw: input.deadline,
               deadlineType: typeof input.deadline,
             }, 'Invalid deadline format');
-            
+
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "Format deadline tidak valid. Harus berupa tanggal yang valid.",
             });
           }
-          
+
           const deadlineDate = new Date(input.deadline);
           logger.info({
             ...loggerContext,
@@ -842,7 +862,7 @@ export const threadRouter = createTRPCRouter({
             deadlineIsValid: deadlineDate > now,
             timeDiffMs: deadlineDate.getTime() - now.getTime(),
           }, 'Validating deadline');
-          
+
           // Allow deadline to be equal to or after current time
           if (deadlineDate < now) {
             throw new TRPCError({
@@ -897,7 +917,7 @@ export const threadRouter = createTRPCRouter({
             threadDeadline: thread.deadline,
             now: now.toISOString(),
           }, 'Thread deadline has expired');
-          
+
           // Don't throw error, but log warning
           // Users can still add comments to expired threads
         }
@@ -927,13 +947,13 @@ export const threadRouter = createTRPCRouter({
               error: error.message,
               code: error.code,
             }, 'Database constraint violation');
-            
+
             throw new TRPCError({
               code: "CONFLICT",
               message: "Terjadi konflik data. Mungkin komentar sudah ada atau data tidak valid.",
             });
           }
-          
+
           // Handle foreign key constraint errors
           if (error.code === 'P2003') {
             logger.error({
@@ -941,13 +961,13 @@ export const threadRouter = createTRPCRouter({
               error: error.message,
               code: error.code,
             }, 'Foreign key constraint violation');
-            
+
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "Thread atau penulis tidak valid.",
             });
           }
-          
+
           // Re-throw other errors
           throw error;
         });
@@ -1003,8 +1023,8 @@ export const threadRouter = createTRPCRouter({
             normalizedUserKelas,
             isAdmin,
             reason: !threadAuthorKelas ? 'No thread author kelas' :
-                    normalizedUserKelas !== threadAuthorKelas ? 'Class mismatch' :
-                    isAdmin ? 'User is admin' : 'Unknown',
+              normalizedUserKelas !== threadAuthorKelas ? 'Class mismatch' :
+                isAdmin ? 'User is admin' : 'Unknown',
           }, 'Skipping notification due to conditions');
         }
 
@@ -1206,7 +1226,7 @@ export const threadRouter = createTRPCRouter({
         return updatedComment;
       } catch (error: any) {
         // Log error for debugging
-        logger.error({ 
+        logger.error({
           component: 'thread.editComment',
           error: error.message,
           code: error.code,

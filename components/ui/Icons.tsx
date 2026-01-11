@@ -804,7 +804,7 @@ export function QuestionMarkIcon({ className = '', size = 16, style }: IconProps
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -816,6 +816,27 @@ export function QuestionMarkIcon({ className = '', size = 16, style }: IconProps
     </svg>
   )
 }
+
+export function SchoolIcon({ className = '', size = 16, style }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+    >
+      <path d="M22 10v6M2 10v6M12 2l10 5v6H2v-6z" />
+      <path d="M12 22V13" />
+    </svg>
+  )
+}
+
 
 export function PackageIcon({ className = '', size = 16, style }: IconProps) {
   return (
@@ -903,26 +924,4 @@ export function LinkIcon({ className = '', size = 16, style }: IconProps) {
 }
 
 
-export function SchoolIcon({ className = '', size = 16, style }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      style={style}
-    >
-      <path d="M14 22v-4a2 2 0 1 0-4 0v4" />
-      <path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2" />
-      <path d="M18 5v17" />
-      <path d="m4 6 8-4 8 4" />
-      <path d="M6 5v17" />
-      <circle cx="12" cy="9" r="2" />
-    </svg>
-  )
-}
+

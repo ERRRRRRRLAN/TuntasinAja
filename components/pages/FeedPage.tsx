@@ -19,6 +19,7 @@ import {
   AlertTriangleIcon,
   MessageIcon,
   QuestionMarkIcon,
+  SchoolIcon,
 } from "@/components/ui/Icons";
 import ComboBox from "@/components/ui/ComboBox";
 import AdvancedFilter, {
@@ -78,6 +79,7 @@ export default function FeedPage() {
     return () => clearInterval(interval);
   }, []);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [selectedKelas, setSelectedKelas] = useState<string>("all");
@@ -103,6 +105,14 @@ export default function FeedPage() {
     });
   const userKelas = userData?.kelas || null;
   const isAdmin = userData?.isAdmin || false;
+
+  // Get schools list for filter (Admin only)
+  const { data: schoolsData } = trpc.school.getSchoolsForSelection.useQuery(
+    undefined,
+    {
+      enabled: !!session && isAdmin,
+    }
+  );
 
   // Get user settings
   const { data: userSettings } = trpc.userSettings.get.useQuery(undefined, {
@@ -148,6 +158,7 @@ export default function FeedPage() {
       limit: pageSize,
       sort: defaultSort,
       showCompleted: showCompletedTasks,
+      schoolId: selectedSchool,
     },
     {
       refetchInterval: (query) => {
@@ -768,6 +779,48 @@ export default function FeedPage() {
             />
           </div>
 
+          {/* Filter ComboBox - School (Admin only) */}
+          {isAdmin && (
+            <div
+              className="filter-combobox-wrapper"
+              style={{
+                minWidth: "200px",
+                maxWidth: "300px",
+                width: "100%",
+              }}
+            >
+              <ComboBox
+                value={
+                  selectedSchool === "all"
+                    ? "all"
+                    : schoolsData?.find((s) => s.id === selectedSchool)?.name ||
+                    "all"
+                }
+                onChange={(val) => {
+                  if (val === "all") {
+                    setSelectedSchool("all");
+                  } else {
+                    const school = schoolsData?.find((s) => s.name === val);
+                    if (school) setSelectedSchool(school.id);
+                  }
+                }}
+                placeholder="Pilih Sekolah"
+                options={schoolsData?.map((s) => s.name) || []}
+                showAllOption={true}
+                allValue="all"
+                allLabel="Semua Sekolah"
+                searchPlaceholder="Cari sekolah..."
+                emptyMessage="Tidak ada sekolah yang ditemukan"
+                icon={
+                  <SchoolIcon
+                    size={18}
+                    style={{ color: "var(--text-light)", flexShrink: 0 }}
+                  />
+                }
+              />
+            </div>
+          )}
+
           {/* Filter ComboBox - Kelas (Admin only) */}
           {isAdmin && (
             <div
@@ -804,48 +857,48 @@ export default function FeedPage() {
           selectedSubject !== "all" ||
           advancedFilter.type !== "newest" ||
           (isAdmin && selectedKelas !== "all")) && (
-          <div
-            className="results-count"
-            style={{
-              marginBottom: "1rem",
-              padding: "0.75rem 1rem",
-              background: "var(--bg-secondary)",
-              borderRadius: "0.5rem",
-              fontSize: "0.875rem",
-              color: "var(--text-light)",
-            }}
-          >
-            Menampilkan {filteredThreads.length} dari {totalThreads} PR
-            {totalPages > 1 && (
-              <span>
-                {" "}
-                • Halaman {currentPage} dari {totalPages}
-              </span>
-            )}
-            {searchQuery && <span> • Pencarian: "{searchQuery}"</span>}
-            {selectedSubject !== "all" && (
-              <span> • Mata Pelajaran: {selectedSubject}</span>
-            )}
-            {advancedFilter.type === "deadline" && (
-              <span> • Diurutkan: Deadline Terdekat</span>
-            )}
-            {advancedFilter.type === "subject" &&
-              advancedFilter.subjectValue && (
-                <span> • Filter: {advancedFilter.subjectValue}</span>
+            <div
+              className="results-count"
+              style={{
+                marginBottom: "1rem",
+                padding: "0.75rem 1rem",
+                background: "var(--bg-secondary)",
+                borderRadius: "0.5rem",
+                fontSize: "0.875rem",
+                color: "var(--text-light)",
+              }}
+            >
+              Menampilkan {filteredThreads.length} dari {totalThreads} PR
+              {totalPages > 1 && (
+                <span>
+                  {" "}
+                  • Halaman {currentPage} dari {totalPages}
+                </span>
               )}
-            {isAdmin && selectedKelas !== "all" && (
-              <span> • Kelas: {selectedKelas}</span>
-            )}
-          </div>
-        )}
+              {searchQuery && <span> • Pencarian: "{searchQuery}"</span>}
+              {selectedSubject !== "all" && (
+                <span> • Mata Pelajaran: {selectedSubject}</span>
+              )}
+              {advancedFilter.type === "deadline" && (
+                <span> • Diurutkan: Deadline Terdekat</span>
+              )}
+              {advancedFilter.type === "subject" &&
+                advancedFilter.subjectValue && (
+                  <span> • Filter: {advancedFilter.subjectValue}</span>
+                )}
+              {isAdmin && selectedKelas !== "all" && (
+                <span> • Kelas: {selectedKelas}</span>
+              )}
+            </div>
+          )}
 
         {/* Only show loading on initial load, not during background refresh */}
         {/* For admin: don't wait for isLoadingSubjects (query is disabled) or threads loading after validation */}
         {/* For non-admin: wait for all data including threads on initial load */}
         {isLoadingUserData ||
-        (!isAdmin && isLoadingSubjects) ||
-        (isInitialLoad && !isDataValidated) ||
-        (!isAdmin && isInitialLoad && isLoading && !threads) ? (
+          (!isAdmin && isLoadingSubjects) ||
+          (isInitialLoad && !isDataValidated) ||
+          (!isAdmin && isInitialLoad && isLoading && !threads) ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {Array.from({ length: 3 }).map((_, i) => (
               <ThreadCardSkeleton key={i} />
@@ -903,36 +956,36 @@ export default function FeedPage() {
             <EmptyState
               title={
                 searchQuery ||
-              selectedSubject !== "all" ||
-              (isAdmin && selectedKelas !== "all")
+                  selectedSubject !== "all" ||
+                  (isAdmin && selectedKelas !== "all")
                   ? "Tidak ada hasil"
                   : "Belum ada PR"
               }
               description={
                 searchQuery ||
-                selectedSubject !== "all" ||
-                (isAdmin && selectedKelas !== "all")
+                  selectedSubject !== "all" ||
+                  (isAdmin && selectedKelas !== "all")
                   ? "Tidak ada PR yang sesuai dengan filter atau pencarian Anda. Coba ubah filter atau kata kunci pencarian."
                   : "Yuk, mulai dengan membuat tugas pertama Anda! Klik tombol di bawah untuk membuat PR baru."
               }
               actionLabel={
                 searchQuery ||
-                selectedSubject !== "all" ||
-                (isAdmin && selectedKelas !== "all")
+                  selectedSubject !== "all" ||
+                  (isAdmin && selectedKelas !== "all")
                   ? undefined
                   : "Buat PR Pertama"
               }
               onAction={
                 searchQuery ||
-                selectedSubject !== "all" ||
-                (isAdmin && selectedKelas !== "all")
+                  selectedSubject !== "all" ||
+                  (isAdmin && selectedKelas !== "all")
                   ? undefined
                   : () => setShowCreateForm(true)
               }
               variant={
                 searchQuery ||
-                selectedSubject !== "all" ||
-                (isAdmin && selectedKelas !== "all")
+                  selectedSubject !== "all" ||
+                  (isAdmin && selectedKelas !== "all")
                   ? "search"
                   : "default"
               }

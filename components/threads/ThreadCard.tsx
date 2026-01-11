@@ -40,6 +40,9 @@ interface ThreadCardProps {
       id: string;
       name: string;
       kelas?: string | null;
+      school?: {
+        name: string;
+      } | null;
     };
     comments: Array<{
       id: string;
@@ -623,6 +626,23 @@ export default function ThreadCard({ thread, onThreadClick }: ThreadCardProps) {
                     }}
                   >
                     {thread.author.kelas}
+                  </span>
+                )}
+                {/* School Name Badge (Admin Only) */}
+                {isAdmin && thread.author.school && (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "0.125rem 0.375rem",
+                      borderRadius: "0.25rem",
+                      border: "1px solid var(--text-light)",
+                      color: "var(--text-light)",
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      background: "transparent",
+                    }}
+                  >
+                    {thread.author.school.name}
                   </span>
                 )}
               </div>
