@@ -150,7 +150,7 @@ export const subscriptionRouter = createTRPCRouter({
     })
 
     const subscribedKelas = new Set(subscriptions.map((s: any) => s.kelas))
-    
+
     // Add classes without subscription - await checkClassSubscription
     const result = await Promise.all(
       subscriptions.map(async (sub: any) => {
@@ -178,7 +178,35 @@ export const subscriptionRouter = createTRPCRouter({
       }
     }
 
-    return result
+    // Get class info (school)
+    const classNames = result.map((r) => r.kelas).filter((k): k is string => !!k)
+    const classesInfo = await prisma.class.findMany({
+      where: {
+        name: { in: classNames },
+      },
+      include: {
+        school: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    // Create map of kelas -> school name (take first if duplicates for now, or join?)
+    // In legacy system, kelas string might be unique enough or we just take the one available.
+    const classSchoolMap = new Map<string, string>()
+    classesInfo.forEach((c) => {
+      // If multiple schools have same class name, this might overwrite. 
+      // Ideally subscription should be linked to schoolId too.
+      // But for now, we display what we find.
+      classSchoolMap.set(c.name, c.school.name)
+    })
+
+    return result.map((item) => ({
+      ...item,
+      schoolName: classSchoolMap.get(item.kelas || '') || null,
+    }))
   }),
 
   // Set subscription for a class (Admin only)
@@ -260,7 +288,7 @@ export const subscriptionRouter = createTRPCRouter({
 
       const now = getUTCDate()
       const currentEndDate = new Date(existing.subscriptionEndDate)
-      
+
       // If already expired, extend from now. Otherwise extend from endDate
       let newEndDate: Date
       if (isBefore(currentEndDate, now)) {
@@ -350,7 +378,7 @@ export const subscriptionRouter = createTRPCRouter({
         const currentEndDate = new Date(existing.subscriptionEndDate)
         const reduceDays = days < 0 ? Math.abs(days) : days // Ensure positive for subtraction
         newEndDate = addDays(currentEndDate, -reduceDays)
-        
+
         // Prevent setting endDate before now (minimum is now)
         if (isBefore(newEndDate, now)) {
           newEndDate = now

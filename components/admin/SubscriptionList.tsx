@@ -6,11 +6,11 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ClassSubscriptionManager from './ClassSubscriptionManager'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from '@/components/ui/Icons'
+import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon, SchoolIcon } from '@/components/ui/Icons'
 
 export default function SubscriptionList() {
   const [editingKelas, setEditingKelas] = useState<string | null>(null)
-  
+
   const { data: subscriptions, isLoading, refetch } = trpc.subscription.getAllClassSubscriptions.useQuery()
   const utils = trpc.useUtils()
 
@@ -126,6 +126,9 @@ export default function SubscriptionList() {
                       Kelas
                     </th>
                     <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                      Sekolah
+                    </th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>
                       Status
                     </th>
                     <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>
@@ -141,16 +144,16 @@ export default function SubscriptionList() {
                 </thead>
                 <tbody>
                   {subscriptions.map((sub: any, index: number) => (
-                    <tr 
-                      key={sub.kelas} 
+                    <tr
+                      key={sub.kelas}
                       className="subscription-fade-in"
-                      style={{ 
+                      style={{
                         borderBottom: '1px solid var(--border)',
                         animationDelay: `${index * 0.05}s`
                       }}
                     >
                       <td style={{ padding: '0.75rem' }}>
-                        <span style={{ 
+                        <span style={{
                           display: 'inline-block',
                           padding: '0.25rem 0.5rem',
                           borderRadius: '0.25rem',
@@ -161,6 +164,20 @@ export default function SubscriptionList() {
                         }}>
                           {sub.kelas}
                         </span>
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>
+                        {sub.schoolName ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                            <SchoolIcon size={14} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
+                            <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
+                              {sub.schoolName}
+                            </span>
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-light)', fontStyle: 'italic', fontSize: '0.875rem' }}>
+                            -
+                          </span>
+                        )}
                       </td>
                       <td style={{ padding: '0.75rem' }}>
                         {getStatusBadge(sub.status || 'no_subscription', sub.daysRemaining)}
@@ -223,22 +240,22 @@ export default function SubscriptionList() {
           {/* Mobile Card View */}
           <div className="subscription-list-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {subscriptions.map((sub: any, index: number) => (
-              <div 
+              <div
                 key={sub.kelas}
                 className="card subscription-fade-in"
                 style={{
                   animationDelay: `${index * 0.05}s`
                 }}
               >
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'flex-start',
                   marginBottom: '1rem',
                   flexWrap: 'wrap',
                   gap: '0.5rem'
                 }}>
-                  <span style={{ 
+                  <span style={{
                     display: 'inline-block',
                     padding: '0.25rem 0.5rem',
                     borderRadius: '0.25rem',
@@ -252,19 +269,28 @@ export default function SubscriptionList() {
                   {getStatusBadge(sub.status || 'no_subscription', sub.daysRemaining)}
                 </div>
 
+                {sub.schoolName && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}>
+                    <SchoolIcon size={14} style={{ color: 'var(--text-light)' }} />
+                    <span style={{ fontSize: '0.875rem', color: 'var(--text)', fontWeight: 500 }}>
+                      {sub.schoolName}
+                    </span>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
                   <div>
-                    <p style={{ 
-                      margin: '0 0 0.25rem 0', 
-                      fontSize: '0.75rem', 
+                    <p style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '0.75rem',
                       color: 'var(--text-light)',
                       fontWeight: 500
                     }}>
                       Berakhir Pada
                     </p>
-                    <p style={{ 
-                      margin: 0, 
-                      fontSize: '0.875rem', 
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.875rem',
                       color: 'var(--text-primary)'
                     }}>
                       {sub.subscriptionEndDate ? (
@@ -276,17 +302,17 @@ export default function SubscriptionList() {
                   </div>
 
                   <div>
-                    <p style={{ 
-                      margin: '0 0 0.25rem 0', 
-                      fontSize: '0.75rem', 
+                    <p style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '0.75rem',
                       color: 'var(--text-light)',
                       fontWeight: 500
                     }}>
                       Sisa Durasi
                     </p>
-                    <p style={{ 
-                      margin: 0, 
-                      fontSize: '0.875rem', 
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.875rem',
                       color: 'var(--text-primary)',
                       fontWeight: 500
                     }}>
