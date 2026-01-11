@@ -68,14 +68,17 @@ export default function ComboBox({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
     left: 0,
     width: 0,
+    bottomOffset: 0,
   });
   const [mounted, setMounted] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [opensUpward, setOpensUpward] = useState(false);
+  const [maxDropdownHeight, setMaxDropdownHeight] = useState(300);
 
   // Normalize options to ComboBoxOption format
   const normalizedOptions: ComboBoxOption[] = options.map((opt) => {
@@ -88,10 +91,10 @@ export default function ComboBox({
   // Filter options based on search query (only if search is enabled)
   const filteredOptions = showSearch
     ? normalizedOptions.filter(
-        (option) =>
-          option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          option.value.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+      (option) =>
+        option.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        option.value.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
     : normalizedOptions;
 
   // Get display value
@@ -114,12 +117,33 @@ export default function ComboBox({
     const updatePosition = () => {
       if (buttonRef.current) {
         const buttonRect = buttonRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - buttonRect.bottom;
+        const spaceAbove = buttonRect.top;
+        const preferredHeight = 300; // Standard max height
+
+        // Determine if we should open upward
+        // Open upward if space below is less than preferred height AND space above is more than space below
+        const shouldOpenUpward = spaceBelow < preferredHeight && spaceAbove > spaceBelow;
+        setOpensUpward(shouldOpenUpward);
+
+        // Calculate maximum available height to prevent clipping
+        const availableHeight = shouldOpenUpward
+          ? spaceAbove - 20 // 20px padding from top
+          : spaceBelow - 20; // 20px padding from bottom
+
+        setMaxDropdownHeight(Math.min(preferredHeight, availableHeight));
+
         // Use fixed positioning since dropdown is in portal
         setDropdownPosition({
-          top: buttonRect.bottom + 4, // 4px gap, relative to viewport
-          left: buttonRect.left, // Relative to viewport
+          top: shouldOpenUpward
+            ? 0 // Will be offset in style using bottom or calculation
+            : buttonRect.bottom + 4,
+          left: buttonRect.left,
           width: buttonRect.width,
-        });
+          // Store original rect for upward calculation in render
+          ...(shouldOpenUpward ? { bottomOffset: viewportHeight - buttonRect.top + 4 } : { bottomOffset: 0 })
+        } as any);
       }
     };
 
@@ -363,11 +387,12 @@ export default function ComboBox({
             className="combobox-dropdown"
             style={{
               position: "fixed",
-              top: `${dropdownPosition.top}px`,
+              top: opensUpward ? "auto" : `${dropdownPosition.top}px`,
+              bottom: opensUpward ? `${(dropdownPosition as any).bottomOffset}px` : "auto",
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
               minWidth: "150px",
-              maxHeight: "300px",
+              maxHeight: `${maxDropdownHeight}px`,
               background: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: "0.5rem",
@@ -377,7 +402,7 @@ export default function ComboBox({
               flexDirection: "column",
               overflow: "hidden",
               opacity: isAnimating ? 1 : 0,
-              transform: isAnimating ? "translateY(0)" : "translateY(-10px)",
+              transform: isAnimating ? "translateY(0)" : opensUpward ? "translateY(10px)" : "translateY(-10px)",
               transition: "opacity 0.2s ease-out, transform 0.2s ease-out",
               pointerEvents: isAnimating ? "auto" : "none",
               visibility: shouldRender ? "visible" : "hidden",
@@ -389,6 +414,7 @@ export default function ComboBox({
                 style={{
                   padding: "0.75rem",
                   borderBottom: "1px solid var(--border)",
+                  flexShrink: 0,
                 }}
               >
                 <input
@@ -422,7 +448,7 @@ export default function ComboBox({
             <div
               style={{
                 overflowY: "auto",
-                maxHeight: "250px",
+                maxHeight: `${maxDropdownHeight - (showSearch ? 60 : 0)}px`,
               }}
             >
               {/* All Option */}

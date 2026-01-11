@@ -15,24 +15,6 @@ interface AddUserFormProps {
   onCancel?: () => void
 }
 
-// Generate list of kelas options
-const generateKelasOptions = () => {
-  const kelasOptions: string[] = []
-  const tingkat = ['X', 'XI', 'XII']
-  const jurusan = ['RPL', 'TKJ', 'BC']
-  const nomor = ['1', '2']
-
-  tingkat.forEach((t) => {
-    jurusan.forEach((j) => {
-      nomor.forEach((n) => {
-        kelasOptions.push(`${t} ${j} ${n}`)
-      })
-    })
-  })
-
-  return kelasOptions
-}
-
 export default function AddUserForm({ isModal, defaultSchoolId, defaultKelas, onSuccess, onCancel }: AddUserFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -44,7 +26,20 @@ export default function AddUserForm({ isModal, defaultSchoolId, defaultKelas, on
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const utils = trpc.useUtils()
-  const kelasOptions = generateKelasOptions()
+
+  // Fetch schools for selection if no default provided
+  const { data: schools } = trpc.school.getSchoolsForSelection.useQuery(undefined, {
+    enabled: !defaultSchoolId && !isAdmin
+  })
+
+  // Fetch classes based on selected school
+  const { data: fetchedClasses, isLoading: isLoadingClasses } = trpc.school.getClasses.useQuery(
+    { schoolId },
+    { enabled: !!schoolId && !isAdmin }
+  )
+
+  const kelasOptions = fetchedClasses?.map(c => c.name) || []
+  const schoolOptions = schools?.map(s => ({ value: s.id, label: s.name })) || []
 
   const createUser = trpc.auth.createUser.useMutation({
     onSuccess: () => {
@@ -225,6 +220,25 @@ export default function AddUserForm({ isModal, defaultSchoolId, defaultKelas, on
 
         {!isAdmin && (
           <>
+            {!defaultSchoolId && (
+              <div className="form-group">
+                <label className="form-label">Sekolah *</label>
+                <ComboBox
+                  value={schoolId}
+                  onChange={(value) => {
+                    setSchoolId(value)
+                    setKelas('')
+                  }}
+                  placeholder="Pilih Sekolah"
+                  options={schoolOptions}
+                  showAllOption={false}
+                  searchPlaceholder="Cari sekolah..."
+                  emptyMessage="Tidak ada sekolah yang ditemukan"
+                  disabled={createUser.isLoading}
+                />
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="adminKelas" className="form-label">
                 Kelas *
@@ -238,13 +252,13 @@ export default function AddUserForm({ isModal, defaultSchoolId, defaultKelas, on
                     setIsKetua(false)
                   }
                 }}
-                placeholder="Pilih Kelas"
+                placeholder={isLoadingClasses ? "Memuat kelas..." : "Pilih Kelas"}
                 options={kelasOptions}
                 showAllOption={false}
                 searchPlaceholder="Cari kelas..."
-                emptyMessage="Tidak ada kelas yang ditemukan"
+                emptyMessage={!schoolId ? "Pilih sekolah terlebih dahulu" : "Tidak ada kelas di sekolah ini"}
                 icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
-                disabled={!!defaultKelas || createUser.isLoading}
+                disabled={!!defaultKelas || createUser.isLoading || !schoolId || isLoadingClasses}
               />
             </div>
 
