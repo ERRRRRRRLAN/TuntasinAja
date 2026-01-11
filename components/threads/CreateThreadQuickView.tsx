@@ -357,7 +357,9 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           ...(isMobile ? {
             padding: 0,
             background: 'var(--card)',
-            alignItems: 'flex-start',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
             overflow: 'hidden',
           } : {})
         }}
@@ -374,15 +376,15 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             ...(isMobile ? {
               width: '100%',
               maxWidth: '100%',
-              height: '100dvh', // Use dyamic viewport height
-              maxHeight: '100dvh',
+              height: '100%', // Fixed to viewport via flex parent
+              maxHeight: 'none',
               margin: 0,
               borderRadius: 0,
               padding: 0,
               boxShadow: 'none',
-              display: 'block', // Changed from flex to block to fix Safari padding scrolling bug
-              overflowY: 'auto',
-              overflowX: 'hidden',
+              display: 'flex', // Flexbox for layout
+              flexDirection: 'column',
+              overflow: 'hidden', // Container doesn't scroll, child does
             } : {})
           }}
         >
@@ -393,6 +395,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             borderBottom: '1px solid var(--border)',
             background: 'var(--card)',
             position: 'relative',
+            flexShrink: 0, // Ensure header stays fixed at top
+            zIndex: 10,
           }}>
             {/* Top Row: Close Button - Always on the right top corner */}
             <div style={{
@@ -447,7 +451,16 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           </div>
 
           <div className="comments-section" style={{
-            padding: isMobile ? '1.25rem 1rem 10rem 1rem' : '1.5rem 2rem', // Adjusted bottom padding to be sufficient but not excessive
+            ...(isMobile ? {
+              flex: 1, // Take remaining space
+              overflowY: 'auto', // Handle scrolling here
+              paddingTop: '1.25rem',
+              paddingLeft: '1rem',
+              paddingRight: '1rem',
+              paddingBottom: 'calc(10rem + env(safe-area-inset-bottom, 20px))', // Safe area + extra space
+            } : {
+              padding: '1.5rem 2rem',
+            })
           }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Pilihan Jenis Tugas */}
