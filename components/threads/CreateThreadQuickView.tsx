@@ -448,7 +448,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           </div>
 
           <div className="comments-section" style={{
-            padding: isMobile ? '1.25rem 1rem 10rem 1rem' : '1.5rem 2rem', // Increased bottom padding for mobile scroll clearance
+            padding: isMobile ? '1.25rem 1rem 25rem 1rem' : '1.5rem 2rem', // Increased bottom padding for mobile scroll clearance
           }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Pilihan Jenis Tugas */}
