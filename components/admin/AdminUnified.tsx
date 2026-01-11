@@ -25,6 +25,7 @@ import EditUserForm from './EditUserForm'
 import ClassSubscriptionManager from './ClassSubscriptionManager'
 import { toast } from '@/components/ui/ToastContainer'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import Modal from '@/components/ui/Modal'
 
 export default function AdminUnified() {
     const utils = trpc.useUtils()
@@ -97,16 +98,7 @@ export default function AdminUnified() {
         onError: (err) => toast.error(err.message)
     })
 
-    // Body scroll lock effect
-    useEffect(() => {
-        const isModalOpen = isCreatingSchool || !!editingSchool || !!editingSubscription || !!editingUser || !!deleteSchoolId || !!deleteClassId
-        if (typeof document !== 'undefined') {
-            document.body.style.overflow = isModalOpen ? 'hidden' : 'unset'
-        }
-        return () => {
-            if (typeof document !== 'undefined') document.body.style.overflow = 'unset'
-        }
-    }, [isCreatingSchool, editingSchool, editingSubscription, editingUser, deleteSchoolId, deleteClassId])
+    // Modals are now handled by the Modal component which has internal scroll locking
 
     if (isLoading) {
         return (
@@ -143,112 +135,94 @@ export default function AdminUnified() {
         )
     }
 
-    const modalContent = (
+    return (
         <>
-            {/* Modals for CRUD */}
-            {(isCreatingSchool || editingSchool) && (
-                <div className="modal-overlay" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', position: 'relative' }}>
-                        <button
-                            className="btn-icon"
-                            onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}
-                            style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', color: 'var(--text-light)' }}
-                        >
-                            <XIcon size={20} />
-                        </button>
-                        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem' }}>
-                            {editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
-                        </h3>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (editingSchool) {
-                                    updateSchool.mutate({ id: editingSchool.id, ...schoolFormData });
-                                } else {
-                                    createSchool.mutate(schoolFormData);
-                                }
-                            }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-                        >
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Sekolah</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={schoolFormData.name}
-                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, name: e.target.value })}
-                                    className="form-input"
-                                    placeholder="Contoh: SMA Negeri 1..."
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Alamat (Opsional)</label>
-                                <textarea
-                                    value={schoolFormData.address}
-                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, address: e.target.value })}
-                                    className="form-input"
-                                    rows={3}
-                                    placeholder="Jl. Pendidikan No. 1..."
-                                />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                                <button type="button" className="btn btn-secondary" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
-                                    Batal
-                                </button>
-                                <button type="submit" className="btn btn-primary" disabled={createSchool.isLoading || updateSchool.isLoading}>
-                                    {createSchool.isLoading || updateSchool.isLoading ? 'Menyimpan...' : 'Simpan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {editingSubscription && (
-                <div className="modal-overlay" onClick={() => setEditingSubscription(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', position: 'relative' }}>
-                        <button
-                            className="btn-icon"
-                            onClick={() => setEditingSubscription(null)}
-                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, background: 'transparent', color: 'var(--text-light)' }}
-                        >
-                            <XIcon size={20} />
-                        </button>
-                        <ClassSubscriptionManager
-                            kelas={editingSubscription}
-                            onSuccess={() => {
-                                setEditingSubscription(null)
-                                utils.school.getUnifiedManagementData.invalidate()
-                            }}
-                            onCancel={() => setEditingSubscription(null)}
+            {/* Modals for CRUD using generic Modal component */}
+            <Modal
+                isOpen={isCreatingSchool || !!editingSchool}
+                onClose={() => { setIsCreatingSchool(false); setEditingSchool(null); }}
+                title={editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
+                maxWidth="450px"
+            >
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        if (editingSchool) {
+                            updateSchool.mutate({ id: editingSchool.id, ...schoolFormData });
+                        } else {
+                            createSchool.mutate(schoolFormData);
+                        }
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                >
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Sekolah</label>
+                        <input
+                            required
+                            type="text"
+                            value={schoolFormData.name}
+                            onChange={(e) => setSchoolFormData({ ...schoolFormData, name: e.target.value })}
+                            className="form-input"
+                            placeholder="Contoh: SMA Negeri 1..."
                         />
                     </div>
-                </div>
-            )}
-
-            {editingUser && (
-                <div className="modal-overlay" onClick={() => setEditingUser(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', padding: '1rem', position: 'relative' }}>
-                        <button
-                            className="btn-icon"
-                            onClick={() => setEditingUser(null)}
-                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, background: 'transparent', color: 'var(--text-light)' }}
-                        >
-                            <XIcon size={20} />
-                        </button>
-                        <EditUserForm
-                            user={editingUser}
-                            onSuccess={() => {
-                                setEditingUser(null)
-                                utils.school.getUnifiedManagementData.invalidate()
-                            }}
-                            onCancel={() => setEditingUser(null)}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Alamat (Opsional)</label>
+                        <textarea
+                            value={schoolFormData.address}
+                            onChange={(e) => setSchoolFormData({ ...schoolFormData, address: e.target.value })}
+                            className="form-input"
+                            rows={3}
+                            placeholder="Jl. Pendidikan No. 1..."
                         />
                     </div>
-                </div>
-            )}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+                        <button type="button" className="btn btn-secondary" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
+                            Batal
+                        </button>
+                        <button type="submit" className="btn btn-primary" disabled={createSchool.isLoading || updateSchool.isLoading}>
+                            {createSchool.isLoading || updateSchool.isLoading ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
 
-            {/* Confirmations */}
+            <Modal
+                isOpen={!!editingSubscription}
+                onClose={() => setEditingSubscription(null)}
+                maxWidth="450px"
+                showCloseButton={true}
+            >
+                {editingSubscription && (
+                    <ClassSubscriptionManager
+                        kelas={editingSubscription}
+                        onSuccess={() => {
+                            setEditingSubscription(null)
+                            utils.school.getUnifiedManagementData.invalidate()
+                        }}
+                        onCancel={() => setEditingSubscription(null)}
+                    />
+                )}
+            </Modal>
+
+            <Modal
+                isOpen={!!editingUser}
+                onClose={() => setEditingUser(null)}
+                maxWidth="600px"
+            >
+                {editingUser && (
+                    <EditUserForm
+                        user={editingUser}
+                        onSuccess={() => {
+                            setEditingUser(null)
+                            utils.school.getUnifiedManagementData.invalidate()
+                        }}
+                        onCancel={() => setEditingUser(null)}
+                    />
+                )}
+            </Modal>
+
+            {/* Confirmations remain using ConfirmDialog for now as it's already robust */}
             <ConfirmDialog
                 isOpen={!!deleteSchoolId}
                 title="Hapus Sekolah"
@@ -272,46 +246,44 @@ export default function AdminUnified() {
                 onConfirm={() => deleteClassId && removeClass.mutate({ classId: deleteClassId })}
                 onCancel={() => setDeleteClassId(null)}
             />
-        </>
-    )
 
-    return (
-        <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '0.5rem 0',
-                gap: '1.5rem',
-                flexWrap: 'wrap',
-                alignItems: 'center'
-            }}>
-                <div>
-                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.025em', margin: 0 }}>Pusat Komando</h2>
-                    <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Manajemen sekolah, kelas, dan siswa dalam satu pusat kendali.</p>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
-                    <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-                        <SearchIcon size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
-                        <input
-                            type="text"
-                            placeholder="Cari sekolah atau alamat..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="form-input"
-                            style={{ paddingLeft: '2.75rem', height: '44px', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', width: '100%' }}
-                        />
+            <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '0.5rem 0',
+                    gap: '1.5rem',
+                    flexWrap: 'wrap',
+                    alignItems: 'center'
+                }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.025em', margin: 0 }}>Pusat Komando</h2>
+                        <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Manajemen sekolah, kelas, dan siswa dalam satu pusat kendali.</p>
                     </div>
-                    <button
-                        className="btn btn-primary"
-                        style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px 0 rgba(var(--primary-rgb), 0.39)' }}
-                        onClick={() => {
-                            setSchoolFormData({ name: '', address: '' })
-                            setIsCreatingSchool(true)
-                        }}
-                    >
-                        <PlusIcon size={18} /> Sekolah
-                    </button>
+
+                    <div style={{ display: 'flex', gap: '1rem', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
+                        <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+                            <SearchIcon size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                            <input
+                                type="text"
+                                placeholder="Cari sekolah atau alamat..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="form-input"
+                                style={{ paddingLeft: '2.75rem', height: '44px', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', width: '100%' }}
+                            />
+                        </div>
+                        <button
+                            className="btn btn-primary"
+                            style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px 0 rgba(var(--primary-rgb), 0.39)' }}
+                            onClick={() => {
+                                setSchoolFormData({ name: '', address: '' })
+                                setIsCreatingSchool(true)
+                            }}
+                        >
+                            <PlusIcon size={18} /> Sekolah
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -469,7 +441,7 @@ export default function AdminUnified() {
                 </div>
             </div>
 
-            {typeof document !== 'undefined' && createPortal(modalContent, document.body)}
+            {/* Modals are already portaled inside the Modal/ConfirmDialog components */}
 
             <style jsx>{`
                 @keyframes fadeInUp {
@@ -599,28 +571,9 @@ export default function AdminUnified() {
                     color: var(--primary);
                     border-bottom-color: var(--primary);
                 }
-                .modal-overlay {
-                    position: fixed;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    background: rgba(0,0,0,0.3);
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center;
-                    z-index: 1000;
-                    backdrop-filter: blur(12px);
-                    animation: scaleIn 0.2s ease-out;
-                }
-                .modal-content {
-                    background: white;
-                    padding: 2.5rem;
-                    border-radius: 1.5rem;
-                    width: 90%;
-                    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    animation: fadeInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
+                /* Modal styles are now in Modal.tsx */
             `}</style>
-        </div>
+        </div >
     )
 }
 
