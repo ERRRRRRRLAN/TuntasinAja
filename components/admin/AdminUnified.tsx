@@ -196,6 +196,7 @@ export default function AdminUnified() {
                 {editingSubscription && (
                     <ClassSubscriptionManager
                         kelas={editingSubscription}
+                        isModal={true}
                         onSuccess={() => {
                             setEditingSubscription(null)
                             utils.school.getUnifiedManagementData.invalidate()
@@ -213,6 +214,7 @@ export default function AdminUnified() {
                 {editingUser && (
                     <EditUserForm
                         user={editingUser}
+                        isModal={true}
                         onSuccess={() => {
                             setEditingUser(null)
                             utils.school.getUnifiedManagementData.invalidate()
@@ -346,17 +348,27 @@ export default function AdminUnified() {
                                         </td>
                                         <td style={{ padding: '1.25rem 1rem', textAlign: 'center' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                <button className="btn-icon" title="Edit Sekolah" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingSchool(school);
-                                                    setSchoolFormData({ name: school.name, address: school.address || '' });
-                                                }}>
+                                                <button className="btn-icon" title="Edit Sekolah" style={{
+                                                    width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.75rem', border: '1px solid var(--border)', background: 'white', color: 'var(--text-light)', transition: 'all 0.2s', cursor: 'pointer'
+                                                }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)30'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'var(--text-light)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingSchool(school);
+                                                        setSchoolFormData({ name: school.name, address: school.address || '' });
+                                                    }}>
                                                     <EditIcon size={20} />
                                                 </button>
-                                                <button className="btn-icon" title="Hapus Sekolah" style={{ color: '#ef4444' }} onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteSchoolId(school.id);
-                                                }}>
+                                                <button className="btn-icon" title="Hapus Sekolah" style={{
+                                                    width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.75rem', border: '1px solid var(--border)', background: 'white', color: 'var(--text-light)', transition: 'all 0.2s', cursor: 'pointer'
+                                                }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#fee2e2'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'var(--text-light)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteSchoolId(school.id);
+                                                    }}>
                                                     <TrashIcon size={20} />
                                                 </button>
                                             </div>
@@ -487,27 +499,29 @@ export default function AdminUnified() {
                     font-weight: 700;
                 }
                 .btn-icon-small {
-                    width: 28px;
-                    height: 28px;
+                    width: 32px;
+                    height: 32px;
                     display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 0.5rem;
+                    alignItems: center;
+                    justifyContent: center;
+                    border-radius: 0.625rem;
                     border: 1px solid var(--border);
                     background: white;
                     color: var(--text-light);
-                    transition: all 0.2s;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     cursor: pointer;
                 }
                 .btn-icon-small:hover {
                     background: var(--bg-secondary);
-                    transform: scale(1.1);
+                    color: var(--primary);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
                 }
                 .btn-action {
                     font-size: 0.75rem;
-                    font-weight: 600;
-                    padding: 0.4rem 0.75rem;
-                    border-radius: 0.5rem;
+                    font-weight: 700;
+                    padding: 0.4rem 0.875rem;
+                    border-radius: 0.75rem;
                     border: 1px solid var(--border);
                     background: white;
                     color: var(--text);
@@ -518,6 +532,7 @@ export default function AdminUnified() {
                     background: var(--bg-secondary);
                     border-color: var(--primary);
                     color: var(--primary);
+                    transform: translateY(-1px);
                 }
                 .btn-add-dashed {
                     width: 100%;
@@ -651,7 +666,24 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
                                     </span>
                                 </td>
                                 <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                    <button className="btn-icon" style={{ padding: '0.4rem' }} onClick={() => onEditUser(user)}>
+                                    <button className="btn-icon" style={{
+                                        padding: '0.4rem',
+                                        borderRadius: '0.625rem',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'var(--text-light)',
+                                        transition: 'all 0.2s',
+                                        cursor: 'pointer'
+                                    }}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.background = 'var(--bg-secondary)';
+                                            e.currentTarget.style.color = 'var(--primary)';
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.background = 'transparent';
+                                            e.currentTarget.style.color = 'var(--text-light)';
+                                        }}
+                                        onClick={() => onEditUser(user)}>
                                         <EditIcon size={18} />
                                     </button>
                                 </td>

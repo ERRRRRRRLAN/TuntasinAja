@@ -21,6 +21,7 @@ interface EditUserFormProps {
       canCreateAnnouncement: boolean
     }
   }
+  isModal?: boolean
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -43,7 +44,7 @@ const generateKelasOptions = () => {
   return kelasOptions
 }
 
-export default function EditUserForm({ user, onSuccess, onCancel }: EditUserFormProps) {
+export default function EditUserForm({ user, isModal, onSuccess, onCancel }: EditUserFormProps) {
   const [name, setName] = useState(user.name)
   const [email, setEmail] = useState(user.email)
   const [password, setPassword] = useState('')
@@ -155,42 +156,44 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
 
   return (
     <div className="card" style={{ position: 'relative' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '1.5rem'
-      }}>
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
-          Edit Data Siswa
-        </h3>
-        {onCancel && (
-          <button
-            onClick={onCancel}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-light)',
-              borderRadius: '0.375rem',
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-            }}
-            title="Tutup"
-          >
-            <XIconSmall size={20} />
-          </button>
-        )}
-      </div>
+      {!isModal && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.5rem'
+        }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+            Edit Data Siswa
+          </h3>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-light)',
+                borderRadius: '0.375rem',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+              }}
+              title="Tutup"
+            >
+              <XIconSmall size={20} />
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <div style={{
@@ -323,10 +326,10 @@ export default function EditUserForm({ user, onSuccess, onCancel }: EditUserForm
                   />
                   <span>Jadikan sebagai Danton (Ketua Kelas)</span>
                 </label>
-                <p style={{ 
-                  margin: '0.5rem 0 0 0', 
-                  fontSize: '0.875rem', 
-                  color: 'var(--text-light)' 
+                <p style={{
+                  margin: '0.5rem 0 0 0',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-light)'
                 }}>
                   Danton dapat mengelola user di kelas ini dan mengatur permission mereka.
                 </p>

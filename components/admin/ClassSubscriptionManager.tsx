@@ -9,22 +9,23 @@ import Checkbox from '@/components/ui/Checkbox'
 
 interface ClassSubscriptionManagerProps {
   kelas: string
+  isModal?: boolean
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }: ClassSubscriptionManagerProps) {
+export default function ClassSubscriptionManager({ kelas, isModal, onSuccess, onCancel }: ClassSubscriptionManagerProps) {
   const [days, setDays] = useState<number>(90)
   const [action, setAction] = useState<'set' | 'extend' | 'reduce'>('set')
   const [forceFromNow, setForceFromNow] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
+
   const utils = trpc.useUtils()
-  
+
   // Get current subscription to determine default action
   const { data: currentSubscription } = trpc.subscription.getClassSubscription.useQuery({ kelas })
-  
+
   useEffect(() => {
     if (currentSubscription) {
       if (currentSubscription.status === 'no_subscription' || currentSubscription.status === 'expired') {
@@ -47,7 +48,7 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       } else if (action === 'reduce') {
         successMessage = 'Subscription berhasil dikurangi!'
       }
-      
+
       setSuccess(successMessage)
       setError('')
       utils.subscription.getAllClassSubscriptions.invalidate()
@@ -86,11 +87,11 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
       }
     }
 
-    updateSubscription.mutate({ 
-      kelas, 
-      action, 
+    updateSubscription.mutate({
+      kelas,
+      action,
       days: action === 'reduce' ? Math.abs(days) : days, // Ensure positive for reduce
-      forceFromNow 
+      forceFromNow
     })
   }
 
@@ -98,52 +99,54 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
 
   return (
     <div className="card subscription-fade-in" style={{ position: 'relative' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start',
-        marginBottom: '1.5rem',
-        gap: '0.75rem',
-        flexWrap: 'wrap'
-      }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
-            Edit Subscription Kelas
-          </h3>
-          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem', wordBreak: 'break-word' }}>
-            Kelas: <strong>{kelas}</strong>
-          </p>
+      {!isModal && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: '1.5rem',
+          gap: '0.75rem',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+              Edit Subscription Kelas
+            </h3>
+            <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-light)', fontSize: '0.875rem', wordBreak: 'break-word' }}>
+              Kelas: <strong>{kelas}</strong>
+            </p>
+          </div>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-light)',
+                borderRadius: '0.375rem',
+                transition: 'background 0.2s',
+                minWidth: '44px',
+                minHeight: '44px',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+              }}
+              title="Tutup"
+            >
+              <XIconSmall size={20} />
+            </button>
+          )}
         </div>
-        {onCancel && (
-          <button
-            onClick={onCancel}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-light)',
-              borderRadius: '0.375rem',
-              transition: 'background 0.2s',
-              minWidth: '44px',
-              minHeight: '44px',
-              flexShrink: 0
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-            }}
-            title="Tutup"
-          >
-            <XIconSmall size={20} />
-          </button>
-        )}
-      </div>
+      )}
 
       {currentSubscription && currentSubscription.status !== 'no_subscription' && currentSubscription.status !== 'expired' && (
         <div className="subscription-fade-in" style={{
@@ -233,11 +236,11 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
             </option>
           </select>
           <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-light)' }}>
-            {action === 'set' 
+            {action === 'set'
               ? 'Set subscription baru mulai dari sekarang (paksa). Jika sudah ada subscription aktif, akan di-extend dari endDate yang ada kecuali "Paksa dari Sekarang" dicentang.'
               : action === 'extend'
-              ? 'Tambahkan durasi ke subscription yang sudah ada. Durasi akan dihitung dari tanggal berakhir saat ini (atau sekarang jika sudah expired).'
-              : 'Kurangi durasi dari subscription yang sudah ada. Durasi akan dikurangi dari tanggal berakhir saat ini. Minimum adalah tanggal sekarang.'}
+                ? 'Tambahkan durasi ke subscription yang sudah ada. Durasi akan dihitung dari tanggal berakhir saat ini (atau sekarang jika sudah expired).'
+                : 'Kurangi durasi dari subscription yang sudah ada. Durasi akan dikurangi dari tanggal berakhir saat ini. Minimum adalah tanggal sekarang.'}
           </p>
         </div>
 
@@ -295,17 +298,17 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
           </div>
         </div>
 
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           flexDirection: 'column',
-          gap: '0.75rem', 
+          gap: '0.75rem',
           marginTop: '1.5rem'
         }}>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={isLoading}
-            style={{ 
+            style={{
               width: '100%',
               minHeight: '44px',
               padding: '0.625rem 1rem'
@@ -326,7 +329,7 @@ export default function ClassSubscriptionManager({ kelas, onSuccess, onCancel }:
               onClick={onCancel}
               className="btn btn-secondary"
               disabled={isLoading}
-              style={{ 
+              style={{
                 width: '100%',
                 minHeight: '44px',
                 padding: '0.625rem 1rem'
