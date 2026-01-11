@@ -374,14 +374,13 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             ...(isMobile ? {
               width: '100%',
               maxWidth: '100%',
-              height: '100dvh', // Use dynamic viewport height
+              height: '100dvh', // Use dyamic viewport height
               maxHeight: '100dvh',
               margin: 0,
               borderRadius: 0,
               padding: 0,
               boxShadow: 'none',
-              display: 'flex',
-              flexDirection: 'column',
+              display: 'block', // Changed from flex to block to fix Safari padding scrolling bug
               overflowY: 'auto',
               overflowX: 'hidden',
             } : {})
@@ -448,7 +447,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           </div>
 
           <div className="comments-section" style={{
-            padding: isMobile ? '1.25rem 1rem 8rem 1rem' : '1.5rem 2rem', // Adjusted bottom padding for mobile
+            padding: isMobile ? '1.25rem 1rem 10rem 1rem' : '1.5rem 2rem', // Adjusted bottom padding to be sufficient but not excessive
           }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Pilihan Jenis Tugas */}
