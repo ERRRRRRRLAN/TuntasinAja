@@ -5,7 +5,8 @@ import bcrypt from 'bcryptjs'
 import { getUTCDate } from '@/lib/date-utils'
 import { TRPCError } from '@trpc/server'
 
-const MAX_USERS_PER_CLASS = 40
+// Max users fallback if class record or school setting not found
+const DEFAULT_MAX_USERS = 40
 
 export const ketuaRouter = createTRPCRouter({
   // Get all users in ketua's class with their permissions
@@ -49,10 +50,24 @@ export const ketuaRouter = createTRPCRouter({
   getClassStats: ketuaProcedure.query(async ({ ctx }) => {
     const ketuaKelas = ctx.ketuaKelas
 
+    // Get user to get schoolId
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { schoolId: true }
+    })
+
+    if (!user?.schoolId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User tidak memiliki sekolah'
+      })
+    }
+
     // Count users in class
     const userCount = await prisma.user.count({
       where: {
         kelas: ketuaKelas,
+        schoolId: user.schoolId,
         isAdmin: false,
       },
     })
@@ -75,12 +90,23 @@ export const ketuaRouter = createTRPCRouter({
       },
     })
 
+    // Get actual capacity from Class model
+    const classRecord = await prisma.class.findFirst({
+      where: {
+        name: ketuaKelas,
+        schoolId: user.schoolId,
+      },
+      select: { capacity: true }
+    })
+
+    const maxUsers = classRecord?.capacity || DEFAULT_MAX_USERS
+
     return {
       userCount,
       threadCount,
       commentCount,
-      maxUsers: MAX_USERS_PER_CLASS,
-      remainingSlots: MAX_USERS_PER_CLASS - userCount,
+      maxUsers,
+      remainingSlots: Math.max(0, maxUsers - userCount),
     }
   }),
 
@@ -296,18 +322,43 @@ export const ketuaRouter = createTRPCRouter({
         })
       }
 
-      // Check class capacity (max 40 users)
+      // Get user to get schoolId
+      const userRecord = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { schoolId: true }
+      })
+
+      if (!userRecord?.schoolId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'User tidak memiliki sekolah'
+        })
+      }
+
+      // Check class capacity from Class model
+      const classRecord = await prisma.class.findFirst({
+        where: {
+          name: ketuaKelas,
+          schoolId: userRecord.schoolId,
+        },
+        select: { capacity: true }
+      })
+
+      const maxUsers = classRecord?.capacity || DEFAULT_MAX_USERS
+
+      // Count users in class
       const userCount = await prisma.user.count({
         where: {
           kelas: ketuaKelas,
+          schoolId: userRecord.schoolId,
           isAdmin: false,
         },
       })
 
-      if (userCount >= MAX_USERS_PER_CLASS) {
+      if (userCount >= maxUsers) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: `Kelas sudah penuh. Maksimal ${MAX_USERS_PER_CLASS} user per kelas.`,
+          message: `Kelas sudah penuh. Maksimal ${maxUsers} user per kelas.`,
         })
       }
 

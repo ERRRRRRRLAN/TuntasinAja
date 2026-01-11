@@ -360,8 +360,8 @@ export default function MePage() {
     try {
       console.log('[MePage] Starting APK download...')
 
-      // Simple direct link approach is more robust for mobile browsers
-      const apkUrl = '/TuntasinAja.apk'
+      // Use the dedicated download API endpoint for better stability
+      const apkUrl = '/api/app/download'
 
       const link = document.createElement('a')
       link.href = apkUrl
@@ -509,7 +509,7 @@ export default function MePage() {
                 }}
               >
                 <CrownIcon size={18} />
-                ketua Dashboard
+                Ketua Dashboard
               </button>
             )}
 

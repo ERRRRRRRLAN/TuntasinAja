@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { 
-  BookIcon, 
-  ClockIcon, 
-  CalendarIcon, 
-  BellIcon, 
-  CrownIcon, 
-  UserIcon, 
+import {
+  BookIcon,
+  ClockIcon,
+  CalendarIcon,
+  BellIcon,
+  CrownIcon,
+  UserIcon,
   LogOutIcon,
   DownloadIcon
 } from '@/components/ui/Icons'
@@ -86,19 +86,19 @@ export default function Sidebar() {
       e.preventDefault()
       e.stopPropagation()
     }
-    
+
     if (isLoggingOut) return
-    
+
     setIsLoggingOut(true)
     setIsOpen(false)
-    
+
     try {
       queryClient.clear()
-      
+
       if (typeof window !== 'undefined') {
         sessionStorage.clear()
       }
-      
+
       try {
         await fetch('/api/auth/logout', {
           method: 'POST',
@@ -109,12 +109,12 @@ export default function Sidebar() {
       } catch (apiError) {
         console.error('Logout API error:', apiError)
       }
-      
+
       await signOut({
         redirect: false,
         callbackUrl: '/auth/signin',
       })
-      
+
       if (typeof window !== 'undefined') {
         const cookies = document.cookie.split(";")
         for (let i = 0; i < cookies.length; i++) {
@@ -125,7 +125,7 @@ export default function Sidebar() {
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
         }
       }
-      
+
       if (typeof window !== 'undefined') {
         window.location.href = '/auth/signin'
       }
@@ -385,7 +385,7 @@ export default function Sidebar() {
                 }}
               >
                 <CrownIcon size={18} style={{ color: '#fbbf24' }} />
-                <span style={{ fontSize: '0.875rem' }}>ketua Dashboard</span>
+                <span style={{ fontSize: '0.875rem' }}>Ketua Dashboard</span>
               </Link>
             )}
             {isAdmin && !isKetua && (
@@ -421,14 +421,14 @@ export default function Sidebar() {
                 href="#"
                 onClick={async (e) => {
                   e.preventDefault()
-                  
+
                   try {
                     // Always use production URL to ensure latest version
                     const baseUrl = 'https://tuntasinaja-livid.vercel.app'
                     const apkUrl = `${baseUrl}/TuntasinAja.apk?v=${Date.now()}&nocache=1`
-                    
+
                     console.log('[Sidebar] Starting APK download from:', apkUrl)
-                    
+
                     // Use fetch to download and create blob
                     const response = await fetch(apkUrl, {
                       method: 'GET',
@@ -438,28 +438,28 @@ export default function Sidebar() {
                         'Pragma': 'no-cache',
                       },
                     })
-                    
+
                     if (!response.ok) {
                       throw new Error(`Failed to download: ${response.status}`)
                     }
-                    
+
                     const blob = await response.blob()
                     const url = window.URL.createObjectURL(blob)
                     const link = document.createElement('a')
                     link.href = url
                     link.download = 'TuntasinAja.apk'
                     link.style.display = 'none'
-                    
+
                     document.body.appendChild(link)
                     link.click()
-                    
+
                     setTimeout(() => {
                       window.URL.revokeObjectURL(url)
                       if (document.body.contains(link)) {
                         document.body.removeChild(link)
                       }
                     }, 100)
-                    
+
                     console.log('[Sidebar] APK download completed')
                   } catch (error) {
                     console.error('[Sidebar] Error downloading APK:', error)
