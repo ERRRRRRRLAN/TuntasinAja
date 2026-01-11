@@ -20,6 +20,7 @@ import AutoDeleteExpiredButton from '@/components/admin/AutoDeleteExpiredButton'
 import TestDeadlineReminderButton from '@/components/admin/TestDeadlineReminderButton'
 import SchoolManagement from '@/components/admin/SchoolManagement'
 import AdminUnified from '@/components/admin/AdminUnified'
+import ManualNotificationControl from '@/components/admin/ManualNotificationControl'
 import { UserIcon, BookIcon, MessageIcon, SettingsIcon, BellIcon, PlusIcon, PackageIcon, XIconSmall, SchoolIcon, CrownIcon } from '@/components/ui/Icons'
 
 export default function ProfilePage() {
@@ -464,6 +465,9 @@ export default function ProfilePage() {
                 </div>
                 <div style={{ marginTop: '1.5rem' }}>
                   <AutoDeleteExpiredButton />
+                </div>
+                <div style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'white', borderRadius: '1.25rem', border: '1px solid var(--border)' }}>
+                  <ManualNotificationControl />
                 </div>
                 <div style={{ marginTop: '1.5rem' }}>
                   <TestingReminderButton />

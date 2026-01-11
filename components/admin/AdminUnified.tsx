@@ -17,8 +17,7 @@ import {
     CrownIcon,
     TrashIcon,
     EditIcon,
-    XCloseIcon,
-    BellIcon
+    XCloseIcon
 } from '@/components/ui/Icons'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -62,10 +61,6 @@ export default function AdminUnified() {
     const [editingClassSubjectId, setEditingClassSubjectId] = useState<string | null>(null)
     const [editClassSubjectName, setEditClassSubjectName] = useState('')
 
-    // Notification Management State
-    const [isManagingNotifications, setIsManagingNotifications] = useState(false)
-    const [notificationType, setNotificationType] = useState<'deadline' | 'schedule'>('schedule')
-    const [selectedNotificationClasses, setSelectedNotificationClasses] = useState<string[]>([])
 
     // Mutations
     const createSchool = trpc.school.create.useMutation({
@@ -171,14 +166,6 @@ export default function AdminUnified() {
         onError: (err) => toast.error(err.message)
     })
 
-    const triggerManualPush = trpc.notification.triggerManualPush.useMutation({
-        onSuccess: (data) => {
-            toast.success(`Berhasil mengirim ${data.totalSent} notifikasi`)
-            setIsManagingNotifications(false)
-            setSelectedNotificationClasses([])
-        },
-        onError: (err) => toast.error(err.message)
-    })
 
     // Modals are now handled by the Modal component which has internal scroll locking
 
@@ -329,123 +316,6 @@ export default function AdminUnified() {
                 )}
             </Modal>
 
-            {/* Notification Management Modal */}
-            <Modal
-                isOpen={isManagingNotifications}
-                onClose={() => setIsManagingNotifications(false)}
-                title="Force Push Notifikasi"
-                maxWidth="600px"
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                        <div style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: '0.9rem', color: 'var(--text-light)' }}>1. PILIH TIPE NOTIFIKASI</div>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button
-                                className={`btn ${notificationType === 'schedule' ? 'btn-primary' : 'btn-secondary'}`}
-                                style={{ flex: 1, height: '44px' }}
-                                onClick={() => setNotificationType('schedule')}
-                            >
-                                Jadwal Besok
-                            </button>
-                            <button
-                                className={`btn ${notificationType === 'deadline' ? 'btn-primary' : 'btn-secondary'}`}
-                                style={{ flex: 1, height: '44px' }}
-                                onClick={() => setNotificationType('deadline')}
-                            >
-                                Deadline PR
-                            </button>
-                        </div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '0.75rem' }}>
-                            {notificationType === 'schedule'
-                                ? 'Mengirim notifikasi ke kelas yang memiliki mata pelajaran besok dan masih memiliki PR belum selesai.'
-                                : 'Mengirim notifikasi pengingat untuk semua PR yang memiliki deadline dalam 48 jam ke depan.'}
-                        </p>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-light)' }}>2. PILIH KELAS TARGET</div>
-                            <button
-                                className="btn-text"
-                                style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}
-                                onClick={() => {
-                                    const allClassNames = Array.from(new Set(unifiedData?.flatMap(s => s.classes.map(c => c.name)) || []));
-                                    if (selectedNotificationClasses.length === allClassNames.length) {
-                                        setSelectedNotificationClasses([]);
-                                    } else {
-                                        setSelectedNotificationClasses(allClassNames);
-                                    }
-                                }}
-                            >
-                                {selectedNotificationClasses.length === Array.from(new Set(unifiedData?.flatMap(s => s.classes.map(c => c.name)) || [])).length ? 'Batal Semua' : 'Pilih Semua'}
-                            </button>
-                        </div>
-
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '0.5rem',
-                            maxHeight: '300px',
-                            overflowY: 'auto',
-                            padding: '0.5rem',
-                            border: '1px solid var(--border)',
-                            borderRadius: '1rem'
-                        }}>
-                            {Array.from(new Set(unifiedData?.flatMap(s => s.classes.map(c => (c as any).name as string)) || [])).sort().map(className => (
-                                <label
-                                    key={className}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        padding: '0.5rem 0.75rem',
-                                        background: selectedNotificationClasses.includes(className) ? 'var(--primary)10' : 'white',
-                                        border: `1px solid ${selectedNotificationClasses.includes(className) ? 'var(--primary)' : 'var(--border)'}`,
-                                        borderRadius: '0.75rem',
-                                        cursor: 'pointer',
-                                        fontSize: '0.875rem',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedNotificationClasses.includes(className)}
-                                        onChange={() => {
-                                            if (selectedNotificationClasses.includes(className)) {
-                                                setSelectedNotificationClasses(selectedNotificationClasses.filter(c => c !== className));
-                                            } else {
-                                                setSelectedNotificationClasses([...selectedNotificationClasses, className]);
-                                            }
-                                        }}
-                                        style={{ accentColor: 'var(--primary)' }}
-                                    />
-                                    {className}
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                        <button className="btn btn-secondary" onClick={() => setIsManagingNotifications(false)}>
-                            Batal
-                        </button>
-                        <button
-                            className="btn btn-primary"
-                            disabled={selectedNotificationClasses.length === 0 || triggerManualPush.isLoading}
-                            onClick={() => {
-                                if (selectedNotificationClasses.length > 0) {
-                                    triggerManualPush.mutate({
-                                        type: notificationType,
-                                        classNames: selectedNotificationClasses
-                                    });
-                                }
-                            }}
-                        >
-                            {triggerManualPush.isLoading ? 'Mengirim...' : `Kirim ke ${selectedNotificationClasses.length} Kelas`}
-                        </button>
-                    </div>
-                </div>
-            </Modal>
 
             <Modal
                 isOpen={!!editingClass}
@@ -695,13 +565,6 @@ export default function AdminUnified() {
                             }}
                         >
                             <UserIcon size={18} /> User
-                        </button>
-                        <button
-                            className="btn btn-secondary"
-                            style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                            onClick={() => setIsManagingNotifications(true)}
-                        >
-                            <BellIcon size={18} /> Notifikasi
                         </button>
                         <button
                             className="btn btn-primary"

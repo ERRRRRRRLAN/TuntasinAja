@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, protectedProcedure } from '../trpc'
+import { createTRPCRouter, protectedProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { sendPushNotification, sendWebPushNotifications } from '@/lib/firebase-admin'
 import { filterTokensBySettings, type NotificationType } from '@/server/utils/notificationSettings'
@@ -283,26 +283,17 @@ export const notificationRouter = createTRPCRouter({
     }),
 
   // Manual trigger for push notifications (Admin only)
-  triggerManualPush: protectedProcedure
+  triggerManualPush: adminProcedure
     .input(
       z.object({
         type: z.enum(['deadline', 'schedule']),
         classNames: z.array(z.string()),
+        force: z.boolean().default(true),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check admin permission
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { isAdmin: true },
-      })
-
-      if (!user?.isAdmin) {
-        throw new Error('Only admins can trigger manual push notifications')
-      }
-
       const log = createLogger({ component: 'NotificationRouter', action: 'triggerManualPush' })
-      log.info({ type: input.type, classes: input.classNames }, 'Manual push triggered')
+      log.info({ type: input.type, classes: input.classNames, force: input.force }, 'Manual push triggered')
 
       let totalSent = 0
       const results: Record<string, any> = {}
@@ -336,7 +327,7 @@ export const notificationRouter = createTRPCRouter({
               if (relevantThreads.length > 0) {
                 const title = `Jadwal Besok: ${kelas}`
                 const body = `Besok ada ${subjects.length} mapel: ${subjects.join(', ')}. Jangan lupa cek PR!`
-                const res = await sendNotificationToClass(kelas, title, body, { type: 'schedule' }, 'task')
+                const res = await sendNotificationToClass(kelas, title, body, { type: 'schedule' }, 'task', input.force)
                 totalSent += res.successCount
                 results[kelas] = { success: true, sent: res.successCount }
               } else {
@@ -360,7 +351,7 @@ export const notificationRouter = createTRPCRouter({
             if (threads.length > 0) {
               const title = 'Pengingat Deadline Tugas'
               const body = `${threads.length} tugas akan segera sampai deadline. Ayo selesaikan!`
-              const res = await sendNotificationToClass(kelas, title, body, { type: 'deadline' }, 'deadline')
+              const res = await sendNotificationToClass(kelas, title, body, { type: 'deadline' }, 'deadline', input.force)
               totalSent += res.successCount
               results[kelas] = { success: true, sent: res.successCount }
             } else {
@@ -383,7 +374,8 @@ export async function sendNotificationToClass(
   title: string,
   body: string,
   data?: Record<string, string>,
-  notificationType: NotificationType = 'task'
+  notificationType: NotificationType = 'task',
+  force: boolean = false
 ) {
   const notificationStart = Date.now()
   const log = createLogger({ component: 'sendNotificationToClass', kelas, notificationType })
@@ -449,8 +441,10 @@ export async function sendNotificationToClass(
       }
     }
 
-    // Filter tokens based on user notification settings
-    const tokensToSend = await filterTokensBySettings(filteredTokens, notificationType)
+    // Filter tokens based on user notification settings (unless forced)
+    const tokensToSend = force
+      ? filteredTokens.map(t => t.token)
+      : await filterTokensBySettings(filteredTokens, notificationType)
 
     if (tokensToSend.length === 0) {
       log.debug({}, 'No tokens to send after filtering by user settings')
@@ -488,14 +482,16 @@ export async function sendNotificationToClass(
     let webPushResult = { successCount: 0, failureCount: 0, expiredSubscriptions: [] as string[] }
 
     if (webPushSubscriptions.length > 0) {
-      // Filter Web Push subscriptions by user settings
-      const webPushTokensToSend = await filterTokensBySettings(
-        webPushSubscriptions.map(sub => ({
-          token: sub.endpoint,
-          user: { id: sub.userId, kelas: normalizedKelas },
-        })),
-        notificationType
-      )
+      // Filter Web Push subscriptions by user settings (unless forced)
+      const webPushTokensToSend = force
+        ? webPushSubscriptions.map(s => s.endpoint)
+        : await filterTokensBySettings(
+          webPushSubscriptions.map(sub => ({
+            token: sub.endpoint,
+            user: { id: sub.userId, kelas: normalizedKelas },
+          })),
+          notificationType
+        )
 
       if (webPushTokensToSend.length > 0) {
         const subscriptionsToSend = webPushSubscriptions
