@@ -1116,7 +1116,7 @@ export default function UserList() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', minWidth: '150px' }}>
                           <SchoolIcon size={14} style={{ color: 'var(--text-light)', flexShrink: 0 }} />
                           <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
-                            {user.school?.name || '-'}
+                            {(user as any).school?.name || '-'}
                           </span>
                         </div>
                       </td>
