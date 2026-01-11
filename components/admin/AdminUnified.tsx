@@ -645,7 +645,7 @@ export default function AdminUnified() {
                                                                                         <button className="btn-icon-small" onClick={() => setEditingClass(cls)} title="Edit Kelas"><EditIcon size={14} /></button>
                                                                                         <button
                                                                                             className="btn-action"
-                                                                                            onClick={() => setManagingSubjectsClass({ id: cls.id, name: cls.name, subjects: (cls as any).subjects || [] })}
+                                                                                            onClick={() => setManagingSubjectsClass({ id: cls.id, name: cls.name || '', subjects: (cls as any).subjects || [] })}
                                                                                             title="Manajemen Mata Pelajaran"
                                                                                             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                                                                                         >
