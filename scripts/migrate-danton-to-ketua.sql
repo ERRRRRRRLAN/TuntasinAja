@@ -2,7 +2,7 @@
 -- Database: PostgreSQL
 
 -- 1. Rename the column
-ALTER TABLE "User" RENAME COLUMN "is_danton" TO "is_ketua";
+ALTER TABLE "users" RENAME COLUMN "is_danton" TO "is_ketua";
 
 -- 2. (Optional) If you have indices or constraints named after danton, you might want to rename them too.
 -- Prisma usually handles these naming conventions, but if you have custom ones:
