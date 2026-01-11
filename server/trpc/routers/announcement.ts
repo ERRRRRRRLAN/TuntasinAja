@@ -190,6 +190,70 @@ export const announcementRouter = createTRPCRouter({
       return { success: true, alreadyRead: false }
     }),
 
+  // Mark all announcements as read for current user
+  markAllAsRead: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const userId = ctx.session.user.id
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          kelas: true,
+          isAdmin: true,
+        },
+      })
+      const userKelas = user?.kelas || null
+      const isAdmin = user?.isAdmin || false
+
+      const now = new Date()
+
+      // Get all relevant announcements that are not read yet
+      const unreadAnnouncements = await prisma.announcement.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                { targetType: 'global' as const },
+                ...(userKelas ? [{ targetType: 'class' as const, targetKelas: userKelas }] : []),
+                ...(userKelas ? [{ targetType: 'subject' as const, targetKelas: userKelas }] : []),
+              ],
+            },
+            {
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: now } },
+              ],
+            },
+            {
+              reads: {
+                none: {
+                  userId: userId,
+                },
+              },
+            },
+          ],
+        },
+        select: {
+          id: true,
+        },
+      })
+
+      if (unreadAnnouncements.length === 0) {
+        return { success: true, count: 0 }
+      }
+
+      // Mark all as read
+      await prisma.announcementRead.createMany({
+        data: unreadAnnouncements.map((a) => ({
+          announcementId: a.id,
+          userId: userId,
+        })),
+        skipDuplicates: true,
+      })
+
+      return { success: true, count: unreadAnnouncements.length }
+    }),
+
   // Create announcement (Admin, ketua, or User with permission)
   create: protectedProcedure
     .input(

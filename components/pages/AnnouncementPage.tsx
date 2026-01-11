@@ -22,6 +22,7 @@ export default function AnnouncementPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { canCreateAnnouncement } = useUserPermission()
   const [hasSessionCookie, setHasSessionCookie] = useState(false)
+  const utils = trpc.useUtils()
 
   // Check if session cookie exists (even if session data not loaded yet)
   useEffect(() => {
@@ -94,7 +95,21 @@ export default function AnnouncementPage() {
     },
   })
 
-  // Mark as read when viewing
+  const markAllAsRead = trpc.announcement.markAllAsRead.useMutation({
+    onSuccess: () => {
+      // Invalidate queries to update unread count in BottomNavigation
+      utils.announcement.getUnreadCount.invalidate()
+    },
+  })
+
+  // Mark all as read when page is viewed
+  useEffect(() => {
+    if (session) {
+      markAllAsRead.mutate()
+    }
+  }, [session])
+
+  // Mark as read when viewing individual announcement
   useEffect(() => {
     if (selectedAnnouncement && session) {
       markAsRead.mutate({ announcementId: selectedAnnouncement })

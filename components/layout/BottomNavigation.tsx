@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { trpc } from '@/lib/trpc'
 import { BookIcon, ClockIcon, CalendarIcon, BellIcon, UserIcon } from '@/components/ui/Icons'
 import { useketua } from '@/hooks/useKetua'
 
@@ -9,18 +11,34 @@ interface NavItem {
   href: string
   label: string
   icon: React.ReactNode
+  showBadge?: boolean
+  badgeCount?: number
 }
 
 export default function BottomNavigation() {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const { isKetua } = useketua()
+
+  const { data: unreadData } = trpc.announcement.getUnreadCount.useQuery(undefined, {
+    enabled: !!session,
+    refetchInterval: 60000, // Sync every 60s
+  })
+
+  const unreadCount = unreadData?.unreadCount || 0
 
   // Main navigation items (always visible) - increased icon size
   const mainNavItems: NavItem[] = [
     { href: '/', label: 'Tugas', icon: <BookIcon size={24} /> },
     { href: '/history', label: 'History', icon: <ClockIcon size={24} /> },
     { href: '/schedule', label: 'Jadwal', icon: <CalendarIcon size={24} /> },
-    { href: '/announcement', label: 'Pengumuman', icon: <BellIcon size={24} /> },
+    {
+      href: '/announcement',
+      label: 'Pengumuman',
+      icon: <BellIcon size={24} />,
+      showBadge: unreadCount > 0,
+      badgeCount: unreadCount
+    },
     { href: '/settings', label: 'Me', icon: <UserIcon size={24} /> },
   ]
 
@@ -91,9 +109,34 @@ export default function BottomNavigation() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'inherit',
+                position: 'relative',
               }}
             >
               {item.icon}
+              {item.showBadge && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-8px',
+                    background: 'var(--danger)',
+                    color: 'white',
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    minWidth: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 4px',
+                    border: '2px solid var(--card)',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                  }}
+                >
+                  {item.badgeCount}
+                </div>
+              )}
             </div>
             <span
               style={{
