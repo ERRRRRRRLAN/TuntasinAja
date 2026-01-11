@@ -16,23 +16,7 @@ interface CreateAnnouncementQuickViewProps {
   onClose: () => void
 }
 
-// Generate list of kelas options
-const generateKelasOptions = () => {
-  const kelasOptions: string[] = []
-  const tingkat = ['X', 'XI', 'XII']
-  const jurusan = ['RPL', 'TKJ', 'BC']
-  const nomor = ['1', '2']
-
-  tingkat.forEach((t) => {
-    jurusan.forEach((j) => {
-      nomor.forEach((n) => {
-        kelasOptions.push(`${t} ${j} ${n}`)
-      })
-    })
-  })
-
-  return kelasOptions
-}
+// Hardcoded kelasOptions removed
 
 export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncementQuickViewProps) {
   const { data: session } = useSession()
@@ -56,10 +40,10 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 640)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile)
     }
@@ -77,12 +61,13 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   const isKetua = userData?.isKetua || false
 
   // Get subjects for user's class
+  const { data: allClassNames } = trpc.school.getAllClassNames.useQuery()
   const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
     { kelas: targetKelas || userKelas || undefined },
     { enabled: !!session && (!!targetKelas || !!userKelas) && targetType === 'subject' }
   )
   const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
-  const kelasOptions = generateKelasOptions()
+  const kelasOptions = allClassNames || []
 
   // Set default kelas to user's kelas
   useEffect(() => {
@@ -124,7 +109,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   const handleClose = useCallback(() => {
     setIsQuickViewOpen(false)
     setIsVisible(false)
-    
+
     // Wait for transition to complete before closing
     setTimeout(() => {
       document.body.style.overflow = ''
@@ -140,10 +125,10 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
     document.body.style.position = 'fixed'
     document.body.style.top = `-${scrollY}px`
     document.body.style.width = '100%'
-    
+
     // Push state untuk back handler
     window.history.pushState({ quickView: true }, '')
-    
+
     return () => {
       document.body.style.overflow = ''
       document.body.style.position = ''
@@ -189,7 +174,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (isSubmitting || createAnnouncement.isLoading) {
       return
     }
@@ -223,9 +208,9 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   }
 
   return (
-    <div 
+    <div
       ref={overlayRef}
-      className="quickview-overlay" 
+      className="quickview-overlay"
       onClick={handleOverlayClick}
       onTransitionEnd={handleTransitionEnd}
       style={{
@@ -234,9 +219,9 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
     >
-      <div 
+      <div
         ref={contentRef}
-        className="quickview-content" 
+        className="quickview-content"
         onClick={(e) => e.stopPropagation()}
         style={{
           opacity: isVisible ? 1 : 0,
@@ -282,9 +267,9 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
           >
             <XCloseIcon size={20} />
           </button>
-          
+
           <div className="quickview-title-section" style={{ paddingRight: isMobile ? '50px' : '60px' }}>
-            <h2 className="thread-detail-title" style={{ 
+            <h2 className="thread-detail-title" style={{
               margin: 0,
               flex: 1,
               lineHeight: 1.4
@@ -433,9 +418,9 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
             </div>
 
             <div className="form-actions">
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
+              <button
+                type="submit"
+                className="btn btn-primary"
                 disabled={createAnnouncement.isLoading || isSubmitting}
               >
                 {createAnnouncement.isLoading || isSubmitting ? (
@@ -445,9 +430,9 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                   </>
                 ) : 'Buat Pengumuman'}
               </button>
-              <button 
-                type="button" 
-                onClick={handleClose} 
+              <button
+                type="button"
+                onClick={handleClose}
                 className="btn btn-secondary"
                 disabled={createAnnouncement.isLoading || isSubmitting}
               >

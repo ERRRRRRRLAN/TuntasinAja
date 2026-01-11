@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toJakartaDate } from '@/lib/date-utils'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { AlertTriangleIcon, PinIcon, ClockIcon, UserIcon, PlusIcon, TrashIcon, LinkIcon } from '@/components/ui/Icons'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { useUserPermission } from '@/hooks/useUserPermission'
@@ -29,20 +29,20 @@ export default function AnnouncementPage() {
         const cookies = document.cookie.split(';')
         const hasCookie = cookies.some(cookie => {
           const trimmed = cookie.trim()
-          return trimmed.startsWith('next-auth.session-token=') || 
-                 trimmed.startsWith('__Secure-next-auth.session-token=')
+          return trimmed.startsWith('next-auth.session-token=') ||
+            trimmed.startsWith('__Secure-next-auth.session-token=')
         })
         setHasSessionCookie(hasCookie)
       }
     }
 
     checkSessionCookie()
-    
+
     // Check periodically in case cookie is restored
     const interval = setInterval(checkSessionCookie, 1000)
     return () => clearInterval(interval)
   }, [])
-  
+
   // Get user data to check if admin/ketua
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
     enabled: !!session,
@@ -142,219 +142,233 @@ export default function AnnouncementPage() {
           }}
         />
       )}
-    <div>
-      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Pengumuman
-          </h1>
-          {unreadCount > 0 && (
-            <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>
-              {unreadCount} pengumuman belum dibaca
+      <div>
+        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+              Pengumuman
+            </h1>
+            {unreadCount > 0 && (
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>
+                {unreadCount} pengumuman belum dibaca
+              </p>
+            )}
+          </div>
+        </div>
+
+        {!announcements || announcements.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--text-light)' }}>
+              Belum ada pengumuman.
             </p>
-          )}
-        </div>
-      </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {announcements.map((announcement) => {
+              const isSelected = selectedAnnouncement === announcement.id
+              const createdAtJakarta = toJakartaDate(announcement.createdAt)
+              const expiresAtJakarta = announcement.expiresAt ? toJakartaDate(announcement.expiresAt) : null
 
-      {!announcements || announcements.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: 'var(--text-light)' }}>
-            Belum ada pengumuman.
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {announcements.map((announcement) => {
-            const isSelected = selectedAnnouncement === announcement.id
-            const createdAtJakarta = toJakartaDate(announcement.createdAt)
-            const expiresAtJakarta = announcement.expiresAt ? toJakartaDate(announcement.expiresAt) : null
-
-            return (
-              <div
-                key={announcement.id}
-                className="card"
-                style={{
-                  border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  position: 'relative',
-                }}
-                onClick={() => setSelectedAnnouncement(isSelected ? null : announcement.id)}
-                onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'var(--primary)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow)'
-                  }
-                }}
-              >
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      {announcement.isPinned && (
-                        <PinIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                      )}
-                      <h3
-                        style={{
-                          fontSize: '1.125rem',
-                          fontWeight: 600,
-                          margin: 0,
-                          color: announcement.isRead ? 'var(--text-light)' : 'var(--text)',
-                        }}
-                      >
-                        {announcement.title}
-                      </h3>
-                      {!announcement.isRead && (
-                        <span
+              return (
+                <div
+                  key={announcement.id}
+                  className="card"
+                  style={{
+                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                  }}
+                  onClick={() => setSelectedAnnouncement(isSelected ? null : announcement.id)}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.boxShadow = 'var(--shadow)'
+                    }
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        {announcement.isPinned && (
+                          <PinIcon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                        )}
+                        <h3
                           style={{
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: 'var(--primary)',
-                            flexShrink: 0,
+                            fontSize: '1.125rem',
+                            fontWeight: 600,
+                            margin: 0,
+                            color: announcement.isRead ? 'var(--text-light)' : 'var(--text)',
                           }}
-                        />
+                        >
+                          {announcement.title}
+                        </h3>
+                        {!announcement.isRead && (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: 'var(--primary)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                      </div>
+                      {/* Delete button for author */}
+                      {session && announcement.authorId === session.user.id && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDeleteId(announcement.id)
+                            setShowDeleteDialog(true)
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            right: '1rem',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            padding: '0.5rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            zIndex: 10,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#dc2626'
+                            e.currentTarget.style.transform = 'scale(1.1)'
+                            e.currentTarget.style.color = 'white'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#ef4444'
+                            e.currentTarget.style.transform = 'scale(1)'
+                            e.currentTarget.style.color = 'white'
+                          }}
+                          aria-label="Hapus pengumuman"
+                        >
+                          <TrashIcon size={16} />
+                        </button>
                       )}
-                    </div>
-                    {/* Delete button for author */}
-                    {session && announcement.authorId === session.user.id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteId(announcement.id)
-                          setShowDeleteDialog(true)
-                        }}
-                        style={{
-                          position: 'absolute',
-                          top: '1rem',
-                          right: '1rem',
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.375rem',
-                          padding: '0.5rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s',
-                          zIndex: 10,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#dc2626'
-                          e.currentTarget.style.transform = 'scale(1.1)'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = '#ef4444'
-                          e.currentTarget.style.transform = 'scale(1)'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        aria-label="Hapus pengumuman"
-                      >
-                        <TrashIcon size={16} />
-                      </button>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        <UserIcon size={14} />
-                        <span>{announcement.author.name}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        <ClockIcon size={14} />
-                        <span>{format(createdAtJakarta, 'd MMM yyyy, HH:mm', { locale: id })}</span>
-                      </div>
-                      <span
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 500,
-                          background: getPriorityColor(announcement.priority) + '20',
-                          color: getPriorityColor(announcement.priority),
-                        }}
-                      >
-                        {getPriorityLabel(announcement.priority)}
-                      </span>
-                      {announcement.targetType === 'class' && announcement.targetKelas && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                          <UserIcon size={14} />
+                          <span>{announcement.author.name}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                          <ClockIcon size={14} />
+                          <span>{format(createdAtJakarta, 'd MMM yyyy, HH:mm', { locale: id })}</span>
+                        </div>
                         <span
                           style={{
                             padding: '0.25rem 0.5rem',
                             borderRadius: '0.25rem',
                             fontSize: '0.75rem',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text)',
+                            fontWeight: 500,
+                            background: getPriorityColor(announcement.priority) + '20',
+                            color: getPriorityColor(announcement.priority),
                           }}
                         >
-                          {announcement.targetKelas}
+                          {getPriorityLabel(announcement.priority)}
                         </span>
-                      )}
-                      {announcement.targetType === 'subject' && announcement.targetSubject && (
-                        <span
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
-                            fontSize: '0.75rem',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text)',
-                          }}
-                        >
-                          {announcement.targetSubject}
-                        </span>
-                      )}
+                        {announcement.targetType === 'class' && announcement.targetKelas && (
+                          <span
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '0.25rem',
+                              fontSize: '0.75rem',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text)',
+                            }}
+                          >
+                            {announcement.targetKelas}
+                          </span>
+                        )}
+                        {announcement.targetType === 'subject' && announcement.targetSubject && (
+                          <span
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '0.25rem',
+                              fontSize: '0.75rem',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text)',
+                            }}
+                          >
+                            {announcement.targetSubject}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Content Preview */}
-                {!isSelected && (
-                  <p
-                    style={{
-                      color: 'var(--text-light)',
-                      fontSize: '0.875rem',
-                      margin: 0,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {announcement.content}
-                  </p>
-                )}
-
-                {/* Full Content */}
-                {isSelected && (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                    <div
+                  {/* Content Preview */}
+                  {!isSelected && (
+                    <p
                       style={{
-                        color: 'var(--text)',
-                        fontSize: '0.9375rem',
-                        lineHeight: 1.6,
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
+                        color: 'var(--text-light)',
+                        fontSize: '0.875rem',
+                        margin: 0,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
                       }}
                     >
                       {announcement.content}
-                    </div>
-                    {expiresAtJakarta && (
-                      <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        <AlertTriangleIcon size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                        Berakhir pada: {format(expiresAtJakarta, 'd MMMM yyyy, HH:mm', { locale: id })}
+                    </p>
+                  )}
+
+                  {/* Full Content */}
+                  {isSelected && (
+                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+                      <div
+                        style={{
+                          color: 'var(--text)',
+                          fontSize: '0.9375rem',
+                          lineHeight: 1.6,
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {announcement.content}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          }            )}
+                      {expiresAtJakarta && (
+                        <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                          <AlertTriangleIcon size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                          Berakhir pada: {format(expiresAtJakarta, 'd MMMM yyyy, HH:mm', { locale: id })}
+                        </div>
+                      )}
+                      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigator.clipboard.writeText(announcement.content)
+                            toast.success('Konten berhasil disalin!')
+                          }}
+                          className="btn btn-secondary"
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.8125rem' }}
+                        >
+                          <LinkIcon size={14} />
+                          <span>Salin Konten</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 

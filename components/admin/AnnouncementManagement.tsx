@@ -13,23 +13,7 @@ import { TrashIcon, EditIcon, PlusIcon, PinIcon, AlertTriangleIcon } from '@/com
 import Checkbox from '@/components/ui/Checkbox'
 import ComboBox from '@/components/ui/ComboBox'
 
-// Generate list of kelas options
-const generateKelasOptions = () => {
-  const kelasOptions: string[] = []
-  const tingkat = ['X', 'XI', 'XII']
-  const jurusan = ['RPL', 'TKJ', 'BC']
-  const nomor = ['1', '2']
-
-  tingkat.forEach((t) => {
-    jurusan.forEach((j) => {
-      nomor.forEach((n) => {
-        kelasOptions.push(`${t} ${j} ${n}`)
-      })
-    })
-  })
-
-  return kelasOptions
-}
+// Hardcoded kelasOptions removed
 
 export default function AnnouncementManagement() {
   const { data: session } = useSession()
@@ -37,16 +21,18 @@ export default function AnnouncementManagement() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
+  const { data: userAllData } = trpc.auth.getUserData.useQuery(undefined, { enabled: !!session })
+  const userData = userAllData
   const { data: announcements, isLoading, refetch } = trpc.announcement.getAllForManagement.useQuery()
-  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, { enabled: !!session })
-  const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
-    { kelas: userData?.kelas || undefined },
-    { enabled: !!session && !!userData?.kelas }
-  )
-
+  const { data: allClassNames } = trpc.school.getAllClassNames.useQuery()
   const isAdmin = userData?.isAdmin || false
   const userKelas = userData?.kelas || null
-  const kelasOptions = generateKelasOptions()
+  const kelasOptions = allClassNames || []
+  const [selectedTargetKelas, setSelectedTargetKelas] = useState<string>('')
+  const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
+    { kelas: selectedTargetKelas || userData?.kelas || undefined },
+    { enabled: !!session && (!!selectedTargetKelas || !!userData?.kelas) }
+  )
   const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
 
   const deleteAnnouncement = trpc.announcement.delete.useMutation({
@@ -101,6 +87,7 @@ export default function AnnouncementManagement() {
             refetch()
           }}
           onCancel={() => setShowCreateForm(false)}
+          onTargetKelasChange={setSelectedTargetKelas}
         />
       )}
 
@@ -116,6 +103,7 @@ export default function AnnouncementManagement() {
             refetch()
           }}
           onCancel={() => setEditingId(null)}
+          onTargetKelasChange={setSelectedTargetKelas}
         />
       )}
 
@@ -141,8 +129,8 @@ export default function AnnouncementManagement() {
                             announcement.priority === 'urgent'
                               ? 'var(--danger)'
                               : announcement.priority === 'normal'
-                              ? 'var(--primary)'
-                              : 'var(--text-light)',
+                                ? 'var(--primary)'
+                                : 'var(--text-light)',
                           color: 'white',
                         }}
                       >
@@ -222,6 +210,7 @@ function CreateAnnouncementForm({
   subjectOptions,
   onSuccess,
   onCancel,
+  onTargetKelasChange,
 }: {
   isAdmin: boolean
   userKelas: string | null
@@ -229,11 +218,18 @@ function CreateAnnouncementForm({
   subjectOptions: string[]
   onSuccess: () => void
   onCancel: () => void
+  onTargetKelasChange?: (kelas: string) => void
 }) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [targetType, setTargetType] = useState<'global' | 'class' | 'subject'>('class')
   const [targetKelas, setTargetKelas] = useState<string>(userKelas || '')
+
+  useEffect(() => {
+    if (onTargetKelasChange) {
+      onTargetKelasChange(targetKelas)
+    }
+  }, [targetKelas, onTargetKelasChange])
   const [targetSubject, setTargetSubject] = useState<string>('')
   const [priority, setPriority] = useState<'urgent' | 'normal' | 'low'>('normal')
   const [isPinned, setIsPinned] = useState(false)
@@ -433,6 +429,7 @@ function EditAnnouncementForm({
   subjectOptions,
   onSuccess,
   onCancel,
+  onTargetKelasChange,
 }: {
   id: string
   isAdmin: boolean
@@ -441,12 +438,20 @@ function EditAnnouncementForm({
   subjectOptions: string[]
   onSuccess: () => void
   onCancel: () => void
+  onTargetKelasChange?: (kelas: string) => void
 }) {
   const { data: announcement } = trpc.announcement.getAllForManagement.useQuery()
   const currentAnnouncement = announcement?.find((a) => a.id === id)
 
   const [title, setTitle] = useState(currentAnnouncement?.title || '')
   const [content, setContent] = useState(currentAnnouncement?.content || '')
+  const [targetKelas, setTargetKelas] = useState(currentAnnouncement?.targetKelas || '')
+
+  useEffect(() => {
+    if (onTargetKelasChange) {
+      onTargetKelasChange(targetKelas)
+    }
+  }, [targetKelas, onTargetKelasChange])
   const [priority, setPriority] = useState<'urgent' | 'normal' | 'low'>(
     (currentAnnouncement?.priority as 'urgent' | 'normal' | 'low') || 'normal'
   )

@@ -295,4 +295,27 @@ export const schoolRouter = createTRPCRouter({
 
         return consolidatedData;
     }),
+
+    // Get a unique list of all classes across all schools (both real Class model and User.kelas string)
+    getAllClassNames: protectedProcedure.query(async () => {
+        // 1. Get from Class model
+        const classes = await prisma.class.findMany({
+            select: { name: true },
+        });
+
+        // 2. Get from User legacy strings
+        const users = await prisma.user.groupBy({
+            by: ['kelas'],
+            where: { kelas: { not: null } }
+        });
+
+        // 3. Combine and de-duplicate
+        const names = new Set<string>();
+        classes.forEach(c => names.add(c.name));
+        users.forEach(u => {
+            if (u.kelas) names.add(u.kelas);
+        });
+
+        return Array.from(names).sort();
+    }),
 });
