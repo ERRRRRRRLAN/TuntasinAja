@@ -18,8 +18,8 @@ ON CONFLICT (kelas) DO UPDATE SET
 -- INSERT USERS
 -- ============================================
 
--- Abel Yolanda Rahmadani (DANTON)
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+-- Abel Yolanda Rahmadani (ketua)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Abel Yolanda Rahmadani',
@@ -36,11 +36,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Alifa Jatil Ijah 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Alifa Jatil Ijah',
@@ -57,11 +57,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Amanda Putri Alfiani 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Amanda Putri Alfiani',
@@ -78,11 +78,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Arel Gamaulana 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Arel Gamaulana',
@@ -99,11 +99,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Saruni Kamila Utami 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Saruni Kamila Utami',
@@ -120,11 +120,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Saura Sakilla Rudini 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Saura Sakilla Rudini',
@@ -141,11 +141,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Aurel Danu Pratama 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Aurel Danu Pratama',
@@ -162,11 +162,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Banyu Pangestu 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Banyu Pangestu',
@@ -183,11 +183,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Bella Amanda 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Bella Amanda',
@@ -204,11 +204,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Bianca Desfa Ayundari 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Bianca Desfa Ayundari',
@@ -225,11 +225,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Cahaya Aulia 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Cahaya Aulia',
@@ -246,11 +246,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Cristhoper Gora Parha 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Cristhoper Gora Parha',
@@ -267,11 +267,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Erdi Saputra 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Erdi Saputra',
@@ -288,11 +288,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Fabian Muhammad Cheynet 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Fabian Muhammad Cheynet',
@@ -309,11 +309,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Fathir Ahmad Sharezad 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Fathir Ahmad Sharezad',
@@ -330,11 +330,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Helwa Nida Luthfiah 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Helwa Nida Luthfiah',
@@ -351,11 +351,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Istiqomah 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Istiqomah',
@@ -372,11 +372,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Kesya Safira 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Kesya Safira',
@@ -393,11 +393,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Khansa Syafiqah Aurellia 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Khansa Syafiqah Aurellia',
@@ -414,11 +414,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Kholishah Rizki Kamilatunnisa 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Kholishah Rizki Kamilatunnisa',
@@ -435,11 +435,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Maesya Safinatunazza Ghiffari 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Maesya Safinatunazza Ghiffari',
@@ -456,11 +456,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Mamara Azka Muhana Sakti 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Mamara Azka Muhana Sakti',
@@ -477,11 +477,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Mischa Rachmadianty 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Mischa Rachmadianty',
@@ -498,11 +498,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Muhamad Ajril Ilham 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Muhamad Ajril Ilham',
@@ -519,11 +519,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Muhamad Fairul Azka 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Muhamad Fairul Azka',
@@ -540,11 +540,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Muhammad Aria Pakula 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Muhammad Aria Pakula',
@@ -561,11 +561,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Muthi Naura Sabitha 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Muthi Naura Sabitha',
@@ -582,11 +582,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Nayla Oktafia 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Nayla Oktafia',
@@ -603,11 +603,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Nayra Kanisya Putri 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Nayra Kanisya Putri',
@@ -624,11 +624,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Noni Juleha 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Noni Juleha',
@@ -645,11 +645,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Noviana Nila Sukma 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Noviana Nila Sukma',
@@ -666,11 +666,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Octavia Safitri 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Octavia Safitri',
@@ -687,11 +687,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Pahroji Hidayatuloh 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Pahroji Hidayatuloh',
@@ -708,11 +708,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Rizky Fadila Ramadhon 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Rizky Fadila Ramadhon',
@@ -729,11 +729,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Shifa Fauziah 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Shifa Fauziah',
@@ -750,11 +750,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Siska Wulandari 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Siska Wulandari',
@@ -771,11 +771,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Syifa Keisa Audia 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Syifa Keisa Audia',
@@ -792,11 +792,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Tiara Salsabila 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Tiara Salsabila',
@@ -813,11 +813,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Verlita Azzahra 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Verlita Azzahra',
@@ -834,11 +834,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- Zulfa Raihana Putri 
-INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)
+INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'Zulfa Raihana Putri',
@@ -855,11 +855,11 @@ ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   kelas = EXCLUDED.kelas,
   is_admin = EXCLUDED.is_admin,
-  is_danton = EXCLUDED.is_danton,
+  is_ketua = EXCLUDED.is_ketua,
   updated_at = NOW();
 
 -- ============================================
--- TOTAL: 40 users (1 Danton + 39 Siswa)
+-- TOTAL: 40 users (1 ketua + 39 Siswa)
 -- KELAS: XI BC 1
 -- SUBSCRIPTION: 7 Hari
 -- ============================================

@@ -546,7 +546,7 @@ export default function UserList() {
                             <span>Admin</span>
                           </span>
                         )}
-                        {(user as any).isDanton && !user.isAdmin && (
+                        {(user as any).isKetua && !user.isAdmin && (
                           <span style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -556,10 +556,10 @@ export default function UserList() {
                             fontWeight: 500
                           }}>
                             <span style={{ color: '#f59e0b' }}>•</span>
-                            <span>Danton</span>
+                            <span>ketua</span>
                           </span>
                         )}
-                        {!user.isAdmin && !(user as any).isDanton && (
+                        {!user.isAdmin && !(user as any).isKetua && (
                           <span style={{
                             fontSize: '0.875rem',
                             color: 'var(--text-light)'
@@ -1089,7 +1089,7 @@ export default function UserList() {
                               <span>Admin</span>
                             </span>
                           )}
-                          {(user as any).isDanton && !user.isAdmin && (
+                          {(user as any).isKetua && !user.isAdmin && (
                             <span style={{
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -1099,10 +1099,10 @@ export default function UserList() {
                               fontWeight: 500
                             }}>
                               <span style={{ color: '#f59e0b' }}>•</span>
-                              <span>Danton</span>
+                              <span>ketua</span>
                             </span>
                           )}
-                          {!user.isAdmin && !(user as any).isDanton && (
+                          {!user.isAdmin && !(user as any).isKetua && (
                             <span style={{
                               fontSize: '0.875rem',
                               color: 'var(--text-light)'

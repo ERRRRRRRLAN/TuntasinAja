@@ -1,7 +1,7 @@
--- Migration untuk fitur Danton (Ketua Kelas)
--- Tambah kolom is_danton di tabel users
+-- Migration untuk fitur ketua (Ketua Kelas)
+-- Tambah kolom is_ketua di tabel users
 ALTER TABLE users 
-ADD COLUMN IF NOT EXISTS is_danton BOOLEAN DEFAULT false;
+ADD COLUMN IF NOT EXISTS is_ketua BOOLEAN DEFAULT false;
 
 -- Buat enum type untuk permission (jika belum ada)
 DO $$ BEGIN
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 
 -- Buat index untuk performa
 CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_users_is_danton ON users(is_danton);
+CREATE INDEX IF NOT EXISTS idx_users_is_ketua ON users(is_ketua);
 CREATE INDEX IF NOT EXISTS idx_users_kelas ON users(kelas);
 
 -- Set default permission untuk user yang sudah ada (read_and_post_edit)

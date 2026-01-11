@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 import { useSchedule } from '@/hooks/useSchedule'
 import { trpc } from '@/lib/trpc'
 import { toast } from '@/components/ui/ToastContainer'
@@ -19,8 +19,8 @@ const WEEKDAYS = [
 ] as const
 
 export default function ScheduleManager() {
-  const { kelas: dantonKelas } = useDanton()
-  const { schedules, isLoading, refetch } = useSchedule(dantonKelas || undefined)
+  const { kelas: ketuaKelas } = useketua()
+  const { schedules, isLoading, refetch } = useSchedule(ketuaKelas || undefined)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({})
   const [tempSubjects, setTempSubjects] = useState<Record<string, string>>({})

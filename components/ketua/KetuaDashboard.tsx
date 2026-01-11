@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 import { trpc } from '@/lib/trpc'
 import ClassUserList from './ClassUserList'
 import AddUserToClassForm from './AddUserToClassForm'
@@ -12,19 +12,19 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { UserIcon, PlusIcon, AlertTriangleIcon } from '@/components/ui/Icons'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
-export default function DantonDashboard() {
+export default function ketuaDashboard() {
   const router = useRouter()
-  const { isDanton, kelas: dantonKelas, isLoading: isDantonLoading } = useDanton()
+  const { isKetua, kelas: ketuaKelas, isLoading: isKetuaLoading } = useketua()
   const [showAddUserForm, setShowAddUserForm] = useState(false)
-  const { isActive, isExpired, isLoading: isSubscriptionLoading } = useClassSubscription(dantonKelas || undefined)
+  const { isActive, isExpired, isLoading: isSubscriptionLoading } = useClassSubscription(ketuaKelas || undefined)
 
-  const { data: stats, isLoading: isStatsLoading } = trpc.danton.getClassStats.useQuery(undefined, {
-    enabled: isDanton,
+  const { data: stats, isLoading: isStatsLoading } = trpc.ketua.getClassStats.useQuery(undefined, {
+    enabled: isKetua,
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
 
-  if (isDantonLoading || isStatsLoading || isSubscriptionLoading) {
+  if (isKetuaLoading || isStatsLoading || isSubscriptionLoading) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
         <LoadingSpinner size={32} />
@@ -33,10 +33,10 @@ export default function DantonDashboard() {
     )
   }
 
-  if (!isDanton) {
+  if (!isKetua) {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-light)' }}>Anda bukan danton.</p>
+        <p style={{ color: 'var(--text-light)' }}>Anda bukan ketua.</p>
       </div>
     )
   }
@@ -70,7 +70,7 @@ export default function DantonDashboard() {
             Subscription Sudah Habis
           </h3>
           <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: '1.6', color: 'var(--text-light)' }}>
-            Subscription untuk kelas {dantonKelas} sudah habis. Semua fitur management telah dinonaktifkan.
+            Subscription untuk kelas {ketuaKelas} sudah habis. Semua fitur management telah dinonaktifkan.
             Hubungi admin untuk memperpanjang subscription agar fitur dapat digunakan kembali.
           </p>
         </div>
@@ -82,12 +82,12 @@ export default function DantonDashboard() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
         gap: '1rem'
       }}>
-        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
+        <div className="card ketua-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <UserIcon size={24} />
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Siswa</h4>
           </div>
-          <div className="danton-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="ketua-stat-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.userCount || 0}
             <span style={{ fontSize: '1rem', color: 'var(--text-light)', fontWeight: 400 }}>
               {' '}/ {stats?.maxUsers || 40}
@@ -98,29 +98,29 @@ export default function DantonDashboard() {
           </div>
         </div>
 
-        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
+        <div className="card ketua-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Kelas</h4>
           </div>
-          <div className="danton-stat-value danton-kelas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
-            {dantonKelas || '-'}
+          <div className="ketua-stat-value ketua-kelas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
+            {ketuaKelas || '-'}
           </div>
         </div>
 
-        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
+        <div className="card ketua-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Tugas</h4>
           </div>
-          <div className="danton-stat-value danton-tugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="ketua-stat-value ketua-tugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.threadCount || 0}
           </div>
         </div>
 
-        <div className="card danton-stat-card" style={{ padding: '1.5rem' }}>
+        <div className="card ketua-stat-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Sub Tugas</h4>
           </div>
-          <div className="danton-stat-value danton-subtugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          <div className="ketua-stat-value ketua-subtugas-value" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
             {stats?.commentCount || 0}
           </div>
         </div>

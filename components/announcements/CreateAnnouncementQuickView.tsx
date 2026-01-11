@@ -68,13 +68,13 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   const utils = trpc.useUtils()
   const { canCreateAnnouncement } = useUserPermission()
 
-  // Get user data (kelas, isAdmin, isDanton)
+  // Get user data (kelas, isAdmin, isKetua)
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
     enabled: !!session,
   })
   const userKelas = userData?.kelas || null
   const isAdmin = userData?.isAdmin || false
-  const isDanton = userData?.isDanton || false
+  const isKetua = userData?.isKetua || false
 
   // Get subjects for user's class
   const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
@@ -358,7 +358,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                   options={kelasOptions}
                   placeholder="Pilih Kelas"
                   showAllOption={false}
-                  disabled={!isAdmin && !!userKelas} // Disable for danton/non-admin
+                  disabled={!isAdmin && !!userKelas} // Disable for ketua/non-admin
                 />
                 {!isAdmin && userKelas && (
                   <small className="form-hint">Pengumuman akan dibuat untuk kelas Anda: {userKelas}</small>
@@ -376,7 +376,7 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
                     options={kelasOptions}
                     placeholder="Pilih Kelas"
                     showAllOption={false}
-                    disabled={!isAdmin && !!userKelas} // Disable for danton/non-admin
+                    disabled={!isAdmin && !!userKelas} // Disable for ketua/non-admin
                   />
                   {!isAdmin && userKelas && (
                     <small className="form-hint">Pengumuman akan dibuat untuk kelas Anda: {userKelas}</small>

@@ -13,7 +13,7 @@ import EditUserQuickView from './EditUserQuickView'
 export default function ClassUserList() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
-  const { data: users, isLoading, refetch } = trpc.danton.getClassUsers.useQuery(undefined, {
+  const { data: users, isLoading, refetch } = trpc.ketua.getClassUsers.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
@@ -21,7 +21,7 @@ export default function ClassUserList() {
 
   const handleSuccess = () => {
     refetch()
-    utils.danton.getClassStats.invalidate()
+    utils.ketua.getClassStats.invalidate()
   }
 
   if (isLoading) {
@@ -49,7 +49,7 @@ export default function ClassUserList() {
         </h3>
 
         {/* Desktop Table View */}
-        <div className="danton-user-table-desktop" style={{ overflowX: 'auto', display: 'none' }}>
+        <div className="ketua-user-table-desktop" style={{ overflowX: 'auto', display: 'none' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
@@ -106,7 +106,7 @@ export default function ClassUserList() {
                   <td style={{ padding: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       {user.name}
-                      {user.isDanton && (
+                      {user.isKetua && (
                         <span style={{
                           display: 'inline-block',
                           padding: '0.125rem 0.375rem',
@@ -116,7 +116,7 @@ export default function ClassUserList() {
                           fontSize: '0.75rem',
                           fontWeight: 600,
                         }}>
-                          Danton
+                          ketua
                         </span>
                       )}
                     </div>
@@ -175,7 +175,7 @@ export default function ClassUserList() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="danton-user-list-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="ketua-user-list-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {users.map((user) => (
             <div
               key={user.id}
@@ -223,7 +223,7 @@ export default function ClassUserList() {
                     }}>
                       {user.name}
                     </h4>
-                    {user.isDanton && (
+                    {user.isKetua && (
                       <span style={{
                         display: 'inline-block',
                         padding: '0.125rem 0.375rem',
@@ -234,7 +234,7 @@ export default function ClassUserList() {
                         fontWeight: 600,
                         flexShrink: 0
                       }}>
-                        Danton
+                        ketua
                       </span>
                     )}
                   </div>

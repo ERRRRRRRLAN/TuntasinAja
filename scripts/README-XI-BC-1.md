@@ -7,7 +7,7 @@ Script untuk menambahkan 40 siswa kelas XI BC 1 dengan subscription 7 hari.
 - **Kelas:** XI BC 1
 - **Durasi:** 7 Hari
 - **Total Siswa:** 40 orang
-- **Danton:** Abel Yolanda Rahmadani
+- **ketua:** Abel Yolanda Rahmadani
 
 ## 🚀 Cara Menjalankan Script
 
@@ -45,11 +45,11 @@ Lihat file `XI-BC-1-CREDENTIALS.txt` untuk daftar lengkap email dan password sem
 
 ### Contoh Kredensial:
 
-**DANTON:**
+**ketua:**
 - Nama: Abel Yolanda Rahmadani
 - Email: abelyolanda@tuntasinaja.com
 - Password: AbelYolanda2847
-- Role: isDanton = true
+- Role: isKetua = true
 
 **SISWA (contoh):**
 - Nama: Alifa Jatil Ijah
@@ -82,24 +82,24 @@ WHERE kelas = 'XI BC 1';
 
 ### 2. Cek Users
 ```sql
-SELECT id, name, email, kelas, is_danton 
+SELECT id, name, email, kelas, is_ketua 
 FROM "users" 
 WHERE kelas = 'XI BC 1'
-ORDER BY is_danton DESC, name ASC;
+ORDER BY is_ketua DESC, name ASC;
 ```
 
 ### 3. Count Users
 ```sql
 SELECT 
   COUNT(*) as total,
-  COUNT(*) FILTER (WHERE is_danton = true) as danton_count
+  COUNT(*) FILTER (WHERE is_ketua = true) as ketua_count
 FROM "users" 
 WHERE kelas = 'XI BC 1';
 ```
 
 Expected Result:
 - Total: 40
-- Danton: 1
+- ketua: 1
 
 ## 🎯 Checklist
 
@@ -108,10 +108,10 @@ Expected Result:
 - [ ] Environment variables sudah set
 - [ ] Script berhasil dijalankan
 - [ ] Verifikasi jumlah user (40 siswa)
-- [ ] Verifikasi danton (Abel)
+- [ ] Verifikasi ketua (Abel)
 - [ ] Verifikasi subscription (7 hari)
 - [ ] Test login dengan salah satu kredensial
-- [ ] File XI-BC-1-CREDENTIALS.txt sudah dibagikan ke admin/danton
+- [ ] File XI-BC-1-CREDENTIALS.txt sudah dibagikan ke admin/ketua
 
 ## ⚙️ Troubleshooting
 
@@ -138,7 +138,7 @@ npx prisma generate
 
 👥 Creating users...
 
-✅ Created: Abel Yolanda Rahmadani (DANTON)
+✅ Created: Abel Yolanda Rahmadani (ketua)
 ✅ Created: Alifa Jatil Ijah
 ✅ Created: Amanda Putri Alfiani
 ...
@@ -161,7 +161,7 @@ npx prisma generate
 2. ✅ Email unique constraint
 3. ✅ Subscription dengan durasi 7 hari
 4. ⚠️ Simpan file XI-BC-1-CREDENTIALS.txt dengan aman
-5. ⚠️ Bagikan kredensial hanya ke danton/admin yang berwenang
+5. ⚠️ Bagikan kredensial hanya ke ketua/admin yang berwenang
 
 ## 📞 Support
 

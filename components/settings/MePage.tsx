@@ -95,11 +95,11 @@ export default function MePage() {
     }
   }, [status, hasSessionCookie, router])
 
-  // Get user data (isDanton, isAdmin)
+  // Get user data (isKetua, isAdmin)
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
     enabled: !!session,
   })
-  const isDanton = userData?.isDanton || false
+  const isKetua = userData?.isKetua || false
   const isAdmin = userData?.isAdmin || false
   const userSchoolId = userData?.schoolId || null
   const userKelas = userData?.kelas || null
@@ -527,9 +527,9 @@ export default function MePage() {
               </button>
             )}
 
-            {isDanton && (
+            {isKetua && (
               <button
-                onClick={() => router.push('/danton')}
+                onClick={() => router.push('/ketua')}
                 style={{
                   width: '100%',
                   padding: '0.75rem 1rem',
@@ -554,7 +554,7 @@ export default function MePage() {
                 }}
               >
                 <CrownIcon size={18} />
-                Danton Dashboard
+                ketua Dashboard
               </button>
             )}
 

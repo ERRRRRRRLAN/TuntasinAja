@@ -71,13 +71,13 @@ export const checkClassSubscription = async (kelas: string | null): Promise<{
 }
 
 export const subscriptionRouter = createTRPCRouter({
-  // Get subscription for a specific class (Admin & Danton)
+  // Get subscription for a specific class (Admin & ketua)
   getClassSubscription: protectedProcedure
     .input(z.object({ kelas: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       let targetKelas = input.kelas
 
-      // If no kelas provided, get from current user's kelas (for danton)
+      // If no kelas provided, get from current user's kelas (for ketua)
       if (!targetKelas) {
         const user = await prisma.user.findUnique({
           where: { id: ctx.session.user.id },

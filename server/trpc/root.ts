@@ -4,7 +4,7 @@ import { threadRouter } from './routers/thread'
 import { userStatusRouter } from './routers/userStatus'
 import { historyRouter } from './routers/history'
 import { authRouter } from './routers/auth'
-import { dantonRouter } from './routers/danton'
+import { ketuaRouter } from './routers/ketua'
 import { subscriptionRouter } from './routers/subscription'
 import { scheduleRouter } from './routers/schedule'
 import { weeklyScheduleRouter } from './routers/weeklySchedule'
@@ -22,7 +22,7 @@ export const appRouter = createTRPCRouter({
   userStatus: userStatusRouter,
   history: historyRouter,
   auth: authRouter,
-  danton: dantonRouter,
+  ketua: ketuaRouter,
   subscription: subscriptionRouter,
   schedule: scheduleRouter,
   weeklySchedule: weeklyScheduleRouter,

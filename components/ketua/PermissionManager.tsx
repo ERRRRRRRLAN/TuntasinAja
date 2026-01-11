@@ -17,7 +17,7 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
   const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>('read_and_post_edit')
   const [canCreateAnnouncement, setCanCreateAnnouncement] = useState(false)
 
-  const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
+  const { data: users } = trpc.ketua.getClassUsers.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
@@ -30,7 +30,7 @@ export default function PermissionManager({ userId, onClose, onSuccess }: Permis
     }
   }, [user])
 
-  const updatePermission = trpc.danton.updateUserPermission.useMutation({
+  const updatePermission = trpc.ketua.updateUserPermission.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] Permission berhasil diupdate')
       onSuccess()

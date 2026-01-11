@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from '@/components/ui/Icons'
 
 export default function SubscriptionStatusCard() {
-  const { kelas: dantonKelas } = useDanton()
-  const { subscription, isActive, isExpired, isExpiringSoon, daysRemaining, hoursRemaining, status, endDate, isLoading } = useClassSubscription(dantonKelas || undefined)
+  const { kelas: ketuaKelas } = useketua()
+  const { subscription, isActive, isExpired, isExpiringSoon, daysRemaining, hoursRemaining, status, endDate, isLoading } = useClassSubscription(ketuaKelas || undefined)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function SubscriptionStatusCard() {
               margin: 0,
               wordBreak: 'break-word'
             }}>
-              {dantonKelas || '-'}
+              {ketuaKelas || '-'}
             </p>
           </div>
           <span style={{

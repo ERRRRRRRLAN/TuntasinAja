@@ -7,7 +7,7 @@ interface Student {
   name: string
   email: string
   password: string
-  isDanton?: boolean
+  isKetua?: boolean
 }
 
 const students: Student[] = [
@@ -15,7 +15,7 @@ const students: Student[] = [
     name: 'Abel Yolanda Rahmadani',
     email: 'abelyolanda@tuntasinaja.com',
     password: 'AbelYolanda2847',
-    isDanton: true, // DANTON
+    isKetua: true, // ketua
   },
   {
     name: 'Alifa Jatil Ijah',
@@ -275,13 +275,13 @@ async function main() {
             passwordHash: hashedPassword,
             name: student.name,
             kelas: 'XI BC 1',
-            isDanton: student.isDanton || false,
+            isKetua: student.isKetua || false,
             isAdmin: false,
           } as any,
       })
 
       console.log(
-        `✅ Created: ${student.name} ${student.isDanton ? '(DANTON)' : ''}`
+        `✅ Created: ${student.name} ${student.isKetua ? '(ketua)' : ''}`
       )
       successCount++
     } catch (error) {

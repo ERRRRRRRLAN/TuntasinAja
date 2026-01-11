@@ -126,10 +126,10 @@ export const authRouter = createTRPCRouter({
     return { isAdmin: user?.isAdmin || false };
   }),
 
-  // Get current user data (kelas, isAdmin, isDanton)
+  // Get current user data (kelas, isAdmin, isKetua)
   getUserData: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return { kelas: null, isAdmin: false, isDanton: false, schoolId: null };
+      return { kelas: null, isAdmin: false, isKetua: false, schoolId: null };
     }
 
     const user = await prisma.user.findUnique({
@@ -137,7 +137,7 @@ export const authRouter = createTRPCRouter({
       select: {
         kelas: true,
         isAdmin: true,
-        isDanton: true,
+        isKetua: true,
         schoolId: true,
       },
     });
@@ -145,27 +145,27 @@ export const authRouter = createTRPCRouter({
     return {
       kelas: user?.kelas || null,
       isAdmin: user?.isAdmin || false,
-      isDanton: user?.isDanton || false,
+      isKetua: user?.isKetua || false,
       schoolId: user?.schoolId || null,
     };
   }),
 
-  // Check if current user is danton
-  isDanton: publicProcedure.query(async ({ ctx }) => {
+  // Check if current user is ketua
+  isKetua: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return { isDanton: false, kelas: null };
+      return { isKetua: false, kelas: null };
     }
 
     const user = await prisma.user.findUnique({
       where: { id: ctx.session.user.id },
       select: {
-        isDanton: true,
+        isKetua: true,
         kelas: true,
       },
     });
 
     return {
-      isDanton: user?.isDanton || false,
+      isKetua: user?.isKetua || false,
       kelas: user?.kelas || null,
     };
   }),
@@ -181,12 +181,12 @@ export const authRouter = createTRPCRouter({
 
     const permission = await getUserPermission(ctx.session.user.id);
 
-    // Get user data to check if admin/danton
+    // Get user data to check if admin/ketua
     const user = await prisma.user.findUnique({
       where: { id: ctx.session.user.id },
       select: {
         isAdmin: true,
-        isDanton: true,
+        isKetua: true,
         permission: {
           select: {
             canCreateAnnouncement: true,
@@ -197,7 +197,7 @@ export const authRouter = createTRPCRouter({
 
     const canCreateAnnouncement =
       user?.isAdmin ||
-      user?.isDanton ||
+      user?.isKetua ||
       user?.permission?.canCreateAnnouncement === true;
 
     return { permission, canCreateAnnouncement };
@@ -211,7 +211,7 @@ export const authRouter = createTRPCRouter({
         email: emailSchema,
         password: passwordSchema,
         isAdmin: z.boolean().optional().default(false),
-        isDanton: z.boolean().optional().default(false),
+        isKetua: z.boolean().optional().default(false),
         kelas: z.string().optional(),
         schoolId: z.string().optional(),
       }),
@@ -231,14 +231,14 @@ export const authRouter = createTRPCRouter({
         throw new Error("Kelas harus diisi untuk user non-admin");
       }
 
-      // Validate danton: cannot be admin and danton at the same time
-      if (input.isDanton && input.isAdmin) {
-        throw new Error("User tidak dapat menjadi admin dan danton sekaligus");
+      // Validate ketua: cannot be admin and ketua at the same time
+      if (input.isKetua && input.isAdmin) {
+        throw new Error("User tidak dapat menjadi admin dan ketua sekaligus");
       }
 
-      // Validate danton: must have kelas
-      if (input.isDanton && !input.kelas) {
-        throw new Error("User harus memiliki kelas untuk dijadikan danton");
+      // Validate ketua: must have kelas
+      if (input.isKetua && !input.kelas) {
+        throw new Error("User harus memiliki kelas untuk dijadikan ketua");
       }
 
       // Validate class/school if provided
@@ -274,7 +274,7 @@ export const authRouter = createTRPCRouter({
           passwordEncrypted,
           isAdmin: input.isAdmin || false,
 
-          isDanton: input.isAdmin ? false : input.isDanton || false, // Cannot be danton if admin
+          isKetua: input.isAdmin ? false : input.isKetua || false, // Cannot be ketua if admin
           kelas: input.isAdmin ? null : input.kelas || null,
           schoolId: input.schoolId,
           createdAt: now,
@@ -284,7 +284,7 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
           createdAt: true,
         },
@@ -351,7 +351,7 @@ export const authRouter = createTRPCRouter({
         name: true,
         email: true,
         isAdmin: true,
-        isDanton: true,
+        isKetua: true,
         kelas: true,
         createdAt: true,
         school: {
@@ -390,7 +390,7 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
           createdAt: true,
           permission: {
@@ -417,7 +417,7 @@ export const authRouter = createTRPCRouter({
         email: emailSchema.optional(),
         password: passwordSchema.optional(),
         isAdmin: z.boolean().optional(),
-        isDanton: z.boolean().optional(),
+        isKetua: z.boolean().optional(),
         kelas: z.string().optional().nullable(),
         schoolId: z.string().optional().nullable(),
         permission: z.enum(["only_read", "read_and_post_edit"]).optional(),
@@ -454,20 +454,20 @@ export const authRouter = createTRPCRouter({
         throw new Error("Kelas harus diisi untuk user non-admin");
       }
 
-      // Validate danton: user must have kelas to be danton, cannot be admin and danton at the same time
-      const willBeDanton =
-        updateData.isDanton !== undefined
-          ? updateData.isDanton
-          : (user as any).isDanton || false;
+      // Validate ketua: user must have kelas to be ketua, cannot be admin and ketua at the same time
+      const willBeketua =
+        updateData.isKetua !== undefined
+          ? updateData.isKetua
+          : (user as any).isKetua || false;
       const targetKelas =
         updateData.kelas !== undefined ? updateData.kelas : user.kelas;
 
-      if (willBeDanton && !targetKelas) {
-        throw new Error("User harus memiliki kelas untuk dijadikan danton");
+      if (willBeketua && !targetKelas) {
+        throw new Error("User harus memiliki kelas untuk dijadikan ketua");
       }
 
-      if (willBeDanton && willBeAdmin) {
-        throw new Error("User tidak dapat menjadi admin dan danton sekaligus");
+      if (willBeketua && willBeAdmin) {
+        throw new Error("User tidak dapat menjadi admin dan ketua sekaligus");
       }
 
       // Prepare update data
@@ -483,31 +483,31 @@ export const authRouter = createTRPCRouter({
 
       if (updateData.isAdmin !== undefined) {
         dataToUpdate.isAdmin = updateData.isAdmin;
-        // If making user admin, remove kelas and danton status
+        // If making user admin, remove kelas and ketua status
         if (updateData.isAdmin) {
           dataToUpdate.kelas = null;
-          dataToUpdate.isDanton = false;
+          dataToUpdate.isKetua = false;
         } else if (updateData.kelas !== undefined) {
           dataToUpdate.kelas = updateData.kelas;
         }
       } else if (updateData.kelas !== undefined) {
         dataToUpdate.kelas = updateData.kelas;
-        // If removing kelas, also remove danton status
+        // If removing kelas, also remove ketua status
         if (updateData.kelas === null) {
-          dataToUpdate.isDanton = false;
+          dataToUpdate.isKetua = false;
         }
       }
 
-      // Handle isDanton update
-      if (updateData.isDanton !== undefined) {
-        dataToUpdate.isDanton = updateData.isDanton;
-        // If setting as danton, ensure user has kelas
-        if (updateData.isDanton && !targetKelas) {
-          throw new Error("User harus memiliki kelas untuk dijadikan danton");
+      // Handle isKetua update
+      if (updateData.isKetua !== undefined) {
+        dataToUpdate.isKetua = updateData.isKetua;
+        // If setting as ketua, ensure user has kelas
+        if (updateData.isKetua && !targetKelas) {
+          throw new Error("User harus memiliki kelas untuk dijadikan ketua");
         }
-        // If setting as danton, ensure user is not admin
-        if (updateData.isDanton && willBeAdmin) {
-          throw new Error("Admin tidak dapat menjadi danton");
+        // If setting as ketua, ensure user is not admin
+        if (updateData.isKetua && willBeAdmin) {
+          throw new Error("Admin tidak dapat menjadi ketua");
         }
       }
 
@@ -527,7 +527,7 @@ export const authRouter = createTRPCRouter({
           name: true,
           email: true,
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
           createdAt: true,
         },
@@ -672,7 +672,7 @@ export const authRouter = createTRPCRouter({
               kelas,
               schoolId: input.schoolId,
               isAdmin: false,
-              isDanton: false,
+              isKetua: false,
               createdAt: now,
             },
           });

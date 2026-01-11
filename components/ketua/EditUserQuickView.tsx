@@ -44,7 +44,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     }
   }, [])
 
-  const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
+  const { data: users } = trpc.ketua.getClassUsers.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
@@ -124,11 +124,11 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
 
   const utils = trpc.useUtils()
 
-  const editUser = trpc.danton.editUserData.useMutation({
+  const editUser = trpc.ketua.editUserData.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] Data user berhasil diupdate')
-      utils.danton.getClassUsers.invalidate()
-      utils.danton.getClassStats.invalidate()
+      utils.ketua.getClassUsers.invalidate()
+      utils.ketua.getClassStats.invalidate()
       if (onSuccess) onSuccess()
       handleCloseQuickView()
     },
@@ -138,10 +138,10 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     },
   })
 
-  const updatePermission = trpc.danton.updateUserPermission.useMutation({
+  const updatePermission = trpc.ketua.updateUserPermission.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] Permission berhasil diupdate')
-      utils.danton.getClassUsers.invalidate()
+      utils.ketua.getClassUsers.invalidate()
       if (onSuccess) onSuccess()
     },
     onError: (error: any) => {
@@ -150,11 +150,11 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
     },
   })
 
-  const deleteUser = trpc.danton.deleteUserFromClass.useMutation({
+  const deleteUser = trpc.ketua.deleteUserFromClass.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] User berhasil dihapus')
-      utils.danton.getClassUsers.invalidate()
-      utils.danton.getClassStats.invalidate()
+      utils.ketua.getClassUsers.invalidate()
+      utils.ketua.getClassStats.invalidate()
       setShowDeleteDialog(false)
       handleCloseQuickView()
       if (onSuccess) onSuccess()
@@ -394,7 +394,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                     {format(new Date(user.createdAt), 'dd MMMM yyyy', { locale: id })}
                   </p>
                 </div>
-                {user.isDanton && (
+                {user.isKetua && (
                   <div>
                     <span style={{
                       display: 'inline-block',
@@ -405,7 +405,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                       fontSize: '0.75rem',
                       fontWeight: 600,
                     }}>
-                      Danton
+                      ketua
                     </span>
                   </div>
                 )}
@@ -606,7 +606,7 @@ export default function EditUserQuickView({ userId, onClose, onSuccess }: EditUs
                     )}
                   </button>
 
-                  {!user.isDanton && (
+                  {!user.isKetua && (
                     <button
                       type="button"
                       onClick={() => setShowDeleteDialog(true)}

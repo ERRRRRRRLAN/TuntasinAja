@@ -14,7 +14,7 @@ const faqData: FAQItem[] = [
   {
     id: 'forgot-password',
     question: 'Saya lupa password, bagaimana cara mengubahnya?',
-    answer: 'Jika Anda lupa password, silakan hubungi Admin atau Danton kelas Anda untuk meminta bantuan mengubah password. Admin atau Danton akan memberikan kesempatan untuk mengganti password akun Anda.'
+    answer: 'Jika Anda lupa password, silakan hubungi Admin atau ketua kelas Anda untuk meminta bantuan mengubah password. Admin atau ketua akan memberikan kesempatan untuk mengganti password akun Anda.'
   },
   {
     id: 'register',

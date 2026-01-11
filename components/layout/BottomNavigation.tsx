@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BookIcon, ClockIcon, CalendarIcon, BellIcon, UserIcon } from '@/components/ui/Icons'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 
 interface NavItem {
   href: string
@@ -13,7 +13,7 @@ interface NavItem {
 
 export default function BottomNavigation() {
   const pathname = usePathname()
-  const { isDanton } = useDanton()
+  const { isKetua } = useketua()
 
   // Main navigation items (always visible) - increased icon size
   const mainNavItems: NavItem[] = [
@@ -24,9 +24,9 @@ export default function BottomNavigation() {
     { href: '/settings', label: 'Me', icon: <UserIcon size={24} /> },
   ]
 
-  // Additional items (if danton, show in sidebar only)
-  const additionalItems: NavItem[] = isDanton
-    ? [{ href: '/danton', label: 'Danton', icon: <BookIcon size={20} /> }]
+  // Additional items (if ketua, show in sidebar only)
+  const additionalItems: NavItem[] = isKetua
+    ? [{ href: '/ketua', label: 'ketua', icon: <BookIcon size={20} /> }]
     : []
 
   // Combine all items for mobile (show max 5 in bottom nav, rest in sidebar)

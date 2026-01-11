@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, dantonProcedure, protectedProcedure } from '../trpc'
+import { createTRPCRouter, ketuaProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { getUTCDate } from '@/lib/date-utils'
@@ -7,14 +7,14 @@ import { TRPCError } from '@trpc/server'
 
 const MAX_USERS_PER_CLASS = 40
 
-export const dantonRouter = createTRPCRouter({
-  // Get all users in danton's class with their permissions
-  getClassUsers: dantonProcedure.query(async ({ ctx }) => {
-    const dantonKelas = ctx.dantonKelas
+export const ketuaRouter = createTRPCRouter({
+  // Get all users in ketua's class with their permissions
+  getClassUsers: ketuaProcedure.query(async ({ ctx }) => {
+    const ketuaKelas = ctx.ketuaKelas
 
     const users = await prisma.user.findMany({
       where: {
-        kelas: dantonKelas,
+        kelas: ketuaKelas,
         isAdmin: false, // Exclude admins
       },
       select: {
@@ -22,7 +22,7 @@ export const dantonRouter = createTRPCRouter({
         name: true,
         email: true,
         kelas: true,
-        isDanton: true,
+        isKetua: true,
         createdAt: true,
         permission: {
           select: {
@@ -46,13 +46,13 @@ export const dantonRouter = createTRPCRouter({
   }),
 
   // Get class statistics
-  getClassStats: dantonProcedure.query(async ({ ctx }) => {
-    const dantonKelas = ctx.dantonKelas
+  getClassStats: ketuaProcedure.query(async ({ ctx }) => {
+    const ketuaKelas = ctx.ketuaKelas
 
     // Count users in class
     const userCount = await prisma.user.count({
       where: {
-        kelas: dantonKelas,
+        kelas: ketuaKelas,
         isAdmin: false,
       },
     })
@@ -61,7 +61,7 @@ export const dantonRouter = createTRPCRouter({
     const threadCount = await prisma.thread.count({
       where: {
         author: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
         },
       },
     })
@@ -70,7 +70,7 @@ export const dantonRouter = createTRPCRouter({
     const commentCount = await prisma.comment.count({
       where: {
         author: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
         },
       },
     })
@@ -85,7 +85,7 @@ export const dantonRouter = createTRPCRouter({
   }),
 
   // Update user permission
-  updateUserPermission: dantonProcedure
+  updateUserPermission: ketuaProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -94,15 +94,15 @@ export const dantonRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
 
-      // Check if user exists and is in danton's class
+      // Check if user exists and is in ketua's class
       const user = await prisma.user.findUnique({
         where: { id: input.userId },
         select: {
           id: true,
           kelas: true,
-          isDanton: true,
+          isKetua: true,
           isAdmin: true,
         },
       })
@@ -114,19 +114,19 @@ export const dantonRouter = createTRPCRouter({
         })
       }
 
-      // Validate: user must be in danton's class
-      if (user.kelas !== dantonKelas) {
+      // Validate: user must be in ketua's class
+      if (user.kelas !== ketuaKelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Anda hanya dapat mengatur permission user di kelas Anda sendiri',
         })
       }
 
-      // Prevent danton from changing their own permission
-      if (user.isDanton) {
+      // Prevent ketua from changing their own permission
+      if (user.isKetua) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Danton tidak dapat mengubah permission sendiri',
+          message: 'Ketua tidak dapat mengubah permission sendiri',
         })
       }
 
@@ -156,7 +156,7 @@ export const dantonRouter = createTRPCRouter({
     }),
 
   // Edit user data in class
-  editUserData: dantonProcedure
+  editUserData: ketuaProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -167,16 +167,16 @@ export const dantonRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
       const { userId, password, ...updateData } = input
 
-      // Check if user exists and is in danton's class
+      // Check if user exists and is in ketua's class
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           id: true,
           kelas: true,
-          isDanton: true,
+          isKetua: true,
           isAdmin: true,
           email: true,
         },
@@ -189,20 +189,20 @@ export const dantonRouter = createTRPCRouter({
         })
       }
 
-      // Validate: user must be in danton's class (or moving to danton's class)
+      // Validate: user must be in ketua's class (or moving to ketua's class)
       const targetKelas = updateData.kelas || user.kelas
-      if (user.kelas !== dantonKelas && targetKelas !== dantonKelas) {
+      if (user.kelas !== ketuaKelas && targetKelas !== ketuaKelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Anda hanya dapat mengedit user di kelas Anda sendiri',
         })
       }
 
-      // Prevent danton from editing themselves
-      if (user.isDanton) {
+      // Prevent ketua from editing themselves
+      if (user.isKetua) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Danton tidak dapat mengedit data sendiri',
+          message: 'Ketua tidak dapat mengedit data sendiri',
         })
       }
 
@@ -214,8 +214,8 @@ export const dantonRouter = createTRPCRouter({
         })
       }
 
-      // Validate: cannot move user to different class (danton can only manage their class)
-      if (updateData.kelas && updateData.kelas !== dantonKelas) {
+      // Validate: cannot move user to different class (ketua can only manage their class)
+      if (updateData.kelas && updateData.kelas !== ketuaKelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Anda hanya dapat mengatur user di kelas Anda sendiri',
@@ -273,7 +273,7 @@ export const dantonRouter = createTRPCRouter({
     }),
 
   // Add user to class
-  addUserToClass: dantonProcedure
+  addUserToClass: ketuaProcedure
     .input(
       z.object({
         name: z.string().min(3),
@@ -282,7 +282,7 @@ export const dantonRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
 
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -299,7 +299,7 @@ export const dantonRouter = createTRPCRouter({
       // Check class capacity (max 40 users)
       const userCount = await prisma.user.count({
         where: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
           isAdmin: false,
         },
       })
@@ -323,9 +323,9 @@ export const dantonRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           passwordHash,
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
           isAdmin: false,
-          isDanton: false,
+          isKetua: false,
           createdAt: now,
           permission: {
             create: {
@@ -345,19 +345,19 @@ export const dantonRouter = createTRPCRouter({
       return user
     }),
 
-  // Delete user from class (only if user is in danton's class)
-  deleteUserFromClass: dantonProcedure
+  // Delete user from class (only if user is in ketua's class)
+  deleteUserFromClass: ketuaProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
 
-      // Check if user exists and is in danton's class
+      // Check if user exists and is in ketua's class
       const user = await prisma.user.findUnique({
         where: { id: input.userId },
         select: {
           id: true,
           kelas: true,
-          isDanton: true,
+          isKetua: true,
           isAdmin: true,
         },
       })
@@ -369,19 +369,19 @@ export const dantonRouter = createTRPCRouter({
         })
       }
 
-      // Validate: user must be in danton's class
-      if (user.kelas !== dantonKelas) {
+      // Validate: user must be in ketua's class
+      if (user.kelas !== ketuaKelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Anda hanya dapat menghapus user di kelas Anda sendiri',
         })
       }
 
-      // Prevent danton from deleting themselves
-      if (user.isDanton) {
+      // Prevent ketua from deleting themselves
+      if (user.isKetua) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Danton tidak dapat menghapus akun sendiri',
+          message: 'Ketua tidak dapat menghapus akun sendiri',
         })
       }
 

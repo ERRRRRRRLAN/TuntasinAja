@@ -14,7 +14,7 @@ import {
   getUTCDate,
   toJakartaDate,
 } from "@/lib/date-utils";
-import { getUserPermission, checkIsDanton } from "../trpc";
+import { getUserPermission, checkIsKetua } from "../trpc";
 import { checkClassSubscription } from "./subscription";
 import { sendNotificationToClass } from "./notification";
 import { format, formatDistanceToNow } from "date-fns";
@@ -1077,18 +1077,18 @@ export const threadRouter = createTRPCRouter({
         });
       }
 
-      // Check if user is admin or danton of the same class
+      // Check if user is admin or ketua of the same class
       const currentUser = (await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
         },
       })) as any;
 
       const isAdmin = currentUser?.isAdmin || false;
-      const isDanton = currentUser?.isDanton || false;
+      const isKetua = currentUser?.isKetua || false;
       const userKelas = currentUser?.kelas || null;
 
       // Get thread author's kelas
@@ -1101,14 +1101,14 @@ export const threadRouter = createTRPCRouter({
       // Only allow deletion if:
       // 1. User is the author, OR
       // 2. User is admin, OR
-      // 3. User is danton of the same class as thread author
-      const isDantonOfSameClass =
-        isDanton && userKelas === threadAuthorKelas && userKelas !== null;
+      // 3. User is ketua of the same class as thread author
+      const isKetuaOfSameClass =
+        isKetua && userKelas === threadAuthorKelas && userKelas !== null;
 
       if (
         thread.authorId !== ctx.session.user.id &&
         !isAdmin &&
-        !isDantonOfSameClass
+        !isKetuaOfSameClass
       ) {
         throw new Error("Anda tidak memiliki izin untuk menghapus thread ini");
       }
@@ -1270,18 +1270,18 @@ export const threadRouter = createTRPCRouter({
         throw new Error("Comment not found");
       }
 
-      // Check if user is admin or danton of the same class
+      // Check if user is admin or ketua of the same class
       const currentUser = (await prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         select: {
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
         },
       })) as any;
 
       const isAdmin = currentUser?.isAdmin || false;
-      const isDanton = currentUser?.isDanton || false;
+      const isKetua = currentUser?.isKetua || false;
       const userKelas = currentUser?.kelas || null;
 
       // Get comment author's kelas
@@ -1295,17 +1295,17 @@ export const threadRouter = createTRPCRouter({
       // 1. User is the author of the comment, OR
       // 2. User is the author of the thread, OR
       // 3. User is admin, OR
-      // 4. User is danton of the same class as comment author
+      // 4. User is ketua of the same class as comment author
       const isCommentAuthor = comment.authorId === ctx.session.user.id;
       const isThreadAuthor = comment.thread.authorId === ctx.session.user.id;
-      const isDantonOfSameClass =
-        isDanton && userKelas === commentAuthorKelas && userKelas !== null;
+      const isKetuaOfSameClass =
+        isKetua && userKelas === commentAuthorKelas && userKelas !== null;
 
       if (
         !isCommentAuthor &&
         !isThreadAuthor &&
         !isAdmin &&
-        !isDantonOfSameClass
+        !isKetuaOfSameClass
       ) {
         throw new Error(
           "Anda tidak memiliki izin untuk menghapus komentar ini",

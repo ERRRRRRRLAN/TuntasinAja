@@ -17,7 +17,7 @@ model User {
   passwordHash     String   @map("password_hash")
   passwordEncrypted String?  @map("password_encrypted")
   isAdmin          Boolean  @default(false) @map("is_admin")
-  isDanton         Boolean  @default(false) @map("is_danton")
+  isKetua          Boolean  @default(false) @map("is_ketua")
   kelas            String?  @map("kelas")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")

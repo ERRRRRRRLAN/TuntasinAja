@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { TRPCError } from '@trpc/server'
-import { checkIsDanton } from '../trpc'
+import { checkIsKetua } from '../trpc'
 import { addDays, format, getDay, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { getUTCDate, toJakartaDate } from '@/lib/date-utils'
@@ -329,7 +329,7 @@ export const scheduleRouter = createTRPCRouter({
     }
   }),
 
-  // Create schedule (Danton only)
+  // Create schedule (ketua only)
   create: protectedProcedure
     .input(
       z.object({
@@ -338,12 +338,12 @@ export const scheduleRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { isDanton, kelas } = await checkIsDanton(ctx.session.user.id)
+      const { isKetua, kelas } = await checkIsKetua(ctx.session.user.id)
 
-      if (!isDanton || !kelas) {
+      if (!isKetua || !kelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Hanya danton yang dapat membuat jadwal.',
+          message: 'Hanya ketua yang dapat membuat jadwal.',
         })
       }
 
@@ -376,16 +376,16 @@ export const scheduleRouter = createTRPCRouter({
       return schedule
     }),
 
-  // Delete schedule (Danton only)
+  // Delete schedule (ketua only)
   delete: protectedProcedure
     .input(z.object({ scheduleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { isDanton, kelas } = await checkIsDanton(ctx.session.user.id)
+      const { isKetua, kelas } = await checkIsKetua(ctx.session.user.id)
 
-      if (!isDanton || !kelas) {
+      if (!isKetua || !kelas) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Hanya danton yang dapat menghapus jadwal.',
+          message: 'Hanya ketua yang dapat menghapus jadwal.',
         })
       }
 

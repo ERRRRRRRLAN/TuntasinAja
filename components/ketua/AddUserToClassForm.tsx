@@ -15,17 +15,17 @@ export default function AddUserToClassForm({ onClose, onSuccess }: AddUserToClas
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { data: stats } = trpc.danton.getClassStats.useQuery(undefined, {
+  const { data: stats } = trpc.ketua.getClassStats.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
   const utils = trpc.useUtils()
 
-  const addUser = trpc.danton.addUserToClass.useMutation({
+  const addUser = trpc.ketua.addUserToClass.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] User berhasil ditambahkan ke kelas')
-      utils.danton.getClassUsers.invalidate()
-      utils.danton.getClassStats.invalidate()
+      utils.ketua.getClassUsers.invalidate()
+      utils.ketua.getClassStats.invalidate()
       onSuccess()
       setName('')
       setEmail('')

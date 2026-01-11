@@ -9,6 +9,8 @@ import Checkbox from '@/components/ui/Checkbox'
 
 interface AddUserFormProps {
   isModal?: boolean
+  defaultSchoolId?: string
+  defaultKelas?: string
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -31,13 +33,14 @@ const generateKelasOptions = () => {
   return kelasOptions
 }
 
-export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFormProps) {
+export default function AddUserForm({ isModal, defaultSchoolId, defaultKelas, onSuccess, onCancel }: AddUserFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
-  const [isDanton, setIsDanton] = useState(false)
-  const [kelas, setKelas] = useState('')
+  const [isKetua, setIsKetua] = useState(false)
+  const [schoolId, setSchoolId] = useState(defaultSchoolId || '')
+  const [kelas, setKelas] = useState(defaultKelas || '')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const utils = trpc.useUtils()
@@ -50,8 +53,9 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
       setEmail('')
       setPassword('')
       setIsAdmin(false)
-      setIsDanton(false)
-      setKelas('')
+      setIsKetua(false)
+      setKelas(defaultKelas || '')
+      setSchoolId(defaultSchoolId || '')
       setError('')
       // Invalidate user list to refresh
       utils.auth.getAllUsers.invalidate()
@@ -92,14 +96,14 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
       return
     }
 
-    // Validate: cannot be danton if admin or no kelas
-    if (isDanton && isAdmin) {
-      setError('User tidak dapat menjadi admin dan danton sekaligus!')
+    // Validate: cannot be ketua if admin or no kelas
+    if (isKetua && isAdmin) {
+      setError('User tidak dapat menjadi admin dan ketua sekaligus!')
       return
     }
 
-    if (isDanton && !kelas) {
-      setError('User harus memiliki kelas untuk dijadikan danton!')
+    if (isKetua && !kelas) {
+      setError('User harus memiliki kelas untuk dijadikan ketua!')
       return
     }
 
@@ -108,8 +112,9 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
       email,
       password,
       isAdmin,
-      isDanton: isAdmin ? false : isDanton, // Cannot be danton if admin
-      kelas: isAdmin ? undefined : kelas
+      isKetua: isAdmin ? false : isKetua, // Cannot be ketua if admin
+      kelas: isAdmin ? undefined : kelas,
+      schoolId: schoolId || undefined
     })
   }
 
@@ -208,7 +213,7 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
                 setIsAdmin(!isAdmin)
                 if (!isAdmin) {
                   setKelas('')
-                  setIsDanton(false) // Cannot be danton if admin
+                  setIsKetua(false) // Cannot be ketua if admin
                 }
               }}
               disabled={createUser.isLoading}
@@ -228,9 +233,9 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
                 value={kelas}
                 onChange={(value) => {
                   setKelas(value)
-                  // If removing kelas, also remove danton status
+                  // If removing kelas, also remove ketua status
                   if (!value) {
-                    setIsDanton(false)
+                    setIsKetua(false)
                   }
                 }}
                 placeholder="Pilih Kelas"
@@ -239,6 +244,7 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
                 searchPlaceholder="Cari kelas..."
                 emptyMessage="Tidak ada kelas yang ditemukan"
                 icon={<BookIcon size={18} style={{ color: 'var(--text-light)', flexShrink: 0 }} />}
+                disabled={!!defaultKelas || createUser.isLoading}
               />
             </div>
 
@@ -246,19 +252,19 @@ export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFor
               <div className="form-group">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
                   <Checkbox
-                    checked={isDanton}
-                    onChange={() => setIsDanton(!isDanton)}
+                    checked={isKetua}
+                    onChange={() => setIsKetua(!isKetua)}
                     disabled={createUser.isLoading || !kelas}
                     size={18}
                   />
-                  <span>Buat sebagai Danton (Ketua Kelas)</span>
+                  <span>Buat sebagai Ketua (Ketua Kelas)</span>
                 </label>
                 <p style={{
                   margin: '0.5rem 0 0 0',
                   fontSize: '0.875rem',
                   color: 'var(--text-light)'
                 }}>
-                  Danton dapat mengelola user di kelas ini dan mengatur permission mereka.
+                  Ketua dapat mengelola user di kelas ini dan mengatur permission mereka.
                 </p>
               </div>
             )}

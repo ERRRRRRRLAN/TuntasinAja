@@ -14,7 +14,7 @@ import {
   DownloadIcon
 } from '@/components/ui/Icons'
 import { useSession, signOut } from 'next-auth/react'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 import { trpc } from '@/lib/trpc'
 import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
@@ -30,7 +30,7 @@ export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
-  const { isDanton } = useDanton()
+  const { isKetua } = useketua()
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -146,7 +146,7 @@ export default function Sidebar() {
   ]
 
   const additionalNavItems: NavItem[] = [
-    // Danton and Admin items moved to user section below
+    // ketua and Admin items moved to user section below
   ]
 
   const allNavItems = [...mainNavItems, ...additionalNavItems]
@@ -361,10 +361,10 @@ export default function Sidebar() {
               </div>
             </div>
 
-            {/* Danton Dashboard / Admin Panel / Profil (conditional) */}
-            {isDanton && (
+            {/* ketua Dashboard / Admin Panel / Profil (conditional) */}
+            {isKetua && (
               <Link
-                href="/danton"
+                href="/ketua"
                 onClick={() => setIsOpen(false)}
                 style={{
                   display: 'flex',
@@ -385,10 +385,10 @@ export default function Sidebar() {
                 }}
               >
                 <CrownIcon size={18} style={{ color: '#fbbf24' }} />
-                <span style={{ fontSize: '0.875rem' }}>Danton Dashboard</span>
+                <span style={{ fontSize: '0.875rem' }}>ketua Dashboard</span>
               </Link>
             )}
-            {isAdmin && !isDanton && (
+            {isAdmin && !isKetua && (
               <Link
                 href="/profile"
                 onClick={() => setIsOpen(false)}

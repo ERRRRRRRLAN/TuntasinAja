@@ -49,6 +49,7 @@ export default function AdminUnified() {
 
     const [editingUser, setEditingUser] = useState<any>(null)
     const [isAddingUser, setIsAddingUser] = useState(false)
+    const [contextSchoolId, setContextSchoolId] = useState<string | undefined>(undefined)
     const [editingSubscription, setEditingSubscription] = useState<string | null>(null)
 
     // Mutations
@@ -232,11 +233,16 @@ export default function AdminUnified() {
                 {isAddingUser && (
                     <AddUserForm
                         isModal={true}
+                        defaultSchoolId={contextSchoolId}
                         onSuccess={() => {
                             setIsAddingUser(false)
+                            setContextSchoolId(undefined)
                             utils.school.getUnifiedManagementData.invalidate()
                         }}
-                        onCancel={() => setIsAddingUser(false)}
+                        onCancel={() => {
+                            setIsAddingUser(false)
+                            setContextSchoolId(undefined)
+                        }}
                     />
                 )}
             </Modal>
@@ -295,7 +301,10 @@ export default function AdminUnified() {
                         <button
                             className="btn btn-secondary"
                             style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                            onClick={() => setIsAddingUser(true)}
+                            onClick={() => {
+                                setContextSchoolId(undefined)
+                                setIsAddingUser(true)
+                            }}
                         >
                             <UserIcon size={18} /> User
                         </button>
@@ -464,7 +473,14 @@ export default function AdminUnified() {
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <SchoolStudentList schoolId={school.id} onEditUser={setEditingUser} />
+                                                        <SchoolStudentList
+                                                            schoolId={expandedSchoolId}
+                                                            onEditUser={(user) => setEditingUser(user)}
+                                                            onAddUser={() => {
+                                                                setContextSchoolId(expandedSchoolId)
+                                                                setIsAddingUser(true)
+                                                            }}
+                                                        />
                                                     )}
                                                 </div>
                                             </td>
@@ -616,7 +632,7 @@ export default function AdminUnified() {
     )
 }
 
-function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditUser: (user: any) => void }) {
+function SchoolStudentList({ schoolId, onEditUser, onAddUser }: { schoolId: string, onEditUser: (user: any) => void, onAddUser: () => void }) {
     const { data: students, isLoading } = trpc.auth.getUsersBySchool.useQuery({ schoolId })
     const [filter, setFilter] = useState('')
 
@@ -630,23 +646,43 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'scaleIn 0.3s ease-out' }}>
-            <div style={{ position: 'relative' }}>
-                <SearchIcon size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
-                <input
-                    type="text"
-                    placeholder="Cari nama, email, atau kelas siswa..."
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="form-input"
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <SearchIcon size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                    <input
+                        type="text"
+                        placeholder="Cari nama, email, atau kelas siswa..."
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        className="form-input"
+                        style={{
+                            paddingLeft: '2.75rem',
+                            fontSize: '0.875rem',
+                            height: '40px',
+                            borderRadius: '0.75rem',
+                            background: 'var(--bg-secondary)',
+                            border: '1.5px solid var(--border)',
+                            width: '100%'
+                        }}
+                    />
+                </div>
+                <button
+                    className="btn btn-primary"
+                    onClick={onAddUser}
                     style={{
-                        paddingLeft: '2.75rem',
-                        fontSize: '0.875rem',
                         height: '40px',
                         borderRadius: '0.75rem',
-                        background: 'var(--bg-secondary)',
-                        border: '1.5px solid var(--border)'
+                        padding: '0 1.25rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexShrink: 0
                     }}
-                />
+                >
+                    <PlusIcon size={16} /> Tambah User
+                </button>
             </div>
 
             <div style={{ overflowX: 'auto', borderRadius: '1rem', border: '1px solid var(--border)' }}>

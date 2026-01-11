@@ -43,12 +43,12 @@ export default function AnnouncementPage() {
     return () => clearInterval(interval)
   }, [])
   
-  // Get user data to check if admin/danton
+  // Get user data to check if admin/ketua
   const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
     enabled: !!session,
   })
   const isAdmin = userData?.isAdmin || false
-  const isDanton = userData?.isDanton || false
+  const isKetua = userData?.isKetua || false
 
   const { data: announcements, isLoading, refetch } = trpc.announcement.getAll.useQuery(undefined, {
     refetchInterval: (query) => {
@@ -134,7 +134,7 @@ export default function AnnouncementPage() {
 
   return (
     <>
-      {showCreateForm && (isAdmin || isDanton || canCreateAnnouncement) && (
+      {showCreateForm && (isAdmin || isKetua || canCreateAnnouncement) && (
         <CreateAnnouncementQuickView
           onClose={() => {
             setShowCreateForm(false)
@@ -359,7 +359,7 @@ export default function AnnouncementPage() {
         )}
 
         {/* FAB Button - Buat Pengumuman */}
-        {(isAdmin || isDanton || canCreateAnnouncement) && (
+        {(isAdmin || isKetua || canCreateAnnouncement) && (
           <button
             onClick={() => setShowCreateForm(true)}
             className="fab-button fab-create-announcement"

@@ -14,7 +14,7 @@ interface EditUserFormProps {
     name: string
     email: string
     isAdmin: boolean
-    isDanton?: boolean
+    isKetua?: boolean
     kelas: string | null
     permission?: {
       permission: 'only_read' | 'read_and_post_edit'
@@ -49,7 +49,7 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
   const [email, setEmail] = useState(user.email)
   const [password, setPassword] = useState('')
   const [isAdmin, setIsAdmin] = useState(user.isAdmin)
-  const [isDanton, setIsDanton] = useState(user.isDanton || false)
+  const [isKetua, setisKetua] = useState(user.isKetua || false)
   const [kelas, setKelas] = useState(user.kelas || '')
   const [permission, setPermission] = useState<'only_read' | 'read_and_post_edit'>(
     user.permission?.permission || 'read_and_post_edit'
@@ -67,7 +67,7 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
     setName(user.name)
     setEmail(user.email)
     setIsAdmin(user.isAdmin)
-    setIsDanton(user.isDanton || false)
+    setisKetua(user.isKetua || false)
     setKelas(user.kelas || '')
     setPermission(user.permission?.permission || 'read_and_post_edit')
     setCanCreateAnnouncement(user.permission?.canCreateAnnouncement || false)
@@ -120,14 +120,14 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
       return
     }
 
-    // Validate: cannot be danton if admin or no kelas
-    if (isDanton && isAdmin) {
-      setError('User tidak dapat menjadi admin dan danton sekaligus!')
+    // Validate: cannot be ketua if admin or no kelas
+    if (isKetua && isAdmin) {
+      setError('User tidak dapat menjadi admin dan ketua sekaligus!')
       return
     }
 
-    if (isDanton && !kelas) {
-      setError('User harus memiliki kelas untuk dijadikan danton!')
+    if (isKetua && !kelas) {
+      setError('User harus memiliki kelas untuk dijadikan ketua!')
       return
     }
 
@@ -136,7 +136,7 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
       name,
       email,
       isAdmin,
-      isDanton: isAdmin ? false : isDanton, // Cannot be danton if admin
+      isKetua: isAdmin ? false : isKetua, // Cannot be ketua if admin
       kelas: isAdmin ? null : kelas,
     }
 
@@ -281,7 +281,7 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
                 setIsAdmin(!isAdmin)
                 if (!isAdmin) {
                   setKelas('')
-                  setIsDanton(false) // Cannot be danton if admin
+                  setisKetua(false) // Cannot be ketua if admin
                 }
               }}
               disabled={updateUser.isLoading}
@@ -301,9 +301,9 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
                 value={kelas}
                 onChange={(value) => {
                   setKelas(value)
-                  // If removing kelas, also remove danton status
+                  // If removing kelas, also remove ketua status
                   if (!value) {
-                    setIsDanton(false)
+                    setisKetua(false)
                   }
                 }}
                 placeholder="Pilih Kelas"
@@ -319,19 +319,19 @@ export default function EditUserForm({ user, isModal, onSuccess, onCancel }: Edi
               <div className="form-group">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
                   <Checkbox
-                    checked={isDanton}
-                    onChange={() => setIsDanton(!isDanton)}
+                    checked={isKetua}
+                    onChange={() => setisKetua(!isKetua)}
                     disabled={updateUser.isLoading || !kelas}
                     size={18}
                   />
-                  <span>Jadikan sebagai Danton (Ketua Kelas)</span>
+                  <span>Jadikan sebagai ketua (Ketua Kelas)</span>
                 </label>
                 <p style={{
                   margin: '0.5rem 0 0 0',
                   fontSize: '0.875rem',
                   color: 'var(--text-light)'
                 }}>
-                  Danton dapat mengelola user di kelas ini dan mengatur permission mereka.
+                  ketua dapat mengelola user di kelas ini dan mengatur permission mereka.
                 </p>
               </div>
             )}

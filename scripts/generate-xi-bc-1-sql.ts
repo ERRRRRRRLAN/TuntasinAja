@@ -9,7 +9,7 @@ interface Student {
   name: string
   email: string
   password: string
-  isDanton?: boolean
+  isKetua?: boolean
 }
 
 const students: Student[] = [
@@ -17,7 +17,7 @@ const students: Student[] = [
     name: 'Abel Yolanda Rahmadani',
     email: 'abelyolanda@tuntasinaja.com',
     password: 'AbelYolanda2847',
-    isDanton: true, // DANTON
+    isKetua: true, // ketua
   },
   {
     name: 'Alifa Jatil Ijah',
@@ -256,8 +256,8 @@ async function generateSQL() {
     const escapedEmail = normalizedEmail.replace(/'/g, "''")
     
     // Generate SQL INSERT with ON CONFLICT UPDATE
-    sqlLines.push(`-- ${student.name} ${student.isDanton ? '(DANTON)' : ''}`)
-    sqlLines.push(`INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_danton, created_at, updated_at)`)
+    sqlLines.push(`-- ${student.name} ${student.isKetua ? '(ketua)' : ''}`)
+    sqlLines.push(`INSERT INTO users (id, name, email, password_hash, kelas, is_admin, is_ketua, created_at, updated_at)`)
     sqlLines.push(`VALUES (`)
     sqlLines.push(`  gen_random_uuid(),`)
     sqlLines.push(`  '${escapedName}',`)
@@ -265,7 +265,7 @@ async function generateSQL() {
     sqlLines.push(`  '${passwordHash}',`)
     sqlLines.push(`  'XI BC 1',`)
     sqlLines.push(`  false,`)
-    sqlLines.push(`  ${student.isDanton ? 'true' : 'false'},`)
+    sqlLines.push(`  ${student.isKetua ? 'true' : 'false'},`)
     sqlLines.push(`  NOW(),`)
     sqlLines.push(`  NOW()`)
     sqlLines.push(`)`)
@@ -274,14 +274,14 @@ async function generateSQL() {
     sqlLines.push(`  password_hash = EXCLUDED.password_hash,`)
     sqlLines.push(`  kelas = EXCLUDED.kelas,`)
     sqlLines.push(`  is_admin = EXCLUDED.is_admin,`)
-    sqlLines.push(`  is_danton = EXCLUDED.is_danton,`)
+    sqlLines.push(`  is_ketua = EXCLUDED.is_ketua,`)
     sqlLines.push(`  updated_at = NOW();`)
     sqlLines.push('')
   }
 
   // Footer
   sqlLines.push('-- ============================================')
-  sqlLines.push(`-- TOTAL: ${students.length} users (${students.filter(s => s.isDanton).length} Danton + ${students.filter(s => !s.isDanton).length} Siswa)`)
+  sqlLines.push(`-- TOTAL: ${students.length} users (${students.filter(s => s.isKetua).length} ketua + ${students.filter(s => !s.isKetua).length} Siswa)`)
   sqlLines.push('-- KELAS: XI BC 1')
   sqlLines.push('-- SUBSCRIPTION: 7 Hari')
   sqlLines.push('-- ============================================')
@@ -293,8 +293,8 @@ async function generateSQL() {
   console.log(`✅ SQL script generated successfully!`)
   console.log(`   File: ${outputPath}`)
   console.log(`   Total users: ${students.length}`)
-  console.log(`   Danton: ${students.filter(s => s.isDanton).length}`)
-  console.log(`   Siswa: ${students.filter(s => !s.isDanton).length}\n`)
+  console.log(`   ketua: ${students.filter(s => s.isKetua).length}`)
+  console.log(`   Siswa: ${students.filter(s => !s.isKetua).length}\n`)
 }
 
 generateSQL()

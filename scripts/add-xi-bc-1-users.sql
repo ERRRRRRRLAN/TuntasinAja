@@ -23,8 +23,8 @@ DO UPDATE SET
 -- PENTING: Password di-hash dengan bcrypt, jalankan TypeScript script untuk hash yang proper!
 -- SQL script ini menggunakan simplified hash, GUNAKAN TypeScript script untuk production!
 
--- ABEL YOLANDA RAHMADANI (Danton)
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+-- ABEL YOLANDA RAHMADANI (ketua)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'abelyolanda@tuntasinaja.com',
@@ -39,7 +39,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- ALIFA JATIL IJAH
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'alifajatil@tuntasinaja.com',
@@ -54,7 +54,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- AMANDA PUTRI ALFIANI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'amandaputri@tuntasinaja.com',
@@ -69,7 +69,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- AREL GAMAULANA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'arelgamaulana@tuntasinaja.com',
@@ -84,7 +84,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- SARUNI KAMILA UTAMI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'sarunikamila@tuntasinaja.com',
@@ -99,7 +99,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- SAURA SAKILLA RUDINI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'saurasakilla@tuntasinaja.com',
@@ -114,7 +114,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- AUREL DANU PRATAMA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'aureldanu@tuntasinaja.com',
@@ -129,7 +129,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- BANYU PANGESTU
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'banyupangestu@tuntasinaja.com',
@@ -144,7 +144,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- BELLA AMANDA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'bellaamanda@tuntasinaja.com',
@@ -159,7 +159,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- BIANCA DESFA AYUNDARI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'biancadesfa@tuntasinaja.com',
@@ -174,7 +174,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- CAHAYA AULIA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'cahayaaulia@tuntasinaja.com',
@@ -189,7 +189,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- CRISTHOPER GORA PARHA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'cristhopergora@tuntasinaja.com',
@@ -204,7 +204,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- ERDI SAPUTRA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'erdisaputra@tuntasinaja.com',
@@ -219,7 +219,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- FABIAN MUHAMMAD CHEYNET
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'fabianmuhammad@tuntasinaja.com',
@@ -234,7 +234,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- FATHIR AHMAD SHAREZAD
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'fathirahmad@tuntasinaja.com',
@@ -249,7 +249,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- HELWA NIDA LUTHFIAH
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'helwanida@tuntasinaja.com',
@@ -264,7 +264,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- ISTIQOMAH
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'istiqomah@tuntasinaja.com',
@@ -279,7 +279,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- KESYA SAFIRA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'kesyasafira@tuntasinaja.com',
@@ -294,7 +294,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- KHANSA SYAFIQAH AURELLIA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'khansasyafiqah@tuntasinaja.com',
@@ -309,7 +309,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- KHOLISHAH RIZKI KAMILATUNNISA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'kholishahrizki@tuntasinaja.com',
@@ -324,7 +324,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MAESYA SAFINATUNAZZA GHIFFARI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'maesyasafinatunazza@tuntasinaja.com',
@@ -339,7 +339,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MAMARA AZKA MUHANA SAKTI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'mamaraazka@tuntasinaja.com',
@@ -354,7 +354,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MISCHA RACHMADIANTY
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'mischarachmadianty@tuntasinaja.com',
@@ -369,7 +369,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMAD AJRIL ILHAM
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhamadajril@tuntasinaja.com',
@@ -384,7 +384,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMAD FAIRUL AZKA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhamadfairul@tuntasinaja.com',
@@ -399,7 +399,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MUHAMMAD ARIA PAKULA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muhammadaria@tuntasinaja.com',
@@ -414,7 +414,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- MUTHI NAURA SABITHA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'muthinaura@tuntasinaja.com',
@@ -429,7 +429,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- NAYLA OKTAFIA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'naylaoktafia@tuntasinaja.com',
@@ -444,7 +444,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- NAYRA KANISYA PUTRI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'nayrakanisya@tuntasinaja.com',
@@ -459,7 +459,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- NONI JULEHA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'nonijuleha@tuntasinaja.com',
@@ -474,7 +474,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- NOVIANA NILA SUKMA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'noviananila@tuntasinaja.com',
@@ -489,7 +489,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- OCTAVIA SAFITRI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'octaviasafitri@tuntasinaja.com',
@@ -504,7 +504,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- PAHROJI HIDAYATULOH
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'pahrojihidayatuloh@tuntasinaja.com',
@@ -519,7 +519,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- RIZKY FADILA RAMADHON
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'rizkyfadila@tuntasinaja.com',
@@ -534,7 +534,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- SHIFA FAUZIAH
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'shifafauziah@tuntasinaja.com',
@@ -549,7 +549,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- SISKA WULANDARI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'siskawulandari@tuntasinaja.com',
@@ -564,7 +564,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- SYIFA KEISA AUDIA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'syifakeisa@tuntasinaja.com',
@@ -579,7 +579,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- TIARA SALSABILA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'tiarasalsabila@tuntasinaja.com',
@@ -594,7 +594,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- VERLITA AZZAHRA
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'verlitaazzahra@tuntasinaja.com',
@@ -609,7 +609,7 @@ VALUES (
 ON CONFLICT (email) DO NOTHING;
 
 -- ZULFA RAIHANA PUTRI
-INSERT INTO "users" (id, email, password_hash, name, kelas, is_danton, is_admin, created_at, updated_at)
+INSERT INTO "users" (id, email, password_hash, name, kelas, is_ketua, is_admin, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'zulfaraihana@tuntasinaja.com',

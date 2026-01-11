@@ -15,7 +15,7 @@ import { useBackHandler } from '@/hooks/useBackHandler'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EmptyState from '@/components/ui/EmptyState'
 import DateTimePicker from '@/components/ui/DateTimePicker'
-import { useDanton } from '@/hooks/useDanton'
+import { useketua } from '@/hooks/useKetua'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import { useClassSubscription } from '@/hooks/useClassSubscription'
 
@@ -177,8 +177,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
     { enabled: !!session && isAdmin }
   )
 
-  // Check if user is danton
-  const { isDanton, kelas: dantonKelas } = useDanton()
+  // Check if user is ketua
+  const { isKetua, kelas: ketuaKelas } = useketua()
 
   // Check user permission
   const { canPostEdit, isOnlyRead } = useUserPermission()
@@ -198,8 +198,8 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
   // Check if user is the author of this thread
   const isThreadAuthor = session?.user?.id === (thread as any)?.author?.id
   const threadAuthorKelas = (thread as any)?.author?.kelas || null
-  const isDantonOfSameClass = isDanton && dantonKelas === threadAuthorKelas && dantonKelas !== null
-  const canDeleteThread = isAdmin || isThreadAuthor || isDantonOfSameClass
+  const isKetuaOfSameClass = isKetua && ketuaKelas === threadAuthorKelas && ketuaKelas !== null
+  const canDeleteThread = isAdmin || isThreadAuthor || isKetuaOfSameClass
 
   const utils = trpc.useUtils()
 
@@ -1191,12 +1191,12 @@ export default function ThreadQuickView({ threadId, onClose }: ThreadQuickViewPr
                 // Check if user can edit/delete this comment
                 const isCommentAuthor = session?.user?.id === comment?.author?.id
                 const commentAuthorKelas = comment?.author?.kelas || null
-                const isDantonOfCommentClass = isDanton && dantonKelas === commentAuthorKelas && dantonKelas !== null
+                const isKetuaOfCommentClass = isKetua && ketuaKelas === commentAuthorKelas && ketuaKelas !== null
                 // For group tasks: disable edit if comment is completed
                 const isGroupTask = (thread as any)?.isGroupTask || false
                 const canEditCommentForGroupTask = isGroupTask ? !isCommentCompleted : true
                 const canEditComment = isCommentAuthor && canActuallyPostEdit && canEditCommentForGroupTask // Only author can edit, must have permission, and for group tasks: comment must not be completed
-                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isDantonOfCommentClass
+                const canDeleteComment = isAdmin || isCommentAuthor || isThreadAuthor || isKetuaOfCommentClass
                 const isEditing = editingCommentId === comment.id
 
                 return (

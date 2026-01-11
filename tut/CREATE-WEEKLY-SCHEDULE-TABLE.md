@@ -101,8 +101,8 @@ Buka `http://localhost:5555` dan cek apakah tabel berikut ada:
 
 ### Atau test langsung di website:
 1. Buka website production di Vercel
-2. Login sebagai danton
-3. Buka halaman Danton Dashboard
+2. Login sebagai ketua
+3. Buka halaman ketua Dashboard
 4. Coba tambah jadwal pelajaran
 5. Jika berhasil, berarti tabel sudah setup dengan benar
 
@@ -148,7 +148,7 @@ Buka `http://localhost:5555` dan cek apakah tabel berikut ada:
 ## 📝 Catatan
 
 - Pastikan sudah menjalankan migration sebelum menggunakan fitur jadwal mingguan
-- Tabel ini hanya bisa diakses oleh danton untuk mengatur jadwal kelas mereka
+- Tabel ini hanya bisa diakses oleh ketua untuk mengatur jadwal kelas mereka
 - User biasa hanya bisa melihat jadwal (read-only)
 
 

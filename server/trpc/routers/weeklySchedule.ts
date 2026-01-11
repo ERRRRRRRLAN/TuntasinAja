@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, dantonProcedure, protectedProcedure } from '../trpc'
+import { createTRPCRouter, ketuaProcedure, protectedProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { getUTCDate } from '@/lib/date-utils'
@@ -114,13 +114,13 @@ async function syncClassScheduleForKelas(kelas: string) {
 }
 
 export const weeklyScheduleRouter = createTRPCRouter({
-  // Get weekly schedule for danton's class
-  getSchedule: dantonProcedure.query(async ({ ctx }) => {
-    const dantonKelas = ctx.dantonKelas
+  // Get weekly schedule for ketua's class
+  getSchedule: ketuaProcedure.query(async ({ ctx }) => {
+    const ketuaKelas = ctx.ketuaKelas
 
     const schedules = await (prisma as any).weeklySchedule.findMany({
       where: {
-        kelas: dantonKelas,
+        kelas: ketuaKelas,
       },
       orderBy: [
         { dayOfWeek: 'asc' },
@@ -151,14 +151,14 @@ export const weeklyScheduleRouter = createTRPCRouter({
     })
 
     return {
-      kelas: dantonKelas,
+      kelas: ketuaKelas,
       schedule: scheduleByDay,
       dayNames: DAY_NAMES,
     }
   }),
 
   // Set schedule for a specific day and period
-  setSchedule: dantonProcedure
+  setSchedule: ketuaProcedure
     .input(
       z.object({
         dayOfWeek: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
@@ -167,12 +167,12 @@ export const weeklyScheduleRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
 
       // Validate subject exists in database for this class
       const subjectExists = await (prisma as any).classSubject.findFirst({
         where: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
           subject: input.subject,
         },
       })
@@ -188,13 +188,13 @@ export const weeklyScheduleRouter = createTRPCRouter({
       const schedule = await (prisma as any).weeklySchedule.upsert({
         where: {
           kelas_dayOfWeek_period: {
-            kelas: dantonKelas,
+            kelas: ketuaKelas,
             dayOfWeek: input.dayOfWeek,
             period: input.period,
           },
         },
         create: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
           dayOfWeek: input.dayOfWeek,
           period: input.period,
           subject: input.subject,
@@ -206,17 +206,17 @@ export const weeklyScheduleRouter = createTRPCRouter({
 
       // Auto-sync to class_schedules
       try {
-        await syncClassScheduleForKelas(dantonKelas)
+        await syncClassScheduleForKelas(ketuaKelas)
       } catch (error) {
         // Log error but don't fail the mutation
-        console.error(`[weeklySchedule.setSchedule] Error syncing class_schedules for ${dantonKelas}:`, error)
+        console.error(`[weeklySchedule.setSchedule] Error syncing class_schedules for ${ketuaKelas}:`, error)
       }
 
       return schedule
     }),
 
   // Delete schedule for a specific day and period
-  deleteSchedule: dantonProcedure
+  deleteSchedule: ketuaProcedure
     .input(
       z.object({
         dayOfWeek: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
@@ -224,11 +224,11 @@ export const weeklyScheduleRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const dantonKelas = ctx.dantonKelas
+      const ketuaKelas = ctx.ketuaKelas
 
       await (prisma as any).weeklySchedule.deleteMany({
         where: {
-          kelas: dantonKelas,
+          kelas: ketuaKelas,
           dayOfWeek: input.dayOfWeek,
           period: input.period,
         },
@@ -236,21 +236,21 @@ export const weeklyScheduleRouter = createTRPCRouter({
 
       // Auto-sync to class_schedules
       try {
-        await syncClassScheduleForKelas(dantonKelas)
+        await syncClassScheduleForKelas(ketuaKelas)
       } catch (error) {
         // Log error but don't fail the mutation
-        console.error(`[weeklySchedule.deleteSchedule] Error syncing class_schedules for ${dantonKelas}:`, error)
+        console.error(`[weeklySchedule.deleteSchedule] Error syncing class_schedules for ${ketuaKelas}:`, error)
       }
 
       return { success: true }
     }),
 
-  // Get available subjects for danton's class
-  getSubjects: dantonProcedure.query(async ({ ctx }) => {
-    const dantonKelas = ctx.dantonKelas
+  // Get available subjects for ketua's class
+  getSubjects: ketuaProcedure.query(async ({ ctx }) => {
+    const ketuaKelas = ctx.ketuaKelas
 
     const subjects = await (prisma as any).classSubject.findMany({
-      where: { kelas: dantonKelas },
+      where: { kelas: ketuaKelas },
       orderBy: { subject: 'asc' },
       select: {
         subject: true,

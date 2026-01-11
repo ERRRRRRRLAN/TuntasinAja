@@ -16,7 +16,7 @@ export default function EditClassUserForm({ userId, onClose, onSuccess }: EditCl
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { data: users } = trpc.danton.getClassUsers.useQuery(undefined, {
+  const { data: users } = trpc.ketua.getClassUsers.useQuery(undefined, {
     refetchOnWindowFocus: false, // Disable to prevent flickering
     staleTime: 60000, // Cache for 1 minute
   })
@@ -30,7 +30,7 @@ export default function EditClassUserForm({ userId, onClose, onSuccess }: EditCl
     }
   }, [user])
 
-  const editUser = trpc.danton.editUserData.useMutation({
+  const editUser = trpc.ketua.editUserData.useMutation({
     onSuccess: () => {
       console.log('[SUCCESS] Data user berhasil diupdate')
       onSuccess()

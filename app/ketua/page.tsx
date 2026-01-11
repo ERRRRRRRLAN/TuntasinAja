@@ -3,11 +3,11 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import DantonDashboard from '@/components/danton/DantonDashboard'
+import KetuaDashboard from '@/components/ketua/KetuaDashboard'
 import Layout from '@/components/layout/Layout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
-export default function DantonPage() {
+export default function KetuaPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
@@ -19,8 +19,8 @@ export default function DantonPage() {
         const cookies = document.cookie.split(';')
         const hasCookie = cookies.some(cookie => {
           const trimmed = cookie.trim()
-          return trimmed.startsWith('next-auth.session-token=') || 
-                 trimmed.startsWith('__Secure-next-auth.session-token=')
+          return trimmed.startsWith('next-auth.session-token=') ||
+            trimmed.startsWith('__Secure-next-auth.session-token=')
         })
         setHasSessionCookie(hasCookie)
       }
@@ -54,9 +54,9 @@ export default function DantonPage() {
     <Layout>
       <div className="container">
         <h1 style={{ marginBottom: '1.5rem', fontSize: '2rem', fontWeight: 700 }}>
-          Dashboard Danton
+          Dashboard Ketua
         </h1>
-        <DantonDashboard />
+        <KetuaDashboard />
       </div>
     </Layout>
   )

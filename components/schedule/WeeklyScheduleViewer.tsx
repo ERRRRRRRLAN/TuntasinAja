@@ -70,7 +70,7 @@ export default function WeeklyScheduleViewer() {
         }}>
           <p>Jadwal untuk kelas {scheduleData.kelas} belum tersedia.</p>
           <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            Hubungi danton kelas Anda untuk mengatur jadwal.
+            Hubungi ketua kelas Anda untuk mengatur jadwal.
           </p>
         </div>
       </div>

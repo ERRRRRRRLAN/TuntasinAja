@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, adminProcedure, dantonProcedure, protectedProcedure, publicProcedure } from '../trpc'
+import { createTRPCRouter, adminProcedure, ketuaProcedure, protectedProcedure, publicProcedure } from '../trpc'
 import { prisma } from '@/lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { sendNotificationToClass } from './notification'
@@ -184,7 +184,7 @@ export const announcementRouter = createTRPCRouter({
       return { success: true, alreadyRead: false }
     }),
 
-  // Create announcement (Admin, Danton, or User with permission)
+  // Create announcement (Admin, ketua, or User with permission)
   create: protectedProcedure
     .input(
       z.object({
@@ -201,12 +201,12 @@ export const announcementRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id
 
-      // Check if user is admin, danton, or has permission
+      // Check if user is admin, ketua, or has permission
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
           permission: {
             select: {
@@ -223,19 +223,19 @@ export const announcementRouter = createTRPCRouter({
         })
       }
 
-      const canCreate = user.isAdmin || user.isDanton || user.permission?.canCreateAnnouncement === true
+      const canCreate = user.isAdmin || user.isKetua || user.permission?.canCreateAnnouncement === true
 
       if (!canCreate) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Anda tidak memiliki izin untuk membuat pengumuman. Hubungi admin atau danton untuk mendapatkan izin.',
+          message: 'Anda tidak memiliki izin untuk membuat pengumuman. Hubungi admin atau ketua untuk mendapatkan izin.',
         })
       }
 
       // Admin can create global or any class announcement
-      // Danton and users with permission can only create class-specific announcement for their class
+      // ketua and users with permission can only create class-specific announcement for their class
       if (!user.isAdmin) {
-        // Danton and users with permission can only create for their own class
+        // ketua and users with permission can only create for their own class
         if (input.targetType === 'class' && input.targetKelas && input.targetKelas !== user.kelas) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -337,7 +337,7 @@ export const announcementRouter = createTRPCRouter({
       return announcement
     }),
 
-  // Update announcement (Admin or Danton - only their own class)
+  // Update announcement (Admin or ketua - only their own class)
   update: protectedProcedure
     .input(
       z.object({
@@ -360,7 +360,7 @@ export const announcementRouter = createTRPCRouter({
           author: {
             select: {
               isAdmin: true,
-              isDanton: true,
+              isKetua: true,
               kelas: true,
             },
           },
@@ -379,7 +379,7 @@ export const announcementRouter = createTRPCRouter({
         where: { id: userId },
         select: {
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
         },
       })
@@ -392,19 +392,19 @@ export const announcementRouter = createTRPCRouter({
       }
 
       // Admin can update any announcement
-      // Danton can only update their own class announcements
+      // ketua can only update their own class announcements
       if (!user.isAdmin) {
-        if (!user.isDanton) {
+        if (!user.isKetua) {
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Only admin or danton can update announcements',
+            message: 'Only admin or ketua can update announcements',
           })
         }
 
         if (announcement.targetKelas !== user.kelas) {
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Danton can only update announcements for their own class',
+            message: 'ketua can only update announcements for their own class',
           })
         }
       }
@@ -427,7 +427,7 @@ export const announcementRouter = createTRPCRouter({
       return updated
     }),
 
-  // Delete announcement (Admin or Danton - only their own class)
+  // Delete announcement (Admin or ketua - only their own class)
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -440,7 +440,7 @@ export const announcementRouter = createTRPCRouter({
           author: {
             select: {
               isAdmin: true,
-              isDanton: true,
+              isKetua: true,
               kelas: true,
             },
           },
@@ -459,7 +459,7 @@ export const announcementRouter = createTRPCRouter({
         where: { id: userId },
         select: {
           isAdmin: true,
-          isDanton: true,
+          isKetua: true,
           kelas: true,
         },
       })
@@ -472,26 +472,26 @@ export const announcementRouter = createTRPCRouter({
       }
 
       // Admin can delete any announcement
-      // Danton can only delete their own class announcements
+      // ketua can only delete their own class announcements
       // Author can delete their own announcements
       if (!user.isAdmin) {
         // Check if user is the author
         if (announcement.authorId === userId) {
           // Author can delete their own announcement
           // No additional checks needed
-        } else if (user.isDanton) {
-          // Danton can only delete their own class announcements
+        } else if (user.isKetua) {
+          // ketua can only delete their own class announcements
           if (announcement.targetKelas !== user.kelas) {
             throw new TRPCError({
               code: 'FORBIDDEN',
-              message: 'Danton can only delete announcements for their own class',
+              message: 'ketua can only delete announcements for their own class',
             })
           }
         } else {
           // Regular users cannot delete announcements they didn't create
           throw new TRPCError({
             code: 'FORBIDDEN',
-            message: 'Only admin, danton, or the announcement author can delete announcements',
+            message: 'Only admin, ketua, or the announcement author can delete announcements',
           })
         }
       }
@@ -504,7 +504,7 @@ export const announcementRouter = createTRPCRouter({
       return { success: true }
     }),
 
-  // Get all announcements for management (Admin or Danton)
+  // Get all announcements for management (Admin or ketua)
   getAllForManagement: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id
 
@@ -512,7 +512,7 @@ export const announcementRouter = createTRPCRouter({
       where: { id: userId },
       select: {
         isAdmin: true,
-        isDanton: true,
+        isKetua: true,
         kelas: true,
         permission: {
           select: {
@@ -529,7 +529,7 @@ export const announcementRouter = createTRPCRouter({
       })
     }
 
-    const canManage = user.isAdmin || user.isDanton || user.permission?.canCreateAnnouncement === true
+    const canManage = user.isAdmin || user.isKetua || user.permission?.canCreateAnnouncement === true
 
     if (!canManage) {
       throw new TRPCError({
@@ -541,7 +541,7 @@ export const announcementRouter = createTRPCRouter({
     const whereClause = user.isAdmin
       ? undefined // Admin sees all
       : {
-          // Danton sees only their class
+          // ketua sees only their class
           targetKelas: user.kelas,
         }
 
