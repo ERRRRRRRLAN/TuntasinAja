@@ -54,10 +54,10 @@ export default function AdminUnified() {
     const [contextSchoolId, setContextSchoolId] = useState<string | undefined>(undefined)
     const [editingSubscription, setEditingSubscription] = useState<string | null>(null)
 
-    const [isAddingSubjectToId, setIsAddingSubjectToId] = useState<string | null>(null)
-    const [newSubjectName, setNewSubjectName] = useState('')
-    const [editingSubject, setEditingSubject] = useState<any>(null)
-    const [deleteSubjectId, setDeleteSubjectId] = useState<string | null>(null)
+
+    // Class Subjects Management
+    const [managingSubjectsClass, setManagingSubjectsClass] = useState<{ id: string, name: string, subjects: any[] } | null>(null)
+    const [newClassSubjectName, setNewClassSubjectName] = useState('')
 
     // Mutations
     const createSchool = trpc.school.create.useMutation({
@@ -117,29 +117,32 @@ export default function AdminUnified() {
         onError: (err) => toast.error(err.message)
     })
 
-    const createSubject = trpc.subject.create.useMutation({
-        onSuccess: () => {
+
+    const addClassSubject = trpc.classSubject.addClassSubject.useMutation({
+        onSuccess: (data) => {
             utils.school.getUnifiedManagementData.invalidate()
-            setNewSubjectName('')
-            setIsAddingSubjectToId(null)
+            setNewClassSubjectName('')
+            // Update local state to reflect change immediately if needed, or rely on invalidate
+            if (managingSubjectsClass) {
+                setManagingSubjectsClass({
+                    ...managingSubjectsClass,
+                    subjects: [...managingSubjectsClass.subjects, data]
+                })
+            }
             toast.success('Mata pelajaran berhasil ditambahkan')
         },
         onError: (err) => toast.error(err.message)
     })
 
-    const updateSubject = trpc.subject.update.useMutation({
-        onSuccess: () => {
+    const removeClassSubject = trpc.classSubject.removeClassSubject.useMutation({
+        onSuccess: (_, variables) => {
             utils.school.getUnifiedManagementData.invalidate()
-            setEditingSubject(null)
-            toast.success('Mata pelajaran berhasil diperbarui')
-        },
-        onError: (err) => toast.error(err.message)
-    })
-
-    const deleteSubject = trpc.subject.delete.useMutation({
-        onSuccess: () => {
-            utils.school.getUnifiedManagementData.invalidate()
-            setDeleteSubjectId(null)
+            if (managingSubjectsClass) {
+                setManagingSubjectsClass({
+                    ...managingSubjectsClass,
+                    subjects: managingSubjectsClass.subjects.filter(s => s.id !== variables.id)
+                })
+            }
             toast.success('Mata pelajaran berhasil dihapus')
         },
         onError: (err) => toast.error(err.message)
@@ -349,44 +352,84 @@ export default function AdminUnified() {
             </Modal>
 
             <Modal
-                isOpen={!!editingSubject}
-                onClose={() => setEditingSubject(null)}
-                title="Edit Mata Pelajaran"
-                maxWidth="450px"
+                isOpen={!!managingSubjectsClass}
+                onClose={() => setManagingSubjectsClass(null)}
+                title={`Mata Pelajaran: ${managingSubjectsClass?.name}`}
+                maxWidth="500px"
             >
-                {editingSubject && (
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const name = formData.get('name') as string;
-                            if (name.trim()) {
-                                updateSubject.mutate({ id: editingSubject.id, name: name.trim() });
-                            }
-                        }}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-                    >
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Mata Pelajaran</label>
+                {managingSubjectsClass && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (newClassSubjectName.trim()) {
+                                    addClassSubject.mutate({
+                                        kelas: managingSubjectsClass.name,
+                                        subject: newClassSubjectName.trim()
+                                    });
+                                }
+                            }}
+                            style={{ display: 'flex', gap: '0.5rem' }}
+                        >
                             <input
                                 required
                                 type="text"
-                                name="name"
-                                defaultValue={editingSubject.name}
+                                value={newClassSubjectName}
+                                onChange={(e) => setNewClassSubjectName(e.target.value)}
                                 className="form-input"
-                                placeholder="Contoh: Matematika..."
-                                autoFocus
+                                style={{ flex: 1 }}
+                                placeholder="Nama Mapel (cth: Matematika)..."
                             />
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                            <button type="button" className="btn btn-secondary" onClick={() => setEditingSubject(null)}>
-                                Batal
+                            <button type="submit" className="btn btn-primary" disabled={addClassSubject.isLoading}>
+                                {addClassSubject.isLoading ? '...' : 'Tambah'}
                             </button>
-                            <button type="submit" className="btn btn-primary" disabled={updateSubject.isLoading}>
-                                {updateSubject.isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </button>
+                        </form>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+                            {managingSubjectsClass.subjects.length > 0 ? (
+                                managingSubjectsClass.subjects.map((sub: any) => (
+                                    <div
+                                        key={sub.id}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '0.75rem 1rem',
+                                            background: 'var(--bg-secondary)',
+                                            borderRadius: '0.75rem',
+                                            border: '1px solid var(--border)'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <BookIcon size={16} style={{ color: 'var(--primary)' }} />
+                                            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{sub.subject}</span>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (confirm(`Hapus ${sub.subject} dari kelas ${managingSubjectsClass.name}?`)) {
+                                                    removeClassSubject.mutate({ id: sub.id });
+                                                }
+                                            }}
+                                            style={{
+                                                padding: '0.4rem',
+                                                borderRadius: '0.5rem',
+                                                border: 'none',
+                                                background: 'transparent',
+                                                color: '#ef4444',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            <TrashIcon size={16} />
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-light)', fontSize: '0.875rem', background: 'var(--bg-secondary)', borderRadius: '1rem' }}>
+                                    Belum ada mata pelajaran untuk kelas ini.
+                                </div>
+                            )}
                         </div>
-                    </form>
+                    </div>
                 )}
             </Modal>
 
@@ -414,17 +457,6 @@ export default function AdminUnified() {
                 onCancel={() => setDeleteClassId(null)}
             />
 
-            <ConfirmDialog
-                isOpen={!!deleteSubjectId}
-                title="Hapus Mata Pelajaran"
-                message="Yakin ingin menghapus mata pelajaran ini?"
-                confirmText="Hapus"
-                cancelText="Batal"
-                danger
-                isLoading={deleteSubject.isLoading}
-                onConfirm={() => deleteSubjectId && deleteSubject.mutate({ id: deleteSubjectId })}
-                onCancel={() => setDeleteSubjectId(null)}
-            />
 
             <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 <div style={{
@@ -573,7 +605,7 @@ export default function AdminUnified() {
                                                     <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', borderBottom: '1.5px solid var(--border)' }}>
                                                         <button onClick={() => setSubTab('classes')} className={`sub-tab-btn ${subTab === 'classes' ? 'active' : ''}`}>Kelas & Subscription</button>
                                                         <button onClick={() => setSubTab('students')} className={`sub-tab-btn ${subTab === 'students' ? 'active' : ''}`}>Daftar Siswa</button>
-                                                        <button onClick={() => setSubTab('subjects')} className={`sub-tab-btn ${subTab === 'subjects' ? 'active' : ''}`}>Mata Pelajaran</button>
+                                                        {/* Removed school-level subjects tab */}
                                                     </div>
 
                                                     {subTab === 'classes' ? (
@@ -611,6 +643,14 @@ export default function AdminUnified() {
                                                                                 <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
                                                                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                                                         <button className="btn-icon-small" onClick={() => setEditingClass(cls)} title="Edit Kelas"><EditIcon size={14} /></button>
+                                                                                        <button
+                                                                                            className="btn-action"
+                                                                                            onClick={() => setManagingSubjectsClass({ id: cls.id, name: cls.name, subjects: (cls as any).subjects || [] })}
+                                                                                            title="Manajemen Mata Pelajaran"
+                                                                                            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                                                                                        >
+                                                                                            <BookIcon size={12} /> {(cls as any).subjects?.length || 0} Mapel
+                                                                                        </button>
                                                                                         <button className="btn-action" onClick={() => setEditingSubscription(cls.name)}>Update Subs</button>
                                                                                         <button className="btn-icon-small" onClick={() => setDeleteClassId(cls.id)} style={{ color: 'var(--danger)' }}><XCloseIcon size={14} /></button>
                                                                                     </div>
@@ -640,7 +680,7 @@ export default function AdminUnified() {
                                                                 </button>
                                                             )}
                                                         </div>
-                                                    ) : subTab === 'students' ? (
+                                                    ) : (
                                                         <SchoolStudentList
                                                             schoolId={expandedSchoolId!}
                                                             onEditUser={(user) => setEditingUser(user)}
@@ -649,48 +689,6 @@ export default function AdminUnified() {
                                                                 setIsAddingUser(true)
                                                             }}
                                                         />
-                                                    ) : (
-                                                        <div className="sub-section">
-                                                            <div style={{ overflowX: 'auto' }}>
-                                                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                                                    <thead>
-                                                                        <tr style={{ color: 'var(--text-light)', fontSize: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
-                                                                            <th style={{ padding: '0.75rem 0.5rem' }}>Nama Mata Pelajaran</th>
-                                                                            <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Aksi</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {(school as any).subjects?.map((sub: any) => (
-                                                                            <tr key={sub.id} className="row-hover">
-                                                                                <td style={{ padding: '0.75rem 0.5rem' }}>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                                        <BookIcon size={14} style={{ color: 'var(--text-light)' }} />
-                                                                                        <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{sub.name}</span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
-                                                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                                        <button className="btn-icon-small" onClick={() => setEditingSubject(sub)}><EditIcon size={14} /></button>
-                                                                                        <button className="btn-icon-small" onClick={() => setDeleteSubjectId(sub.id)} style={{ color: '#ef4444' }}><TrashIcon size={14} /></button>
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                            {isAddingSubjectToId === school.id ? (
-                                                                <form onSubmit={(e) => { e.preventDefault(); if (newSubjectName.trim()) createSubject.mutate({ schoolId: school.id, name: newSubjectName }); }} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                                                                    <input autoFocus type="text" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} placeholder="Nama Mata Pelajaran (cth: Matematika)" className="form-input" style={{ flex: 1, height: '38px', fontSize: '0.875rem' }} />
-                                                                    <button type="submit" className="btn btn-primary btn-sm" disabled={createSubject.isLoading}>{createSubject.isLoading ? '...' : 'Simpan'}</button>
-                                                                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setIsAddingSubjectToId(null)}>Batal</button>
-                                                                </form>
-                                                            ) : (
-                                                                <button className="btn-add-dashed" style={{ marginTop: '1rem' }} onClick={() => setIsAddingSubjectToId(school.id)}>
-                                                                    <PlusIcon size={14} /> Tambah Mata Pelajaran
-                                                                </button>
-                                                            )}
-                                                        </div>
                                                     )}
                                                 </div>
                                             </td>

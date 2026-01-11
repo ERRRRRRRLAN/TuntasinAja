@@ -231,6 +231,11 @@ export const schoolRouter = createTRPCRouter({
             },
         });
 
+        // Fetch all class subjects
+        const allClassSubjects = await (prisma as any).classSubject.findMany({
+            orderBy: { subject: "asc" },
+        });
+
         // Merge the data
         const consolidatedData = schools.map((school) => {
             const processedClasses = school.classes.map((cls) => {
@@ -238,11 +243,15 @@ export const schoolRouter = createTRPCRouter({
                 const countObj = userCounts.find(
                     (uc) => uc.schoolId === school.id && uc.kelas === cls.name
                 );
+                const classSubjects = allClassSubjects.filter(
+                    (cs: any) => cs.kelas === cls.name
+                );
 
                 return {
                     ...cls,
                     userCount: countObj?._count._all || 0,
                     subscription: sub || null,
+                    subjects: classSubjects,
                 };
             });
 
@@ -266,6 +275,7 @@ export const schoolRouter = createTRPCRouter({
                 userCount: lu._count._all,
                 capacity: 40, // Default capacity for legacy classes
                 subscription: subscriptions.find((s: any) => s.kelas === lu.kelas) || null,
+                subjects: allClassSubjects.filter((cs: any) => cs.kelas === lu.kelas),
                 isLegacy: true
             }));
 
@@ -277,7 +287,7 @@ export const schoolRouter = createTRPCRouter({
                 createdAt: school.createdAt,
                 updatedAt: school.updatedAt,
                 classes: [...processedClasses, ...legacyClasses],
-                subjects: school.subjects,
+                subjects: school.subjects, // Keeping for backward compatibility or removing later
                 totalStudents,
                 totalClasses: processedClasses.length + legacyClasses.length,
             };

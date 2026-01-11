@@ -101,52 +101,6 @@ export default function MePage() {
   })
   const isKetua = userData?.isKetua || false
   const isAdmin = userData?.isAdmin || false
-  const userSchoolId = userData?.schoolId || null
-  const userKelas = userData?.kelas || null
-
-  // Get schools for selection
-  const { data: schools } = trpc.school.getSchoolsForSelection.useQuery()
-
-  // Local state for school selection (handled separately from other settings)
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null)
-  const [selectedClass, setSelectedClass] = useState<string | null>(null)
-  const [isUpdatingSchool, setIsUpdatingSchool] = useState(false)
-
-  // Get classes for selected school
-  const { data: classes } = trpc.school.getClasses.useQuery(
-    { schoolId: selectedSchoolId! },
-    { enabled: !!selectedSchoolId }
-  )
-
-  // Sync state with user data
-  useEffect(() => {
-    if (userData) {
-      setSelectedSchoolId(userData.schoolId || null)
-      setSelectedClass(userData.kelas || null)
-    }
-  }, [userData])
-
-  const updateUser = trpc.auth.updateUser.useMutation({
-    onSuccess: () => {
-      setIsUpdatingSchool(false)
-      utils.auth.getUserData.invalidate()
-      toast.success('Informasi sekolah berhasil diperbarui')
-    },
-    onError: (err) => {
-      setIsUpdatingSchool(false)
-      toast.error(err.message)
-    }
-  })
-
-  const handleSchoolUpdate = () => {
-    if (!selectedSchoolId || !selectedClass) return
-    setIsUpdatingSchool(true)
-    updateUser.mutate({
-      userId: session!.user.id,
-      schoolId: selectedSchoolId,
-      kelas: selectedClass
-    })
-  }
 
   // Get settings
   const { data: settings, isLoading: isLoadingSettings } = trpc.userSettings.get.useQuery(undefined, {
@@ -577,73 +531,6 @@ export default function MePage() {
           </div>
         </div>
 
-        {/* School & Class Information */}
-        <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: 'var(--text)' }}>
-              Sekolah & Kelas
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-light)', lineHeight: '1.5' }}>
-              Atur asal sekolah dan kelas Anda
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
-                Sekolah
-              </label>
-              <ComboBox
-                options={schools?.map(s => ({ value: s.id, label: s.name })) || []}
-                value={selectedSchoolId || ''}
-                onChange={(value) => {
-                  setSelectedSchoolId(value)
-                  setSelectedClass(null) // Reset class when school changes
-                }}
-                placeholder="Pilih Sekolah"
-                searchPlaceholder="Cari sekolah..."
-                emptyMessage="Sekolah tidak ditemukan"
-              />
-            </div>
-
-            {selectedSchoolId && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)' }}>
-                  Kelas
-                </label>
-                <ComboBox
-                  options={classes?.map(c => ({ value: c.name, label: c.name })) || []}
-                  value={selectedClass || ''}
-                  onChange={(value) => setSelectedClass(value)}
-                  placeholder="Pilih Kelas"
-                  searchPlaceholder="Cari kelas..."
-                  emptyMessage="Kelas tidak ditemukan"
-                  disabled={!classes}
-                />
-              </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-              <button
-                onClick={handleSchoolUpdate}
-                disabled={isUpdatingSchool || (selectedSchoolId === userSchoolId && selectedClass === userKelas) || !selectedSchoolId || !selectedClass}
-                className="btn btn-primary"
-                style={{
-                  opacity: (selectedSchoolId === userSchoolId && selectedClass === userKelas) ? 0.5 : 1,
-                  cursor: (selectedSchoolId === userSchoolId && selectedClass === userKelas) ? 'default' : 'pointer',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: 'white',
-                  fontWeight: 500
-                }}
-              >
-                {isUpdatingSchool ? 'Menyimpan...' : 'Simpan Perubahan'}
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* Notifikasi & Pengingat */}
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
