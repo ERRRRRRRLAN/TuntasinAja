@@ -113,145 +113,140 @@ export default function AdminUnified() {
     const getStatusBadge = (sub: any) => {
         if (!sub) return <span style={{ color: 'var(--text-light)', fontSize: '0.75rem' }}>-</span>
 
-        // Status logic ( simplified from SubscriptionList )
         const now = new Date()
         const endDate = new Date(sub.subscriptionEndDate)
         const isExpired = endDate < now
 
         if (isExpired) {
             return (
-                <span style={{
-                    color: '#ef4444',
-                    background: '#fee2e2',
-                    padding: '0.125rem 0.5rem',
-                    borderRadius: '4px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    fontSize: '0.7rem',
-                    fontWeight: 600
-                }}>
+                <span className="status-badge" style={{ color: '#be123c', background: '#fff1f2', border: '1px solid #fecdd3' }}>
                     <XIcon size={12} /> Expired
                 </span>
             )
         }
         return (
-            <span style={{
-                color: '#10b981',
-                background: '#d1fae5',
-                padding: '0.125rem 0.5rem',
-                borderRadius: '4px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                fontSize: '0.7rem',
-                fontWeight: 600
-            }}>
+            <span className="status-badge" style={{ color: '#047857', background: '#ecfdf5', border: '1px solid #d1fae5' }}>
                 <CheckIcon size={12} /> Aktif
             </span>
         )
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Header & Global Search */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Header section with search and add button */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '0.5rem 0',
+                gap: '1.5rem',
+                flexWrap: 'wrap',
+                alignItems: 'center'
+            }}>
                 <div>
-                    <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>Pusat Komando Admin</h2>
-                    <p style={{ margin: 0, color: 'var(--text-light)', fontSize: '0.875rem' }}>Kelola seluruh ekosistem melalui satu pintu.</p>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.025em', margin: 0 }}>Pusat Komando</h2>
+                    <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Manajemen sekolah, kelas, dan siswa dalam satu pusat kendali.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', width: '250px' }}>
-                        <SearchIcon size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+
+                <div style={{ display: 'flex', gap: '1rem', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
+                    <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+                        <SearchIcon size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                         <input
                             type="text"
-                            placeholder="Cari sekolah..."
+                            placeholder="Cari sekolah atau alamat..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="form-input"
-                            style={{ paddingLeft: '2.5rem' }}
+                            style={{ paddingLeft: '2.75rem', height: '44px', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', width: '100%' }}
                         />
                     </div>
                     <button
                         className="btn btn-primary"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px 0 rgba(var(--primary-rgb), 0.39)' }}
                         onClick={() => {
                             setSchoolFormData({ name: '', address: '' })
                             setIsCreatingSchool(true)
                         }}
                     >
-                        <PlusIcon size={16} /> Sekolah
+                        <PlusIcon size={18} /> Sekolah
                     </button>
                 </div>
             </div>
 
             {/* Main School Table */}
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '1.25rem', border: '1px solid var(--border)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border)' }}>
-                                <th style={{ width: '50px' }}></th>
-                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>Sekolah</th>
-                                <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>Kelas</th>
-                                <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>Siswa</th>
-                                <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: 'var(--text-light)', fontSize: '0.875rem' }}>Aksi</th>
+                            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1.5px solid var(--border)' }}>
+                                <th style={{ width: '60px' }}></th>
+                                <th style={{ padding: '1.25rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--text-light)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sekolah</th>
+                                <th style={{ padding: '1.25rem 1rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-light)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kelas</th>
+                                <th style={{ padding: '1.25rem 1rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-light)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Siswa</th>
+                                <th style={{ padding: '1.25rem 1rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-light)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredSchools?.map((school) => (
                                 <Fragment key={school.id}>
                                     <tr
+                                        className={`school-row ${expandedSchoolId === school.id ? 'expanded' : ''}`}
                                         style={{
                                             borderBottom: '1px solid var(--border)',
-                                            cursor: 'pointer',
-                                            background: expandedSchoolId === school.id ? 'var(--bg-secondary)' : 'transparent',
-                                            transition: 'background 0.2s'
+                                            cursor: 'pointer'
                                         }}
                                         onClick={() => setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)}
                                     >
                                         <td style={{ textAlign: 'center' }}>
-                                            <div style={{ color: expandedSchoolId === school.id ? 'var(--primary)' : 'var(--text-light)' }}>
-                                                {expandedSchoolId === school.id ? <ChevronDownIcon size={20} /> : <ChevronRightIcon size={20} />}
+                                            <div style={{
+                                                color: expandedSchoolId === school.id ? 'var(--primary)' : 'var(--text-light)',
+                                                transition: 'transform 0.3s ease',
+                                                transform: expandedSchoolId === school.id ? 'rotate(90deg)' : 'rotate(0deg)'
+                                            }}>
+                                                <ChevronRightIcon size={20} />
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <td style={{ padding: '1.25rem 1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{
-                                                    width: '40px', height: '40px', borderRadius: '0.75rem',
-                                                    background: expandedSchoolId === school.id ? 'white' : 'var(--bg-secondary)',
+                                                    width: '44px', height: '44px', borderRadius: '1rem',
+                                                    background: expandedSchoolId === school.id ? 'var(--primary)10' : 'var(--bg-secondary)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    color: expandedSchoolId === school.id ? 'var(--primary)' : 'inherit',
-                                                    boxShadow: expandedSchoolId === school.id ? 'var(--shadow-sm)' : 'none'
+                                                    color: expandedSchoolId === school.id ? 'var(--primary)' : 'var(--text-light)',
+                                                    transition: 'all 0.3s',
+                                                    boxShadow: expandedSchoolId === school.id ? 'inset 0 0 0 1px var(--primary)30' : 'none'
                                                 }}>
-                                                    <SchoolIcon size={20} />
+                                                    <SchoolIcon size={22} />
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>{school.name}</div>
-                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{school.address || 'Tanpa alamat'}</div>
+                                                    <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: '1rem' }}>{school.name}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginTop: '0.125rem' }}>{school.address || 'Alamat belum disetel'}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <span className="badge-count">{school.totalClasses}</span>
+                                        <td style={{ padding: '1.25rem 1rem', textAlign: 'center' }}>
+                                            <span className="badge-count" style={{ background: expandedSchoolId === school.id ? 'var(--primary)' : 'var(--bg-secondary)', color: expandedSchoolId === school.id ? 'white' : 'var(--text)' }}>
+                                                {school.totalClasses}
+                                            </span>
                                         </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <span className="badge-count" style={{ background: 'var(--bg-secondary)', color: 'var(--text)' }}>{school.totalStudents}</span>
+                                        <td style={{ padding: '1.25rem 1rem', textAlign: 'center' }}>
+                                            <span className="badge-count" style={{ background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--text)' }}>
+                                                {school.totalStudents}
+                                            </span>
                                         </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
+                                        <td style={{ padding: '1.25rem 1rem', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                                                 <button className="btn-icon" title="Edit Sekolah" onClick={(e) => {
                                                     e.stopPropagation();
                                                     setEditingSchool(school);
                                                     setSchoolFormData({ name: school.name, address: school.address || '' });
                                                 }}>
-                                                    <EditIcon size={18} />
+                                                    <EditIcon size={20} />
                                                 </button>
-                                                <button className="btn-icon" title="Hapus Sekolah" style={{ color: 'var(--danger)' }} onClick={(e) => {
+                                                <button className="btn-icon" title="Hapus Sekolah" style={{ color: '#ef4444' }} onClick={(e) => {
                                                     e.stopPropagation();
                                                     setDeleteSchoolId(school.id);
                                                 }}>
-                                                    <TrashIcon size={18} />
+                                                    <TrashIcon size={20} />
                                                 </button>
                                             </div>
                                         </td>
@@ -261,36 +256,24 @@ export default function AdminUnified() {
                                     {expandedSchoolId === school.id && (
                                         <tr style={{ background: 'var(--bg-secondary)' }}>
                                             <td colSpan={5} style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
-                                                <div style={{
+                                                <div className="detail-container" style={{
                                                     background: 'white',
-                                                    borderRadius: '0 0 1rem 1rem',
-                                                    padding: '1.5rem',
-                                                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
-                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '0 0 1.5rem 1.5rem',
+                                                    padding: '2rem',
+                                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                                                    border: '1.5px solid var(--border)',
                                                     borderTop: 'none'
                                                 }}>
-                                                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+                                                    <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', borderBottom: '1.5px solid var(--border)' }}>
                                                         <button
                                                             onClick={() => setSubTab('classes')}
-                                                            style={{
-                                                                padding: '0.75rem 0', background: 'none', border: 'none', cursor: 'pointer',
-                                                                color: subTab === 'classes' ? 'var(--primary)' : 'var(--text-light)',
-                                                                borderBottom: subTab === 'classes' ? '2px solid var(--primary)' : '2px solid transparent',
-                                                                fontWeight: subTab === 'classes' ? 600 : 500,
-                                                                fontSize: '0.875rem'
-                                                            }}
+                                                            className={`sub-tab-btn ${subTab === 'classes' ? 'active' : ''}`}
                                                         >
                                                             Kelas & Subscription
                                                         </button>
                                                         <button
                                                             onClick={() => setSubTab('students')}
-                                                            style={{
-                                                                padding: '0.75rem 0', background: 'none', border: 'none', cursor: 'pointer',
-                                                                color: subTab === 'students' ? 'var(--primary)' : 'var(--text-light)',
-                                                                borderBottom: subTab === 'students' ? '2px solid var(--primary)' : '2px solid transparent',
-                                                                fontWeight: subTab === 'students' ? 600 : 500,
-                                                                fontSize: '0.875rem'
-                                                            }}
+                                                            className={`sub-tab-btn ${subTab === 'students' ? 'active' : ''}`}
                                                         >
                                                             Daftar Siswa
                                                         </button>
@@ -502,112 +485,214 @@ export default function AdminUnified() {
 
             {/* Styles */}
             <style jsx>{`
-        .btn-icon-small {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--text-light);
-          padding: 0.25rem;
-          border-radius: 0.25rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-        }
-        .btn-icon-small:hover {
-          background: #fee2e2;
-          color: #ef4444;
-        }
-        .badge-count {
-          display: inline-block;
-          padding: 0.25rem 0.625rem;
-          background: var(--primary);
-          color: white;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          min-width: 28px;
-        }
-        .badge-legacy {
-          font-size: 10px;
-          background: #fee2e2;
-          color: #b91c1c;
-          padding: 1px 6px;
-          border-radius: 4px;
-          font-weight: 600;
-        }
-        .btn-icon {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--text-light);
-          padding: 0.5rem;
-          border-radius: 0.5rem;
-          transition: all 0.2s;
-        }
-        .btn-icon:hover {
-          background: white;
-          color: var(--primary);
-          box-shadow: var(--shadow-sm);
-        }
-        .btn-action {
-          padding: 0.375rem 0.75rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 0.375rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--text);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .btn-action:hover {
-          background: white;
-          border-color: var(--primary);
-          color: var(--primary);
-        }
-        .btn-add-dashed {
-          width: 100%;
-          padding: 0.75rem;
-          background: none;
-          border: 2px dashed var(--border);
-          border-radius: 0.75rem;
-          color: var(--text-light);
-          font-size: 0.875rem;
-          display: flex;
-          alignItems: center;
-          justifyContent: center;
-          gap: 0.5rem;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .btn-add-dashed:hover {
-          border-color: var(--primary);
-          color: var(--primary);
-          background: rgba(var(--primary-rgb), 0.02);
-        }
-        .row-hover {
-          transition: background 0.15s;
-        }
-        .row-hover:hover {
-          background: rgba(var(--primary-rgb), 0.01);
-        }
-        .modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.4);
-          display: flex; alignItems: center; justifyContent: center;
-          z-index: 1000;
-          backdrop-filter: blur(8px);
-        }
-        .modal-content {
-          background: var(--card);
-          padding: 2rem;
-          border-radius: 1.25rem;
-          width: 90%;
-          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-        }
-      `}</style>
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes scaleIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                @keyframes slideInRight {
+                    from { opacity: 0; transform: translateX(10px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+
+                .admin-unified-container {
+                    animation: fadeInUp 0.4s ease-out forwards;
+                }
+
+                .status-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 0.2rem 0.6rem;
+                    border-radius: 9999px;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.025em;
+                }
+
+                .btn-icon-small {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--text-light);
+                    padding: 0.35rem;
+                    border-radius: 0.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .btn-icon-small:hover {
+                    background: #fee2e2;
+                    color: #ef4444;
+                    transform: scale(1.1);
+                }
+
+                .badge-count {
+                    display: inline-block;
+                    padding: 0.25rem 0.75rem;
+                    background: var(--primary);
+                    color: white;
+                    border-radius: 8px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    min-width: 32px;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.2);
+                }
+
+                .badge-legacy {
+                    font-size: 10px;
+                    background: #fff1f2;
+                    color: #be123c;
+                    padding: 2px 8px;
+                    border-radius: 6px;
+                    font-weight: 700;
+                    border: 1px solid #fecdd3;
+                    letter-spacing: 0.025em;
+                }
+
+                .btn-icon {
+                    background: transparent;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--text-light);
+                    padding: 0.6rem;
+                    border-radius: 0.75rem;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .btn-icon:hover {
+                    background: white;
+                    color: var(--primary);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                    transform: translateY(-1px);
+                }
+
+                .btn-action {
+                    padding: 0.4rem 0.9rem;
+                    background: white;
+                    border: 1.5px solid var(--border);
+                    border-radius: 0.6rem;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    color: var(--text);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                }
+                .btn-action:hover {
+                    border-color: var(--primary);
+                    color: var(--primary);
+                    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.1);
+                }
+
+                .btn-add-dashed {
+                    width: 100%;
+                    padding: 0.85rem;
+                    background: rgba(var(--primary-rgb), 0.01);
+                    border: 2px dashed var(--border);
+                    border-radius: 1rem;
+                    color: var(--text-light);
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.6rem;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .btn-add-dashed:hover {
+                    border-color: var(--primary);
+                    color: var(--primary);
+                    background: rgba(var(--primary-rgb), 0.04);
+                    border-style: solid;
+                }
+
+                .row-hover {
+                    transition: all 0.2s;
+                }
+                .row-hover:hover {
+                    background: rgba(var(--primary-rgb), 0.02);
+                }
+
+                .school-row {
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .school-row:hover {
+                    background: #fafafa !important;
+                }
+                .school-row.expanded {
+                    background: var(--bg-secondary) !important;
+                }
+
+                .detail-container {
+                    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+
+                .sub-tab-btn {
+                    padding: 0.75rem 0;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--text-light);
+                    border-bottom: 2px solid transparent;
+                    font-weight: 600;
+                    fontSize: 0.875rem;
+                    transition: all 0.2s;
+                    position: relative;
+                }
+                .sub-tab-btn.active {
+                    color: var(--primary);
+                    border-bottom-color: var(--primary);
+                }
+                .sub-tab-btn::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -2px;
+                    left: 0;
+                    width: 0;
+                    height: 2px;
+                    background: var(--primary);
+                    transition: width 0.3s;
+                }
+                .sub-tab-btn:hover::after {
+                    width: 50%;
+                }
+                .sub-tab-btn.active::after {
+                    width: 100%;
+                }
+
+                .modal-overlay {
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.3);
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(12px);
+                    animation: scaleIn 0.2s ease-out;
+                }
+                .modal-content {
+                    background: white;
+                    padding: 2.5rem;
+                    border-radius: 1.5rem;
+                    width: 90%;
+                    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    animation: fadeInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+            `}</style>
         </div>
     )
 }
@@ -616,7 +701,7 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
     const { data: students, isLoading } = trpc.auth.getUsersBySchool.useQuery({ schoolId })
     const [filter, setFilter] = useState('')
 
-    if (isLoading) return <LoadingSpinner size={24} style={{ margin: '2rem auto' }} />
+    if (isLoading) return <LoadingSpinner size={32} style={{ margin: '3rem auto' }} />
 
     const filtered = students?.filter(s =>
         s.name.toLowerCase().includes(filter.toLowerCase()) ||
@@ -625,46 +710,69 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
     )
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'scaleIn 0.3s ease-out' }}>
             <div style={{ position: 'relative' }}>
-                <SearchIcon size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                <SearchIcon size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                 <input
                     type="text"
-                    placeholder="Cari nama, email, atau kelas..."
+                    placeholder="Cari nama, email, atau kelas siswa..."
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                     className="form-input"
-                    style={{ paddingLeft: '2.25rem', fontSize: '0.875rem', height: '36px' }}
+                    style={{
+                        paddingLeft: '2.75rem',
+                        fontSize: '0.875rem',
+                        height: '40px',
+                        borderRadius: '0.75rem',
+                        background: 'var(--bg-secondary)',
+                        border: '1.5px solid var(--border)'
+                    }}
                 />
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                        <tr style={{ color: 'var(--text-light)', fontSize: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '0.75rem 0.5rem' }}>Siswa</th>
-                            <th style={{ padding: '0.75rem 0.5rem' }}>Kelas</th>
-                            <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Aksi</th>
+                        <tr style={{ background: 'var(--bg-secondary)', color: 'var(--text-light)', fontSize: '0.7rem', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <th style={{ padding: '1rem' }}>Siswa</th>
+                            <th style={{ padding: '1rem' }}>Kelas</th>
+                            <th style={{ padding: '1rem', textAlign: 'right' }}>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filtered?.map(user => (
-                            <tr key={user.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                <td style={{ padding: '0.75rem 0.5rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        {user.isAdmin && <CrownIcon size={14} style={{ color: 'var(--primary)' }} />}
+                            <tr key={user.id} className="row-hover" style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <div style={{
+                                            width: '36px', height: '36px', borderRadius: '50%',
+                                            background: user.isAdmin ? 'var(--primary)10' : 'var(--bg-secondary)',
+                                            color: user.isAdmin ? 'var(--primary)' : 'var(--text-light)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            {user.isAdmin ? <CrownIcon size={16} /> : <UserIcon size={16} />}
+                                        </div>
                                         <div>
-                                            <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.875rem' }}>{user.name}</div>
+                                            <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9rem' }}>{user.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{user.email}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td style={{ padding: '0.75rem 0.5rem' }}>
-                                    <span style={{ fontSize: '0.875rem' }}>{user.kelas || '-'}</span>
+                                <td style={{ padding: '1rem' }}>
+                                    <span style={{
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '0.5rem',
+                                        background: 'var(--bg-secondary)',
+                                        color: 'var(--text)'
+                                    }}>
+                                        {user.kelas || 'Belum ada kelas'}
+                                    </span>
                                 </td>
-                                <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
-                                    <button className="btn-icon" onClick={() => onEditUser(user)}>
-                                        <SettingsIcon size={16} />
+                                <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                    <button className="btn-icon" style={{ padding: '0.4rem' }} onClick={() => onEditUser(user)}>
+                                        <EditIcon size={18} />
                                     </button>
                                 </td>
                             </tr>
@@ -672,7 +780,9 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
                     </tbody>
                 </table>
                 {filtered?.length === 0 && (
-                    <p style={{ textAlign: 'center', color: 'var(--text-light)', fontSize: '0.875rem', padding: '1rem' }}>Tidak ada siswa ditemukan.</p>
+                    <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)' }}>
+                        <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Tidak ada siswa yang cocok dengan pencarian.</p>
+                    </div>
                 )}
             </div>
         </div>
