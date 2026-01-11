@@ -50,7 +50,8 @@ export default function AnnouncementPage() {
   const isAdmin = userData?.isAdmin || false
   const isKetua = userData?.isKetua || false
 
-  const { data: announcements, isLoading, refetch } = trpc.announcement.getAll.useQuery(undefined, {
+  const { data: announcements, isLoading: isAnnouncementsLoading, isError, error, refetch } = trpc.announcement.getAll.useQuery(undefined, {
+    enabled: sessionStatus !== 'loading',
     refetchInterval: (query) => {
       if (typeof document !== 'undefined' && document.hidden) {
         return false
@@ -59,6 +60,9 @@ export default function AnnouncementPage() {
     },
     refetchOnWindowFocus: false, // Disable to prevent flickering
   })
+
+  // Combine loading states
+  const isLoading = sessionStatus === 'loading' || (isAnnouncementsLoading && announcements === undefined)
 
   const { data: unreadData } = trpc.announcement.getUnreadCount.useQuery(undefined, {
     enabled: !!session,
@@ -124,8 +128,56 @@ export default function AnnouncementPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-        <LoadingSpinner size={32} />
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '1.5rem',
+        animation: 'fadeIn 0.3s ease-in-out'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          border: '3px solid var(--border)',
+          borderTopColor: 'var(--primary)',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: 'var(--text-light)', fontSize: '0.9375rem', fontWeight: 500 }}>
+          Memuat pengumuman...
+        </p>
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        `}</style>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div style={{
+        textAlign: 'center',
+        padding: '4rem 2rem',
+        background: 'var(--bg-secondary)',
+        borderRadius: '1rem',
+        border: '1px solid var(--border)',
+        margin: '2rem 0'
+      }}>
+        <AlertTriangleIcon size={48} style={{ color: 'var(--danger)', marginBottom: '1rem' }} />
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Gagal Memuat Pengumuman</h2>
+        <p style={{ color: 'var(--text-light)', marginBottom: '1.5rem' }}>
+          {error?.message || 'Terjadi kesalahan saat mengambil data pengumuman.'}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="btn btn-primary"
+          style={{ padding: '0.75rem 1.5rem' }}
+        >
+          Coba Lagi
+        </button>
       </div>
     )
   }

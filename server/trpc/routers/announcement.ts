@@ -25,28 +25,34 @@ export const announcementRouter = createTRPCRouter({
 
     const now = new Date()
 
-      // Get announcements that match user's context
-      const announcements = await prisma.announcement.findMany({
+    // Get announcements that match user's context
+    const announcements = await prisma.announcement.findMany({
       where: {
         AND: [
           {
+            OR: isAdmin
+              ? [
+                { targetType: 'global' as const },
+                { targetType: 'class' as const },
+                { targetType: 'subject' as const },
+              ]
+              : [
+                // Global announcements
+                { targetType: 'global' as const },
+                // Class-specific announcements (if user has kelas)
+                ...(userKelas ? [{ targetType: 'class' as const, targetKelas: userKelas }] : []),
+                // Subject-specific announcements (if user has kelas)
+                ...(userKelas ? [{ targetType: 'subject' as const, targetKelas: userKelas }] : []),
+              ],
+          },
+          {
             OR: [
-              // Global announcements
-              { targetType: 'global' as const },
-              // Class-specific announcements (if user has kelas)
-              ...(userKelas ? [{ targetType: 'class' as const, targetKelas: userKelas }] : []),
-              // Subject-specific announcements (if user has kelas)
-              ...(userKelas ? [{ targetType: 'subject' as const, targetKelas: userKelas }] : []),
+              { expiresAt: null },
+              { expiresAt: { gt: now } },
             ],
           },
-            {
-              OR: [
-                { expiresAt: null },
-                { expiresAt: { gt: now } },
-              ],
-            },
-          ],
-        },
+        ],
+      },
       include: {
         author: {
           select: {
@@ -57,10 +63,10 @@ export const announcementRouter = createTRPCRouter({
         },
         reads: userId
           ? {
-              where: {
-                userId: userId,
-              },
-            }
+            where: {
+              userId: userId,
+            },
+          }
           : false,
       },
       orderBy: [
@@ -332,6 +338,19 @@ export const announcementRouter = createTRPCRouter({
           },
           'announcement'
         )
+      } else if (input.targetType === 'subject' && input.targetKelas && input.targetSubject) {
+        await sendNotificationToClass(
+          input.targetKelas,
+          `📚 ${input.targetSubject}: ${input.title}`,
+          input.content.substring(0, 100) + (input.content.length > 100 ? '...' : ''),
+          {
+            type: 'announcement',
+            announcementId: announcement.id,
+            priority: input.priority,
+            subject: input.targetSubject,
+          },
+          'announcement'
+        )
       }
 
       return announcement
@@ -541,9 +560,9 @@ export const announcementRouter = createTRPCRouter({
     const whereClause = user.isAdmin
       ? undefined // Admin sees all
       : {
-          // ketua sees only their class
-          targetKelas: user.kelas,
-        }
+        // ketua sees only their class
+        targetKelas: user.kelas,
+      }
 
     const announcements = await prisma.announcement.findMany({
       where: whereClause,
