@@ -3,30 +3,9 @@
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { toast } from '@/components/ui/ToastContainer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-
-const MATA_PELAJARAN = [
-  'Dasar BC',
-  'Bahasa Inggris',
-  'Seni Musik',
-  'Koding dan Kecerdasan Artificial',
-  'Matematika',
-  'Mulok BK',
-  'Mulok Batik',
-  'Pendidikan Pancasila',
-  'Bahasa Indonesia',
-  'Proj IPAS',
-  'Sejarah',
-  'PJOK',
-  'PAI & BP',
-  'Informatika',
-  // Legacy mata pelajaran (untuk backward compatibility)
-  'PAI',
-  'Pendidikan Kewarganegaraan Negara',
-  'Dasar PPLG',
-  'IPAS',
-]
 
 interface CreateThreadFormProps {
   onSuccess?: () => void
@@ -34,23 +13,32 @@ interface CreateThreadFormProps {
 
 export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const utils = trpc.useUtils()
 
+  const { data: userData } = trpc.auth.getUserData.useQuery(undefined, {
+    enabled: !!session,
+  })
+  const userKelas = userData?.kelas || null
+
+  const { data: classSubjects } = trpc.classSubject.getClassSubjects.useQuery(
+    { kelas: userKelas || undefined },
+    { enabled: !!session && !!userKelas }
+  )
+  const subjectOptions = classSubjects?.map((s: any) => s.subject) || []
+
   const createThread = trpc.thread.create.useMutation({
     onSuccess: async (data) => {
       if (data.type === 'comment') {
         console.info('[INFO]', `PR "${data.thread.title}" hari ini sudah dibuat oleh ${data.thread.author.name}. Postingan Anda ditambahkan sebagai sub tugas.`)
-      } else {
-        // Toast notification removed: User requested to remove UI notifications
       }
       setTitle('')
       setComment('')
       setIsSubmitting(false)
-      // Invalidate and refetch immediately
       await utils.thread.getAll.invalidate()
       await utils.thread.getAll.refetch()
       router.refresh()
@@ -60,23 +48,22 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
       setIsSubmitting(false)
       const errorMessage = error.message || 'Gagal membuat tugas. Silakan coba lagi.'
       console.error('[ERROR]', errorMessage)
-      toast.error(errorMessage, 5000) // Show error toast for 5 seconds
+      toast.error(errorMessage, 5000)
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Prevent double submission
+
     if (isSubmitting || createThread.isLoading) {
       return
     }
-    
+
     if (!title) {
       console.warn('[WARNING] Pilih mata pelajaran terlebih dahulu!')
       return
     }
-    
+
     setIsSubmitting(true)
     createThread.mutate({ title, comment: comment || undefined })
   }
@@ -96,7 +83,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
             required
           >
             <option value="">-- Pilih Mata Pelajaran --</option>
-            {MATA_PELAJARAN.map((mapel) => (
+            {subjectOptions.map((mapel) => (
               <option key={mapel} value={mapel}>
                 {mapel}
               </option>

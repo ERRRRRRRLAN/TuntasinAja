@@ -46,27 +46,7 @@ const FILTER_OPTIONS: FilterOption[] = [
   },
 ];
 
-const MATA_PELAJARAN = [
-  "Dasar BC",
-  "Bahasa Inggris",
-  "Seni Musik",
-  "Koding dan Kecerdasan Artificial",
-  "Matematika",
-  "Mulok BK",
-  "Mulok Batik",
-  "Pendidikan Pancasila",
-  "Bahasa Indonesia",
-  "Proj IPAS",
-  "Sejarah",
-  "PJOK",
-  "PAI & BP",
-  "Informatika",
-  // Legacy mata pelajaran (untuk backward compatibility)
-  "PAI",
-  "Pendidikan Kewarganegaraan Negara",
-  "Dasar PPLG",
-  "IPAS",
-];
+const MATA_PELAJARAN: string[] = [];
 
 interface AdvancedFilterProps {
   value: AdvancedFilterValue;
