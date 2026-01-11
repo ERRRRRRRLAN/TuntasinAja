@@ -142,13 +142,12 @@ export default function AdminUnified() {
         <>
             {/* Modals for CRUD using generic Modal component */}
             <Modal
-                isOpen={isCreatingSchool || !!editingSchool || isAddingUser}
+                isOpen={isCreatingSchool || !!editingSchool}
                 onClose={() => {
                     setIsCreatingSchool(false);
                     setEditingSchool(null);
-                    setIsAddingUser(false);
                 }}
-                title={isAddingUser ? 'Tambah User Baru' : editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
+                title={editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
                 maxWidth="450px"
             >
                 <form
@@ -214,8 +213,12 @@ export default function AdminUnified() {
             </Modal>
 
             <Modal
-                isOpen={!!editingUser}
-                onClose={() => setEditingUser(null)}
+                isOpen={!!editingUser || isAddingUser}
+                onClose={() => {
+                    setEditingUser(null)
+                    setIsAddingUser(false)
+                }}
+                title={editingUser ? 'Edit User' : 'Tambah User Baru'}
                 maxWidth="600px"
             >
                 {editingUser && (
