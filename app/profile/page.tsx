@@ -19,14 +19,15 @@ import AnnouncementManagement from '@/components/admin/AnnouncementManagement'
 import AutoDeleteExpiredButton from '@/components/admin/AutoDeleteExpiredButton'
 import TestDeadlineReminderButton from '@/components/admin/TestDeadlineReminderButton'
 import SchoolManagement from '@/components/admin/SchoolManagement'
-import { UserIcon, BookIcon, MessageIcon, SettingsIcon, BellIcon, PlusIcon, PackageIcon, XIconSmall, SchoolIcon } from '@/components/ui/Icons'
+import AdminUnified from '@/components/admin/AdminUnified'
+import { UserIcon, BookIcon, MessageIcon, SettingsIcon, BellIcon, PlusIcon, PackageIcon, XIconSmall, SchoolIcon, CrownIcon } from '@/components/ui/Icons'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [showAddUser, setShowAddUser] = useState(false)
   const [showBulkAddUser, setShowBulkAddUser] = useState(false)
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings' | 'announcements' | 'schools'>('users')
+  const [activeTab, setActiveTab] = useState<'unified' | 'users' | 'subscriptions' | 'subjects' | 'feedback' | 'settings' | 'announcements' | 'schools'>('unified')
   const [hasSessionCookie, setHasSessionCookie] = useState(true) // Assume true initially
   const utils = trpc.useUtils()
 
@@ -181,6 +182,29 @@ export default function ProfilePage() {
               scrollbarWidth: 'thin',
               scrollbarColor: 'var(--border) transparent'
             }}>
+              <button
+                onClick={() => setActiveTab('unified')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: activeTab === 'unified' ? 'var(--primary)' : 'transparent',
+                  color: activeTab === 'unified' ? 'white' : 'var(--text-light)',
+                  border: 'none',
+                  borderBottom: activeTab === 'unified' ? '2px solid var(--primary)' : '2px solid transparent',
+                  cursor: 'pointer',
+                  fontWeight: activeTab === 'unified' ? 600 : 400,
+                  fontSize: '0.875rem',
+                  transition: 'all 0.2s',
+                  marginBottom: '-2px',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <CrownIcon size={16} />
+                <span>Pusat Komando</span>
+              </button>
               <button
                 onClick={() => setActiveTab('users')}
                 style={{
@@ -363,6 +387,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Tab Content */}
+            {activeTab === 'unified' && (
+              <div style={{ marginTop: '1rem' }}>
+                <AdminUnified />
+              </div>
+            )}
+
             {activeTab === 'users' && (
               <>
                 {showAddUser && (

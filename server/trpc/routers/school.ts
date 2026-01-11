@@ -186,4 +186,79 @@ export const schoolRouter = createTRPCRouter({
                 usersUpdated: updateResult.count,
             };
         }),
+
+    // Get consolidated data for the unified admin panel
+    getUnifiedManagementData: adminProcedure.query(async () => {
+        const schools = await prisma.school.findMany({
+            orderBy: { name: "asc" },
+            include: {
+                classes: {
+                    orderBy: { name: "asc" },
+                },
+            },
+        });
+
+        // Fetch all subscriptions
+        const subscriptions = await (prisma as any).classSubscription.findMany();
+
+        // Get user counts grouped by school and kelas string
+        const userCounts = await prisma.user.groupBy({
+            by: ["schoolId", "kelas"],
+            _count: {
+                _all: true,
+            },
+        });
+
+        // Merge the data
+        const consolidatedData = schools.map((school) => {
+            const processedClasses = school.classes.map((cls) => {
+                const sub = subscriptions.find((s: any) => s.kelas === cls.name);
+                const countObj = userCounts.find(
+                    (uc) => uc.schoolId === school.id && uc.kelas === cls.name
+                );
+
+                return {
+                    ...cls,
+                    userCount: countObj?._count._all || 0,
+                    subscription: sub || null,
+                };
+            });
+
+            // Calculate total students across all classes in this school
+            const totalStudents = userCounts
+                .filter((uc) => uc.schoolId === school.id)
+                .reduce((acc, curr) => acc + curr._count._all, 0);
+
+            // Check if there are users with schoolId but whose kelas is NOT in the Class model
+            // (Legacy/Inconsistent data)
+            const classNamesInModel = new Set(processedClasses.map(c => c.name));
+            const legacyUsers = userCounts.filter(uc =>
+                uc.schoolId === school.id &&
+                uc.kelas &&
+                !classNamesInModel.has(uc.kelas)
+            );
+
+            const legacyClasses = legacyUsers.map(lu => ({
+                id: `legacy-${lu.kelas}`,
+                name: lu.kelas,
+                userCount: lu._count._all,
+                subscription: subscriptions.find((s: any) => s.kelas === lu.kelas) || null,
+                isLegacy: true
+            }));
+
+            return {
+                id: school.id,
+                name: school.name,
+                address: school.address,
+                logoUrl: school.logoUrl,
+                createdAt: school.createdAt,
+                updatedAt: school.updatedAt,
+                classes: [...processedClasses, ...legacyClasses],
+                totalStudents,
+                totalClasses: processedClasses.length + legacyClasses.length,
+            };
+        });
+
+        return consolidatedData;
+    }),
 });

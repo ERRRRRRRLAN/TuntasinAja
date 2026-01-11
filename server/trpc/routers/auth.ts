@@ -380,6 +380,34 @@ export const authRouter = createTRPCRouter({
     return users;
   }),
 
+  getUsersBySchool: adminProcedure
+    .input(z.object({ schoolId: z.string() }))
+    .query(async ({ input }) => {
+      const users = (await prisma.user.findMany({
+        where: { schoolId: input.schoolId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          isDanton: true,
+          kelas: true,
+          createdAt: true,
+          permission: {
+            select: {
+              permission: true,
+              canCreateAnnouncement: true,
+            },
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+      })) as any[];
+
+      return users;
+    }),
+
   // Update user (Admin only)
   updateUser: rateLimitedAdminProcedure
     .input(
