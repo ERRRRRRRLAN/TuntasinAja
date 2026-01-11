@@ -588,5 +588,49 @@ export const announcementRouter = createTRPCRouter({
 
     return announcements
   }),
+  // Get users for tagging
+  getTaggableUsers: protectedProcedure
+    .input(z.object({
+      targetType: z.enum(['global', 'class', 'subject']),
+      targetKelas: z.string().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isAdmin: true, kelas: true }
+      })
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        })
+      }
+
+      const whereClause: any = {}
+
+      if (!user.isAdmin) {
+        // Non-admin can only tag people in their class
+        whereClause.kelas = user.kelas
+      } else if (input.targetType === 'class' && input.targetKelas) {
+        // Admin can filter by target kelas if specified
+        whereClause.kelas = input.targetKelas
+      }
+
+      const users = await prisma.user.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      })
+
+      return users
+    }),
 })
 

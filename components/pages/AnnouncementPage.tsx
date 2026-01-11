@@ -12,6 +12,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/ToastContainer'
 import { useUserPermission } from '@/hooks/useUserPermission'
 import CreateAnnouncementQuickView from '@/components/announcements/CreateAnnouncementQuickView'
+import FormattedText from '@/components/ui/FormattedText'
 
 export default function AnnouncementPage() {
   const { data: session, status: sessionStatus } = useSession()
@@ -367,7 +368,8 @@ export default function AnnouncementPage() {
 
                   {/* Content Preview */}
                   {!isSelected && (
-                    <p
+                    <FormattedText
+                      text={announcement.content}
                       style={{
                         color: 'var(--text-light)',
                         fontSize: '0.875rem',
@@ -377,25 +379,20 @@ export default function AnnouncementPage() {
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                       }}
-                    >
-                      {announcement.content}
-                    </p>
+                    />
                   )}
 
                   {/* Full Content */}
                   {isSelected && (
                     <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                      <div
+                      <FormattedText
+                        text={announcement.content}
                         style={{
                           color: 'var(--text)',
                           fontSize: '0.9375rem',
                           lineHeight: 1.6,
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
                         }}
-                      >
-                        {announcement.content}
-                      </div>
+                      />
                       {expiresAtJakarta && (
                         <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
                           <AlertTriangleIcon size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />

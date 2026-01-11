@@ -32,6 +32,11 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionFilter, setMentionFilter] = useState('')
+  const [mentionIndex, setMentionIndex] = useState(0)
+  const [cursorPosition, setCursorPosition] = useState(0)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -105,6 +110,74 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
       console.error('[ERROR]', error.message || 'Gagal membuat pengumuman')
     },
   })
+
+  // Get taggable users
+  const { data: taggableUsers } = trpc.announcement.getTaggableUsers.useQuery(
+    { targetType, targetKelas: targetKelas || undefined },
+    { enabled: !!session }
+  )
+
+  const filteredUsers = taggableUsers?.filter(u =>
+    u.name.toLowerCase().includes(mentionFilter.toLowerCase())
+  ).slice(0, 5) || []
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    const cursor = e.target.selectionStart
+    setContent(value)
+    setCursorPosition(cursor)
+
+    // Check if we should show mentions
+    const textBeforeCursor = value.substring(0, cursor)
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/)
+
+    if (mentionMatch) {
+      setShowMentions(true)
+      setMentionFilter(mentionMatch[1])
+      setMentionIndex(0)
+    } else {
+      setShowMentions(false)
+    }
+  }
+
+  const insertMention = (name: string) => {
+    const textBeforeCursor = content.substring(0, cursorPosition)
+    const textAfterCursor = content.substring(cursorPosition)
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/)
+
+    if (mentionMatch) {
+      const pseudoUsername = name.replace(/\s+/g, '')
+      const newTextBefore = textBeforeCursor.substring(0, mentionMatch.index) + '@' + pseudoUsername + ' '
+      setContent(newTextBefore + textAfterCursor)
+      setShowMentions(false)
+
+      // Focus back to textarea
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus()
+          const newPos = newTextBefore.length
+          textareaRef.current.setSelectionRange(newPos, newPos)
+        }
+      }, 0)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showMentions && filteredUsers.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setMentionIndex(prev => (prev + 1) % filteredUsers.length)
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setMentionIndex(prev => (prev - 1 + filteredUsers.length) % filteredUsers.length)
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault()
+        insertMention(filteredUsers[mentionIndex].name)
+      } else if (e.key === 'Escape') {
+        setShowMentions(false)
+      }
+    }
+  }
 
   const handleClose = useCallback(() => {
     setIsQuickViewOpen(false)
@@ -303,16 +376,53 @@ export default function CreateAnnouncementQuickView({ onClose }: CreateAnnouncem
 
             <div className="form-group">
               <label htmlFor="announcementContent">Konten *</label>
-              <textarea
-                id="announcementContent"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Masukkan isi pengumuman"
-                rows={6}
-                maxLength={5000}
-                required
-              />
-              <small className="form-hint">Maksimal 5000 karakter</small>
+              <div style={{ position: 'relative' }}>
+                <textarea
+                  id="announcementContent"
+                  ref={textareaRef}
+                  value={content}
+                  onChange={handleContentChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Masukkan isi pengumuman (gunakan @ untuk tag, *tebal*, _miring_)"
+                  rows={6}
+                  maxLength={5000}
+                  required
+                />
+
+                {showMentions && filteredUsers.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    left: 0,
+                    width: '100%',
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.5rem',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 100,
+                    overflow: 'hidden'
+                  }}>
+                    {filteredUsers.map((user, idx) => (
+                      <div
+                        key={user.id}
+                        onClick={() => insertMention(user.name)}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          cursor: 'pointer',
+                          background: idx === mentionIndex ? 'var(--bg-secondary)' : 'transparent',
+                          borderBottom: idx < filteredUsers.length - 1 ? '1px solid var(--border)' : 'none',
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
+                      >
+                        <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{user.name}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>@{user.name.replace(/\s+/g, '')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <small className="form-hint">Gunakan @ untuk tag teman, *bold*, _italic_, ~strike~, `code`</small>
             </div>
 
             <div className="form-group">
