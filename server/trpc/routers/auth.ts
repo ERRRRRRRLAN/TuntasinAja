@@ -354,6 +354,11 @@ export const authRouter = createTRPCRouter({
         isDanton: true,
         kelas: true,
         createdAt: true,
+        school: {
+          select: {
+            name: true,
+          },
+        },
         permission: {
           select: {
             permission: true,
