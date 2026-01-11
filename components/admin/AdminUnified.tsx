@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, Fragment } from 'react'
+import { createPortal } from 'react-dom'
 import { trpc } from '@/lib/trpc'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import {
@@ -27,7 +28,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 export default function AdminUnified() {
     const utils = trpc.useUtils()
-    const { data: unifiedData, isLoading, refetch } = trpc.school.getUnifiedManagementData.useQuery()
+    const { data: unifiedData, isLoading } = trpc.school.getUnifiedManagementData.useQuery()
 
     // UI State
     const [expandedSchoolId, setExpandedSchoolId] = useState<string | null>(null)
@@ -96,6 +97,17 @@ export default function AdminUnified() {
         onError: (err) => toast.error(err.message)
     })
 
+    // Body scroll lock effect
+    useEffect(() => {
+        const isModalOpen = isCreatingSchool || !!editingSchool || !!editingSubscription || !!editingUser || !!deleteSchoolId || !!deleteClassId
+        if (typeof document !== 'undefined') {
+            document.body.style.overflow = isModalOpen ? 'hidden' : 'unset'
+        }
+        return () => {
+            if (typeof document !== 'undefined') document.body.style.overflow = 'unset'
+        }
+    }, [isCreatingSchool, editingSchool, editingSubscription, editingUser, deleteSchoolId, deleteClassId])
+
     if (isLoading) {
         return (
             <div style={{ textAlign: 'center', padding: '3rem' }}>
@@ -131,9 +143,140 @@ export default function AdminUnified() {
         )
     }
 
+    const modalContent = (
+        <>
+            {/* Modals for CRUD */}
+            {(isCreatingSchool || editingSchool) && (
+                <div className="modal-overlay" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', position: 'relative' }}>
+                        <button
+                            className="btn-icon"
+                            onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}
+                            style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', color: 'var(--text-light)' }}
+                        >
+                            <XIcon size={20} />
+                        </button>
+                        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem' }}>
+                            {editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
+                        </h3>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (editingSchool) {
+                                    updateSchool.mutate({ id: editingSchool.id, ...schoolFormData });
+                                } else {
+                                    createSchool.mutate(schoolFormData);
+                                }
+                            }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                        >
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Sekolah</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={schoolFormData.name}
+                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, name: e.target.value })}
+                                    className="form-input"
+                                    placeholder="Contoh: SMA Negeri 1..."
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Alamat (Opsional)</label>
+                                <textarea
+                                    value={schoolFormData.address}
+                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, address: e.target.value })}
+                                    className="form-input"
+                                    rows={3}
+                                    placeholder="Jl. Pendidikan No. 1..."
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+                                <button type="button" className="btn btn-secondary" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
+                                    Batal
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={createSchool.isLoading || updateSchool.isLoading}>
+                                    {createSchool.isLoading || updateSchool.isLoading ? 'Menyimpan...' : 'Simpan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {editingSubscription && (
+                <div className="modal-overlay" onClick={() => setEditingSubscription(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', position: 'relative' }}>
+                        <button
+                            className="btn-icon"
+                            onClick={() => setEditingSubscription(null)}
+                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, background: 'transparent', color: 'var(--text-light)' }}
+                        >
+                            <XIcon size={20} />
+                        </button>
+                        <ClassSubscriptionManager
+                            kelas={editingSubscription}
+                            onSuccess={() => {
+                                setEditingSubscription(null)
+                                utils.school.getUnifiedManagementData.invalidate()
+                            }}
+                            onCancel={() => setEditingSubscription(null)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {editingUser && (
+                <div className="modal-overlay" onClick={() => setEditingUser(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', padding: '1rem', position: 'relative' }}>
+                        <button
+                            className="btn-icon"
+                            onClick={() => setEditingUser(null)}
+                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, background: 'transparent', color: 'var(--text-light)' }}
+                        >
+                            <XIcon size={20} />
+                        </button>
+                        <EditUserForm
+                            user={editingUser}
+                            onSuccess={() => {
+                                setEditingUser(null)
+                                utils.school.getUnifiedManagementData.invalidate()
+                            }}
+                            onCancel={() => setEditingUser(null)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmations */}
+            <ConfirmDialog
+                isOpen={!!deleteSchoolId}
+                title="Hapus Sekolah"
+                message="Yakin ingin menghapus sekolah ini? Semua kelas dan data terkait akan ikut terhapus."
+                confirmText="Hapus"
+                cancelText="Batal"
+                danger
+                isLoading={deleteSchool.isLoading}
+                onConfirm={() => deleteSchoolId && deleteSchool.mutate({ id: deleteSchoolId })}
+                onCancel={() => setDeleteSchoolId(null)}
+            />
+
+            <ConfirmDialog
+                isOpen={!!deleteClassId}
+                title="Hapus Kelas"
+                message="Yakin ingin menghapus kelas ini?"
+                confirmText="Hapus"
+                cancelText="Batal"
+                danger
+                isLoading={removeClass.isLoading}
+                onConfirm={() => deleteClassId && removeClass.mutate({ classId: deleteClassId })}
+                onCancel={() => setDeleteClassId(null)}
+            />
+        </>
+    )
+
     return (
         <div className="admin-unified-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {/* Header section with search and add button */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -172,7 +315,6 @@ export default function AdminUnified() {
                 </div>
             </div>
 
-            {/* Main School Table */}
             <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '1.25rem', border: '1px solid var(--border)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -190,10 +332,7 @@ export default function AdminUnified() {
                                 <Fragment key={school.id}>
                                     <tr
                                         className={`school-row ${expandedSchoolId === school.id ? 'expanded' : ''}`}
-                                        style={{
-                                            borderBottom: '1px solid var(--border)',
-                                            cursor: 'pointer'
-                                        }}
+                                        style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
                                         onClick={() => setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)}
                                     >
                                         <td style={{ textAlign: 'center' }}>
@@ -252,31 +391,17 @@ export default function AdminUnified() {
                                         </td>
                                     </tr>
 
-                                    {/* Expanded Detail View */}
                                     {expandedSchoolId === school.id && (
                                         <tr style={{ background: 'var(--bg-secondary)' }}>
                                             <td colSpan={5} style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
                                                 <div className="detail-container" style={{
-                                                    background: 'white',
-                                                    borderRadius: '0 0 1.5rem 1.5rem',
-                                                    padding: '2rem',
-                                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
-                                                    border: '1.5px solid var(--border)',
-                                                    borderTop: 'none'
+                                                    background: 'white', borderRadius: '0 0 1.5rem 1.5rem',
+                                                    padding: '2rem', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                                                    border: '1.5px solid var(--border)', borderTop: 'none'
                                                 }}>
                                                     <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', borderBottom: '1.5px solid var(--border)' }}>
-                                                        <button
-                                                            onClick={() => setSubTab('classes')}
-                                                            className={`sub-tab-btn ${subTab === 'classes' ? 'active' : ''}`}
-                                                        >
-                                                            Kelas & Subscription
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setSubTab('students')}
-                                                            className={`sub-tab-btn ${subTab === 'students' ? 'active' : ''}`}
-                                                        >
-                                                            Daftar Siswa
-                                                        </button>
+                                                        <button onClick={() => setSubTab('classes')} className={`sub-tab-btn ${subTab === 'classes' ? 'active' : ''}`}>Kelas & Subscription</button>
+                                                        <button onClick={() => setSubTab('students')} className={`sub-tab-btn ${subTab === 'students' ? 'active' : ''}`}>Daftar Siswa</button>
                                                     </div>
 
                                                     {subTab === 'classes' ? (
@@ -309,19 +434,8 @@ export default function AdminUnified() {
                                                                                 </td>
                                                                                 <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
                                                                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                                        <button
-                                                                                            className="btn-action"
-                                                                                            onClick={() => setEditingSubscription(cls.name)}
-                                                                                        >
-                                                                                            Update Subs
-                                                                                        </button>
-                                                                                        <button
-                                                                                            className="btn-icon-small"
-                                                                                            onClick={() => setDeleteClassId(cls.id)}
-                                                                                            style={{ color: 'var(--danger)' }}
-                                                                                        >
-                                                                                            <XCloseIcon size={14} />
-                                                                                        </button>
+                                                                                        <button className="btn-action" onClick={() => setEditingSubscription(cls.name)}>Update Subs</button>
+                                                                                        <button className="btn-icon-small" onClick={() => setDeleteClassId(cls.id)} style={{ color: 'var(--danger)' }}><XCloseIcon size={14} /></button>
                                                                                     </div>
                                                                                 </td>
                                                                             </tr>
@@ -329,32 +443,11 @@ export default function AdminUnified() {
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-
                                                             {isAddingClassToId === school.id ? (
-                                                                <form
-                                                                    onSubmit={(e) => {
-                                                                        e.preventDefault();
-                                                                        if (newClassName.trim()) {
-                                                                            addClass.mutate({ schoolId: school.id, name: newClassName });
-                                                                        }
-                                                                    }}
-                                                                    style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}
-                                                                >
-                                                                    <input
-                                                                        autoFocus
-                                                                        type="text"
-                                                                        value={newClassName}
-                                                                        onChange={(e) => setNewClassName(e.target.value)}
-                                                                        placeholder="Nama Kelas (cth: X RPL 1)"
-                                                                        className="form-input"
-                                                                        style={{ flex: 1, height: '38px', fontSize: '0.875rem' }}
-                                                                    />
-                                                                    <button type="submit" className="btn btn-primary btn-sm" disabled={addClass.isLoading}>
-                                                                        {addClass.isLoading ? '...' : 'Simpan'}
-                                                                    </button>
-                                                                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setIsAddingClassToId(null)}>
-                                                                        Batal
-                                                                    </button>
+                                                                <form onSubmit={(e) => { e.preventDefault(); if (newClassName.trim()) addClass.mutate({ schoolId: school.id, name: newClassName }); }} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                                                                    <input autoFocus type="text" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} placeholder="Nama Kelas (cth: X RPL 1)" className="form-input" style={{ flex: 1, height: '38px', fontSize: '0.875rem' }} />
+                                                                    <button type="submit" className="btn btn-primary btn-sm" disabled={addClass.isLoading}>{addClass.isLoading ? '...' : 'Simpan'}</button>
+                                                                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setIsAddingClassToId(null)}>Batal</button>
                                                                 </form>
                                                             ) : (
                                                                 <button className="btn-add-dashed" style={{ marginTop: '1rem' }} onClick={() => setIsAddingClassToId(school.id)}>
@@ -376,114 +469,8 @@ export default function AdminUnified() {
                 </div>
             </div>
 
-            {/* Modals for CRUD */}
-            {(isCreatingSchool || editingSchool) && (
-                <div className="modal-overlay" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-                        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem' }}>
-                            {editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
-                        </h3>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (editingSchool) {
-                                    updateSchool.mutate({ id: editingSchool.id, ...schoolFormData });
-                                } else {
-                                    createSchool.mutate(schoolFormData);
-                                }
-                            }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-                        >
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Sekolah</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={schoolFormData.name}
-                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, name: e.target.value })}
-                                    className="form-input"
-                                    placeholder="Contoh: SMA Negeri 1..."
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Alamat (Opsional)</label>
-                                <textarea
-                                    value={schoolFormData.address}
-                                    onChange={(e) => setSchoolFormData({ ...schoolFormData, address: e.target.value })}
-                                    className="form-input"
-                                    rows={3}
-                                    placeholder="Jl. Pendidikan No. 1..."
-                                />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                                <button type="button" className="btn btn-secondary" onClick={() => { setIsCreatingSchool(false); setEditingSchool(null); }}>
-                                    Batal
-                                </button>
-                                <button type="submit" className="btn btn-primary" disabled={createSchool.isLoading || updateSchool.isLoading}>
-                                    {createSchool.isLoading || updateSchool.isLoading ? 'Menyimpan...' : 'Simpan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {typeof document !== 'undefined' && createPortal(modalContent, document.body)}
 
-            {editingSubscription && (
-                <div className="modal-overlay" onClick={() => setEditingSubscription(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-                        <ClassSubscriptionManager
-                            kelas={editingSubscription}
-                            onSuccess={() => {
-                                setEditingSubscription(null)
-                                utils.school.getUnifiedManagementData.invalidate()
-                            }}
-                            onCancel={() => setEditingSubscription(null)}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {editingUser && (
-                <div className="modal-overlay" onClick={() => setEditingUser(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', padding: '1rem' }}>
-                        <EditUserForm
-                            user={editingUser}
-                            onSuccess={() => {
-                                setEditingUser(null)
-                                utils.school.getUnifiedManagementData.invalidate()
-                            }}
-                            onCancel={() => setEditingUser(null)}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Confirmations */}
-            <ConfirmDialog
-                isOpen={!!deleteSchoolId}
-                title="Hapus Sekolah"
-                message="Yakin ingin menghapus sekolah ini? Semua kelas dan data terkait akan ikut terhapus."
-                confirmText="Hapus"
-                cancelText="Batal"
-                danger
-                isLoading={deleteSchool.isLoading}
-                onConfirm={() => deleteSchoolId && deleteSchool.mutate({ id: deleteSchoolId })}
-                onCancel={() => setDeleteSchoolId(null)}
-            />
-
-            <ConfirmDialog
-                isOpen={!!deleteClassId}
-                title="Hapus Kelas"
-                message="Yakin ingin menghapus kelas ini?"
-                confirmText="Hapus"
-                cancelText="Batal"
-                danger
-                isLoading={removeClass.isLoading}
-                onConfirm={() => deleteClassId && removeClass.mutate({ classId: deleteClassId })}
-                onCancel={() => setDeleteClassId(null)}
-            />
-
-            {/* Styles */}
             <style jsx>{`
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateY(10px); }
@@ -493,15 +480,9 @@ export default function AdminUnified() {
                     from { opacity: 0; transform: scale(0.95); }
                     to { opacity: 1; transform: scale(1); }
                 }
-                @keyframes slideInRight {
-                    from { opacity: 0; transform: translateX(10px); }
-                    to { opacity: 1; transform: translateX(0); }
-                }
-
                 .admin-unified-container {
                     animation: fadeInUp 0.4s ease-out forwards;
                 }
-
                 .status-badge {
                     display: inline-flex;
                     align-items: center;
@@ -513,118 +494,83 @@ export default function AdminUnified() {
                     text-transform: uppercase;
                     letter-spacing: 0.025em;
                 }
-
+                .badge-count {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 2rem;
+                    height: 2rem;
+                    padding: 0 0.5rem;
+                    border-radius: 0.75rem;
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    transition: all 0.3s;
+                }
+                .badge-legacy {
+                    font-size: 0.65rem;
+                    padding: 0.1rem 0.4rem;
+                    background: #fef3c7;
+                    color: #92400e;
+                    border-radius: 0.25rem;
+                    font-weight: 700;
+                }
                 .btn-icon-small {
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    color: var(--text-light);
-                    padding: 0.35rem;
-                    border-radius: 0.5rem;
+                    width: 28px;
+                    height: 28px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    border-radius: 0.5rem;
+                    border: 1px solid var(--border);
+                    background: white;
+                    color: var(--text-light);
+                    transition: all 0.2s;
+                    cursor: pointer;
                 }
                 .btn-icon-small:hover {
-                    background: #fee2e2;
-                    color: #ef4444;
+                    background: var(--bg-secondary);
                     transform: scale(1.1);
                 }
-
-                .badge-count {
-                    display: inline-block;
-                    padding: 0.25rem 0.75rem;
-                    background: var(--primary);
-                    color: white;
-                    border-radius: 8px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    min-width: 32px;
-                    transition: all 0.2s;
-                    box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.2);
-                }
-
-                .badge-legacy {
-                    font-size: 10px;
-                    background: #fff1f2;
-                    color: #be123c;
-                    padding: 2px 8px;
-                    border-radius: 6px;
-                    font-weight: 700;
-                    border: 1px solid #fecdd3;
-                    letter-spacing: 0.025em;
-                }
-
-                .btn-icon {
-                    background: transparent;
-                    border: none;
-                    cursor: pointer;
-                    color: var(--text-light);
-                    padding: 0.6rem;
-                    border-radius: 0.75rem;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .btn-icon:hover {
-                    background: white;
-                    color: var(--primary);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                    transform: translateY(-1px);
-                }
-
                 .btn-action {
-                    padding: 0.4rem 0.9rem;
-                    background: white;
-                    border: 1.5px solid var(--border);
-                    border-radius: 0.6rem;
                     font-size: 0.75rem;
-                    font-weight: 700;
+                    font-weight: 600;
+                    padding: 0.4rem 0.75rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid var(--border);
+                    background: white;
                     color: var(--text);
                     cursor: pointer;
                     transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.4rem;
                 }
                 .btn-action:hover {
+                    background: var(--bg-secondary);
                     border-color: var(--primary);
                     color: var(--primary);
-                    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.1);
                 }
-
                 .btn-add-dashed {
                     width: 100%;
-                    padding: 0.85rem;
-                    background: rgba(var(--primary-rgb), 0.01);
+                    padding: 0.75rem;
                     border: 2px dashed var(--border);
                     border-radius: 1rem;
+                    background: transparent;
                     color: var(--text-light);
-                    font-size: 0.875rem;
                     font-weight: 600;
+                    font-size: 0.875rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 0.6rem;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    gap: 0.5rem;
                 }
                 .btn-add-dashed:hover {
                     border-color: var(--primary);
                     color: var(--primary);
                     background: rgba(var(--primary-rgb), 0.04);
-                    border-style: solid;
-                }
-
-                .row-hover {
-                    transition: all 0.2s;
                 }
                 .row-hover:hover {
                     background: rgba(var(--primary-rgb), 0.02);
                 }
-
                 .school-row {
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
@@ -634,11 +580,9 @@ export default function AdminUnified() {
                 .school-row.expanded {
                     background: var(--bg-secondary) !important;
                 }
-
                 .detail-container {
                     animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
                 }
-
                 .sub-tab-btn {
                     padding: 0.75rem 0;
                     background: none;
@@ -647,7 +591,7 @@ export default function AdminUnified() {
                     color: var(--text-light);
                     border-bottom: 2px solid transparent;
                     font-weight: 600;
-                    fontSize: 0.875rem;
+                    font-size: 0.875rem;
                     transition: all 0.2s;
                     position: relative;
                 }
@@ -655,23 +599,6 @@ export default function AdminUnified() {
                     color: var(--primary);
                     border-bottom-color: var(--primary);
                 }
-                .sub-tab-btn::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -2px;
-                    left: 0;
-                    width: 0;
-                    height: 2px;
-                    background: var(--primary);
-                    transition: width 0.3s;
-                }
-                .sub-tab-btn:hover::after {
-                    width: 50%;
-                }
-                .sub-tab-btn.active::after {
-                    width: 100%;
-                }
-
                 .modal-overlay {
                     position: fixed;
                     top: 0; left: 0; right: 0; bottom: 0;
@@ -787,8 +714,4 @@ function SchoolStudentList({ schoolId, onEditUser }: { schoolId: string, onEditU
             </div>
         </div>
     )
-}
-
-function Fragment({ children }: { children: React.ReactNode }) {
-    return <>{children}</>
 }
