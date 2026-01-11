@@ -374,8 +374,8 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
             ...(isMobile ? {
               width: '100%',
               maxWidth: '100%',
-              height: '100vh',
-              maxHeight: '100vh',
+              height: '100dvh', // Use dynamic viewport height
+              maxHeight: '100dvh',
               margin: 0,
               borderRadius: 0,
               padding: 0,
@@ -448,7 +448,7 @@ export default function CreateThreadQuickView({ onClose }: CreateThreadQuickView
           </div>
 
           <div className="comments-section" style={{
-            padding: isMobile ? '1.25rem 1rem 25rem 1rem' : '1.5rem 2rem', // Increased bottom padding for mobile scroll clearance
+            padding: isMobile ? '1.25rem 1rem 8rem 1rem' : '1.5rem 2rem', // Adjusted bottom padding for mobile
           }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Pilihan Jenis Tugas */}
