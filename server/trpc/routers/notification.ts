@@ -325,8 +325,15 @@ export const notificationRouter = createTRPCRouter({
               const relevantThreads = threads.filter(t => subjects.some((s: any) => t.title.toUpperCase().includes(s.toUpperCase())))
 
               if (relevantThreads.length > 0) {
-                const title = `Jadwal Besok: ${kelas}`
-                const body = `Besok ada ${subjects.length} mapel: ${subjects.join(', ')}. Jangan lupa cek PR!`
+                const threadList = relevantThreads.slice(0, 3).map(t => `• ${t.title}`).join('\n')
+                const title = `📅 Jadwal Besok: ${kelas}`
+                let body = `Besok ada ${subjects.length} pelajaran: ${subjects.join(', ')}.`
+                body += `\n\n📋 Ada ${relevantThreads.length} PR aktif:\n${threadList}`
+                if (relevantThreads.length > 3) {
+                  body += `\n...dan ${relevantThreads.length - 3} lainnya`
+                }
+                body += `\n\nSemangat belajarnya!`
+
                 const res = await sendNotificationToClass(kelas, title, body, { type: 'schedule' }, 'task', input.force)
                 totalSent += res.successCount
                 results[kelas] = { success: true, sent: res.successCount }
@@ -349,8 +356,20 @@ export const notificationRouter = createTRPCRouter({
             })
 
             if (threads.length > 0) {
-              const title = 'Pengingat Deadline Tugas'
-              const body = `${threads.length} tugas akan segera sampai deadline. Ayo selesaikan!`
+              const taskList = threads.slice(0, 3).map(t => {
+                const diff = new Date(t.deadline!).getTime() - now.getTime()
+                const hours = Math.floor(diff / (1000 * 60 * 60))
+                return `• ${t.title} (${hours}j lagi)`
+              }).join('\n')
+
+              const title = '⏰ Pengingat Deadline PR'
+              let body = `Ada ${threads.length} PR yang mendekati deadline!`
+              body += `\n\n${taskList}`
+              if (threads.length > 3) {
+                body += `\n...dan ${threads.length - 3} lainnya`
+              }
+              body += `\n\nYuk segera selesaikan tugasmu!`
+
               const res = await sendNotificationToClass(kelas, title, body, { type: 'deadline' }, 'deadline', input.force)
               totalSent += res.successCount
               results[kelas] = { success: true, sent: res.successCount }
