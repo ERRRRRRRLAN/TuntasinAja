@@ -18,18 +18,18 @@ export const notificationRouter = createTRPCRouter({
       const startTime = Date.now()
       const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`
       const log = createLogger({ component: 'NotificationRouter', requestId })
-      
-      log.debug({ 
+
+      log.debug({
         userId: ctx.session?.user?.id,
         sessionExists: !!ctx.session,
       }, 'Register token request started')
-      
+
       // Validate session
       if (!ctx.session || !ctx.session.user || !ctx.session.user.id) {
         log.error({ session: ctx.session }, 'Invalid session')
         throw new Error('Invalid session: User not authenticated')
       }
-      
+
       // Validate token
       if (!input.token || typeof input.token !== 'string' || input.token.trim().length === 0) {
         log.error({ tokenLength: input.token?.length }, 'Invalid token input')
@@ -53,10 +53,10 @@ export const notificationRouter = createTRPCRouter({
             },
           },
         })
-        
+
         if (existingToken) {
           const isSameUser = existingToken.userId === ctx.session.user.id
-          log.debug({ 
+          log.debug({
             tokenId: existingToken.id,
             existingUserId: existingToken.userId,
             currentUserId: ctx.session.user.id,
@@ -69,7 +69,7 @@ export const notificationRouter = createTRPCRouter({
         // Upsert device token (user can have multiple devices)
         // This will update userId if token exists for different user
         const upsertStart = Date.now()
-        
+
         const result = await prisma.deviceToken.upsert({
           where: {
             token: input.token,
@@ -95,11 +95,11 @@ export const notificationRouter = createTRPCRouter({
             },
           },
         })
-        
+
         const upsertDuration = Date.now() - upsertStart
         const totalDuration = Date.now() - startTime
-        
-        log.info({ 
+
+        log.info({
           tokenId: result.id,
           userId: result.userId,
           userEmail: result.user.email,
@@ -112,15 +112,15 @@ export const notificationRouter = createTRPCRouter({
         return { success: true }
       } catch (error) {
         const duration = Date.now() - startTime
-        
-        log.error({ 
+
+        log.error({
           error: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined,
           userId: ctx.session?.user?.id,
           tokenLength: input.token?.length,
           duration,
         }, 'Error registering device token')
-        
+
         throw error
       }
     }),
@@ -160,12 +160,12 @@ export const notificationRouter = createTRPCRouter({
       const startTime = Date.now()
       const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`
       const log = createLogger({ component: 'NotificationRouter', requestId })
-      
-      log.debug({ 
+
+      log.debug({
         userId: ctx.session?.user?.id,
         endpoint: input.endpoint.substring(0, 50) + '...',
       }, 'Register Web Push token request started')
-      
+
       // Validate session
       if (!ctx.session || !ctx.session.user || !ctx.session.user.id) {
         log.error({ session: ctx.session }, 'Invalid session')
@@ -188,10 +188,10 @@ export const notificationRouter = createTRPCRouter({
             },
           },
         })
-        
+
         if (existingSubscription) {
           const isSameUser = existingSubscription.userId === ctx.session.user.id
-          log.debug({ 
+          log.debug({
             subscriptionId: existingSubscription.id,
             existingUserId: existingSubscription.userId,
             currentUserId: ctx.session.user.id,
@@ -203,7 +203,7 @@ export const notificationRouter = createTRPCRouter({
 
         // Upsert Web Push subscription
         const upsertStart = Date.now()
-        
+
         const result = await prisma.webPushSubscription.upsert({
           where: {
             endpoint: input.endpoint,
@@ -233,11 +233,11 @@ export const notificationRouter = createTRPCRouter({
             },
           },
         })
-        
+
         const upsertDuration = Date.now() - upsertStart
         const totalDuration = Date.now() - startTime
-        
-        log.info({ 
+
+        log.info({
           subscriptionId: result.id,
           userId: result.userId,
           userEmail: result.user.email,
@@ -250,15 +250,15 @@ export const notificationRouter = createTRPCRouter({
         return { success: true }
       } catch (error) {
         const duration = Date.now() - startTime
-        
-        log.error({ 
+
+        log.error({
           error: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined,
           userId: ctx.session?.user?.id,
           endpoint: input.endpoint?.substring(0, 50),
           duration,
         }, 'Error registering Web Push subscription')
-        
+
         throw error
       }
     }),
@@ -281,6 +281,100 @@ export const notificationRouter = createTRPCRouter({
 
       return { success: true }
     }),
+
+  // Manual trigger for push notifications (Admin only)
+  triggerManualPush: protectedProcedure
+    .input(
+      z.object({
+        type: z.enum(['deadline', 'schedule']),
+        classNames: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check admin permission
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { isAdmin: true },
+      })
+
+      if (!user?.isAdmin) {
+        throw new Error('Only admins can trigger manual push notifications')
+      }
+
+      const log = createLogger({ component: 'NotificationRouter', action: 'triggerManualPush' })
+      log.info({ type: input.type, classes: input.classNames }, 'Manual push triggered')
+
+      let totalSent = 0
+      const results: Record<string, any> = {}
+
+      for (const kelas of input.classNames) {
+        try {
+          if (input.type === 'schedule') {
+            // Logic adapted from scheduleRouter.testReminder
+            const now = new Date()
+            const jakartaNow = new Date(now.getTime() + (7 * 60 * 60 * 1000))
+            const tomorrowJakarta = new Date(jakartaNow.getTime() + (24 * 60 * 60 * 1000))
+            const tomorrowDay = tomorrowJakarta.getDay()
+            const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+            const tomorrowDayName = DAYS_OF_WEEK[tomorrowDay]
+            const tomorrowFormatted = tomorrowJakarta.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+            const schedules = await (prisma as any).classSchedule.findMany({
+              where: { kelas, dayOfWeek: tomorrowDayName },
+              select: { subject: true },
+            })
+
+            if (schedules.length > 0) {
+              const subjects = schedules.map((s: any) => s.subject)
+              const threads = await prisma.thread.findMany({
+                where: { author: { kelas } },
+                include: { author: { select: { name: true } }, comments: { select: { id: true } } },
+              })
+
+              const relevantThreads = threads.filter(t => subjects.some((s: any) => t.title.toUpperCase().includes(s.toUpperCase())))
+
+              if (relevantThreads.length > 0) {
+                const title = `Jadwal Besok: ${kelas}`
+                const body = `Besok ada ${subjects.length} mapel: ${subjects.join(', ')}. Jangan lupa cek PR!`
+                const res = await sendNotificationToClass(kelas, title, body, { type: 'schedule' }, 'task')
+                totalSent += res.successCount
+                results[kelas] = { success: true, sent: res.successCount }
+              } else {
+                results[kelas] = { success: true, sent: 0, reason: 'No relevant tasks' }
+              }
+            } else {
+              results[kelas] = { success: true, sent: 0, reason: 'No schedule found' }
+            }
+          } else if (input.type === 'deadline') {
+            // Logic adapted from deadlineReminders.ts but filtered by class
+            const now = new Date()
+            const next48Hours = new Date(now.getTime() + (48 * 60 * 60 * 1000))
+
+            const threads = await prisma.thread.findMany({
+              where: {
+                author: { kelas },
+                deadline: { gte: now, lte: next48Hours }
+              }
+            })
+
+            if (threads.length > 0) {
+              const title = 'Pengingat Deadline Tugas'
+              const body = `${threads.length} tugas akan segera sampai deadline. Ayo selesaikan!`
+              const res = await sendNotificationToClass(kelas, title, body, { type: 'deadline' }, 'deadline')
+              totalSent += res.successCount
+              results[kelas] = { success: true, sent: res.successCount }
+            } else {
+              results[kelas] = { success: true, sent: 0, reason: 'No upcoming deadlines' }
+            }
+          }
+        } catch (error) {
+          log.error({ kelas, error: error instanceof Error ? error.message : 'Unknown' }, 'Error processing manual push')
+          results[kelas] = { success: false, error: 'Internal error' }
+        }
+      }
+
+      return { totalSent, results }
+    }),
 })
 
 // Helper function to send notification to users in a class
@@ -293,7 +387,7 @@ export async function sendNotificationToClass(
 ) {
   const notificationStart = Date.now()
   const log = createLogger({ component: 'sendNotificationToClass', kelas, notificationType })
-  
+
   try {
     log.debug({ title, body }, 'Starting notification send')
 
@@ -333,7 +427,7 @@ export async function sendNotificationToClass(
       const userKelas = dt.user.kelas?.trim()
       const matches = userKelas === normalizedKelas
       if (!matches) {
-        log.warn({ 
+        log.warn({
           expectedKelas: normalizedKelas,
           actualKelas: userKelas,
         }, 'Filtered out token with mismatched kelas')
@@ -341,7 +435,7 @@ export async function sendNotificationToClass(
       return matches
     })
 
-    log.debug({ 
+    log.debug({
       totalFound: deviceTokens.length,
       afterFilter: filteredTokens.length,
     }, 'Found device tokens')
@@ -357,7 +451,7 @@ export async function sendNotificationToClass(
 
     // Filter tokens based on user notification settings
     const tokensToSend = await filterTokensBySettings(filteredTokens, notificationType)
-    
+
     if (tokensToSend.length === 0) {
       log.debug({}, 'No tokens to send after filtering by user settings')
       return {
@@ -367,14 +461,14 @@ export async function sendNotificationToClass(
       }
     }
 
-    log.debug({ 
+    log.debug({
       tokensToSend: tokensToSend.length,
       filteredFrom: filteredTokens.length,
     }, 'Sending notifications')
-    
+
     // Send native push notifications (FCM)
     const nativeResult = await sendPushNotification(tokensToSend, title, body, data)
-    
+
     // Also send Web Push notifications
     const webPushSubscriptions = await prisma.webPushSubscription.findMany({
       where: {
@@ -392,7 +486,7 @@ export async function sendNotificationToClass(
     })
 
     let webPushResult = { successCount: 0, failureCount: 0, expiredSubscriptions: [] as string[] }
-    
+
     if (webPushSubscriptions.length > 0) {
       // Filter Web Push subscriptions by user settings
       const webPushTokensToSend = await filterTokensBySettings(
@@ -425,18 +519,18 @@ export async function sendNotificationToClass(
               },
             },
           })
-          log.info({ 
+          log.info({
             deletedCount: webPushResult.expiredSubscriptions.length,
           }, 'Deleted expired Web Push subscriptions')
         }
       }
     }
-    
+
     const totalDuration = Date.now() - notificationStart
     const totalSuccessCount = nativeResult.successCount + webPushResult.successCount
     const totalFailureCount = nativeResult.failureCount + webPushResult.failureCount
-    
-    log.info({ 
+
+    log.info({
       nativeSuccess: nativeResult.successCount,
       nativeFailure: nativeResult.failureCount,
       webPushSuccess: webPushResult.successCount,
@@ -454,7 +548,7 @@ export async function sendNotificationToClass(
     }
   } catch (error) {
     const totalDuration = Date.now() - notificationStart
-    log.error({ 
+    log.error({
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       totalDuration,
