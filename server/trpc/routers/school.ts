@@ -264,6 +264,7 @@ export const schoolRouter = createTRPCRouter({
                 id: `legacy-${lu.kelas}`,
                 name: lu.kelas,
                 userCount: lu._count._all,
+                capacity: 40, // Default capacity for legacy classes
                 subscription: subscriptions.find((s: any) => s.kelas === lu.kelas) || null,
                 isLegacy: true
             }));
