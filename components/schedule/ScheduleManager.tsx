@@ -27,6 +27,10 @@ export default function ScheduleManager() {
   const [selectedSubjects, setSelectedSubjects] = useState<Record<string, string[]>>({})
   const utils = trpc.useUtils()
 
+  const { data: subjects = [] } = trpc.weeklySchedule.getSubjects.useQuery(undefined, {
+    enabled: !!ketuaKelas,
+  })
+
   const createSchedule = trpc.schedule.create.useMutation({
     onSuccess: () => {
       // Handled in handleAddSubject
@@ -96,9 +100,9 @@ export default function ScheduleManager() {
 
     for (const subject of daySubjects) {
       try {
-        await createSchedule.mutateAsync({ 
-          dayOfWeek: dayValue as any, 
-          subject 
+        await createSchedule.mutateAsync({
+          dayOfWeek: dayValue as any,
+          subject
         })
         successCount++
       } catch (error) {
@@ -158,9 +162,9 @@ export default function ScheduleManager() {
   return (
     <>
       <div className="card">
-        <div className="schedule-manager-header" style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div className="schedule-manager-header" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '1.5rem',
           flexWrap: 'wrap',
@@ -277,6 +281,7 @@ export default function ScheduleManager() {
                             <ComboBox
                               value={dayTempSubject}
                               onChange={(value) => setTempSubjects({ ...tempSubjects, [day.value]: value })}
+                              options={subjects.map((name: string) => ({ value: name, label: name }))}
                               placeholder="-- Pilih Mata Pelajaran --"
                               showAllOption={false}
                               searchPlaceholder="Cari mata pelajaran..."
@@ -315,9 +320,9 @@ export default function ScheduleManager() {
                           <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.875rem', fontWeight: 500 }}>
                             Mata Pelajaran Terpilih ({daySelectedSubjects.length}):
                           </label>
-                          <div style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
                             gap: '0.5rem',
                             maxHeight: '200px',
                             overflowY: 'auto',
