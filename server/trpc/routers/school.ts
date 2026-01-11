@@ -89,6 +89,7 @@ export const schoolRouter = createTRPCRouter({
             z.object({
                 schoolId: z.string(),
                 name: z.string().min(1, "Nama kelas harus diisi"),
+                capacity: z.number().int().min(1).default(40),
             })
         )
         .mutation(async ({ input }) => {
@@ -108,6 +109,7 @@ export const schoolRouter = createTRPCRouter({
                 data: {
                     schoolId: input.schoolId,
                     name: input.name,
+                    capacity: input.capacity,
                 },
             });
         }),
@@ -120,6 +122,23 @@ export const schoolRouter = createTRPCRouter({
                 where: { id: input.classId },
             });
             return { success: true };
+        }),
+
+    // Update a class (Admin only)
+    updateClass: adminProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                name: z.string().min(1, "Nama kelas harus diisi").optional(),
+                capacity: z.number().int().min(1).optional(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, ...data } = input;
+            return await prisma.class.update({
+                where: { id },
+                data,
+            });
         }),
 
     // Get all unique legacy class strings from User table

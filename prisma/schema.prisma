@@ -395,6 +395,7 @@ model Class {
   id        String   @id @default(cuid())
   name      String   @map("name") // e.g., "XI PPLG 1"
   schoolId  String   @map("school_id")
+  capacity  Int      @default(40) @map("capacity")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

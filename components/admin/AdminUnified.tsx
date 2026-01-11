@@ -45,6 +45,8 @@ export default function AdminUnified() {
 
     const [isAddingClassToId, setIsAddingClassToId] = useState<string | null>(null)
     const [newClassName, setNewClassName] = useState('')
+    const [newClassCapacity, setNewClassCapacity] = useState(40)
+    const [editingClass, setEditingClass] = useState<any>(null)
     const [deleteClassId, setDeleteClassId] = useState<string | null>(null)
 
     const [editingUser, setEditingUser] = useState<any>(null)
@@ -102,6 +104,15 @@ export default function AdminUnified() {
             utils.school.getUnifiedManagementData.invalidate()
             setDeleteClassId(null)
             toast.success('Kelas berhasil dihapus')
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const updateClass = trpc.school.updateClass.useMutation({
+        onSuccess: () => {
+            utils.school.getUnifiedManagementData.invalidate()
+            setEditingClass(null)
+            toast.success('Kelas berhasil diperbarui')
         },
         onError: (err) => toast.error(err.message)
     })
@@ -280,6 +291,60 @@ export default function AdminUnified() {
                             setContextSchoolId(undefined)
                         }}
                     />
+                )}
+            </Modal>
+
+            <Modal
+                isOpen={!!editingClass}
+                onClose={() => setEditingClass(null)}
+                title="Edit Kelas"
+                maxWidth="450px"
+            >
+                {editingClass && (
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const name = formData.get('name') as string;
+                            const capacity = parseInt(formData.get('capacity') as string, 10);
+                            if (name.trim()) {
+                                updateClass.mutate({ id: editingClass.id, name: name.trim(), capacity });
+                            }
+                        }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                    >
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Nama Kelas</label>
+                            <input
+                                required
+                                type="text"
+                                name="name"
+                                defaultValue={editingClass.name}
+                                className="form-input"
+                                placeholder="Contoh: XI RPL 1..."
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>Kapasitas Siswa</label>
+                            <input
+                                required
+                                type="number"
+                                name="capacity"
+                                defaultValue={editingClass.capacity || 40}
+                                min={1}
+                                className="form-input"
+                                placeholder="Default: 40"
+                            />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+                            <button type="button" className="btn btn-secondary" onClick={() => setEditingClass(null)}>
+                                Batal
+                            </button>
+                            <button type="submit" className="btn btn-primary" disabled={updateClass.isLoading}>
+                                {updateClass.isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </button>
+                        </div>
+                    </form>
                 )}
             </Modal>
 
@@ -534,13 +599,18 @@ export default function AdminUnified() {
                                                                                         {(cls as any).isLegacy && <span className="badge-legacy">Legacy</span>}
                                                                                     </div>
                                                                                 </td>
-                                                                                <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontSize: '0.875rem' }}>{cls.userCount}</td>
+                                                                                <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
+                                                                                    <span style={{ color: cls.userCount > (cls.capacity || 40) ? 'var(--danger)' : 'inherit' }}>
+                                                                                        {cls.userCount}/{cls.capacity || 40}
+                                                                                    </span>
+                                                                                </td>
                                                                                 <td style={{ padding: '0.75rem 0.5rem' }}>{getStatusBadge(cls.subscription)}</td>
                                                                                 <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.75rem', color: 'var(--text-light)' }}>
                                                                                     {cls.subscription ? format(new Date(cls.subscription.subscriptionEndDate), 'dd MMM yyyy', { locale: id }) : '-'}
                                                                                 </td>
                                                                                 <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
                                                                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                                                        <button className="btn-icon-small" onClick={() => setEditingClass(cls)} title="Edit Kelas"><EditIcon size={14} /></button>
                                                                                         <button className="btn-action" onClick={() => setEditingSubscription(cls.name)}>Update Subs</button>
                                                                                         <button className="btn-icon-small" onClick={() => setDeleteClassId(cls.id)} style={{ color: 'var(--danger)' }}><XCloseIcon size={14} /></button>
                                                                                     </div>
@@ -551,8 +621,16 @@ export default function AdminUnified() {
                                                                 </table>
                                                             </div>
                                                             {isAddingClassToId === school.id ? (
-                                                                <form onSubmit={(e) => { e.preventDefault(); if (newClassName.trim()) addClass.mutate({ schoolId: school.id, name: newClassName }); }} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                                                                    <input autoFocus type="text" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} placeholder="Nama Kelas (cth: X RPL 1)" className="form-input" style={{ flex: 1, height: '38px', fontSize: '0.875rem' }} />
+                                                                <form onSubmit={(e) => {
+                                                                    e.preventDefault();
+                                                                    if (newClassName.trim()) addClass.mutate({
+                                                                        schoolId: school.id,
+                                                                        name: newClassName,
+                                                                        capacity: newClassCapacity
+                                                                    });
+                                                                }} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                                    <input autoFocus type="text" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} placeholder="Nama Kelas (cth: X RPL 1)" className="form-input" style={{ flex: 2, minWidth: '150px', height: '38px', fontSize: '0.875rem' }} />
+                                                                    <input type="number" value={newClassCapacity} onChange={(e) => setNewClassCapacity(parseInt(e.target.value, 10))} placeholder="Kap." className="form-input" style={{ flex: 1, minWidth: '70px', height: '38px', fontSize: '0.875rem' }} />
                                                                     <button type="submit" className="btn btn-primary btn-sm" disabled={addClass.isLoading}>{addClass.isLoading ? '...' : 'Simpan'}</button>
                                                                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => setIsAddingClassToId(null)}>Batal</button>
                                                                 </form>
