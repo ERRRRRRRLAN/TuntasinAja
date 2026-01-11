@@ -83,7 +83,7 @@ export default function CreateThreadForm({ onSuccess }: CreateThreadFormProps) {
             required
           >
             <option value="">-- Pilih Mata Pelajaran --</option>
-            {subjectOptions.map((mapel) => (
+            {subjectOptions.map((mapel: string) => (
               <option key={mapel} value={mapel}>
                 {mapel}
               </option>
