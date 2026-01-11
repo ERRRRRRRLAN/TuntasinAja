@@ -8,7 +8,9 @@ import { BookIcon } from '@/components/ui/Icons'
 import Checkbox from '@/components/ui/Checkbox'
 
 interface AddUserFormProps {
+  isModal?: boolean
   onSuccess?: () => void
+  onCancel?: () => void
 }
 
 // Generate list of kelas options
@@ -29,7 +31,7 @@ const generateKelasOptions = () => {
   return kelasOptions
 }
 
-export default function AddUserForm({ onSuccess }: AddUserFormProps) {
+export default function AddUserForm({ isModal, onSuccess, onCancel }: AddUserFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -101,21 +103,23 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       return
     }
 
-    createUser.mutate({ 
-      name, 
-      email, 
-      password, 
-      isAdmin, 
+    createUser.mutate({
+      name,
+      email,
+      password,
+      isAdmin,
       isDanton: isAdmin ? false : isDanton, // Cannot be danton if admin
-      kelas: isAdmin ? undefined : kelas 
+      kelas: isAdmin ? undefined : kelas
     })
   }
 
   return (
-    <div className="card">
-      <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 600 }}>
-        Tambah User Baru
-      </h3>
+    <div className="card" style={{ position: 'relative' }}>
+      {!isModal && (
+        <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 600 }}>
+          Tambah User Baru
+        </h3>
+      )}
 
       {error && (
         <div style={{
@@ -249,10 +253,10 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
                   />
                   <span>Buat sebagai Danton (Ketua Kelas)</span>
                 </label>
-                <p style={{ 
-                  margin: '0.5rem 0 0 0', 
-                  fontSize: '0.875rem', 
-                  color: 'var(--text-light)' 
+                <p style={{
+                  margin: '0.5rem 0 0 0',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-light)'
                 }}>
                   Danton dapat mengelola user di kelas ini dan mengatur permission mereka.
                 </p>
@@ -261,19 +265,32 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           </>
         )}
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={createUser.isLoading}
-          style={{ width: '100%' }}
-        >
-          {createUser.isLoading ? (
-            <>
-              <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
-              Membuat...
-            </>
-          ) : 'Tambah User'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={createUser.isLoading}
+            style={{ flex: 1 }}
+          >
+            {createUser.isLoading ? (
+              <>
+                <LoadingSpinner size={16} color="white" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                Membuat...
+              </>
+            ) : 'Tambah User'}
+          </button>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn btn-secondary"
+              disabled={createUser.isLoading}
+              style={{ flex: 1 }}
+            >
+              Batal
+            </button>
+          )}
+        </div>
       </form>
     </div>
   )

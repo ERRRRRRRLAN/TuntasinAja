@@ -22,6 +22,7 @@ import {
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import EditUserForm from './EditUserForm'
+import AddUserForm from './AddUserForm'
 import ClassSubscriptionManager from './ClassSubscriptionManager'
 import { toast } from '@/components/ui/ToastContainer'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -47,6 +48,7 @@ export default function AdminUnified() {
     const [deleteClassId, setDeleteClassId] = useState<string | null>(null)
 
     const [editingUser, setEditingUser] = useState<any>(null)
+    const [isAddingUser, setIsAddingUser] = useState(false)
     const [editingSubscription, setEditingSubscription] = useState<string | null>(null)
 
     // Mutations
@@ -139,9 +141,13 @@ export default function AdminUnified() {
         <>
             {/* Modals for CRUD using generic Modal component */}
             <Modal
-                isOpen={isCreatingSchool || !!editingSchool}
-                onClose={() => { setIsCreatingSchool(false); setEditingSchool(null); }}
-                title={editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
+                isOpen={isCreatingSchool || !!editingSchool || isAddingUser}
+                onClose={() => {
+                    setIsCreatingSchool(false);
+                    setEditingSchool(null);
+                    setIsAddingUser(false);
+                }}
+                title={isAddingUser ? 'Tambah User Baru' : editingSchool ? 'Edit Sekolah' : 'Tambah Sekolah Baru'}
                 maxWidth="450px"
             >
                 <form
@@ -222,6 +228,17 @@ export default function AdminUnified() {
                         onCancel={() => setEditingUser(null)}
                     />
                 )}
+
+                {isAddingUser && (
+                    <AddUserForm
+                        isModal={true}
+                        onSuccess={() => {
+                            setIsAddingUser(false)
+                            utils.school.getUnifiedManagementData.invalidate()
+                        }}
+                        onCancel={() => setIsAddingUser(false)}
+                    />
+                )}
             </Modal>
 
             {/* Confirmations remain using ConfirmDialog for now as it's already robust */}
@@ -275,6 +292,13 @@ export default function AdminUnified() {
                                 style={{ paddingLeft: '2.75rem', height: '44px', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', width: '100%' }}
                             />
                         </div>
+                        <button
+                            className="btn btn-secondary"
+                            style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                            onClick={() => setIsAddingUser(true)}
+                        >
+                            <UserIcon size={18} /> User
+                        </button>
                         <button
                             className="btn btn-primary"
                             style={{ height: '44px', borderRadius: '1rem', padding: '0 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px 0 rgba(var(--primary-rgb), 0.39)' }}
