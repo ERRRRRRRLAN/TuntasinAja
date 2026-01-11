@@ -573,7 +573,7 @@ export default function AdminUnified() {
                 }
                 /* Modal styles are now in Modal.tsx */
             `}</style>
-        </div >
+        </>
     )
 }
 
