@@ -28,33 +28,33 @@ export default function AppUpdateChecker() {
 
     try {
       const info = await App.getInfo()
-      
+
       // Try to get versionCode from injected window object (from native Android)
       let versionCode: number | null = null
       if (typeof window !== 'undefined' && (window as any).__APP_VERSION_CODE__) {
         versionCode = (window as any).__APP_VERSION_CODE__
         console.log('[AppUpdateChecker] Using injected versionCode from native:', versionCode)
       }
-      
+
       // Fallback: calculate from versionName if not injected
       if (versionCode === null) {
         const versionParts = info.version.split('.')
         const major = parseInt(versionParts[0] || '1')
         const minor = parseInt(versionParts[1] || '0')
-        
+
         // Calculate versionCode: (major - 1) * 10 + minor + 1
         // Example: 1.5 -> (1-1)*10 + 5 + 1 = 6
         // Example: 1.10 -> (1-1)*10 + 10 + 1 = 11
         versionCode = (major - 1) * 10 + minor + 1
         console.log('[AppUpdateChecker] Calculated versionCode from versionName:', versionCode)
       }
-      
+
       console.log('[AppUpdateChecker] Current version:', {
         versionName: info.version,
         versionCode: versionCode,
         source: (window as any).__APP_VERSION_CODE__ ? 'native' : 'calculated',
       })
-      
+
       return {
         versionCode: versionCode,
         versionName: info.version,
@@ -116,23 +116,12 @@ export default function AppUpdateChecker() {
     setIsDownloading(true)
 
     try {
-      // Always download APK directly from public folder
-      // Use tuntasinaja-livid.vercel.app/TuntasinAja.apk for direct download
-      let downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
-      
-      // If updateInfo has a downloadUrl, use it but ensure it points to the APK file
-      if (updateInfo.downloadUrl) {
-        // If it's already pointing to .apk file, use it
-        if (updateInfo.downloadUrl.includes('.apk')) {
-          downloadUrl = updateInfo.downloadUrl
-          // Fix domain if wrong
-          if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
-            downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
-          }
-        } else {
-          // If it's pointing to API endpoint, change to direct APK file
-          downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
-        }
+      // Use the downloadUrl provided by the API
+      let downloadUrl = updateInfo.downloadUrl
+
+      if (!downloadUrl) {
+        // Fallback if downloadUrl is missing
+        downloadUrl = 'https://tuntasinaja-livid.vercel.app/api/app/download'
       }
 
       console.log('[AppUpdateChecker] Download URL:', downloadUrl)
@@ -153,7 +142,7 @@ export default function AppUpdateChecker() {
           window.open(downloadUrl, '_blank', 'noopener,noreferrer')
           console.log('[SUCCESS] Membuka browser untuk download APK...')
         }
-        
+
         setShowUpdateDialog(false)
       } else {
         // For web, trigger direct download
@@ -164,7 +153,7 @@ export default function AppUpdateChecker() {
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        
+
         console.log('[SUCCESS] Download dimulai...')
         setShowUpdateDialog(false)
       }
@@ -185,7 +174,7 @@ export default function AppUpdateChecker() {
 
     // Check when app comes to foreground
     let listener: any = null
-    
+
     const setupListener = async () => {
       if (Capacitor.isNativePlatform()) {
         try {
@@ -253,16 +242,16 @@ export default function AppUpdateChecker() {
         <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.5rem' }}>
           Update Tersedia
         </h2>
-        
+
         <p style={{ marginBottom: '1rem', color: 'var(--text-light)', fontSize: '0.95rem' }}>
           Versi <strong>{updateInfo.versionName}</strong> tersedia untuk diunduh.
         </p>
 
         {updateInfo.releaseNotes && (
-          <div style={{ 
-            marginBottom: '1rem', 
-            padding: '1rem', 
-            backgroundColor: 'var(--bg-secondary)', 
+          <div style={{
+            marginBottom: '1rem',
+            padding: '1rem',
+            backgroundColor: 'var(--bg-secondary)',
             borderRadius: '8px',
             fontSize: '0.875rem',
           }}>

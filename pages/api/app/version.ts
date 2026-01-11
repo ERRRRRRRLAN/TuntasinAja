@@ -20,12 +20,12 @@ export default async function handler(
 
   // Get updateEnabled from database first (priority), fallback to environment variable
   let updateEnabled = true // Default: true
-  
+
   try {
     const updateSetting = await prisma.appSettings.findUnique({
       where: { key: 'updateEnabled' },
     })
-    
+
     if (updateSetting) {
       // Use database setting if exists
       updateEnabled = updateSetting.value === 'true'
@@ -41,24 +41,17 @@ export default async function handler(
 
   // Get version info from environment variables
   // Set these in Vercel Dashboard → Settings → Environment Variables
-  // Always point to APK file in public folder for direct download
-  let downloadUrl = process.env.APP_DOWNLOAD_URL || 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
-  
-  // Ensure download URL always points to APK file in public folder
-  if (downloadUrl.includes('tuntasinaja.vercel.app') && !downloadUrl.includes('tuntasinaja-livid.vercel.app')) {
-    downloadUrl = downloadUrl.replace('tuntasinaja.vercel.app', 'tuntasinaja-livid.vercel.app')
+  // Use the dedicated download API endpoint for consistency
+  let downloadUrl = process.env.APP_DOWNLOAD_URL || '/api/app/download'
+
+  // If downloadUrl is relative, it will be handled by the client
+  // But for the version API, we try to provide a reliable URL
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://tuntasinaja-livid.vercel.app'
+
+  if (downloadUrl.startsWith('/')) {
+    downloadUrl = `${baseUrl}${downloadUrl}`
   }
-  
-  // If URL points to API endpoint, change to direct APK file
-  if (downloadUrl.includes('/api/app/download')) {
-    downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
-  }
-  
-  // If URL doesn't include .apk, ensure it points to the APK file
-  if (!downloadUrl.includes('.apk')) {
-    downloadUrl = 'https://tuntasinaja-livid.vercel.app/TuntasinAja.apk'
-  }
-  
+
   const latestVersion: VersionInfo = {
     versionCode: parseInt(process.env.APP_VERSION_CODE || '1'),
     versionName: process.env.APP_VERSION_NAME || '1.0',
