@@ -138,5 +138,49 @@ export const classSubjectRouter = createTRPCRouter({
 
       return { success: true }
     }),
+
+  // Update subject name (Admin only)
+  updateClassSubject: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        subject: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, subject } = input
+
+      const existing = await (prisma as any).classSubject.findUnique({
+        where: { id },
+      })
+
+      if (!existing) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Mata pelajaran tidak ditemukan',
+        })
+      }
+
+      // Check if another subject with the same name already exists in this class
+      const duplicate = await (prisma as any).classSubject.findFirst({
+        where: {
+          id: { not: id },
+          kelas: existing.kelas,
+          subject: subject,
+        },
+      })
+
+      if (duplicate) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: `Mata pelajaran "${subject}" sudah ada untuk kelas "${existing.kelas}"`,
+        })
+      }
+
+      return await (prisma as any).classSubject.update({
+        where: { id },
+        data: { subject },
+      })
+    }),
 })
 

@@ -58,6 +58,8 @@ export default function AdminUnified() {
     // Class Subjects Management
     const [managingSubjectsClass, setManagingSubjectsClass] = useState<{ id: string, name: string, subjects: any[] } | null>(null)
     const [newClassSubjectName, setNewClassSubjectName] = useState('')
+    const [editingClassSubjectId, setEditingClassSubjectId] = useState<string | null>(null)
+    const [editClassSubjectName, setEditClassSubjectName] = useState('')
 
     // Mutations
     const createSchool = trpc.school.create.useMutation({
@@ -144,6 +146,21 @@ export default function AdminUnified() {
                 })
             }
             toast.success('Mata pelajaran berhasil dihapus')
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const updateClassSubject = trpc.classSubject.updateClassSubject.useMutation({
+        onSuccess: (data) => {
+            utils.school.getUnifiedManagementData.invalidate()
+            if (managingSubjectsClass) {
+                setManagingSubjectsClass({
+                    ...managingSubjectsClass,
+                    subjects: managingSubjectsClass.subjects.map(s => s.id === data.id ? data : s)
+                })
+            }
+            setEditingClassSubjectId(null)
+            toast.success('Mata pelajaran berhasil diperbarui')
         },
         onError: (err) => toast.error(err.message)
     })
@@ -400,27 +417,79 @@ export default function AdminUnified() {
                                             border: '1px solid var(--border)'
                                         }}
                                     >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
                                             <BookIcon size={16} style={{ color: 'var(--primary)' }} />
-                                            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{sub.subject}</span>
+                                            {editingClassSubjectId === sub.id ? (
+                                                <form
+                                                    onSubmit={(e) => {
+                                                        e.preventDefault();
+                                                        if (editClassSubjectName.trim() && editClassSubjectName !== sub.subject) {
+                                                            updateClassSubject.mutate({ id: sub.id, subject: editClassSubjectName.trim() });
+                                                        } else {
+                                                            setEditingClassSubjectId(null);
+                                                        }
+                                                    }}
+                                                    style={{ display: 'flex', gap: '0.4rem', flex: 1 }}
+                                                >
+                                                    <input
+                                                        autoFocus
+                                                        required
+                                                        type="text"
+                                                        value={editClassSubjectName}
+                                                        onChange={(e) => setEditClassSubjectName(e.target.value)}
+                                                        className="form-input"
+                                                        style={{ flex: 1, padding: '0.25rem 0.5rem', height: '30px', fontSize: '0.875rem' }}
+                                                    />
+                                                    <button type="submit" className="btn btn-primary" style={{ padding: '0 0.5rem', height: '30px', fontSize: '0.75rem' }} disabled={updateClassSubject.isLoading}>
+                                                        Simpan
+                                                    </button>
+                                                    <button type="button" className="btn btn-secondary" style={{ padding: '0 0.5rem', height: '30px', fontSize: '0.75rem' }} onClick={() => setEditingClassSubjectId(null)}>
+                                                        Batal
+                                                    </button>
+                                                </form>
+                                            ) : (
+                                                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{sub.subject}</span>
+                                            )}
                                         </div>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm(`Hapus ${sub.subject} dari kelas ${managingSubjectsClass.name}?`)) {
-                                                    removeClassSubject.mutate({ id: sub.id });
-                                                }
-                                            }}
-                                            style={{
-                                                padding: '0.4rem',
-                                                borderRadius: '0.5rem',
-                                                border: 'none',
-                                                background: 'transparent',
-                                                color: '#ef4444',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <TrashIcon size={16} />
-                                        </button>
+                                        {editingClassSubjectId !== sub.id && (
+                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingClassSubjectId(sub.id);
+                                                        setEditClassSubjectName(sub.subject);
+                                                    }}
+                                                    style={{
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        border: 'none',
+                                                        background: 'transparent',
+                                                        color: 'var(--text-light)',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="Edit Nama"
+                                                >
+                                                    <EditIcon size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm(`Hapus ${sub.subject} dari kelas ${managingSubjectsClass.name}?`)) {
+                                                            removeClassSubject.mutate({ id: sub.id });
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        border: 'none',
+                                                        background: 'transparent',
+                                                        color: '#ef4444',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="Hapus Mapel"
+                                                >
+                                                    <TrashIcon size={16} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             ) : (
