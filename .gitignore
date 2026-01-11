@@ -60,6 +60,7 @@ firebase-service-account.json
 # Binaries and Credentials
 *.exe
 *.apk
+!public/TuntasinAja.apk
 *.aab
 *.idsig
 *.zip
