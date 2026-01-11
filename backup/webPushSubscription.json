@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cmk6efxwx0003yr868lk7928w",
+    "userId": "admin_dd4e6b56-187a-486f-8f70-44dae124c875",
+    "endpoint": "https://fcm.googleapis.com/fcm/send/digcVRQu1sw:APA91bElzddc9bILuZLMWFVH0MIyIxc4HZD64fMNKZuqSmwErmBbjbf3brejLM0fWGbXQsrMvZi9LptCRjoXlrA0IpJ9F1ldKMda4J1ba-T6mBrpO2Uqdufx82mxzxEWv1qk2OBSCPTh",
+    "p256dh": "BPoMKBdWSm0gdVRZAtIF9MzFQ2_JjitqMQydDjKr5Per29CnbH9rRC2BrHXu4fTI1uB5QZhfllcuNhYTTJVy6wQ",
+    "auth": "akPP0HM2y6X7mah8QN1RBw",
+    "userAgent": null,
+    "createdAt": "2026-01-09T04:51:52.305Z",
+    "updatedAt": "2026-01-09T04:51:52.305Z"
+  },
+  {
+    "id": "cmjqbx7tj0001dqc61nd66i22",
+    "userId": "cmicpq4qp000qizgaxxtbnwv4",
+    "endpoint": "https://web.push.apple.com/QCVaGA8TSQ9_ZrGZGXir4Rejuc7Sm5IbEvMHLGWBRADudPYoEIgr-od73Fg_wqiTQ0gNzk6eRARLVkNxax24A0ml3H4BQJsSokbHOzsmbt11GjM6BHVKCUrPGh2lSDWN1NMwhh2CS0Ur0UIC-m9OmrVDSgJE8wtdGizzd4ETebw",
+    "p256dh": "BAB5SDcWRLUqwD8eTIUpkB0SNzZwVObX46YagvqiIChGE4J8o-o64l7I-ZhvBXhqZ93u769ZhO10VbMTBmEI37E",
+    "auth": "FgCFiArNL2lLX414mjpbsw",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6.1 Mobile/15E148 Safari/604.1",
+    "createdAt": "2025-12-28T22:57:00.631Z",
+    "updatedAt": "2025-12-29T04:52:37.389Z"
+  },
+  {
+    "id": "cmk7tu6gd0001kte8v4m7slxa",
+    "userId": "cmicppnrl000fizga4gv6s2wr",
+    "endpoint": "https://fcm.googleapis.com/fcm/send/fSQu_7_8XXg:APA91bE1bAwzrR9JNmZldX1Lf2nzSRar8iLbzDCAZKBYouKu6EHhreiw5X4upe1hFovObAHxFkGsO6U6g5ytJHtUdzRLAipcZY2d6Mau9X37f-hexU-VIo8tOMslFpvNqQYa3IdhkF4v",
+    "p256dh": "BE9OunzLHamuULd94W0HdHPnuTGVUhJ7JBI4T5SUgQKv8-RCz31yppnkJRHEGIBf7XVae8EKZrDG56cLKQkrG1k",
+    "auth": "VCb06nsvO2yCa8cdE808fw",
+    "userAgent": null,
+    "createdAt": "2026-01-10T04:50:36.974Z",
+    "updatedAt": "2026-01-10T04:50:36.974Z"
+  },
+  {
+    "id": "cmjpwp09v0001353hv4w1poa4",
+    "userId": "cmj1e500p0006yru54a5wbxdt",
+    "endpoint": "https://web.push.apple.com/QEy4MlPtgOQ6JfQC9pkyEK2z9cCxgGEYTKHtQX9xWtgy1dLt9DujmqW1dQJsng3qF68gtoPkOHyGTSZw-xZPrL-tcaME2oek0hFdz6Y8OuQYNIm6QjyvZNJai4QmOtg3SmJzRq06VkONpNrU4QzCuhmd4TzqFCfiucEHEKyjLIQ",
+    "p256dh": "BBUxHnRChUWU9Uxmhn7kZutpwKQBSLu5QwBVKAckYkS53g9Jld60Bm8ePXAFrk8hemD7BvDVpIcm7IyrYNBcmOw",
+    "auth": "np6IyfHSAssueJ1HBXojzg",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Mobile/15E148 Safari/604.1",
+    "createdAt": "2025-12-28T15:50:43.363Z",
+    "updatedAt": "2025-12-30T18:57:01.799Z"
+  },
+  {
+    "id": "cmk2becf90005emwz01yk09ao",
+    "userId": "cmicpq4qp000qizgaxxtbnwv4",
+    "endpoint": "https://web.push.apple.com/QGq4an7HUPK997iJ--rqP_tp6kXdX4UoeY0EIVSNRWFdsf2F6lSzrP9Cr5WGTDodE1q-FyhCa-kkoYxjr-KW5eu9UQuC0sd-CKqXU-S14pteiPGpB7PdqgEkSed47Lm3cY4m_eq4UtI-9W3DEit0BhBVC1Jx-5PkFTJOlshAdk8",
+    "p256dh": "BEWllsCZ7v8SVr9Qb9-siHbNhF1dEaE172idIIDaUpnPk3eiS-LBZp4Mrgaxa-XYkWv_R0yZVinLdjN-FeSraus",
+    "auth": "dY-U8AxDzlz4OMb2AZB2dA",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
+    "createdAt": "2026-01-06T08:15:34.246Z",
+    "updatedAt": "2026-01-09T03:47:11.994Z"
+  },
+  {
+    "id": "cmjpw4hxz0001kfi870dv5kdl",
+    "userId": "admin_dd4e6b56-187a-486f-8f70-44dae124c875",
+    "endpoint": "https://fcm.googleapis.com/fcm/send/fIADDAFvr3I:APA91bEZo3IEOjlc1daFpLFsYv_OJI5Nxe7YSRSBX1dpAffqCTSb0CNcC1V8iYMV9zjziIi0KonMenlaWvUOYG3gXNa2JwAEReXrWwK9xgr7J0AMqGYGlth2AJCaYOKCOjvhey_9rinJ",
+    "p256dh": "BNuhFipCnHmUHh3eua1SU2Dzt_cjj1lh2Wv9y6Nt6qKdaysWvjVVEvsv7SfqOlQDEdbhgP4KlJ7GwZag8m0THV0",
+    "auth": "HaP0Yk8evCj195I6B4cYuQ",
+    "userAgent": "Node.js/22",
+    "createdAt": "2025-12-28T15:34:46.487Z",
+    "updatedAt": "2026-01-11T04:19:56.746Z"
+  }
+]

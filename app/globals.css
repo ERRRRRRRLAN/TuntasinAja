@@ -3695,6 +3695,7 @@ textarea::placeholder {
   select {
     font-size: 16px !important; /* Prevents zoom on iOS Safari */
     -webkit-appearance: none;
+    appearance: none;
   }
   
   /* Better touch targets for iOS */
@@ -4880,7 +4881,7 @@ textarea::placeholder {
   .faq-items {
     gap: 0.75rem;
   }
-}
+
 
 @keyframes fadeInDown {
   from {
@@ -4891,6 +4892,7 @@ textarea::placeholder {
     opacity: 1;
     transform: translateY(0);
   }
+}
 
   .completion-stats-user-item {
     animation: fadeInLeft 0.3s ease-out both;

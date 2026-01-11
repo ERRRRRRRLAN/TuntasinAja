@@ -1,0 +1,146 @@
+[
+  {
+    "id": "cmiop8kdy00018mt78u4w9b6y",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "subject": "Mulok BK",
+    "createdAt": "2025-12-02T14:54:30.455Z",
+    "updatedAt": "2025-12-07T13:55:38.453Z"
+  },
+  {
+    "id": "cmiop8kr000028mt760b14zvf",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "subject": "Mulok Batik",
+    "createdAt": "2025-12-02T14:54:30.925Z",
+    "updatedAt": "2025-12-07T13:55:38.927Z"
+  },
+  {
+    "id": "cmiop8l4200038mt7ysxdrh31",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-12-02T14:54:31.395Z",
+    "updatedAt": "2025-12-07T13:55:39.398Z"
+  },
+  {
+    "id": "cmiop8lh500048mt7axky6g9m",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "subject": "IPAS",
+    "createdAt": "2025-12-02T14:54:31.865Z",
+    "updatedAt": "2025-12-07T13:55:39.869Z"
+  },
+  {
+    "id": "cmiop8lu700058mt7tjgqxbc7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "subject": "PJOK",
+    "createdAt": "2025-12-02T14:54:32.335Z",
+    "updatedAt": "2025-12-07T13:55:40.339Z"
+  },
+  {
+    "id": "cmiop8m7d00068mt7hiczt4gb",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "subject": "Sejarah",
+    "createdAt": "2025-12-02T14:54:32.810Z",
+    "updatedAt": "2025-12-07T13:55:40.810Z"
+  },
+  {
+    "id": "cmiop8mkf00078mt7zutfgged",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "subject": "Matematika",
+    "createdAt": "2025-12-02T14:54:33.279Z",
+    "updatedAt": "2025-12-07T13:55:41.281Z"
+  },
+  {
+    "id": "cmiop8mxg00088mt7u8fajqq3",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "subject": "IPAS",
+    "createdAt": "2025-12-02T14:54:33.749Z",
+    "updatedAt": "2025-12-07T13:55:41.753Z"
+  },
+  {
+    "id": "cmiop8nai00098mt7zez44le6",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-12-02T14:54:34.218Z",
+    "updatedAt": "2025-12-07T13:55:42.224Z"
+  },
+  {
+    "id": "cmiop8nnj000a8mt7rbkc0u7l",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-12-02T14:54:34.688Z",
+    "updatedAt": "2025-12-07T13:55:42.694Z"
+  },
+  {
+    "id": "cmiop8o0l000b8mt7twwhx7c5",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-12-02T14:54:35.157Z",
+    "updatedAt": "2025-12-07T13:55:43.164Z"
+  },
+  {
+    "id": "cmiop8odm000c8mt7f4xpbg12",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-12-02T14:54:35.627Z",
+    "updatedAt": "2025-12-07T13:55:43.637Z"
+  },
+  {
+    "id": "cmiop8oqo000d8mt7suv2lla1",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-12-02T14:54:36.096Z",
+    "updatedAt": "2025-12-07T13:55:44.108Z"
+  },
+  {
+    "id": "cmiop8p3p000e8mt7pcp0dzr7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "subject": "PAI & BP",
+    "createdAt": "2025-12-02T14:54:36.566Z",
+    "updatedAt": "2025-12-07T13:55:44.579Z"
+  },
+  {
+    "id": "cmiop8pgr000f8mt7a2w64yp0",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "subject": "Seni Musik",
+    "createdAt": "2025-12-02T14:54:37.035Z",
+    "updatedAt": "2025-12-07T13:55:45.049Z"
+  },
+  {
+    "id": "cmiop8pts000g8mt7fjamvqyp",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "subject": "Informatika",
+    "createdAt": "2025-12-02T14:54:37.505Z",
+    "updatedAt": "2025-12-07T13:55:45.519Z"
+  },
+  {
+    "id": "cmiop8q9f000h8mt78ayq6ifk",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "subject": "Matematika",
+    "createdAt": "2025-12-02T14:54:37.974Z",
+    "updatedAt": "2025-12-07T13:55:46.083Z"
+  },
+  {
+    "id": "cmj8lodb5000310rm29qxo6s6",
+    "kelas": "XII BC 2",
+    "dayOfWeek": "wednesday",
+    "subject": "PKN",
+    "createdAt": "2025-12-16T13:10:12.833Z",
+    "updatedAt": "2025-12-16T13:10:12.833Z"
+  }
+]

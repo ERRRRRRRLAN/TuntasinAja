@@ -1,0 +1,443 @@
+[
+  {
+    "id": "cmielygyz0000rqkuxpg68cmb",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 4,
+    "subject": "Mulok BK",
+    "createdAt": "2025-11-25T13:24:58.859Z",
+    "updatedAt": "2025-11-25T13:24:58.859Z"
+  },
+  {
+    "id": "cmielykms0001rqku410nusta",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 5,
+    "subject": "Mulok Batik",
+    "createdAt": "2025-11-25T13:25:03.605Z",
+    "updatedAt": "2025-11-25T13:25:03.605Z"
+  },
+  {
+    "id": "cmielyqob0002rqkuavxjkgui",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 6,
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-11-25T13:25:11.435Z",
+    "updatedAt": "2025-11-25T13:25:11.435Z"
+  },
+  {
+    "id": "cmiemniqh0000gcuw0dd7h4y7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 1,
+    "subject": "IPAS",
+    "createdAt": "2025-11-25T13:44:27.545Z",
+    "updatedAt": "2025-11-25T13:44:27.545Z"
+  },
+  {
+    "id": "cmiemnozi0001gcuwvanrzkpd",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 2,
+    "subject": "IPAS",
+    "createdAt": "2025-11-25T13:44:35.647Z",
+    "updatedAt": "2025-11-25T13:44:35.647Z"
+  },
+  {
+    "id": "cmiemnv4l0002gcuwvo7yhm90",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 3,
+    "subject": "IPAS",
+    "createdAt": "2025-11-25T13:44:43.605Z",
+    "updatedAt": "2025-11-25T13:44:43.605Z"
+  },
+  {
+    "id": "cmierfjqo0000dmj5v7lg1arm",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 4,
+    "subject": "PJOK",
+    "createdAt": "2025-11-25T15:58:13.680Z",
+    "updatedAt": "2025-11-25T15:58:13.680Z"
+  },
+  {
+    "id": "cmietg3w00000snxbk9xyj45r",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 5,
+    "subject": "PJOK",
+    "createdAt": "2025-11-25T16:54:39.024Z",
+    "updatedAt": "2025-11-25T16:54:39.024Z"
+  },
+  {
+    "id": "cmietgahi0001snxba6dpunmo",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 6,
+    "subject": "PJOK",
+    "createdAt": "2025-11-25T16:54:47.574Z",
+    "updatedAt": "2025-11-25T16:54:47.574Z"
+  },
+  {
+    "id": "cmietrsvl0000df6mtzg0yaat",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 7,
+    "subject": "Sejarah",
+    "createdAt": "2025-11-25T17:03:44.532Z",
+    "updatedAt": "2025-11-25T17:04:06.914Z"
+  },
+  {
+    "id": "cmietshyv0002df6mpb2ti2m0",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 8,
+    "subject": "Sejarah",
+    "createdAt": "2025-11-25T17:04:17.144Z",
+    "updatedAt": "2025-11-25T17:04:17.144Z"
+  },
+  {
+    "id": "cmietsy1w0003df6me63f45qz",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 9,
+    "subject": "Matematika",
+    "createdAt": "2025-11-25T17:04:37.988Z",
+    "updatedAt": "2025-11-25T17:04:57.071Z"
+  },
+  {
+    "id": "cmiettk8r0005df6mckjlwpqc",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "tuesday",
+    "period": 10,
+    "subject": "Matematika",
+    "createdAt": "2025-11-25T17:05:06.748Z",
+    "updatedAt": "2025-11-25T17:05:06.748Z"
+  },
+  {
+    "id": "cmig4ivoi00007t9xijmpae0y",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 1,
+    "subject": "IPAS",
+    "createdAt": "2025-11-26T14:52:30.306Z",
+    "updatedAt": "2025-11-26T14:52:30.306Z"
+  },
+  {
+    "id": "cmig4j2mb00017t9xwfnl5lci",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 2,
+    "subject": "IPAS",
+    "createdAt": "2025-11-26T14:52:39.300Z",
+    "updatedAt": "2025-11-26T14:52:39.300Z"
+  },
+  {
+    "id": "cmig4jjt000027t9xegx19xcj",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 3,
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T14:53:01.572Z",
+    "updatedAt": "2025-11-26T14:53:01.572Z"
+  },
+  {
+    "id": "cmig6avmg0000pl8jjhbhfj94",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 4,
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T15:42:16.216Z",
+    "updatedAt": "2025-11-26T15:42:16.216Z"
+  },
+  {
+    "id": "cmigqa6hi000dskom76lg3hlx",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 6,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:01:35.958Z",
+    "updatedAt": "2025-11-27T01:01:35.958Z"
+  },
+  {
+    "id": "cmigq9w91000cskomd0b1kih8",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 5,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:01:22.693Z",
+    "updatedAt": "2025-11-27T01:01:55.509Z"
+  },
+  {
+    "id": "cmigqatcn000fskom7oup9ohb",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 7,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:05.592Z",
+    "updatedAt": "2025-11-27T01:02:05.592Z"
+  },
+  {
+    "id": "cmigqaxvh000gskoma0lq1e16",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 8,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:11.454Z",
+    "updatedAt": "2025-11-27T01:02:11.454Z"
+  },
+  {
+    "id": "cmigqb28e000hskomf2rpdrv7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 9,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:17.103Z",
+    "updatedAt": "2025-11-27T01:02:17.103Z"
+  },
+  {
+    "id": "cmigqb6qv000iskoms3ma2m76",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "wednesday",
+    "period": 10,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:22.951Z",
+    "updatedAt": "2025-11-27T01:02:22.951Z"
+  },
+  {
+    "id": "cmigqbc1l000jskomdp97och7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 1,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:29.526Z",
+    "updatedAt": "2025-11-27T01:02:29.526Z"
+  },
+  {
+    "id": "cmigqbhjx000kskomprkdqpt5",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 2,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:36.957Z",
+    "updatedAt": "2025-11-27T01:02:36.957Z"
+  },
+  {
+    "id": "cmigqbnbz000lskomhg1kpfi7",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 3,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:44.447Z",
+    "updatedAt": "2025-11-27T01:02:44.447Z"
+  },
+  {
+    "id": "cmigqbq9w000mskomx8kmgprg",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 3,
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-27T01:02:48.260Z",
+    "updatedAt": "2025-11-27T01:02:48.260Z"
+  },
+  {
+    "id": "cmigqbvbu000oskomoocoqkm6",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 4,
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-27T01:02:54.810Z",
+    "updatedAt": "2025-11-27T01:02:56.247Z"
+  },
+  {
+    "id": "cmigqbxqf000qskom0qc61xez",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 8,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:02:57.927Z",
+    "updatedAt": "2025-11-27T01:02:57.927Z"
+  },
+  {
+    "id": "cmigqc2fo000rskom3zumxpkm",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 9,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:03:04.020Z",
+    "updatedAt": "2025-11-27T01:03:04.020Z"
+  },
+  {
+    "id": "cmigqc3jl000sskome08y5peq",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 5,
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-27T01:03:05.458Z",
+    "updatedAt": "2025-11-27T01:03:05.458Z"
+  },
+  {
+    "id": "cmigqc71y000tskomerk5k8ko",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 10,
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-27T01:03:10.006Z",
+    "updatedAt": "2025-11-27T01:03:10.006Z"
+  },
+  {
+    "id": "cmigqc7s8000uskom8a78hevm",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 6,
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-27T01:03:10.953Z",
+    "updatedAt": "2025-11-27T01:03:10.953Z"
+  },
+  {
+    "id": "cmigqciql000vskom8xajec7d",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 7,
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-27T01:03:25.150Z",
+    "updatedAt": "2025-11-27T01:03:25.150Z"
+  },
+  {
+    "id": "cmigqcmnz000wskomy8jngnqq",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 8,
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-27T01:03:30.239Z",
+    "updatedAt": "2025-11-27T01:03:30.239Z"
+  },
+  {
+    "id": "cmigqcqml000xskomq1mj61uf",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 9,
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-27T01:03:35.374Z",
+    "updatedAt": "2025-11-27T01:03:35.374Z"
+  },
+  {
+    "id": "cmigqcum0000yskomm1087m5s",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 10,
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-27T01:03:40.537Z",
+    "updatedAt": "2025-11-27T01:03:40.537Z"
+  },
+  {
+    "id": "cmigqd0ks0010skomrl3m5287",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 1,
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-27T01:03:48.268Z",
+    "updatedAt": "2025-11-27T01:03:48.268Z"
+  },
+  {
+    "id": "cmigqd7vm0011skomuo78uzic",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 1,
+    "subject": "Seni Musik",
+    "createdAt": "2025-11-27T01:03:57.730Z",
+    "updatedAt": "2025-11-27T01:03:57.730Z"
+  },
+  {
+    "id": "cmigqbsrs000nskomzt8bmx1c",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "monday",
+    "period": 7,
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-11-27T01:02:51.496Z",
+    "updatedAt": "2025-11-27T01:04:18.759Z"
+  },
+  {
+    "id": "cmigqdub00013skomwfydt0qk",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "thursday",
+    "period": 2,
+    "subject": "Seni Musik",
+    "createdAt": "2025-11-27T01:04:26.796Z",
+    "updatedAt": "2025-11-27T01:04:26.796Z"
+  },
+  {
+    "id": "cmigqecq60014skomuc37m3hu",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 2,
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-27T01:04:50.670Z",
+    "updatedAt": "2025-11-27T01:04:50.670Z"
+  },
+  {
+    "id": "cmigqeijh0015skomwjh79pw8",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 3,
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-27T01:04:58.205Z",
+    "updatedAt": "2025-11-27T01:04:58.205Z"
+  },
+  {
+    "id": "cmigqeuqa0016skomow6t68fn",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 4,
+    "subject": "Informatika",
+    "createdAt": "2025-11-27T01:05:14.003Z",
+    "updatedAt": "2025-11-27T01:05:14.003Z"
+  },
+  {
+    "id": "cmigqezyx0017skom2181bfxv",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 5,
+    "subject": "Informatika",
+    "createdAt": "2025-11-27T01:05:20.793Z",
+    "updatedAt": "2025-11-27T01:05:20.793Z"
+  },
+  {
+    "id": "cmigqf8bs0018skomt1r0jcac",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 6,
+    "subject": "Informatika",
+    "createdAt": "2025-11-27T01:05:31.625Z",
+    "updatedAt": "2025-11-27T01:05:31.625Z"
+  },
+  {
+    "id": "cmigqgawl001askoma39n4zjl",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 7,
+    "subject": "Matematika",
+    "createdAt": "2025-11-27T01:06:21.622Z",
+    "updatedAt": "2025-11-27T01:06:21.622Z"
+  },
+  {
+    "id": "cmiop8jaq00008mt7v14w4iwr",
+    "kelas": "X RPL 1",
+    "dayOfWeek": "friday",
+    "period": 8,
+    "subject": "Matematika",
+    "createdAt": "2025-12-02T14:54:29.042Z",
+    "updatedAt": "2025-12-02T14:54:29.042Z"
+  },
+  {
+    "id": "cmj8loc7l000210rm88ifbhd2",
+    "kelas": "XII BC 2",
+    "dayOfWeek": "wednesday",
+    "period": 1,
+    "subject": "PKN",
+    "createdAt": "2025-12-16T13:10:11.409Z",
+    "updatedAt": "2025-12-16T13:10:11.409Z"
+  }
+]

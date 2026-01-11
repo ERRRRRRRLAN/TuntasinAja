@@ -1,0 +1,30 @@
+[
+  {
+    "id": "58512c52-596f-416d-8b32-b77ccb6736b0",
+    "kelas": "XI BC 1",
+    "subscriptionEndDate": "2025-12-03T14:35:56.288Z",
+    "createdAt": "2025-11-26T13:24:13.204Z",
+    "updatedAt": "2025-11-26T14:35:56.288Z"
+  },
+  {
+    "id": "cmie0eg3x0000h8qb9pidjt0a",
+    "kelas": "X RPL 1",
+    "subscriptionEndDate": "2035-01-17T03:11:39.389Z",
+    "createdAt": "2025-11-25T03:21:32.686Z",
+    "updatedAt": "2025-12-02T03:11:39.390Z"
+  },
+  {
+    "id": "cmj1do21p0000753uje94mlyj",
+    "kelas": "XII BC 2",
+    "subscriptionEndDate": "2026-03-11T11:51:38.077Z",
+    "createdAt": "2025-12-11T11:51:38.078Z",
+    "updatedAt": "2025-12-11T11:51:38.078Z"
+  },
+  {
+    "id": "cmie6zytk0000moaureslvlx2",
+    "kelas": "X BC 2",
+    "subscriptionEndDate": "2026-01-14T06:59:44.201Z",
+    "createdAt": "2025-11-25T06:26:14.408Z",
+    "updatedAt": "2025-12-15T06:59:44.202Z"
+  }
+]

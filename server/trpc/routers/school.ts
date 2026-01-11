@@ -121,4 +121,69 @@ export const schoolRouter = createTRPCRouter({
             });
             return { success: true };
         }),
+
+    // Get all unique legacy class strings from User table
+    getLegacyClasses: adminProcedure.query(async () => {
+        const groups = await prisma.user.groupBy({
+            by: ['kelas'],
+            _count: {
+                _all: true
+            },
+            where: {
+                kelas: { not: null }
+            },
+            orderBy: {
+                kelas: 'asc'
+            }
+        });
+
+        return groups
+            .filter(g => g.kelas !== null)
+            .map(g => ({
+                name: g.kelas as string,
+                studentCount: g._count._all
+            }));
+    }),
+
+    // Migrate a legacy class string to a real Class entity and link users
+    migrateClass: adminProcedure
+        .input(
+            z.object({
+                schoolId: z.string(),
+                className: z.string(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { schoolId, className } = input;
+
+            // 1. Ensure Class exists in the school
+            await prisma.class.upsert({
+                where: {
+                    schoolId_name: {
+                        schoolId,
+                        name: className,
+                    },
+                },
+                update: {}, // No update needed if exists
+                create: {
+                    schoolId,
+                    name: className,
+                },
+            });
+
+            // 2. Update all users with this `kelas` string to use this `schoolId`
+            const updateResult = await prisma.user.updateMany({
+                where: {
+                    kelas: className,
+                },
+                data: {
+                    schoolId,
+                },
+            });
+
+            return {
+                success: true,
+                usersUpdated: updateResult.count,
+            };
+        }),
 });

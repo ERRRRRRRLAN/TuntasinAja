@@ -1,0 +1,408 @@
+[
+  {
+    "id": "cmig56lmu000153kwzhj9kyhx",
+    "kelas": "X RPL 1",
+    "subject": "Proj IPAS",
+    "createdAt": "2025-11-26T15:10:57.030Z",
+    "updatedAt": "2025-11-26T15:10:57.030Z"
+  },
+  {
+    "id": "cmig56t36000253kwlivk6u1i",
+    "kelas": "X RPL 1",
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T15:11:06.691Z",
+    "updatedAt": "2025-11-26T15:11:06.691Z"
+  },
+  {
+    "id": "cmig81pw3000010v1l7mw8iyk",
+    "kelas": "X RPL 1",
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-26T16:31:08.115Z",
+    "updatedAt": "2025-11-26T16:31:08.115Z"
+  },
+  {
+    "id": "cmig81y03000110v1ykuh4tx6",
+    "kelas": "X RPL 1",
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-26T16:31:18.627Z",
+    "updatedAt": "2025-11-26T16:31:18.627Z"
+  },
+  {
+    "id": "cmig827b6000210v1mcrur8ba",
+    "kelas": "X RPL 1",
+    "subject": "Sejarah",
+    "createdAt": "2025-11-26T16:31:30.691Z",
+    "updatedAt": "2025-11-26T16:31:30.691Z"
+  },
+  {
+    "id": "cmig82tou000310v12kaszran",
+    "kelas": "X RPL 1",
+    "subject": "Muatan Lokal Batik",
+    "createdAt": "2025-11-26T16:31:59.695Z",
+    "updatedAt": "2025-11-26T16:31:59.695Z"
+  },
+  {
+    "id": "cmig83j3a000510v1znpkz5t1",
+    "kelas": "X RPL 1",
+    "subject": "Pendidikan Jasmani, Olahraga, dan Kesehatan",
+    "createdAt": "2025-11-26T16:32:32.614Z",
+    "updatedAt": "2025-11-26T16:32:32.614Z"
+  },
+  {
+    "id": "cmig83xnj000610v1e65fse8u",
+    "kelas": "X RPL 1",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-26T16:32:51.488Z",
+    "updatedAt": "2025-11-26T16:32:51.488Z"
+  },
+  {
+    "id": "cmig84fu8000710v1fu748plg",
+    "kelas": "X RPL 1",
+    "subject": "Dasar-Dasar Pengembangan Perangkat Lunak dan Gim",
+    "createdAt": "2025-11-26T16:33:15.056Z",
+    "updatedAt": "2025-11-26T16:33:15.056Z"
+  },
+  {
+    "id": "cmig84pdq000810v1p6qfo6k2",
+    "kelas": "X RPL 1",
+    "subject": "Informatika",
+    "createdAt": "2025-11-26T16:33:27.422Z",
+    "updatedAt": "2025-11-26T16:33:27.422Z"
+  },
+  {
+    "id": "cmig85lgm000910v1qhk8e13y",
+    "kelas": "X BC 1",
+    "subject": "Matematika",
+    "createdAt": "2025-11-26T16:34:08.998Z",
+    "updatedAt": "2025-11-26T16:34:08.998Z"
+  },
+  {
+    "id": "cmig863qq000a10v11yzpln6h",
+    "kelas": "X BC 1",
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-26T16:34:32.690Z",
+    "updatedAt": "2025-11-26T16:34:32.690Z"
+  },
+  {
+    "id": "cmig86aew000b10v1rcuoy8ar",
+    "kelas": "X BC 1",
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-26T16:34:41.337Z",
+    "updatedAt": "2025-11-26T16:34:41.337Z"
+  },
+  {
+    "id": "cmig86flt000c10v1srlun1o8",
+    "kelas": "X BC 1",
+    "subject": "Sejarah",
+    "createdAt": "2025-11-26T16:34:48.066Z",
+    "updatedAt": "2025-11-26T16:34:48.066Z"
+  },
+  {
+    "id": "cmig86ox6000d10v1a2zpsn5b",
+    "kelas": "X BC 1",
+    "subject": "Mutan Lokal Batik",
+    "createdAt": "2025-11-26T16:35:00.138Z",
+    "updatedAt": "2025-11-26T16:35:00.138Z"
+  },
+  {
+    "id": "cmig86ul6000e10v1tec2cp4n",
+    "kelas": "X BC 1",
+    "subject": "Muatan Lokal BK",
+    "createdAt": "2025-11-26T16:35:07.483Z",
+    "updatedAt": "2025-11-26T16:35:07.483Z"
+  },
+  {
+    "id": "cmig87ce3000f10v1ph11z3nh",
+    "kelas": "X BC 1",
+    "subject": "Pendidikan Jasmani, Olahraga, dan Kesehatan",
+    "createdAt": "2025-11-26T16:35:30.556Z",
+    "updatedAt": "2025-11-26T16:35:30.556Z"
+  },
+  {
+    "id": "cmig87mq9000g10v1yixus39k",
+    "kelas": "X BC 1",
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T16:35:43.954Z",
+    "updatedAt": "2025-11-26T16:35:43.954Z"
+  },
+  {
+    "id": "cmig87tz9000h10v1uaqwsrq9",
+    "kelas": "X BC 1",
+    "subject": "Dasar Broadcast",
+    "createdAt": "2025-11-26T16:35:53.349Z",
+    "updatedAt": "2025-11-26T16:35:53.349Z"
+  },
+  {
+    "id": "cmig87zlf000i10v1z1sp9ezl",
+    "kelas": "X BC 1",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-26T16:36:00.627Z",
+    "updatedAt": "2025-11-26T16:36:00.627Z"
+  },
+  {
+    "id": "cmig8aygw000k10v1c23yty9g",
+    "kelas": "X BC 1",
+    "subject": "Proj IPAS",
+    "createdAt": "2025-11-26T16:38:19.137Z",
+    "updatedAt": "2025-11-26T16:38:19.137Z"
+  },
+  {
+    "id": "cmig8b8v3000l10v127crngj9",
+    "kelas": "X BC 1",
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-11-26T16:38:32.607Z",
+    "updatedAt": "2025-11-26T16:38:32.607Z"
+  },
+  {
+    "id": "cmig8bezt000m10v1ynma689r",
+    "kelas": "X BC 1",
+    "subject": "Informatika",
+    "createdAt": "2025-11-26T16:38:40.554Z",
+    "updatedAt": "2025-11-26T16:38:40.554Z"
+  },
+  {
+    "id": "cmig8cahr000n10v1f5o4y0gr",
+    "kelas": "X RPL 1",
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-11-26T16:39:21.375Z",
+    "updatedAt": "2025-11-26T16:39:21.375Z"
+  },
+  {
+    "id": "cmig8cvuh000o10v1skm6ukvi",
+    "kelas": "X BC 2",
+    "subject": "Koding dan Kecerdasan Artificial",
+    "createdAt": "2025-11-26T16:39:49.049Z",
+    "updatedAt": "2025-11-26T16:39:49.049Z"
+  },
+  {
+    "id": "cmig8d1wu000p10v18r9qtwq3",
+    "kelas": "X BC 2",
+    "subject": "Muatan Lokal Batik",
+    "createdAt": "2025-11-26T16:39:56.910Z",
+    "updatedAt": "2025-11-26T16:39:56.910Z"
+  },
+  {
+    "id": "cmig8d8na000q10v1ch8wietb",
+    "kelas": "X BC 2",
+    "subject": "Muatan Lokal BK",
+    "createdAt": "2025-11-26T16:40:05.639Z",
+    "updatedAt": "2025-11-26T16:40:05.639Z"
+  },
+  {
+    "id": "cmig8deda000r10v11jg8dezp",
+    "kelas": "X BC 2",
+    "subject": "Matematika",
+    "createdAt": "2025-11-26T16:40:13.055Z",
+    "updatedAt": "2025-11-26T16:40:13.055Z"
+  },
+  {
+    "id": "cmig8dlw3000s10v1almvecq3",
+    "kelas": "X BC 2",
+    "subject": "Dasar Broadcast",
+    "createdAt": "2025-11-26T16:40:22.803Z",
+    "updatedAt": "2025-11-26T16:40:22.803Z"
+  },
+  {
+    "id": "cmig8drwz000t10v1b5ay334t",
+    "kelas": "X BC 2",
+    "subject": "Informatika",
+    "createdAt": "2025-11-26T16:40:30.612Z",
+    "updatedAt": "2025-11-26T16:40:30.612Z"
+  },
+  {
+    "id": "cmig8dyag000u10v17yuoccha",
+    "kelas": "X BC 2",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-26T16:40:38.872Z",
+    "updatedAt": "2025-11-26T16:40:38.872Z"
+  },
+  {
+    "id": "cmig8e2ws000v10v13p701ca8",
+    "kelas": "X BC 2",
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-26T16:40:44.860Z",
+    "updatedAt": "2025-11-26T16:40:44.860Z"
+  },
+  {
+    "id": "cmig8ebtg000w10v1exxlxapt",
+    "kelas": "X BC 2",
+    "subject": "Proj IPAS",
+    "createdAt": "2025-11-26T16:40:56.404Z",
+    "updatedAt": "2025-11-26T16:40:56.404Z"
+  },
+  {
+    "id": "cmig8er8l000x10v1cn6u4stx",
+    "kelas": "X BC 2",
+    "subject": "Pendidikan Jasmani, Olahraga, dan Kesehatan",
+    "createdAt": "2025-11-26T16:41:16.389Z",
+    "updatedAt": "2025-11-26T16:41:16.389Z"
+  },
+  {
+    "id": "cmig8exej000y10v1gwpkaxnk",
+    "kelas": "X BC 2",
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T16:41:24.380Z",
+    "updatedAt": "2025-11-26T16:41:24.380Z"
+  },
+  {
+    "id": "cmig8fdb1000z10v170vim2vs",
+    "kelas": "X BC 2",
+    "subject": "Sejarah",
+    "createdAt": "2025-11-26T16:41:44.989Z",
+    "updatedAt": "2025-11-26T16:41:44.989Z"
+  },
+  {
+    "id": "cmig8fixn001010v1o4tb6cj4",
+    "kelas": "X BC 2",
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-26T16:41:52.283Z",
+    "updatedAt": "2025-11-26T16:41:52.283Z"
+  },
+  {
+    "id": "cmig8gac0001110v1nlw0iymy",
+    "kelas": "XI BC 1",
+    "subject": "Pendidikan Jasmani, Olahraga dan Kesehatan",
+    "createdAt": "2025-11-26T16:42:27.793Z",
+    "updatedAt": "2025-11-26T16:42:27.793Z"
+  },
+  {
+    "id": "cmig8gqtp001210v14k3qrsrd",
+    "kelas": "XI BC 1",
+    "subject": "MPNP",
+    "createdAt": "2025-11-26T16:42:49.165Z",
+    "updatedAt": "2025-11-26T16:42:49.165Z"
+  },
+  {
+    "id": "cmig8gzw4001310v1xls34tjk",
+    "kelas": "XI BC 1",
+    "subject": "PAI & BP",
+    "createdAt": "2025-11-26T16:43:00.916Z",
+    "updatedAt": "2025-11-26T16:43:00.916Z"
+  },
+  {
+    "id": "cmig8h61g001410v1k2jj3har",
+    "kelas": "XI BC 1",
+    "subject": "Bahasa Inggris",
+    "createdAt": "2025-11-26T16:43:08.884Z",
+    "updatedAt": "2025-11-26T16:43:08.884Z"
+  },
+  {
+    "id": "cmig8hbmv001510v1vkv89206",
+    "kelas": "XI BC 1",
+    "subject": "Editing",
+    "createdAt": "2025-11-26T16:43:16.135Z",
+    "updatedAt": "2025-11-26T16:43:16.135Z"
+  },
+  {
+    "id": "cmig8hpie001610v1yz4gmobn",
+    "kelas": "XI BC 1",
+    "subject": "(M.PIL) Grafis",
+    "createdAt": "2025-11-26T16:43:34.119Z",
+    "updatedAt": "2025-11-26T16:43:34.119Z"
+  },
+  {
+    "id": "cmig8hxja001710v18oikdigg",
+    "kelas": "XI BC 1",
+    "subject": "Online Broadcast",
+    "createdAt": "2025-11-26T16:43:44.518Z",
+    "updatedAt": "2025-11-26T16:43:44.518Z"
+  },
+  {
+    "id": "cmig8i26d001810v1t2pc60sg",
+    "kelas": "XI BC 1",
+    "subject": "Matematika",
+    "createdAt": "2025-11-26T16:43:50.534Z",
+    "updatedAt": "2025-11-26T16:43:50.534Z"
+  },
+  {
+    "id": "cmig8ii5p001910v1gt5wnh7q",
+    "kelas": "XI BC 1",
+    "subject": "(M.PIL) Bahasa Jerman",
+    "createdAt": "2025-11-26T16:44:11.246Z",
+    "updatedAt": "2025-11-26T16:44:11.246Z"
+  },
+  {
+    "id": "cmig8it8f001a10v1j9o2ve6q",
+    "kelas": "XI BC 1",
+    "subject": "Kreatif, Inovasi dan KWU",
+    "createdAt": "2025-11-26T16:44:25.600Z",
+    "updatedAt": "2025-11-26T16:44:25.600Z"
+  },
+  {
+    "id": "cmig8j0h6001b10v1ehcfk4eg",
+    "kelas": "XI BC 1",
+    "subject": "Pendidikan Pancasila",
+    "createdAt": "2025-11-26T16:44:34.986Z",
+    "updatedAt": "2025-11-26T16:44:34.986Z"
+  },
+  {
+    "id": "cmig8je9b001c10v19h2uw4pc",
+    "kelas": "XI BC 1",
+    "subject": "Muatan Lokal BK",
+    "createdAt": "2025-11-26T16:44:52.753Z",
+    "updatedAt": "2025-11-26T16:44:52.753Z"
+  },
+  {
+    "id": "cmig8jkyq001d10v1vofbsklw",
+    "kelas": "XI BC 1",
+    "subject": "Muatan Lokal Batik",
+    "createdAt": "2025-11-26T16:45:01.538Z",
+    "updatedAt": "2025-11-26T16:45:01.538Z"
+  },
+  {
+    "id": "cmig8jqfb001e10v1a8h0y8b6",
+    "kelas": "XI BC 1",
+    "subject": "Sejarah",
+    "createdAt": "2025-11-26T16:45:08.615Z",
+    "updatedAt": "2025-11-26T16:45:08.615Z"
+  },
+  {
+    "id": "cmig8jvuz001f10v1wwwksdbm",
+    "kelas": "XI BC 1",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-11-26T16:45:15.659Z",
+    "updatedAt": "2025-11-26T16:45:15.659Z"
+  },
+  {
+    "id": "cmigqcyjp000zskomd0x31z35",
+    "kelas": "X RPL 1",
+    "subject": "Seni Musik",
+    "createdAt": "2025-11-27T01:03:45.544Z",
+    "updatedAt": "2025-11-27T01:03:45.544Z"
+  },
+  {
+    "id": "cmigqg3070019skom9con3r0x",
+    "kelas": "X RPL 1",
+    "subject": "Matematika",
+    "createdAt": "2025-11-27T01:06:11.383Z",
+    "updatedAt": "2025-11-27T01:06:11.383Z"
+  },
+  {
+    "id": "cminxw1qd00043nlhvgvmg83h",
+    "kelas": "X RPL 1",
+    "subject": "Muatan Lokal BK",
+    "createdAt": "2025-12-02T02:08:56.773Z",
+    "updatedAt": "2025-12-02T02:08:56.773Z"
+  },
+  {
+    "id": "cmj1dp6ep0001753uac3k3zkk",
+    "kelas": "XII BC 2",
+    "subject": "PKN",
+    "createdAt": "2025-12-11T11:52:30.292Z",
+    "updatedAt": "2025-12-11T11:52:30.292Z"
+  },
+  {
+    "id": "cmj1dpewi0002753utcbu1dlk",
+    "kelas": "XII BC 2",
+    "subject": "Bahasa Indonesia",
+    "createdAt": "2025-12-11T11:52:41.394Z",
+    "updatedAt": "2025-12-11T11:52:41.394Z"
+  },
+  {
+    "id": "cmj1dpkor0003753uo7vyzazl",
+    "kelas": "XII BC 2",
+    "subject": "Matematika",
+    "createdAt": "2025-12-11T11:52:48.891Z",
+    "updatedAt": "2025-12-11T11:52:48.891Z"
+  }
+]

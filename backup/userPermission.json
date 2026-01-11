@@ -1,0 +1,162 @@
+[
+  {
+    "id": "cmidzjegh0001aosqqvyo33no",
+    "userId": "cmicpphqy000bizga7cl7y7hc",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-11-25T02:57:24.209Z",
+    "updatedAt": "2025-11-25T05:47:05.067Z"
+  },
+  {
+    "id": "cmihejoha000h9154qp3wue2x",
+    "userId": "691f39e5-50d6-41a6-b760-c62a6c39b401",
+    "permission": "only_read",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-11-27T12:20:49.966Z",
+    "updatedAt": "2025-11-27T12:20:49.966Z"
+  },
+  {
+    "id": "cmihejy7y000j9154qzyu6qxg",
+    "userId": "4fa75513-fb32-4a48-b825-4d6d9d503633",
+    "permission": "only_read",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-11-27T12:21:02.591Z",
+    "updatedAt": "2025-11-27T12:21:02.591Z"
+  },
+  {
+    "id": "cmiu4yc510001wrz7tlf183s8",
+    "userId": "cmicppbge0007izgadfu1m7we",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-06T10:13:17.941Z",
+    "updatedAt": "2025-12-06T10:13:21.271Z"
+  },
+  {
+    "id": "cmizinf4x00036u7fwymxs21m",
+    "userId": "cmicpq4qp000qizgaxxtbnwv4",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": true,
+    "createdAt": "2025-12-10T04:35:34.114Z",
+    "updatedAt": "2025-12-10T04:35:34.114Z"
+  },
+  {
+    "id": "cmj1e3f890001yru59pldhojf",
+    "userId": "cmj1e3f890000yru5y4xe7xy6",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-11T12:03:35.002Z",
+    "updatedAt": "2025-12-11T12:03:35.002Z"
+  },
+  {
+    "id": "cmj1e4fb70003yru5v3mzkz5v",
+    "userId": "cmj1e4fb70002yru51k8kxbck",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-11T12:04:21.763Z",
+    "updatedAt": "2025-12-11T12:04:21.763Z"
+  },
+  {
+    "id": "cmj1e4p720005yru5ubd60v9b",
+    "userId": "cmj1e4p720004yru506tmoryf",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-11T12:04:34.575Z",
+    "updatedAt": "2025-12-11T12:04:34.575Z"
+  },
+  {
+    "id": "cmj1c1hhy000314gsc5j0dctg",
+    "userId": "cmidaog0k000052m9ivzfqaub",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": true,
+    "createdAt": "2025-12-11T11:06:05.398Z",
+    "updatedAt": "2025-12-28T15:24:14.751Z"
+  },
+  {
+    "id": "cmjpvswsj0003q42ujztng53p",
+    "userId": "cmie6wf1w000xk2w7avfqemtm",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:25:45.859Z",
+    "updatedAt": "2025-12-28T15:25:45.859Z"
+  },
+  {
+    "id": "cmjpvu2010005q42u4j3yqtyz",
+    "userId": "cmie6wgvh000yk2w75h0hfdjs",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:26:39.265Z",
+    "updatedAt": "2025-12-28T15:26:39.265Z"
+  },
+  {
+    "id": "cmjpvw4yz0007q42ugykxxto0",
+    "userId": "e877f0d5-000a-4fb1-adaf-f39e52072d8c",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:28:16.428Z",
+    "updatedAt": "2025-12-28T15:28:16.428Z"
+  },
+  {
+    "id": "cmjpvwjsa0009q42u2fe6z3ws",
+    "userId": "e7f7d681-c3d2-4103-8046-59eb878c1af8",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:28:35.627Z",
+    "updatedAt": "2025-12-28T15:28:35.627Z"
+  },
+  {
+    "id": "cmjpvx52z000bq42umqrso0mb",
+    "userId": "f92caa2c-9fa9-4da7-902f-5a5bba821f0d",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:29:03.227Z",
+    "updatedAt": "2025-12-28T15:29:03.227Z"
+  },
+  {
+    "id": "cmjpvxkms000dq42ux79z46gj",
+    "userId": "d42319f2-ec19-4e67-88c2-f3b7745a43e0",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:29:23.381Z",
+    "updatedAt": "2025-12-28T15:29:23.381Z"
+  },
+  {
+    "id": "cmjpvxx0p000fq42untfq1jpf",
+    "userId": "d838255a-422d-4f6c-bf21-52ddd3ce647d",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:29:39.434Z",
+    "updatedAt": "2025-12-28T15:29:39.434Z"
+  },
+  {
+    "id": "cmjpvybey000hq42ukq1y57j2",
+    "userId": "d504efe7-394f-4abe-89d2-ca8debc8256d",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:29:58.091Z",
+    "updatedAt": "2025-12-28T15:29:58.091Z"
+  },
+  {
+    "id": "cmjpvyq3d000jq42urv3dlb3g",
+    "userId": "fe55c764-b0b0-4277-b166-41ea0eb142fd",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-28T15:30:17.113Z",
+    "updatedAt": "2025-12-28T15:30:17.113Z"
+  },
+  {
+    "id": "cmj1e500p0007yru5xxv3b9hl",
+    "userId": "cmj1e500p0006yru54a5wbxdt",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-11T12:04:48.601Z",
+    "updatedAt": "2025-12-28T15:30:43.812Z"
+  },
+  {
+    "id": "cmjqm3tsf000313nxjml5rvtk",
+    "userId": "cmj76vxm5000013ca13ur4913",
+    "permission": "read_and_post_edit",
+    "canCreateAnnouncement": false,
+    "createdAt": "2025-12-29T03:42:05.199Z",
+    "updatedAt": "2025-12-29T03:42:05.199Z"
+  }
+]

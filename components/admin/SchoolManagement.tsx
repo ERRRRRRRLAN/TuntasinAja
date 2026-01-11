@@ -308,6 +308,24 @@ export default function SchoolManagement() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Legacy Migration Section */}
+                            <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Migrasi Data Lama</h4>
+                                <p style={{ fontSize: '0.875rem', color: 'var(--text-light)', marginBottom: '1rem', lineHeight: 1.5 }}>
+                                    Kelas di bawah ini ditemukan di data siswa (legacy) tetapi mungkin belum terdaftar di sekolah ini.
+                                    Klik tombol untuk mengimpor kelas dan menautkan siswa ke sekolah <strong>{schools?.find(s => s.id === selectedSchoolId)?.name}</strong>.
+                                </p>
+
+                                <LegacyClassList
+                                    classes={classes || []}
+                                    selectedSchoolId={selectedSchoolId}
+                                    onSuccess={() => {
+                                        utils.school.getClasses.invalidate({ schoolId: selectedSchoolId! })
+                                        utils.school.getAll.invalidate()
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <button
@@ -411,5 +429,88 @@ export default function SchoolManagement() {
                 onCancel={() => setDeleteClassId(null)}
             />
         </div>
+    )
+}
+
+function LegacyClassList({ classes, selectedSchoolId, onSuccess }: {
+    classes: any[];
+    selectedSchoolId: string;
+    onSuccess: () => void;
+}) {
+    const { data: legacyClasses, isLoading } = trpc.school.getLegacyClasses.useQuery()
+    const migrateClass = trpc.school.migrateClass.useMutation({
+        onSuccess: (res) => {
+            toast.success(`Berhasil migrasi kelas. ${res.usersUpdated} siswa diperbarui.`)
+            onSuccess()
+        },
+        onError: (err) => toast.error(err.message)
+    })
+
+    const [migratingName, setMigratingName] = useState<string | null>(null)
+    const [confirming, setConfirming] = useState<{ name: string, count: number } | null>(null)
+
+    if (isLoading) return <LoadingSpinner />
+
+    if (!legacyClasses?.length) return <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Tidak ada data kelas legacy ditemukan.</p>
+
+    return (
+        <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                {legacyClasses.map((legacy) => {
+                    const alreadyExists = classes?.some(c => c.name === legacy.name)
+                    return (
+                        <div key={legacy.name} style={{
+                            padding: '0.75rem',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '0.5rem',
+                            border: '1px solid var(--border)',
+                            opacity: alreadyExists ? 0.7 : 1
+                        }}>
+                            <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{legacy.name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginBottom: '0.75rem' }}>
+                                {legacy.studentCount} Siswa terdaftar
+                            </div>
+                            <button
+                                onClick={() => setConfirming({ name: legacy.name, count: legacy.studentCount })}
+                                className="btn btn-sm btn-full"
+                                style={{
+                                    width: '100%',
+                                    background: alreadyExists ? 'var(--text-light)' : 'var(--primary)',
+                                    color: 'white',
+                                    fontSize: '0.8rem',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: '0.5rem',
+                                    borderRadius: '0.25rem'
+                                }}
+                                disabled={!!migratingName}
+                            >
+                                {migratingName === legacy.name ? '...' : (alreadyExists ? 'Sync Siswa' : 'Import ke Sini')}
+                            </button>
+                        </div>
+                    )
+                })}
+            </div>
+
+            <ConfirmDialog
+                isOpen={!!confirming}
+                title="Konfirmasi Migrasi"
+                message={`Apakah Anda yakin ingin memigrasikan kelas "${confirming?.name}" beserta ${confirming?.count} siswanya ke sekolah ini?`}
+                confirmText="Ya, Migrasi"
+                cancelText="Batal"
+                isLoading={migrateClass.isLoading}
+                onConfirm={() => {
+                    if (confirming) {
+                        const name = confirming.name
+                        setMigratingName(name)
+                        migrateClass.mutate({ schoolId: selectedSchoolId, className: name }, {
+                            onSettled: () => setMigratingName(null)
+                        })
+                        setConfirming(null)
+                    }
+                }}
+                onCancel={() => setConfirming(null)}
+            />
+        </>
     )
 }

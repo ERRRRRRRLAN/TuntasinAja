@@ -1,0 +1,167 @@
+[
+  {
+    "id": "cmk2bd0wl0001emwz9tfarbse",
+    "title": "Matematika",
+    "authorId": "cmicpq4qp000qizgaxxtbnwv4",
+    "date": "2026-01-05T17:00:00.000Z",
+    "deadline": "2026-01-15T17:00:00.000Z",
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2026-01-06T08:14:32.660Z",
+    "updatedAt": "2026-01-06T08:14:32.661Z"
+  },
+  {
+    "id": "cmk4xdipi0007w9zu4cnqk7dr",
+    "title": "Bahasa Indonesia",
+    "authorId": "cmia7wm0g00014qakv7r5kn87",
+    "date": "2026-01-07T17:00:00.000Z",
+    "deadline": "2026-01-14T17:00:00.000Z",
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2026-01-08T04:06:19.637Z",
+    "updatedAt": "2026-01-08T04:06:19.638Z"
+  },
+  {
+    "id": "cmk53m6ij0007gl0k9vn21mgs",
+    "title": "Bahasa Inggris",
+    "authorId": "cmicpq4qp000qizgaxxtbnwv4",
+    "date": "2026-01-07T17:00:00.000Z",
+    "deadline": "2026-01-14T17:00:00.000Z",
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2026-01-08T07:01:01.434Z",
+    "updatedAt": "2026-01-08T07:01:01.435Z"
+  },
+  {
+    "id": "cmk8hk86x0001op8qydgaigl3",
+    "title": "Bahasa Indonesia",
+    "authorId": "cmie6wgvh000yk2w75h0hfdjs",
+    "date": "2026-01-09T17:00:00.000Z",
+    "deadline": "2026-01-14T02:00:00.000Z",
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2026-01-10T15:54:43.448Z",
+    "updatedAt": "2026-01-10T15:54:43.449Z"
+  },
+  {
+    "id": "cmie8hu1h0001tz06d57wlfii",
+    "title": "Dasar BC",
+    "authorId": "cmie6vigs000gk2w7l1vsbw4h",
+    "date": "2025-11-24T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-25T07:08:07.636Z",
+    "updatedAt": "2025-11-25T07:08:07.638Z"
+  },
+  {
+    "id": "cmihe210f0001n3e1tboih7fx",
+    "title": "Bahasa Inggris",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:07:06.399Z",
+    "updatedAt": "2025-11-27T12:07:06.400Z"
+  },
+  {
+    "id": "cmihe46hf000bn3e17c6t31ks",
+    "title": "Bahasa Indonesia",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:08:46.802Z",
+    "updatedAt": "2025-11-27T12:08:46.803Z"
+  },
+  {
+    "id": "cmihe5fzk00079154b4ac7iyn",
+    "title": "Dasar BC",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:09:45.775Z",
+    "updatedAt": "2025-11-27T12:09:45.777Z"
+  },
+  {
+    "id": "cmihel8nr0013n3e181uxalik",
+    "title": "Seni Musik",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:22:02.774Z",
+    "updatedAt": "2025-11-27T12:22:02.775Z"
+  },
+  {
+    "id": "cmihem6lt0017n3e15acf8vgo",
+    "title": "Matematika",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:22:46.769Z",
+    "updatedAt": "2025-11-27T12:22:46.770Z"
+  },
+  {
+    "id": "cmihenvr0000l9154k91izwd6",
+    "title": "Sejarah",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:24:06.011Z",
+    "updatedAt": "2025-11-27T12:24:06.012Z"
+  },
+  {
+    "id": "cmiheoslx000t91548z9vny2l",
+    "title": "PAI & BP",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:24:48.596Z",
+    "updatedAt": "2025-11-27T12:24:48.597Z"
+  },
+  {
+    "id": "cmihepitu001bn3e1vdfh4mys",
+    "title": "Dasar PPLG",
+    "authorId": "a85232b0-a9d5-4cf2-af6b-7e390a80cdc4",
+    "date": "2025-11-26T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-27T12:25:22.578Z",
+    "updatedAt": "2025-11-27T12:25:22.579Z"
+  },
+  {
+    "id": "cmiiplbs000015t55jmr14pod",
+    "title": "Sejarah",
+    "authorId": "cmie6v0el0007k2w771gsq3j2",
+    "date": "2025-11-27T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-28T10:17:48.767Z",
+    "updatedAt": "2025-11-28T10:17:48.768Z"
+  },
+  {
+    "id": "cmiiqhzue00014tk3zutkz6ez",
+    "title": "Matematika",
+    "authorId": "cmie6v0el0007k2w771gsq3j2",
+    "date": "2025-11-27T17:00:00.000Z",
+    "deadline": null,
+    "isGroupTask": false,
+    "groupTaskTitle": null,
+    "createdAt": "2025-11-28T10:43:12.949Z",
+    "updatedAt": "2025-11-28T10:43:12.950Z"
+  }
+]

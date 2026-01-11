@@ -1,0 +1,30 @@
+[
+  {
+    "id": "84f75f51-7b2f-4bfe-ab1a-4a18f49aa04a",
+    "name": "X RPL 1",
+    "schoolId": "55f06d4b-ae76-4eb7-9e65-aa092ccc6f38",
+    "createdAt": "2026-01-09T04:28:38.507Z",
+    "updatedAt": "2026-01-09T04:28:38.507Z"
+  },
+  {
+    "id": "d54a1c04-3824-466b-b187-c922935a5535",
+    "name": "X BC 2",
+    "schoolId": "55f06d4b-ae76-4eb7-9e65-aa092ccc6f38",
+    "createdAt": "2026-01-09T04:28:38.507Z",
+    "updatedAt": "2026-01-09T04:28:38.507Z"
+  },
+  {
+    "id": "e5827e2d-a4b7-46c9-bc6e-9e1583e9aeed",
+    "name": "XI BC 1",
+    "schoolId": "55f06d4b-ae76-4eb7-9e65-aa092ccc6f38",
+    "createdAt": "2026-01-09T04:28:38.507Z",
+    "updatedAt": "2026-01-09T04:28:38.507Z"
+  },
+  {
+    "id": "a1f2f134-1b02-4575-b87f-a92b2e5d6615",
+    "name": "XII BC 2",
+    "schoolId": "55f06d4b-ae76-4eb7-9e65-aa092ccc6f38",
+    "createdAt": "2026-01-09T04:28:38.507Z",
+    "updatedAt": "2026-01-09T04:28:38.507Z"
+  }
+]
